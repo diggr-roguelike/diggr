@@ -51,10 +51,13 @@ class Coeffs:
 class Stat:
     def __init__(self):
         self.x = 3.0
+        self.reason = None
 
-    def dec(self, dx):
+    def dec(self, dx, reason=None):
         self.x -= dx
         if self.x < -3.0: self.x = -3.0
+        if reason:
+            self.reason = reason
 
     def inc(self, dx):
         self.x += dx
@@ -367,7 +370,7 @@ class Item:
                  cursedchance=0, range=None, ammochance=None, rangeattack=0,
                  straightline=False, confattack=None, rarity=None, healing=None,
                  homing=False, cooling=False, digging=False, psyimmune=False,
-                 rangeexplode=False):
+                 rangeexplode=False, springy=False):
         self.slot = slot
         self.bonus = bonus
         self.name = name
@@ -399,6 +402,9 @@ class Item:
         self.digging = digging
         self.psyimmune = psyimmune
         self.rangeexplode = rangeexplode
+        self.springy = springy
+
+        self.gencount = 0
 
 
     def __str__(self):
@@ -444,7 +450,7 @@ class ItemStock:
 
         self.dynamite = Item('sticks of dynamite', count=3,
                              skin=('!', libtcod.red), applies=True, explodes=True,
-                             radius=4, rarity=5,
+                             radius=4, rarity=8,
                              desc=['Sticks of dynamite can be lit to create an explosive device.'])
 
         self.litdynamite = Item('burning stick of dynamite',
@@ -453,7 +459,7 @@ class ItemStock:
                                 desc=['Watch out!!'])
 
         self.pickaxe = Item("miner's pickaxe", slot='e', skin=('(', libtcod.gray),
-                            attack=2.0, rarity=4, applies=True, digging=True,
+                            attack=2.0, rarity=8, applies=True, digging=True,
                             desc=['Ostensibly to be used as an aid in traversing the caves,',
                                   'this sporting item is a good makeshift weapon.'])
 
@@ -463,27 +469,27 @@ class ItemStock:
                                 'It helps keep one warm in these horrible caves.'])
 
         self.homing = Item("dowsing rod", slot='d', skin=(')', libtcod.cyan),
-                           applies=True, rarity=4, homing=True,
+                           applies=True, rarity=8, homing=True,
                            desc=["A low-tech device for finding holes."])
 
         self.medpack = Item("magic pill", slot='d', skin=('%', libtcod.white),
-                            rarity=3, applies=True, healing=(3, 0.5),
+                            rarity=20, applies=True, healing=(3, 0.5),
                             cursedchance=7,
                             desc=['A big white pill with a large red cross drawn on one side.'])
 
         self.rpg = Item('RPG launcher', slot='e', skin=('(', libtcod.red),
-                        rarity=4, applies=True, rangeexplode=True, range=(4, 15),
-                        explodes=True, radius=3, attack=0,
+                        rarity=15, applies=True, rangeexplode=True, range=(4, 15),
+                        explodes=True, radius=3, attack=0, ammochance=(1,1),
                         desc=['A metal tube that holds a single explosive rocket.'])
 
         self.mauser = Item("Mauser C96", slot='e', skin=('(', libtcod.blue),
                            rangeattack=7.0, range=(0,15), ammochance=(0, 10),
-                           straightline=True, applies=True, rarity=5,
+                           straightline=True, applies=True, rarity=15,
                            desc=['This antique beauty is a powerful handgun, ',
                                  'though a bit rusty for some reason.'])
 
         self.tazer = Item("tazer", slot='e', skin=('(', libtcod.gray),
-                          attack=1.0, confattack=(10, 1), rarity=4,
+                          attack=1.0, confattack=(10, 1), rarity=5,
                           desc=['Very useful for subduing enemies.'])
 
         self.tinfoilhat = Item('tin foil hat', slot='a', skin=('[', libtcod.gray),
@@ -492,25 +498,25 @@ class ItemStock:
                                      'mind control by various crazies.'])
 
         self.coolpack = Item("some cold mud", slot='d', skin=('%', libtcod.light_blue),
-                             applies=True, cooling=True, rarity=6, count=0,
+                             applies=True, cooling=True, rarity=12, count=0,
                              desc=['A bluish lump of mud. ',
                                    'Useful for tricking predators with infrared vision.'])
 
-        self._randpool = {}
+        self.springboots = Item("springy boots", slot='g', count=0,
+                                skin=('[', libtcod.pink), defence=0.01, rarity=3,
+                                springy=True,
+                                desc=['Strange boots with giant springs attached to the soles.'])
+
+
+        self.regenpool()
+
+    def regenpool(self):
+        self._randpool = []
         for x in dir(self):
             i = getattr(self, x)
             if type(i) == type(self.booze) and i.rarity:
-
-                for x in xrange(i.rarity-3, i.rarity+1):
-                    if x <= 0:
-                        continue
-                    if x not in self._randpool:
-                        self._randpool[x] = [i]
-                    else:
-                        self._randpool[x].append(i)
-
-        for k,v in self._randpool.iteritems():
-            print k, [x.name for x in v]
+                for n in xrange(i.rarity):
+                    self._randpool.append(i)
 
 
     def get(self, item):
@@ -522,13 +528,18 @@ class ItemStock:
         return None
 
     def generate(self, level):
-        if level not in self._randpool:
-            return None
+        if len(self._randpool) == 0:
+            self.regenpool()
 
-        x = self._randpool[level]
-        r = copy.copy(x[random.randint(0, len(x)-1)])
+        i = int(random.randint(0, len(self._randpool)-1))
+        item = self._randpool[i]
+
+        item.gencount += 1
+        r = copy.copy(item)
         r.postprocess()
-        print level, r.name
+
+        del self._randpool[i]
+
         return r
 
 
@@ -902,7 +913,7 @@ class World:
         while 1:
             x = random.randint(0, self.w-1)
             y = random.randint(0, self.h-1)
-            if (x,y) in self.walkmap:
+            if (x,y) in self.walkmap and (x,y) not in self.monmap:
                 self.px = x
                 self.py = y
                 return
@@ -921,13 +932,15 @@ class World:
                     self.itemstock.get('tazer')]
 
 
-    def move(self, dx, dy):
-        dx = dx + self.px
-        dy = dy + self.py
+    def move(self, _dx, _dy, do_spring=True):
+        dx = _dx + self.px
+        dy = _dy + self.py
         if (dx,dy) in self.walkmap and dx >= 0 and dx < self.w and dy < self.h:
 
             if (dx, dy) in self.monmap:
                 self.fight(self.monmap[(dx, dy)], True)
+                self.tick()
+                return
             else:
                 self.px = dx
                 self.py = dy
@@ -940,6 +953,11 @@ class World:
 
         else:
             return
+
+        if do_spring and self.inv.feet and self.inv.feet.springy:
+            self.move(_dx, _dy, do_spring=False)
+            return
+
         self.tick()
 
     def tick(self):
@@ -969,15 +987,21 @@ class World:
 
         if self.stats.warmth.x <= -3.0:
             self.msg.m("Being so cold makes you sick!", True)
-            self.stats.health.dec(self.coef.colddamage)
+            self.stats.health.dec(self.coef.colddamage, "cold")
+            if self.resting: self.resting = False
+            if self.digging: self.digging = None
 
         if self.stats.thirst.x <= -3.0:
             self.msg.m('You desperately need something to drink!', True)
-            self.stats.health.dec(self.coef.thirstdamage)
+            self.stats.health.dec(self.coef.thirstdamage, "thirst")
+            if self.resting: self.resting = False
+            if self.digging: self.digging = None
 
         if self.stats.hunger.x <= -3.0:
             self.msg.m('You desperately need something to eat!', True)
-            self.stats.health.dec(self.coef.hungerdamage)
+            self.stats.health.dec(self.coef.hungerdamage, "hunger")
+            if self.resting: self.resting = False
+            if self.digging: self.digging = None
 
         if self.stats.health.x <= -3.0:
             self.msg.m('You die.', True)
@@ -1043,7 +1067,7 @@ class World:
 
         x = abs(random.gauss(0, 1))
         if x > self.coef.waterpois:
-            self.stats.health.dec(x-self.coef.waterpois)
+            self.stats.health.dec(x-self.coef.waterpois, "unclean water")
             self.msg.m('This water has a bad smell.')
         else:
             self.msg.m('You drink from the puddle.')
@@ -1127,7 +1151,8 @@ class World:
         elif cc == 'x':
             item2 = self.inv.drop(i.slot)
             self.inv.take(i)
-            self.inv.take(item2)
+            if item2:
+                self.inv.take(item2)
 
         else:
             self.inv.take(i)
@@ -1230,13 +1255,16 @@ class World:
             if nx < 0:
                 return item
 
+            item.ammo -= 1
+
             if item.rangeexplode:
                 self.explode(nx, ny, item.radius)
-                return None
+            else:
+                if (nx, ny) in self.monmap:
+                    self.fight(self.monmap[(nx, ny)], True, item=item)
 
-            item.ammo -= 1
-            if (nx, ny) in self.monmap:
-                self.fight(self.monmap[(nx, ny)], True, item=item)
+            if item.ammo <= 0:
+                return None
 
 
         return item
@@ -1277,7 +1305,7 @@ class World:
     def take_scavenge(self, item):
         if item.ammo > 0:
             for i in self.inv:
-                if i.name == item.name:
+                if i and i.name == item.name:
                     i.ammo += item.ammo
                     item.ammo = 0
                     self.msg.m("You find some ammo for your " + str(i))
@@ -1355,7 +1383,7 @@ class World:
             self.walkmap.add((x, y))
 
             if x == self.px and y == self.py:
-                self.stats.health.dec(6.0)
+                self.stats.health.dec(6.0, "explosion")
                 self.tick_checkstats()
 
             if (x, y) in self.itemap:
@@ -1463,7 +1491,7 @@ class World:
                 else:
                     self.msg.m(smu + ' misses.')
 
-            self.stats.health.dec(dmg)
+            self.stats.health.dec(dmg, sm)
 
             if self.resting:
                 self.msg.m('You stop resting.')
@@ -1655,7 +1683,11 @@ class World:
     def move_downleft(self): self.move(-1, 1)
     def move_downright(self): self.move(1, 1)
 
-    def quit(self): self.done = True
+    def quit(self):
+        k = draw_window(["Really quit? Press 'y' if you are truly sure."], self.w, self.h)
+        if k == 'y':
+            self.stats.health.reason = 'quitting'
+            self.done = True
 
     def restart(self):
         self.regen(self.w, self.h)
@@ -1687,7 +1719,6 @@ class World:
             'Q': self.quit
             }
         self.vkeys = {
-            libtcod.KEY_ESCAPE: self.quit,
             libtcod.KEY_ENTER: self.restart,
             libtcod.KEY_LEFT: self.move_left,
             libtcod.KEY_RIGHT: self.move_right,
@@ -1880,13 +1911,13 @@ class World:
 
         hs = {'plev': self.plev,
               'dlev': self.dlev,
-              'kills': self.killed_monsters}
+              'kills': self.killed_monsters,
+              'reason': self.stats.health.reason}
 
         hss = []
         try:
             hsf = open('highscore', 'r')
             hss = cPickle.load(hsf)
-            print hss
         except:
             pass
 
@@ -1899,39 +1930,92 @@ class World:
         #except:
             pass
 
+        s = ['']
+        s.append('%c%d total games logged.' % (libtcod.COLCTRL_1, len(hss)))
+
         sortd = {}
         for x in hss:
             total = (x['plev'] * 5) + (x['dlev'] * 5) + len(x['kills'])
-            if total not in sortd:
-                sortd[total] = [x]
+            x['score'] = total
+            x['kills'] = len(x['kills'])
+
+            for k,v in x.iteritems():
+                if k not in sortd:
+                    sortd[k] = []
+                sortd[k].append(v)
+
+            if x == hs and len(s) == 0:
+                s.append('%d points: Level %d character, killed by %s on dlev '
+                         '%d, and scored %d kills.' % \
+                         (total, x['plev'], x['reason'], x['dlev'], x['kills']))
+
+        def count(ll, x):
+            less = 0
+            more = 0
+            place = None
+            inn = 0
+            for i in ll:
+                inn += 1
+                if i == x and place is None:
+                    place = inn
+                if i < x:
+                    less += 1
+                elif i > x:
+                    more += 1
+            return less,more,place
+
+        sortd2 = {}
+        for k,v in sortd.iteritems():
+            sortd2[k] = count(list(reversed(sorted(v))), hs[k])
+
+        s.append('')
+        s.append('Scored %d points. That is #%d out of %d, with %d scoring lower and %d higher.' % \
+                 (hs['score'], sortd2['score'][2], len(hss), sortd2['score'][0], sortd2['score'][1]))
+
+        s.append('')
+        s.append('Reached dungeon level %d. %d games reached a lower level and %d a higher one.' % \
+                 (hs['dlev'], sortd2['dlev'][1], sortd2['dlev'][0]))
+
+        s.append('')
+        s.append('Reached player level %d. %d games reached a higher level and %d a lower one.' % \
+                 (hs['plev'], sortd2['plev'][1], sortd2['plev'][0]))
+
+        s.append('')
+        s.append('Killed %d monsters. %d games had more kills, %d less.' % \
+                 (hs['kills'], sortd2['kills'][1], sortd2['kills'][0]))
+
+        s.append('')
+        s.append('Killed by %s. %d games ended for the same reason.'% \
+                 (hs['reason'], len(hss) - sortd2['reason'][0] - sortd2['reason'][1]))
+
+        s.append('')
+        s.append('Press space.')
+
+        while 1:
+            if draw_window(s, self.w, self.h) == ' ':
+                break
+
+        s = ['']
+        sortd = {}
+        for x in hss:
+            if x['reason'] not in sortd:
+                sortd[x['reason']] = 1
             else:
-                sortd[total].append(x)
+                sortd[x['reason']] += 1
 
-        sortd = reversed(sorted(sortd.items()))
-        s = []
-
-        i = 0
-        did_mine = False
-        for xi in sortd:
-            for x in xi[1]:
-                if did_mine and i > 15:
-                    break
-                c = ' '
-                if not did_mine and x == hs:
-                    c = '*'
-                    did_mine = True
-
-                if did_mine or i <= 14:
-                    s.append('%c %5d: Plev %d on dlev '
-                             '%d, with %d kills.' % \
-                             (c, xi[0], x['plev'], x['dlev'], len(x['kills'])))
-
+        sortd = list(reversed(sorted((n,r) for (r,n) in sortd.iteritems())))
+        sortd = sortd[:10]
+        s.append('Top 10 reasons for death:')
+        s.append('')
+        for n,r in sortd:
+            s.append('%5d: %s' % (n,r))
         s.append('')
         s.append('Press space to exit.')
 
         while 1:
             if draw_window(s, self.w, self.h) == ' ':
                 break
+
 
 
 def main():
@@ -1954,7 +2038,11 @@ def main():
 
     world.generate_inv()
 
-    while not libtcod.console_is_window_closed():
+    while 1:
+
+        if libtcod.console_is_window_closed():
+            world.stats.health.reason = 'quitting'
+            break
 
         if world.done or world.dead: break
 
