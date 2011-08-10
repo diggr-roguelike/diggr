@@ -1,9 +1,13 @@
 
 import math
 import os
-import libtcodpy as libtcod
 import random
 import copy
+
+import cPickle
+
+import libtcodpy as libtcod
+
 
 
 class Coeffs:
@@ -195,6 +199,9 @@ class Messages:
         libtcod.console_print_rect(None, x, y, w, 3, '\n'.join(l))
 
     def m(self, s, bold = None):
+        if len(self.strings) > 0 and s == self.strings[0][1]:
+            return
+
         if bold:
             self.strings.insert(0, (libtcod.COLCTRL_3, s))
         else:
@@ -359,7 +366,8 @@ class Item:
                  defence=0, desc=None, throwable=False, throwrange=8, booze=False,
                  cursedchance=0, range=None, ammochance=None, rangeattack=0,
                  straightline=False, confattack=None, rarity=None, healing=None,
-                 homing=False, cooling=False, digging=False):
+                 homing=False, cooling=False, digging=False, psyimmune=False,
+                 rangeexplode=False):
         self.slot = slot
         self.bonus = bonus
         self.name = name
@@ -389,6 +397,8 @@ class Item:
         self.homing = homing
         self.cooling = cooling
         self.digging = digging
+        self.psyimmune = psyimmune
+        self.rangeexplode = rangeexplode
 
 
     def __str__(self):
@@ -461,6 +471,10 @@ class ItemStock:
                             cursedchance=7,
                             desc=['A big white pill with a large red cross drawn on one side.'])
 
+        self.rpg = Item('RPG launcher', slot='e', skin=('(', libtcod.red),
+                        rarity=4, applies=True, rangeexplode=True, range=(4, 15),
+                        explodes=True, radius=3, attack=0,
+                        desc=['A metal tube that holds a single explosive rocket.'])
 
         self.mauser = Item("Mauser C96", slot='e', skin=('(', libtcod.blue),
                            rangeattack=7.0, range=(0,15), ammochance=(0, 10),
@@ -471,6 +485,11 @@ class ItemStock:
         self.tazer = Item("tazer", slot='e', skin=('(', libtcod.gray),
                           attack=1.0, confattack=(10, 1), rarity=4,
                           desc=['Very useful for subduing enemies.'])
+
+        self.tinfoilhat = Item('tin foil hat', slot='a', skin=('[', libtcod.gray),
+                               psyimmune=True, rarity=6,
+                               desc=['A metallic hat that protects against attempts of ',
+                                     'mind control by various crazies.'])
 
         self.coolpack = Item("some cold mud", slot='d', skin=('%', libtcod.light_blue),
                              applies=True, cooling=True, rarity=6, count=0,
@@ -516,7 +535,8 @@ class ItemStock:
 class Monster:
     def __init__(self, name, skin=('x', libtcod.cyan), unique=False, level=1,
                  attack=0.5, defence=0.5, explodeimmune=False, range=11,
-                 itemdrop=None, heatseeking=False, desc=[]):
+                 itemdrop=None, heatseeking=False, desc=[], psyattack=0,
+                 psyrange=0):
         self.name = name
         self.skin = skin
         self.unique = unique
@@ -528,6 +548,8 @@ class Monster:
         self.itemdrop = itemdrop
         self.heatseeking = True
         self.desc = desc
+        self.psyattack = psyattack
+        self.psyrange = psyrange
 
         self.x = 0
         self.y = 0
@@ -554,7 +576,7 @@ class MonsterStock:
         self.monsters = {}
 
         self.add(Monster('inebriated bum', skin=('h', libtcod.sepia),
-                         attack=0.1, defence=0.2, range=3,
+                         attack=0.1, defence=0.2, range=3, level=1,
                          itemdrop='booze',
                          desc=['A drunken homeless humanoid.']))
 
@@ -567,6 +589,18 @@ class MonsterStock:
                          heatseeking=True,
                          desc=['Not a delicious condiment, but rather a gigantic pale-blue cave slug.',
                                'Being a cave creature, it seems to lack eyes of any sort.']))
+
+        self.add(Monster('cannibal', skin=('h', libtcod.light_red),
+                         attack=7.0, defence=0.01, range=5, level=4,
+                         desc=["A degenerate inhabitant of the caves who feeds on",
+                               "other people's flesh for sustenance."]))
+
+        self.add(Monster('nematode', skin=('w', libtcod.yellow),
+                         attack=0, psyattack=2.0, defence=0.1, range=30, psyrange=3,
+                         level=4,
+                         desc=['A gigantic (5 meter long) yellow worm.',
+                               'It has no visible eyes, but instead has a ',
+                               'giant, bulging, pulsating brain.']))
 
 
     def add(self, mon):
@@ -625,10 +659,13 @@ class World:
         self.resting = False
         self.cooling = 0
         self.digging = None
+        self.blind = False
 
         self.floorpath = None
 
         self.monsters_in_view = []
+
+        self.killed_monsters = []
 
 
     def makegrid(self, w_, h_):
@@ -1037,6 +1074,9 @@ class World:
         if i.throwable:
             s.append('f) throw this item')
 
+        if i.slot in 'abcdefg' and slot in 'hi':
+            s.append('x) swap this item with item in equipment')
+
         s.append('')
         s.append('any other key to equip it')
         cc = draw_window(s, self.w, self.h)
@@ -1084,6 +1124,10 @@ class World:
                 self.inv.take(i)
             self.tick()
 
+        elif cc == 'x':
+            item2 = self.inv.drop(i.slot)
+            self.inv.take(i)
+            self.inv.take(item2)
 
         else:
             self.inv.take(i)
@@ -1139,6 +1183,7 @@ class World:
                 self.stats.health.inc(max(random.gauss(*item.healing), 0))
                 self.stats.hunger.dec(max(random.gauss(*item.healing), 0))
                 self.stats.sleep.dec(max(random.gauss(*item.healing), 0))
+            return None
 
         elif item.booze:
             if item.bonus < 0:
@@ -1171,7 +1216,7 @@ class World:
             self.msg.m("You cover yourself in cold mud.")
             return None
 
-        elif item.rangeattack:
+        elif item.rangeattack or item.rangeexplode:
             if item.ammo <= 0:
                 self.msg.m("It's out of ammo!")
                 return item
@@ -1184,6 +1229,10 @@ class World:
                     break
             if nx < 0:
                 return item
+
+            if item.rangeexplode:
+                self.explode(nx, ny, item.radius)
+                return None
 
             item.ammo -= 1
             if (nx, ny) in self.monmap:
@@ -1291,6 +1340,7 @@ class World:
                 else:
                     self.itemap[(mon.x, mon.y)] = mon.items
 
+        self.killed_monsters.append((mon.level, self.plev, self.dlev, mon.name))
 
 
     def explode(self, x0, y0, rad):
@@ -1335,7 +1385,7 @@ class World:
                       math.pow(abs(mon.y - self.py), 2))
         d = int(round(d))
 
-        if d > 1.0 or item:
+        if player_move and item:
             plev = min(max(self.plev - item.range[1] + d, 1), self.plev)
             attack = item.rangeattack
         else:
@@ -1388,13 +1438,31 @@ class World:
 
 
         else:
-            defence = max(self.inv.get_defence(), self.coef.unarmeddefence)
-            dmg = roll(mon.attack, mon.level, defence, plev)
 
-            if dmg > 0:
-                self.msg.m(smu + ' hits!')
+            attack = mon.attack
+            psy = False
+
+            if d > 1 and mon.psyattack > 0:
+                if getattr(self.inv.head, 'psyimmune', False):
+                    return
+                attack = mon.psyattack
+                psy = True
+
+            if attack == 0:
+                return
+
+            defence = max(self.inv.get_defence(), self.coef.unarmeddefence)
+            dmg = roll(attack, mon.level, defence, plev)
+
+            if psy:
+                if dmg > 0:
+                    self.msg.m(smu + ' is attacking your brain!')
             else:
-                self.msg.m(smu + ' misses.')
+                if dmg > 0:
+                    self.msg.m(smu + ' hits!')
+                else:
+                    self.msg.m(smu + ' misses.')
+
             self.stats.health.dec(dmg)
 
             if self.resting:
@@ -1641,6 +1709,9 @@ class World:
 
         else:
 
+            if mon.psyrange > 0 and dist <= mon.psyrange:
+                self.fight(mon, False)
+
             if mon.known_px is None or mon.known_py is None:
                 mon.known_px = self.px
                 mon.known_py = self.py
@@ -1665,6 +1736,10 @@ class World:
         back = libtcod.Color(0,0,0)
 
         lightradius = min(max(self.inv.get_lightradius(), 2), 8)
+
+        if self.blind:
+            lightradius /= 2
+
         libtcod.map_compute_fov(self.tcodmap, self.px, self.py, lightradius,
                                 True, libtcod.FOV_RESTRICTIVE)
 
@@ -1801,6 +1876,64 @@ class World:
 
 
 
+    def form_highscore(self):
+
+        hs = {'plev': self.plev,
+              'dlev': self.dlev,
+              'kills': self.killed_monsters}
+
+        hss = []
+        try:
+            hsf = open('highscore', 'r')
+            hss = cPickle.load(hsf)
+            print hss
+        except:
+            pass
+
+        hss.append(hs)
+
+        #try:
+        if 1:
+            hsf = open('highscore', 'w')
+            cPickle.dump(hss, hsf)
+        #except:
+            pass
+
+        sortd = {}
+        for x in hss:
+            total = (x['plev'] * 5) + (x['dlev'] * 5) + len(x['kills'])
+            if total not in sortd:
+                sortd[total] = [x]
+            else:
+                sortd[total].append(x)
+
+        sortd = reversed(sorted(sortd.items()))
+        s = []
+
+        i = 0
+        did_mine = False
+        for xi in sortd:
+            for x in xi[1]:
+                if did_mine and i > 15:
+                    break
+                c = ' '
+                if not did_mine and x == hs:
+                    c = '*'
+                    did_mine = True
+
+                if did_mine or i <= 14:
+                    s.append('%c %5d: Plev %d on dlev '
+                             '%d, with %d kills.' % \
+                             (c, xi[0], x['plev'], x['dlev'], len(x['kills'])))
+
+        s.append('')
+        s.append('Press space to exit.')
+
+        while 1:
+            if draw_window(s, self.w, self.h) == ' ':
+                break
+
+
 def main():
     w = 80
     h = 25
@@ -1873,6 +2006,10 @@ def main():
     world.draw(False)
     libtcod.console_flush()
     libtcod.console_wait_for_keypress(False)
+
+    world.form_highscore()
+
+
 
 #import cProfile
 #cProfile.run('main()')
