@@ -41,6 +41,7 @@ class Coeffs:
         self.itemlevel = 0.75
 
         self.boozestrength = (2, 0.5)
+        self.coolingduration = (50, 5)
 
 
 class Stat:
@@ -129,8 +130,10 @@ def draw_window(msg, w, h, do_mapping=False):
 
     x0 = max(w - maxl - 4, 0)
     y0 = min(l + 2, h)
-    libtcod.console_rect(None, x0, 0, w - x0, y0, True)
+    libtcod.console_set_default_background(None, libtcod.darkest_blue)
+    libtcod.console_rect(None, x0, 0, w - x0, y0, True, libtcod.BKGND_SET)
     libtcod.console_print_rect(None, x0 + 2, 1, w - x0 - 2, y0 - 1, s)
+    libtcod.console_set_default_background(None, libtcod.black)
 
     libtcod.console_flush()
     k = libtcod.console_wait_for_keypress(False)
@@ -356,7 +359,7 @@ class Item:
                  defence=0, desc=None, throwable=False, throwrange=8, booze=False,
                  cursedchance=0, range=None, ammochance=None, rangeattack=0,
                  straightline=False, confattack=None, rarity=None, healing=None,
-                 homing=False):
+                 homing=False, cooling=False, digging=False):
         self.slot = slot
         self.bonus = bonus
         self.name = name
@@ -384,6 +387,8 @@ class Item:
         self.rarity = rarity
         self.healing = healing
         self.homing = homing
+        self.cooling = cooling
+        self.digging = digging
 
 
     def __str__(self):
@@ -438,7 +443,7 @@ class ItemStock:
                                 desc=['Watch out!!'])
 
         self.pickaxe = Item("miner's pickaxe", slot='e', skin=('(', libtcod.gray),
-                            attack=2.0, rarity=4,
+                            attack=2.0, rarity=4, applies=True, digging=True,
                             desc=['Ostensibly to be used as an aid in traversing the caves,',
                                   'this sporting item is a good makeshift weapon.'])
 
@@ -466,6 +471,11 @@ class ItemStock:
         self.tazer = Item("tazer", slot='e', skin=('(', libtcod.gray),
                           attack=1.0, confattack=(10, 1), rarity=4,
                           desc=['Very useful for subduing enemies.'])
+
+        self.coolpack = Item("some cold mud", slot='d', skin=('%', libtcod.light_blue),
+                             applies=True, cooling=True, rarity=6, count=0,
+                             desc=['A bluish lump of mud. ',
+                                   'Useful for tricking predators with infrared vision.'])
 
         self._randpool = {}
         for x in dir(self):
@@ -506,7 +516,7 @@ class ItemStock:
 class Monster:
     def __init__(self, name, skin=('x', libtcod.cyan), unique=False, level=1,
                  attack=0.5, defence=0.5, explodeimmune=False, range=11,
-                 itemdrop=None):
+                 itemdrop=None, heatseeking=False, desc=[]):
         self.name = name
         self.skin = skin
         self.unique = unique
@@ -516,9 +526,13 @@ class Monster:
         self.explodeimmune = explodeimmune
         self.range = range
         self.itemdrop = itemdrop
+        self.heatseeking = True
+        self.desc = desc
 
         self.x = 0
         self.y = 0
+        self.known_px = None
+        self.known_py = None
         self.did_move = False
         self.do_move = None
         self.hp = 3.0
@@ -541,10 +555,19 @@ class MonsterStock:
 
         self.add(Monster('inebriated bum', skin=('h', libtcod.sepia),
                          attack=0.1, defence=0.2, range=3,
-                         itemdrop='booze'))
+                         itemdrop='booze',
+                         desc=['A drunken homeless humanoid.']))
 
         self.add(Monster('hobbit', skin=('h', libtcod.purple),
-                         attack=1.5, defence=0.2, range=8, level=2))
+                         attack=1.5, defence=0.2, range=8, level=2,
+                         desc=['A nasty, brutish humanoid creature endemic to these caves.']))
+
+        self.add(Monster('laminaria', skin=('p', libtcod.light_blue),
+                         attack=2.0, defence=0.1, range=10, level=3,
+                         heatseeking=True,
+                         desc=['Not a delicious condiment, but rather a gigantic pale-blue cave slug.',
+                               'Being a cave creature, it seems to lack eyes of any sort.']))
+
 
     def add(self, mon):
         if mon.level not in self.monsters:
@@ -600,6 +623,8 @@ class World:
         self.t = 0
         self.sleeping = 0
         self.resting = False
+        self.cooling = 0
+        self.digging = None
 
         self.floorpath = None
 
@@ -885,7 +910,7 @@ class World:
         self.stats.sleep.dec(self.coef.movesleep)
         self.stats.thirst.dec(self.coef.movethirst)
         self.stats.hunger.dec(self.coef.movehunger)
-        if (self.px, self.py) in self.watermap:
+        if (self.px, self.py) in self.watermap or self.cooling:
             self.stats.warmth.dec(self.coef.watercold)
         self.tick_checkstats()
 
@@ -897,6 +922,11 @@ class World:
                 if i.liveexplode == 0:
                     self.explode(self.px, self.py, i.radius)
                     self.inv.purge(i)
+
+        if self.cooling > 0:
+            self.cooling -= 1
+            if self.cooling == 0:
+                self.msg.m("Your layer of cold mud dries up.")
 
         if self.dead: return
 
@@ -934,7 +964,7 @@ class World:
         self.stats.sleep.dec(self.coef.restsleep)
         self.stats.thirst.dec(self.coef.restthirst)
         self.stats.hunger.dec(self.coef.resthunger)
-        if (self.px, self.py) in self.watermap:
+        if (self.px, self.py) in self.watermap or self.cooling:
             self.stats.warmth.dec(self.coef.watercold)
         self.tick_checkstats()
 
@@ -943,7 +973,7 @@ class World:
         self.stats.sleep.inc(self.coef.sleepsleep)
         self.stats.thirst.dec(self.coef.sleepthirst)
         self.stats.hunger.dec(self.coef.sleephunger)
-        if (self.px, self.py) in self.watermap:
+        if (self.px, self.py) in self.watermap or self.cooling:
             self.stats.warmth.dec(self.coef.watercold)
         self.tick_checkstats()
 
@@ -958,11 +988,13 @@ class World:
         if quick:
             self.sleeping = int(random.gauss(*self.coef.quicksleeptime))
         else:
+            self.msg.m('You fall asleep.')
             self.sleeping = int(random.gauss(*self.coef.sleeptime))
         if self.sleep <= 10:
             self.sleep = 10
 
     def start_rest(self):
+        self.msg.m('You start resting.')
         self.resting = True
 
     def drink(self):
@@ -1072,16 +1104,50 @@ class World:
             if item.count <= 0:
                 return None
 
+        elif item.digging:
+            k = draw_window(['Dig in which direction?'], self.w, self.h, True)
+
+            self.digging = None
+            if k == 'h': self.digging = (self.px - 1, self.py)
+            elif k == 'j': self.digging = (self.px, self.py + 1)
+            elif k == 'k': self.digging = (self.px, self.py - 1)
+            elif k == 'l': self.digging = (self.px + 1, self.py)
+            else:
+                return item
+
+            if self.digging[0] < 0 or self.digging[0] >= self.w:
+                self.digging = None
+            if self.digging[1] < 0 or self.digging[1] >= self.h:
+                self.digging = None
+
+            if not self.digging:
+                return item
+
+            if self.digging in self.walkmap:
+                self.msg.m('There is nothing to dig there.')
+                self.digging = None
+            else:
+                self.msg.m("You start hacking at the wall.")
+
         elif item.healing:
-            self.msg.m('Eating this pill makes you dizzy.')
-            self.stats.health.inc(max(random.gauss(*item.healing)), 0)
-            self.stats.hunger.dec(max(random.gauss(*item.healing)), 0)
-            self.stats.sleep.dec(max(random.gauss(*item.healing)), 0)
+            if item.bonus < 0:
+                self.msg.m('This pill makes your eyes pop out of their sockets!')
+                self.stats.tired.dec(max(random.gauss(*item.healing), 0))
+                self.stats.sleep.dec(max(random.gauss(*item.healing), 0))
+            else:
+                self.msg.m('Eating this pill makes you dizzy.')
+                self.stats.health.inc(max(random.gauss(*item.healing), 0))
+                self.stats.hunger.dec(max(random.gauss(*item.healing), 0))
+                self.stats.sleep.dec(max(random.gauss(*item.healing), 0))
 
         elif item.booze:
-            self.msg.m('Aaahh.')
-            self.stats.sleep.dec(max(random.gauss(*self.coef.boozestrength), 0))
-            self.stats.warmth.inc(max(random.gauss(*self.coef.boozestrength), 0))
+            if item.bonus < 0:
+                self.msg.m("This stuff is contaminated! You fear you're going blind!", True)
+                self.blind = True
+            else:
+                self.msg.m('Aaahh.')
+                self.stats.sleep.dec(max(random.gauss(*self.coef.boozestrength), 0))
+                self.stats.warmth.inc(max(random.gauss(*self.coef.boozestrength), 0))
             return None
 
         elif item.homing:
@@ -1099,6 +1165,11 @@ class World:
                 self.msg.m('Warm and getting warmer!')
             elif d > 3:
                 self.msg.m("This thing is buring!")
+
+        elif item.cooling:
+            self.cooling = max(int(random.gauss(*self.coef.coolingduration)), 1)
+            self.msg.m("You cover yourself in cold mud.")
+            return None
 
         elif item.rangeattack:
             if item.ammo <= 0:
@@ -1133,6 +1204,12 @@ class World:
         self.place()
         self.tick()
 
+    def debug_descend(self):
+        self.dlev += 1
+        self.regen(self.w, self.h)
+        self.place()
+        self.tick()
+
     def drop(self):
         slot = self.showinv()
         i = self.inv.drop(slot)
@@ -1148,6 +1225,18 @@ class World:
             self.itemap[(self.px, self.py)] = [i]
         self.tick()
 
+    def take_scavenge(self, item):
+        if item.ammo > 0:
+            for i in self.inv:
+                if i.name == item.name:
+                    i.ammo += item.ammo
+                    item.ammo = 0
+                    self.msg.m("You find some ammo for your " + str(i))
+                    return
+
+        self.msg.m('You have no free inventory slot for ' + str(item) + '!')
+
+
     def take(self):
         if (self.px, self.py) not in self.itemap:
             self.msg.m('You see no item here to take.')
@@ -1161,7 +1250,7 @@ class World:
                 self.msg.m('You take ' + str(items[0]) + '.')
                 del self.itemap[(self.px, self.py)]
             else:
-                self.msg.m('You have no free inventory slot for ' + str(items[0]) + '!')
+                self.take_scavenge(items[0])
             return
 
         s = []
@@ -1186,7 +1275,7 @@ class World:
             self.msg.m('You take ' + str(items[c]) + '.')
             del self.itemap[(self.px, self.py)][c]
         else:
-            self.msg.m('You have no free inventory slot for ' + str(items[c]) + '!')
+            self.take_scavenge(items[c])
         self.tick()
 
 
@@ -1253,7 +1342,6 @@ class World:
             plev = self.plev
             attack = max(self.inv.get_attack(), self.coef.unarmedattack)
 
-        print '!!!', player_move, d, plev, attack
 
         def roll(attack, leva, defence, levd):
             a = 0
@@ -1289,10 +1377,14 @@ class World:
                     ca = item.confattack
                 else:
                     ca = self.inv.get_confattack()
-                print 'xxx', ca, mon.confused
+
                 if ca and dmg > 0:
                     self.msg.m(smu + ' looks totally dazed!')
                     mon.confused += int(max(random.gauss(*ca), 1))
+
+            if dmg > 0:
+                mon.known_px = self.px
+                mon.known_py = self.py
 
 
         else:
@@ -1306,12 +1398,94 @@ class World:
             self.stats.health.dec(dmg)
 
             if self.resting:
+                self.msg.m('You stop resting.')
                 self.resting = False
+
+            if self.digging:
+                self.msg.m('You stop digging.')
+                self.digging = None
 
             if self.sleeping:
                 self.sleeping = 0
 
             self.tick_checkstats()
+
+
+    def look(self):
+        tx = self.px
+        ty = self.py
+
+        while 1:
+            seen = self.draw(False, tx, ty)
+
+            s = []
+
+            if tx == self.px and ty == self.py:
+                s.append('This is you.')
+                s.append('')
+
+            if not seen:
+                s.append('You see nothing.')
+
+            else:
+                if (tx, ty) in self.monmap:
+                    m = self.monmap[(tx, ty)]
+                    s.append('You see ' + str(m) + ':')
+                    s.extend(m.desc)
+                    s.append('')
+
+                if (tx, ty) in self.itemap:
+                    i = self.itemap[(tx, ty)]
+                    s.append('You see the following items:')
+                    for ix in xrange(len(i)):
+                        if ix >= 5:
+                            s.append('(And some other items)')
+                            break
+                        s.append(str(i[ix]))
+                    s.append('')
+
+                if (tx, ty) in self.featmap:
+                    f = self.featmap[(tx, ty)]
+                    if f == '>':
+                        s.append('You see a hole in the floor.')
+                    elif f == '*':
+                        s.append('You see rubble.')
+
+                elif (tx, ty) in self.walkmap:
+                    if (tx, ty) in self.watermap:
+                        s.append('You see a water-covered floor.')
+                    else:
+                        s.append('You see a cave floor.')
+
+                else:
+                        s.append('You see a cave wall. ' + str(self.grid[ty][tx]))
+
+            k = draw_window(s, self.w, self.h, True)
+
+            if   k == 'h': tx -= 1
+            elif k == 'j': ty += 1
+            elif k == 'k': ty -= 1
+            elif k == 'l': tx += 1
+            elif k == 'y':
+                tx -= 1
+                ty -= 1
+            elif k == 'u':
+                tx += 1
+                ty -= 1
+            elif k == 'b':
+                tx -= 1
+                ty += 1
+            elif k == 'n':
+                tx += 1
+                ty += 1
+            else:
+                break
+
+            if tx < 0: tx = 0
+            elif tx >= self.w: tx = self.w - 1
+
+            if ty < 0: ty = 0
+            elif ty >= self.h: ty = self.h - 1
 
 
     def target(self, range, minrange=None, monstop=False):
@@ -1437,8 +1611,10 @@ class World:
             'q': self.drink,
             'i': self.showinv_apply,
             '>': self.descend,
+            'x': self.debug_descend,
             'd': self.drop,
             ',': self.take,
+            '/': self.look,
             'P': self.show_messages,
             'Q': self.quit
             }
@@ -1453,6 +1629,7 @@ class World:
 
 
     def walk_monster(self, mon, dist, x, y):
+
         if dist > mon.range or mon.confused:
             mdx = x + random.randint(-1, 1)
             mdy = y + random.randint(-1, 1)
@@ -1461,9 +1638,26 @@ class World:
                 mdy = None
             if mon.confused:
                 mon.confused -= 1
+
         else:
-            libtcod.path_compute(self.floorpath, x, y, self.px, self.py)
+
+            if mon.known_px is None or mon.known_py is None:
+                mon.known_px = self.px
+                mon.known_py = self.py
+
+            elif mon.heatseeking and \
+                 ((self.px, self.py) in self.watermap or self.cooling):
+                pass
+            else:
+                mon.known_px = self.px
+                mon.known_py = self.py
+
+            if mon.heatseeking:
+                print '|', mon.known_px, mon.known_py, self.px, self.py
+
+            libtcod.path_compute(self.floorpath, x, y, mon.known_px, mon.known_py)
             mdx, mdy = libtcod.path_walk(self.floorpath, True)
+
         return mdx, mdy
 
 
@@ -1478,6 +1672,7 @@ class World:
         mons = []
 
         monsters_in_view = []
+        did_highlight = False
 
         for x in xrange(self.w):
             for y in xrange(self.h):
@@ -1516,8 +1711,12 @@ class World:
                 else:
                     if x == self.px and y == self.py:
                         c = '@'
-                        if self.sleeping > 1 and (self.sleeping & 1) == 1:
+                        if self.sleeping > 1 and (self.t & 1) == 1:
                             c = '*'
+                        elif self.resting and (self.t & 1) == 1:
+                            c = '.'
+                        elif self.digging and (self.t & 1) == 1:
+                            c = '('
 
                     elif (x, y) in self.monmap:
                         mon = self.monmap[(x, y)]
@@ -1547,6 +1746,10 @@ class World:
                     fore = libtcod.color_lerp(fore, back, min(d/lightradius, 1.0))
 
                 if x == _hlx and y == _hly:
+                    # hack
+                    if c != ' ':
+                        did_highlight = True
+
                     libtcod.console_put_char_ex(None, x, y, c, fore, libtcod.white)
                 else:
                     libtcod.console_put_char_ex(None, x, y, c, fore, back)
@@ -1561,12 +1764,6 @@ class World:
         else:
             self.msg.draw(15, self.h - 3, self.w - 30)
 
-        if self.sleeping > 0:
-            self.sleep()
-            if self.stats.sleep.x >= 3.0:
-                self.sleeping = 0
-                # hack
-                libtcod.console_put_char_ex(None, self.px, self.py, '@', libtcod.white, back)
 
         for mon in mons:
             if mon.do_move:
@@ -1600,6 +1797,9 @@ class World:
         if withtime:
             self.t += 1
 
+        return did_highlight
+
+
 
 def main():
     w = 80
@@ -1609,7 +1809,7 @@ def main():
 
     font = 'terminal10x16_gs_ro.png'
     libtcod.console_set_custom_font(font, libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_ASCII_INROW)
-    libtcod.console_init_root(w, h, 'bhak', False, libtcod.RENDERER_SDL)
+    libtcod.console_init_root(w, h, 'Diggr', False, libtcod.RENDERER_SDL)
     libtcod.sys_set_fps(30)
     #cons = libtcod.console_new(w, h)
     #cons = None
@@ -1629,13 +1829,34 @@ def main():
         libtcod.console_flush()
 
         if world.sleeping > 0:
-            continue
+            if world.stats.sleep.x >= 3.0:
+                world.msg.m('You wake up.')
+                world.sleeping = 0
+                world.draw(False)
+                libtcod.console_flush()
+            else:
+                world.sleep()
+                continue
 
         if world.resting:
             if world.stats.tired.x >= 3.0:
+                world.msg.m('You stop resting.')
                 world.resting = False
+                world.draw(False)
+                libtcod.console_flush()
             else:
                 world.rest()
+                continue
+
+        if world.digging:
+            if world.grid[world.digging[1]][world.digging[0]] <= -10:
+                world.walkmap.add(world.digging)
+                world.digging = None
+                world.draw(False)
+                libtcod.console_flush()
+            else:
+                world.grid[world.digging[1]][world.digging[0]] -= 0.1
+                world.tick()
                 continue
 
         if world.dead: break
