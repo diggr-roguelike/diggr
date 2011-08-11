@@ -474,6 +474,10 @@ class ItemStock:
                                 liveexplode=7, slot='d', radius=4, throwable=True,
                                 desc=['Watch out!!'])
 
+        self.bomb = Item('exploding spore', skin=('!', libtcod.yellow), explodes=True,
+                         liveexplode=4, slot='d', radius=3, throwable=True,
+                         desc=['Uh-oh.'])
+
         self.pickaxe = Item("miner's pickaxe", slot='e', skin=('(', libtcod.gray),
                             attack=2.0, rarity=8, applies=True, digging=True,
                             desc=['Ostensibly to be used as an aid in traversing the caves,',
@@ -508,6 +512,12 @@ class ItemStock:
                            straightline=True, applies=True, rarity=15,
                            desc=['This antique beauty is a powerful handgun, ',
                                  'though a bit rusty for some reason.'])
+
+        self.shotgun = Item('shotgun', slot='e', skin=('(', libtcod.turquoise),
+                            rangeattack=10.0, range=(2,5), ammochance=(1,4),
+                            straightline=True, applies=True, rarity=15,
+                            desc=['A powerful, killer weapon.',
+                                  'You learned that much from playing videogames.'])
 
         self.tazer = Item("tazer", slot='e', skin=('(', libtcod.gray),
                           attack=1.0, confattack=(10, 1), rarity=5,
@@ -658,7 +668,7 @@ class Monster:
     def __init__(self, name, skin=('x', libtcod.cyan), unique=False, level=1,
                  attack=0.5, defence=0.5, explodeimmune=False, range=11,
                  itemdrop=None, heatseeking=False, desc=[], psyattack=0,
-                 psyrange=0):
+                 psyrange=0, confimmune=False):
         self.name = name
         self.skin = skin
         self.unique = unique
@@ -672,6 +682,7 @@ class Monster:
         self.desc = desc
         self.psyattack = psyattack
         self.psyrange = psyrange
+        self.confimmune = confimmune
 
         self.x = 0
         self.y = 0
@@ -702,9 +713,18 @@ class MonsterStock:
                          itemdrop='booze',
                          desc=['A drunken homeless humanoid.']))
 
+        self.add(Monster('lichen', skin=('F', libtcod.light_purple),
+                         attack=0.3, defence=0.2, range=1, level=1,
+                         itemdrop='mushrooms', confimmune=True,
+                         desc=['Looks yummy.']))
+
         self.add(Monster('hobbit', skin=('h', libtcod.purple),
                          attack=1.5, defence=0.2, range=8, level=2,
                          desc=['A nasty, brutish humanoid creature endemic to these caves.']))
+
+        self.add(Monster('gnobold', skin=('k', libtcod.green),
+                         attack=1.0, defence=0.7, range=6, level=2,
+                         desc=['A gnome-kobold hybrid.']))
 
         self.add(Monster('laminaria', skin=('p', libtcod.light_blue),
                          attack=2.0, defence=0.1, range=10, level=3,
@@ -712,13 +732,24 @@ class MonsterStock:
                          desc=['Not a delicious condiment, but rather a gigantic pale-blue cave slug.',
                                'Being a cave creature, it seems to lack eyes of any sort.']))
 
+        self.add(Monster('dromedary', skin=('q', libtcod.dark_sepia),
+                         attack=0.7, psyattack=0.5, defence=0.6, range=5, psyrange=3, level=3,
+                         desc=['A giant cave lizard with two hemisperical humps.']))
+
+        self.add(Monster('spore plant', skin=('x', libtcod.dark_yellow),
+                         attack=0.3, defence=0.2, range=7, level=3,
+                         itemdrop='bomb', confimmune=True,
+                         desc=['A large plantlike carnivorous creature.',
+                               'It has large bulbous appendages growing out of its stalk.',
+                               'It looks like it is radiating heat from the inside.']))
+
         self.add(Monster('cannibal', skin=('h', libtcod.light_red),
                          attack=7.0, defence=0.01, range=5, level=4,
                          desc=["A degenerate inhabitant of the caves who feeds on",
                                "other people's flesh for sustenance."]))
 
         self.add(Monster('nematode', skin=('w', libtcod.yellow),
-                         attack=0, psyattack=2.0, defence=0.1, range=30, psyrange=3,
+                         attack=0, psyattack=2.0, defence=0.1, range=30, psyrange=4,
                          level=4,
                          desc=['A gigantic (5 meter long) yellow worm.',
                                'It has no visible eyes, but instead has a ',
@@ -1597,8 +1628,15 @@ class World:
                 del self.itemap[(x, y)]
 
             if (x, y) in self.monmap:
-                if not self.monmap[(x, y)].explodeimmune:
-                    self.handle_mondeath(self.monmap[(x, y)], False)
+                mon = self.monmap[(x, y)]
+                if not mon.explodeimmune:
+                    self.handle_mondeath(mon, False)
+
+                    for i in mon.items:
+                        if i.explodes:
+                            chains.add((x, y, i.radius))
+                            break
+
                     del self.monmap[(x, y)]
 
         draw_blast(x0, y0, self.w, self.h, rad, func)
@@ -1660,7 +1698,7 @@ class World:
                 else:
                     ca = self.inv.get_confattack()
 
-                if ca and dmg > 0:
+                if ca and dmg > 0 and not mon.confimmune:
                     self.msg.m(smu + ' looks totally dazed!')
                     mon.confused += int(max(random.gauss(*ca), 1))
 
@@ -1795,6 +1833,8 @@ class World:
 
     def target(self, range, minrange=None, monstop=False):
 
+        self.draw(False)
+
         monx = None
         mony = None
         for i in xrange(len(self.monsters_in_view)):
@@ -1803,6 +1843,7 @@ class World:
                           math.pow(abs(self.py - mon.y), 2))
             if d > range:
                 continue
+            print '++', minrange, d, '(', self.px, self.py, ',', mon.x, mon.y
             if minrange and d < minrange:
                 continue
 
@@ -1997,6 +2038,58 @@ class World:
         return mdx, mdy
 
 
+    def process_world(self):
+
+        explodes = set()
+        mons = []
+
+        for k,v in self.itemap.iteritems():
+            for i in v:
+                if i.liveexplode > 0:
+                    i.liveexplode -= 1
+                    if i.liveexplode == 0:
+                        explodes.add((k[0], k[1], i.radius))
+
+
+        for k,mon in self.monmap.iteritems():
+            if not mon.did_move:
+                x, y = k
+                dist = math.sqrt(math.pow(abs(self.px - x), 2) + math.pow(abs(self.py - y), 2))
+
+                mdx, mdy = self.walk_monster(mon, dist, x, y)
+
+                if mdx is not None:
+                    if mdx == self.px and mdy == self.py:
+                        self.fight(mon, False)
+                    else:
+                        mon.do_move = (mdx, mdy)
+
+                    mon.did_move = True
+                    mons.append(mon)
+
+        for mon in mons:
+            if mon.do_move:
+                mon.old_pos = (mon.x, mon.y)
+                del self.monmap[(mon.x, mon.y)]
+
+        for mon in mons:
+            if mon.do_move:
+                if mon.do_move in self.monmap:
+                    mon.do_move = mon.old_pos
+
+                mon.x = mon.do_move[0]
+                mon.y = mon.do_move[1]
+                self.monmap[mon.do_move] = mon
+                mon.do_move = None
+
+            mon.did_move = False
+
+        for x, y, r in explodes:
+            del self.itemap[(x, y)]
+            self.explode(x, y, r)
+
+
+
     def draw(self, withtime=True, _hlx=None, _hly=None):
         back = libtcod.black
 
@@ -2008,40 +2101,15 @@ class World:
         libtcod.map_compute_fov(self.tcodmap, self.px, self.py, lightradius,
                                 True, libtcod.FOV_RESTRICTIVE)
 
-        explodes = set()
-        mons = []
-
         monsters_in_view = []
         did_highlight = False
 
+        if withtime:
+            self.process_world()
+
+
         for x in xrange(self.w):
             for y in xrange(self.h):
-
-                if withtime and (x, y) in self.itemap:
-                    for i in self.itemap[(x, y)]:
-                        if i.liveexplode > 0:
-                            i.liveexplode -= 1
-                            if i.liveexplode == 0:
-                                explodes.add((x, y, i.radius))
-                                del self.itemap[(x, y)]
-                                break
-
-                if withtime and (x, y) in self.monmap and not self.monmap[(x, y)].did_move:
-
-                    dist = math.sqrt(math.pow(abs(self.px - x), 2) + math.pow(abs(self.py - y), 2))
-                    mon = self.monmap[(x, y)]
-
-                    mdx, mdy = self.walk_monster(mon, dist, x, y)
-
-                    if mdx is not None:
-                        if mdx == self.px and mdy == self.py:
-                            self.fight(mon, False)
-                        else:
-                            mon.do_move = (mdx, mdy)
-
-                        mon.did_move = True
-                        mons.append(mon)
-
 
                 fore = libtcod.lightest_green
 
@@ -2112,28 +2180,6 @@ class World:
         else:
             self.msg.draw(15, self.h - 3, self.w - 30)
 
-
-        for mon in mons:
-            if mon.do_move:
-                mon.old_pos = (mon.x, mon.y)
-                del self.monmap[(mon.x, mon.y)]
-
-        for mon in mons:
-            if mon.do_move:
-                if mon.do_move in self.monmap:
-                    mon.do_move = mon.old_pos
-
-                mon.x = mon.do_move[0]
-                mon.y = mon.do_move[1]
-                self.monmap[mon.do_move] = mon
-                mon.do_move = None
-
-            mon.did_move = False
-
-        for x, y, r in explodes:
-            self.explode(x, y, r)
-            #hack
-            self.draw(False)
 
         # hack
         if withtime:
