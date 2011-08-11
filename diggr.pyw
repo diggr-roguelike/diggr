@@ -337,8 +337,8 @@ class Inventory:
     def get_lightradius(self):
         return getattr(self.head,  'lightradius', 0) + \
                getattr(self.neck,  'lightradius', 0) + \
-               getattr(self.left,  'lightradius', 0) + \
-               getattr(self.right, 'lightradius', 0)
+               getattr(self.legs,  'lightradius', 0) + \
+               getattr(self.trunk, 'lightradius', 0)
 
     def get_attack(self):
         return getattr(self.right, 'attack', 0) + \
@@ -351,6 +351,10 @@ class Inventory:
                getattr(self.trunk, 'defence', 0) + \
                getattr(self.legs, 'defence', 0) + \
                getattr(self.feet, 'defence', 0)
+
+    def get_heatbonus(self):
+        return getattr(self.trunk, 'heatbonus', 0) + \
+               getattr(self.legs, 'heatbonus', 0)
 
     def get_confattack(self):
         return getattr(self.right, 'confattack', None)
@@ -367,7 +371,7 @@ class Item:
                  rangeexplode=False, springy=False, detector=False,
                  detect_monsters=False, detect_items=False, food=None,
                  tracker=False, wishing=False, repelrange=None, selfdestruct=None,
-                 digray=None):
+                 digray=None, jinni=False, heatbonus=0):
         self.slot = slot
         self.bonus = bonus
         self.name = name
@@ -408,6 +412,8 @@ class Item:
         self.repelrange = repelrange
         self.selfdestruct = selfdestruct
         self.digray = digray
+        self.jinni = jinni
+        self.heatbonus = heatbonus
 
         self.ammo = None
         self.gencount = 0
@@ -522,6 +528,26 @@ class ItemStock:
                                 springy=True,
                                 desc=['Strange boots with giant springs attached to the soles.'])
 
+        self.spikeboots = Item('spiked boots', slot='g', count=0,
+                               skin=('[', libtcod.darkest_gray), attack=1.0, defence=0.05,
+                               rarity=5,
+                               desc=['These boots have giant spikes attached to them.',
+                                   'Very heavy metal.'])
+
+        self.shinypants = Item('shiny pants', slot='f', count=0,
+                               skin=('[', libtcod.lightest_yellow), defence=0.01,
+                               lightradius=3, rarity=5,
+                               desc=["These pants a completely covered in spiffy sparkles and shiny LED's.",
+                                     "Here in the caves there is nothing to be ashamed of, really."])
+
+        self.furpants = Item('fur pants', slot='f', count=0,
+                             skin=('[', libtcod.gray), defence=0.5, heatbonus=0.005, rarity=5,
+                             desc=['Shaggy pants made of fur. You would look like a true barbarian in them.'])
+
+        self.furcoat = Item('fur coat', slot='c',
+                             skin=('[', libtcod.gray), defence=0.5, heatbonus=0.005, rarity=5,
+                             desc=['A shaggy coat made of fur. You would look like a true barbarian in it.'])
+
         self.halolamp = Item("halogen lamp", slot='b', lightradius=12, rarity=3,
                              desc=['A lamp that is somewhat brighter than a generic lamp.'])
 
@@ -569,6 +595,10 @@ class ItemStock:
                              rarity=5, defence=3.0,
                              desc=['Ye olde body protection armor.'])
 
+        self.magiclamp = Item('magic lamp', slot='d', skin=('(', libtcod.gold),
+                              rarity=4, jinni=True, applies=True,
+                              desc=['Rub me for a surprise!'])
+
 
         self.regenpool()
 
@@ -595,7 +625,7 @@ class ItemStock:
 
         l = []
         for x in xrange(len(self._randpool)):
-            if self._randpool[x].name.find(item) >= 0:
+            if self._randpool[x].name.lower().find(item) >= 0:
                 l.append((x, self._randpool[x]))
 
         if len(l) == 0:
@@ -1054,6 +1084,8 @@ class World:
         self.stats.hunger.dec(self.coef.movehunger)
         if (self.px, self.py) in self.watermap or self.cooling:
             self.stats.warmth.dec(self.coef.watercold)
+        else:
+            self.stats.warmth.inc(self.inv.get_heatbonus())
         self.tick_checkstats()
 
     def tick_checkstats(self):
@@ -1120,6 +1152,8 @@ class World:
         self.stats.hunger.dec(self.coef.resthunger)
         if (self.px, self.py) in self.watermap or self.cooling:
             self.stats.warmth.dec(self.coef.watercold)
+        else:
+            self.stats.warmth.inc(self.inv.get_heatbonus())
         self.tick_checkstats()
 
     def sleep(self):
@@ -1129,6 +1163,8 @@ class World:
         self.stats.hunger.dec(self.coef.sleephunger)
         if (self.px, self.py) in self.watermap or self.cooling:
             self.stats.warmth.dec(self.coef.watercold)
+        else:
+            self.stats.warmth.inc(self.inv.get_heatbonus())
         self.tick_checkstats()
 
         if self.sleeping > 0:
@@ -1367,6 +1403,34 @@ class World:
 
         elif item.wishing:
             self.wish()
+            return None
+
+        elif item.jinni:
+            l = []
+            for x in xrange(-1, 2):
+                for y in xrange(-1, 2):
+                    if x != 0 or y != 0:
+                        q = (self.px + x, self.py + y)
+                        if q in self.walkmap and q not in self.monmap:
+                            l.append(q)
+
+            if len(l) == 0:
+                self.msg.m('Nothing happened.')
+                return None
+
+            jinni = Monster('Jinni', level=self.plev+1,
+                            attack=max(self.inv.get_attack(), 0.5),
+                            defence=self.inv.get_defence(),
+                            range=self.inv.get_lightradius(),
+                            skin=('&', libtcod.yellow),
+                            desc=['A supernatural fire fiend.'])
+
+            self.msg.m('A malevolent spirit appears!')
+            q = l[random.randint(0, len(l)-1)]
+            jinni.x = q[0]
+            jinni.y = q[1]
+            jinni.items = [self.itemstock.get('wishing')]
+            self.monmap[q] = jinni
             return None
 
         elif item.digray:
