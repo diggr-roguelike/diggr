@@ -702,6 +702,7 @@ class Monster:
         self.known_py = None
         self.did_move = False
         self.do_move = None
+        self.do_die = False
         self.hp = 3.0
         self.items = []
         self.confused = 0
@@ -770,6 +771,7 @@ class MonsterStock:
         self.add(Monster('spore', skin=('x', libtcod.pink),
                          attack=0, defence=0.2, range=30, level=4,
                          itemdrop='bomb', heatseeking=True, selfdestruct=True,
+                         confimmune=True,
                          desc=['A pulsating pink spherical spore, about 1 meter in diameter.',
                                'It is levitating.',
                                'It looks like it is radiating heat from the inside.']))
@@ -1747,12 +1749,6 @@ class World:
             attack = max(self.inv.get_attack(), self.coef.unarmedattack)
 
 
-        if not player_move and mon.selfdestruct:
-            self.msg.m(smu + 'suddenly self-destructs!')
-            self.handle_mondeath(mon, do_gain=False)
-            del self.monmap[(mon.x, mon.y)]
-
-
         def roll(attack, leva, defence, levd):
             a = 0
             for x in xrange(leva):
@@ -2072,7 +2068,8 @@ class World:
              " , : Pick up an item from the floor.",
              " / : Look around at the terrain, items and monsters.",
              " P : Show a log of previous messages.",
-             " Q : Quit the game.",
+             " Q : Quit the game by committing suicide.",
+             " S : Save the game and quit.",
              " ? : Show this help."
         ]
         draw_window(s, self.w, self.h)
@@ -2101,7 +2098,7 @@ class World:
             'P': self.show_messages,
             'Q': self.quit,
             '?': self.show_help,
-            'z': self.save,
+            'S': self.save,
 
             'x': self.debug_descend,
             'w': self.wish
@@ -2179,7 +2176,14 @@ class World:
 
                 if mdx is not None:
                     if mdx == self.px and mdy == self.py:
-                        self.fight(mon, False)
+                        if mon.selfdestruct:
+                            smu = str(mon)
+                            smu = smu[0].upper() + smu[1:]
+                            self.msg.m(smu + ' suddenly self-destructs!')
+                            self.handle_mondeath(mon, do_gain=False)
+                            mon.do_die = True
+                        else:
+                            self.fight(mon, False)
                     else:
                         mon.do_move = (mdx, mdy)
 
@@ -2189,6 +2193,8 @@ class World:
         for mon in mons:
             if mon.do_move:
                 mon.old_pos = (mon.x, mon.y)
+                del self.monmap[(mon.x, mon.y)]
+            elif mon.do_die:
                 del self.monmap[(mon.x, mon.y)]
 
         for mon in mons:
@@ -2495,7 +2501,8 @@ def main():
     while 1:
 
         if libtcod.console_is_window_closed():
-            world.stats.health.reason = 'quitting'
+            #world.stats.health.reason = 'quitting'
+            world.save()
             break
 
         if world.done or world.dead: break
