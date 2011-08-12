@@ -257,14 +257,18 @@ class Inventory:
 
         return draw_window(s, w, h)
 
-    def take(self, i):
-        if   i.slot == 'a' and not self.head: self.head = i
-        elif i.slot == 'b' and not self.neck: self.neck = i
-        elif i.slot == 'c' and not self.trunk: self.trunk = i
-        elif i.slot == 'd' and not self.left: self.left = i
-        elif i.slot == 'e' and not self.right: self.right = i
-        elif i.slot == 'f' and not self.legs: self.legs = i
-        elif i.slot == 'g' and not self.feet: self.feet = i
+    def take(self, i, slot=None):
+        if not slot:
+            slot = i.slot
+        if   slot == 'a' and not self.head: self.head = i
+        elif slot == 'b' and not self.neck: self.neck = i
+        elif slot == 'c' and not self.trunk: self.trunk = i
+        elif slot == 'd' and not self.left: self.left = i
+        elif slot == 'e' and not self.right: self.right = i
+        elif slot == 'f' and not self.legs: self.legs = i
+        elif slot == 'g' and not self.feet: self.feet = i
+        elif slot == 'h' and not self.backpack1: self.backpack1 = i
+        elif slot == 'i' and not self.backpack2: self.backpack2 = i
         elif not self.backpack1: self.backpack1 = i
         elif not self.backpack2: self.backpack2 = i
         else: return False
@@ -514,7 +518,7 @@ class ItemStock:
                                  'though a bit rusty for some reason.'])
 
         self.shotgun = Item('shotgun', slot='e', skin=('(', libtcod.turquoise),
-                            rangeattack=10.0, range=(2,5), ammochance=(1,4),
+                            rangeattack=14.0, range=(2,5), ammochance=(1,4),
                             straightline=True, applies=True, rarity=15,
                             desc=['A powerful, killer weapon.',
                                   'You learned that much from playing videogames.'])
@@ -522,6 +526,12 @@ class ItemStock:
         self.tazer = Item("tazer", slot='e', skin=('(', libtcod.gray),
                           attack=1.0, confattack=(10, 1), rarity=5,
                           desc=['Very useful for subduing enemies.'])
+
+        self.dartgun = Item('dart gun', slot='e', skin=('(', libtcod.light_crimson),
+                            attack=0.5, confattack=(30, 5), rarity=5, range=(0,5),
+                            rangeattack=0.5, ammochance=(10,30), straightline=True,
+                            applies=True,
+                            desc=['A small plastic gun loaded with suspicious-looking darts.'])
 
         self.tinfoilhat = Item('tin foil hat', slot='a', skin=('[', libtcod.gray),
                                psyimmune=True, rarity=6,
@@ -668,7 +678,7 @@ class Monster:
     def __init__(self, name, skin=('x', libtcod.cyan), unique=False, level=1,
                  attack=0.5, defence=0.5, explodeimmune=False, range=11,
                  itemdrop=None, heatseeking=False, desc=[], psyattack=0,
-                 psyrange=0, confimmune=False):
+                 psyrange=0, confimmune=False, slow=False, selfdestruct=False):
         self.name = name
         self.skin = skin
         self.unique = unique
@@ -683,6 +693,8 @@ class Monster:
         self.psyattack = psyattack
         self.psyrange = psyrange
         self.confimmune = confimmune
+        self.slow = slow
+        self.selfdestruct = selfdestruct
 
         self.x = 0
         self.y = 0
@@ -755,6 +767,23 @@ class MonsterStock:
                                'It has no visible eyes, but instead has a ',
                                'giant, bulging, pulsating brain.']))
 
+        self.add(Monster('spore', skin=('x', libtcod.pink),
+                         attack=0, defence=0.2, range=30, level=4,
+                         itemdrop='bomb', heatseeking=True, selfdestruct=True,
+                         desc=['A pulsating pink spherical spore, about 1 meter in diameter.',
+                               'It is levitating.',
+                               'It looks like it is radiating heat from the inside.']))
+
+        self.add(Monster('cthulhumon', skin=('v', libtcod.gray),
+                         attack=3.0, psyattack=2.0, defence=1.0, range=8, psyrange=8,
+                         level=5, confimmune=True,
+                         desc=['The other Pokemon nobody told you about.']))
+
+        self.add(Monster('giant turtle', skin=('O', libtcod.green),
+                         attack=1.0, defence=36.0, explodeimmune=True, range=30,
+                         confimmune=True, slow=True, level=5,
+                         desc=['A giant, the size of a small house, turtle!']))
+
 
     def add(self, mon):
         if mon.level not in self.monsters:
@@ -763,8 +792,9 @@ class MonsterStock:
             self.monsters[mon.level].append(mon)
 
     def generate(self, level, itemstock):
-        if level not in self.monsters:
-            return None
+        while level > 0 and level not in self.monsters:
+            level -= 1
+
         m = self.monsters[level]
         m = copy.copy(m[random.randint(0, len(m)-1)])
 
@@ -783,7 +813,7 @@ class World:
 
         self.walkmap = None
         self.watermap = None
-        self.featmap = None
+        self.featmap = {}
         self.exit = None
         self.itemap = {}
         self.monmap = {}
@@ -974,9 +1004,15 @@ class World:
             for y in xrange(self.h):
                 if (x,y) in self.walkmap:
                     v = True
+                    w = True
                 else:
                     v = False
-                libtcod.map_set_properties(self.tcodmap, x, y, v, v)
+                    w = False
+
+                if (x,y) in self.featmap and self.featmap[(x, y)] == '*':
+                    v = False
+
+                libtcod.map_set_properties(self.tcodmap, x, y, v, w)
 
     def make_feats(self):
         m = list(self.walkmap - self.watermap)
@@ -1213,6 +1249,8 @@ class World:
             self.sleeping = int(random.gauss(*self.coef.sleeptime))
         if self.sleep <= 10:
             self.sleep = 10
+        self.digging = None
+        self.resting = False
 
     def start_rest(self):
         self.msg.m('You start resting.')
@@ -1234,10 +1272,37 @@ class World:
 
         self.tick()
 
+    def convert_to_floor(self, x, y):
+        self.walkmap.add((x,y))
+        if (x,y) in self.featmap and self.featmap[(x,y)] == '*':
+            del self.featmap[(x,y)]
+        libtcod.map_set_properties(self.tcodmap, x, y, True, True)
+
+
     def showinv(self):
         return self.inv.draw(self.w, self.h, self.dlev, self.plev)
 
+
     def showinv_apply(self):
+        slot = self.inv.draw(self.w, self.h, self.dlev, self.plev)
+        i = self.inv.drop(slot)
+        if not i:
+            if slot in 'abcdefghi':
+                self.msg.m('You have no item in that slot.')
+            return
+
+        if not i.applies:
+            self.msg.m('This item cannot be applied.')
+            self.inv.take(i, slot)
+            return
+
+        i = self.apply(i)
+        if i:
+            self.inv.take(i)
+        self.tick()
+
+
+    def showinv_interact(self):
         slot = self.inv.draw(self.w, self.h, self.dlev, self.plev)
         i = self.inv.drop(slot)
         if not i:
@@ -1248,22 +1313,38 @@ class World:
         si = str(i)
         si = si[0].upper() + si[1:]
         s = [si + ':', '']
+        choices = 'd'
+
+
         if i.applies:
             s.append('a) use it')
+            choices += 'a'
+
         if not self.inv.backpack1 or not self.inv.backpack2:
             s.append('b) move it to a backpack slot')
+            choices += 'b'
+
         if i.desc:
             s.append('c) examine this item')
+            choices += 'c'
+
         s.append('d) drop this item')
         if i.throwable:
             s.append('f) throw this item')
+            choices += 'f'
 
         if i.slot in 'abcdefg' and slot in 'hi':
             s.append('x) swap this item with item in equipment')
+            choices += 'x'
 
         s.append('')
         s.append('any other key to equip it')
         cc = draw_window(s, self.w, self.h)
+
+        if cc not in choices:
+            self.inv.take(i)
+            self.tick()
+            return
 
         if cc == 'a' and i.applies:
             i = self.apply(i)
@@ -1404,6 +1485,8 @@ class World:
                 self.msg.m('Warm and getting warmer!')
             elif d > 3:
                 self.msg.m("This thing is buring!")
+            else:
+                self.msg.m('You are at the spot. Look around.')
 
         elif item.detector:
             s = []
@@ -1467,10 +1550,10 @@ class World:
         elif item.digray:
             if item.digray[0] == 1:
                 for x in xrange(0, self.w):
-                    self.walkmap.add((x, self.py))
+                    self.convert_to_floor(x, self.py)
             if item.digray[1] == 1:
                 for y in xrange(0, self.h):
-                    self.walkmap.add((self.px, y))
+                    self.convert_to_floor(self.px, y)
             self.msg.m('The wand explodes in a brilliant white flash!')
             return None
 
@@ -1590,8 +1673,8 @@ class World:
         self.tick()
 
 
-    def handle_mondeath(self, mon, do_drop=True):
-        if mon.level > self.plev:
+    def handle_mondeath(self, mon, do_drop=True, do_gain=True):
+        if do_gain and mon.level > self.plev:
             self.msg.m('You just gained level ' + str(mon.level) + '!', True)
             self.plev = mon.level
 
@@ -1602,7 +1685,8 @@ class World:
                 else:
                     self.itemap[(mon.x, mon.y)] = mon.items
 
-        self.killed_monsters.append((mon.level, self.plev, self.dlev, mon.name))
+        if do_gain:
+            self.killed_monsters.append((mon.level, self.plev, self.dlev, mon.name))
 
 
     def explode(self, x0, y0, rad):
@@ -1630,7 +1714,7 @@ class World:
             if (x, y) in self.monmap:
                 mon = self.monmap[(x, y)]
                 if not mon.explodeimmune:
-                    self.handle_mondeath(mon, False)
+                    self.handle_mondeath(mon, do_drop=False)
 
                     for i in mon.items:
                         if i.explodes:
@@ -1655,12 +1739,18 @@ class World:
         d = int(round(d))
 
         if player_move and item:
-            plev = min(max(self.plev - item.range[1] + d, 1), self.plev)
+            plev = min(max(self.plev - d + 1, 1), self.plev)
             attack = item.rangeattack
             print '+', d, plev, attack
         else:
             plev = self.plev
             attack = max(self.inv.get_attack(), self.coef.unarmedattack)
+
+
+        if not player_move and mon.selfdestruct:
+            self.msg.m(smu + 'suddenly self-destructs!')
+            self.handle_mondeath(mon, do_gain=False)
+            del self.monmap[(mon.x, mon.y)]
 
 
         def roll(attack, leva, defence, levd):
@@ -1672,6 +1762,7 @@ class World:
                 d += random.uniform(0, defence)
 
             ret = max(a - d, 0)
+            print ' ->', ret, ':', attack, leva, '/', defence, levd
             return ret
 
         if player_move:
@@ -1843,7 +1934,7 @@ class World:
                           math.pow(abs(self.py - mon.y), 2))
             if d > range:
                 continue
-            print '++', minrange, d, '(', self.px, self.py, ',', mon.x, mon.y
+
             if minrange and d < minrange:
                 continue
 
@@ -1963,7 +2054,28 @@ class World:
         if k == 'y':
             self.stats.health.reason = 'quitting'
             self.done = True
+            self.dead = True
 
+
+    def show_help(self):
+        s = ['',
+             "Movement keys: roguelike 'hjkl' 'yubn' or the arrow keys.",
+             "               NOTE! To move diagonally, use 'yubn'.",
+             " . : Stand on one place for one turn.",
+             " s : Start sleeping.",
+             " r : Start resting.",
+             " q : Drink from the floor.",
+             " > : Descend down to the next level.",
+             " a : Apply (use) an item from your inventory.",
+             " i : Manipulate your inventory.",
+             " d : Drop an item from your inventory.",
+             " , : Pick up an item from the floor.",
+             " / : Look around at the terrain, items and monsters.",
+             " P : Show a log of previous messages.",
+             " Q : Quit the game.",
+             " ? : Show this help."
+        ]
+        draw_window(s, self.w, self.h)
 
 
     def make_keymap(self):
@@ -1980,15 +2092,19 @@ class World:
             's': self.start_sleep,
             'r': self.start_rest,
             'q': self.drink,
-            'i': self.showinv_apply,
+            'a': self.showinv_apply,
+            'i': self.showinv_interact,
             '>': self.descend,
-            'x': self.debug_descend,
-            'w': self.wish,
             'd': self.drop,
             ',': self.take,
             '/': self.look,
             'P': self.show_messages,
-            'Q': self.quit
+            'Q': self.quit,
+            '?': self.show_help,
+            'z': self.save,
+
+            'x': self.debug_descend,
+            'w': self.wish
             }
         self.vkeys = {
             libtcod.KEY_LEFT: self.move_left,
@@ -1999,6 +2115,9 @@ class World:
 
 
     def walk_monster(self, mon, dist, x, y):
+
+        if mon.slow and (self.t & 1) == 0:
+            return None, None
 
         if dist > mon.range or mon.confused:
             mdx = x + random.randint(-1, 1)
@@ -2194,6 +2313,46 @@ class World:
         return did_highlight
 
 
+    def save(self):
+        f = None
+        atts = [
+          'grid', 'walkmap', 'watermap', 'exit', 'itemap', 'monmap', 'visitedmap',
+          'px', 'py', 'w', 'h',
+          'done', 'dead', 'stats', 'msg', 'coef', 'inv', 'itemstock', 'monsterstock',
+          'dlev', 'plev', 't', 'sleeping', 'resting', 'cooling', 'digging', 'blind',
+          'killed_monsters'
+          ]
+        state = {}
+
+        for x in atts:
+            state[x] = getattr(self, x)
+
+        if 1: #try:
+            f = open('savefile', 'w')
+            cPickle.dump(state, f)
+        #except:
+        #    return
+        self.msg.m('Saved!')
+        self.done = True
+
+
+    def load(self):
+        f = None
+        state = None
+
+        try:
+            f = open('savefile', 'r')
+            state = cPickle.load(f)
+        except:
+            return False
+
+        for k,v in state.iteritems():
+            setattr(self, k, v)
+
+        self.make_map()
+        self.make_paths()
+        return True
+
 
     def form_highscore(self):
 
@@ -2201,6 +2360,12 @@ class World:
               'dlev': self.dlev,
               'kills': self.killed_monsters,
               'reason': self.stats.health.reason}
+
+        # Clobber the savefile.
+        try:
+            open('savefile', 'w').truncate(0)
+        except:
+            pass
 
         hss = []
         try:
@@ -2211,11 +2376,10 @@ class World:
 
         hss.append(hs)
 
-        #try:
-        if 1:
+        try:
             hsf = open('highscore', 'w')
             cPickle.dump(hss, hsf)
-        #except:
+        except:
             pass
 
         s = ['']
@@ -2320,11 +2484,13 @@ def main():
     #cons = None
 
     world = World()
-    world.regen(w, h)
-    world.place()
     world.make_keymap()
 
-    world.generate_inv()
+    if not world.load():
+        world.regen(w, h)
+        world.place()
+        world.generate_inv()
+        world.msg.m("Please press '?' to see help.")
 
     while 1:
 
@@ -2361,7 +2527,7 @@ def main():
 
         if world.digging:
             if world.grid[world.digging[1]][world.digging[0]] <= -10:
-                world.walkmap.add(world.digging)
+                world.convert_to_floor(world.digging[0], world.digging[1])
                 world.digging = None
                 world.draw(False)
                 libtcod.console_flush()
@@ -2386,7 +2552,8 @@ def main():
     libtcod.console_flush()
     libtcod.console_wait_for_keypress(False)
 
-    world.form_highscore()
+    if world.dead:
+        world.form_highscore()
 
 
 
