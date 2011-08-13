@@ -375,7 +375,8 @@ class Item:
                  rangeexplode=False, springy=False, detector=False,
                  detect_monsters=False, detect_items=False, food=None,
                  tracker=False, wishing=False, repelrange=None, selfdestruct=None,
-                 digray=None, jinni=False, heatbonus=0):
+                 digray=None, jinni=False, heatbonus=0, use_an=False,
+                 stackrange=None, mapper=None):
         self.slot = slot
         self.bonus = bonus
         self.name = name
@@ -418,6 +419,9 @@ class Item:
         self.digray = digray
         self.jinni = jinni
         self.heatbonus = heatbonus
+        self.use_an = use_an
+        self.stackrange = stackrange
+        self.mapper = mapper
 
         self.ammo = None
         self.gencount = 0
@@ -431,11 +435,13 @@ class Item:
             elif self.bonus < 0:
                 s += 'cursed '
         s += self.name
-        if self.count != None:
-            if self.count != 0:
-                s = str(self.count) + " " + s
-        elif len(s) > 0:
-            if s[0] in 'aeiouAEIOU':
+        if self.count > 1:
+            s = str(self.count) + " " + s.replace('$s', 's')
+        elif self.count != 0 and len(s) > 0:
+            if self.count == 1:
+                s = s.replace('$s', '')
+
+            if self.use_an or s[0] in 'aeiouAEIOU':
                 s = 'an ' + s
             else:
                 s = 'a ' + s
@@ -452,23 +458,23 @@ class Item:
             self.ammo = random.randint(self.ammochance[0], self.ammochance[1])
 
         if self.selfdestruct:
-            self.selfdestruct = max(random.gauss(*self.selfdestruct), 1)
+            self.selfdestruct = int(max(random.gauss(*self.selfdestruct), 1))
 
 
 class ItemStock:
     def __init__(self):
-        self.necklamp = Item("miner's lamp", slot='b', lightradius=8,
+        self.necklamp = Item("miner's lamp", slot='b', lightradius=8, rarity=8,
                              desc=['A lamp that provides light while you are cave-crawling.'])
 
-        self.helmet = Item("miner's hardhat", slot='a',
+        self.helmet = Item("miner's hardhat", slot='a', rarity=8,
                            skin=('[', libtcod.sepia), defence=0.25,
                            desc=['A simple plastic item of protective headgear.'])
 
-        self.boots = Item('boots', slot='g', count=0,
+        self.boots = Item('boots', slot='g', count=0, rarity=8,
                           skin=('[', libtcod.sepia), defence=0.1,
                           desc=['Steel-toed boots made of genuine leather.'])
 
-        self.dynamite = Item('sticks of dynamite', count=3,
+        self.dynamite = Item('stick$s of dynamite', count=3,
                              skin=('!', libtcod.red), applies=True, explodes=True,
                              radius=4, rarity=8,
                              desc=['Sticks of dynamite can be lit to create an explosive device.'])
@@ -487,8 +493,9 @@ class ItemStock:
                             desc=['Ostensibly to be used as an aid in traversing the caves,',
                                   'this sporting item is a good makeshift weapon.'])
 
-        self.booze = Item("potion of booze", slot='d', skin=('!', libtcod.green),
-                          booze=True, cursedchance=10, applies=True,
+        self.booze = Item("potion$s of booze", slot='d', skin=('!', libtcod.green),
+                          booze=True, cursedchance=10, applies=True, stackrange=2,
+                          count=1, rarity=10,
                           desc=['Sweet, sweet aqua vitae.',
                                 'It helps keep one warm in these horrible caves.'])
 
@@ -496,19 +503,20 @@ class ItemStock:
                            applies=True, rarity=8, homing=True,
                            desc=["A low-tech device for finding holes."])
 
-        self.medpack = Item("magic pill", slot='d', skin=('%', libtcod.white),
+        self.medpack = Item("magic pill$s", slot='d', skin=('%', libtcod.white),
                             rarity=20, applies=True, healing=(3, 0.5),
-                            cursedchance=7,
+                            cursedchance=7, stackrange=5, count=1,
                             desc=['A big white pill with a large red cross drawn on one side.'])
 
-        self.mushrooms = Item("mushrooms", slot='d', skin=('%', libtcod.light_orange),
-                              rarity=20, applies=True, food=(3, 0.5), count=0,
-                              cursedchance=7,
+        self.mushrooms = Item("mushroom$s", slot='d', skin=('%', libtcod.light_orange),
+                              rarity=20, applies=True, food=(3, 0.5),
+                              cursedchance=7, stackrange=3, count=1,
                               desc=['A mushroom growing on the cave floor.'])
 
         self.rpg = Item('RPG launcher', slot='e', skin=('(', libtcod.red),
                         rarity=15, applies=True, rangeexplode=True, range=(4, 15),
                         explodes=True, radius=3, attack=0, ammochance=(1,1),
+                        use_an=True,
                         desc=['A metal tube that holds a single explosive rocket.'])
 
         self.mauser = Item("Mauser C96", slot='e', skin=('(', libtcod.blue),
@@ -543,6 +551,10 @@ class ItemStock:
                              desc=['A bluish lump of mud. ',
                                    'Useful for tricking predators with infrared vision.'])
 
+        self.tinfoil = Item("tin foil", slot='a', skin=('[', libtcod.lightest_sepia), count=0,
+                            psyimmune=True, rarity=12, selfdestruct=(300, 100),
+                            desc=['Not as good as a real tin foil hat, but will still help in emergencies.'])
+
         self.springboots = Item("springy boots", slot='g', count=0,
                                 skin=('[', libtcod.pink), defence=0.01, rarity=3,
                                 springy=True,
@@ -569,6 +581,7 @@ class ItemStock:
                              desc=['A shaggy coat made of fur. You would look like a true barbarian in it.'])
 
         self.halolamp = Item("halogen lamp", slot='b', lightradius=12, rarity=3,
+                             selfdestruct=(1000,100),
                              desc=['A lamp that is somewhat brighter than a generic lamp.'])
 
         self.helmetlamp = Item("flashlight helmet", slot='a',
@@ -591,7 +604,7 @@ class ItemStock:
                                   'It comes with a necklace strap, a display and a large antenna.'])
 
         self.gps = Item('GPS tracker', slot='b', skin=('"', libtcod.green),
-                        tracker=True, rarity=6,
+                        tracker=True, rarity=6, applies=True,
                         desc=["A device that tracks and remembers where you've already been."])
 
         self.wishing = Item('wand of wishes', slot='e', skin=('/', libtcod.gray),
@@ -619,6 +632,10 @@ class ItemStock:
                               rarity=4, jinni=True, applies=True,
                               desc=['Rub me for a surprise!'])
 
+        self.magicmapper = Item('magic mapper', slot='e', skin=('"', libtcod.light_yellow),
+                                rarity=6, applies=True, mapper=4,
+                                desc=['A strange device that looks something like a large fishing sonar.'])
+
 
         self.regenpool()
 
@@ -645,7 +662,7 @@ class ItemStock:
 
         l = []
         for x in xrange(len(self._randpool)):
-            if self._randpool[x].name.lower().find(item) >= 0:
+            if self._randpool[x].name.replace('$s','').lower().find(item) >= 0:
                 l.append((x, self._randpool[x]))
 
         if len(l) == 0:
@@ -819,7 +836,7 @@ class World:
         self.exit = None
         self.itemap = {}
         self.monmap = {}
-        self.visitedmap = None
+        self.visitedmap = {}
 
         self.px = None
         self.py = None
@@ -846,6 +863,7 @@ class World:
         self.cooling = 0
         self.digging = None
         self.blind = False
+        self.mapping = 0
 
         self.floorpath = None
 
@@ -996,7 +1014,7 @@ class World:
         for n,v in watr:
             self.watermap.add(v)
 
-        self.visitedmap = set()
+        self.visitedmap = {}
 
         return self.grid, self.walkmap
 
@@ -1055,10 +1073,7 @@ class World:
                 if (x, y) not in self.monmap: break
 
             m = self.monsterstock.generate(lev, self.itemstock)
-            if not m:
-                print lev
-            else:
-                print m.name
+            if m:
                 m.x = x
                 m.y = y
                 self.monmap[(x, y)] = m
@@ -1075,7 +1090,6 @@ class World:
             x, y = ll[random.randint(0, len(ll)-1)]
             item = self.itemstock.generate(lev)
             if item:
-                print item.name
                 if (x, y) not in self.itemap:
                     self.itemap[(x, y)] = [item]
                 else:
@@ -1104,15 +1118,24 @@ class World:
         self.stats = Stats()
 
     def generate_inv(self):
-        self.inv.take(self.itemstock.get('necklamp'))
-        self.inv.take(self.itemstock.get('helmet'))
-        self.inv.take(self.itemstock.get('boots'))
+        self.inv.take(self.itemstock.find('lamp'))
+        l = [self.itemstock.get('pickaxe')]
+        for x in range(3):
+            l.append(self.itemstock.generate(1))
+        if (self.px, self.py) not in self.itemap:
+            self.itemap[(self.px, self.py)] = l
+        else:
+            self.itemap[(self.px, self.py)].extend(l)
 
-        self.itemap[(self.px, self.py)] = [
-                    self.itemstock.get('dynamite'),
-                    self.itemstock.get('mauser'),
-                    self.itemstock.get('pickaxe'),
-                    self.itemstock.get('tazer')]
+        #self.inv.take(self.itemstock.get('necklamp'))
+        #self.inv.take(self.itemstock.get('helmet'))
+        #self.inv.take(self.itemstock.get('boots'))
+
+        #self.itemap[(self.px, self.py)] = [
+        #            self.itemstock.get('dynamite'),
+        #            self.itemstock.get('mauser'),
+        #            self.itemstock.get('pickaxe'),
+        #            self.itemstock.get('tazer')]
 
 
     def move(self, _dx, _dy, do_spring=True):
@@ -1129,7 +1152,7 @@ class World:
                 self.py = dy
 
                 if (dx, dy) not in self.visitedmap:
-                    self.visitedmap.add((dx, dy))
+                    self.visitedmap[(dx, dy)] = 0
 
                 if (self.px, self.py) in self.itemap:
                     if len(self.itemap[(self.px, self.py)]) > 1:
@@ -1168,6 +1191,7 @@ class World:
 
             elif i and i.selfdestruct > 0:
                 i.selfdestruct -= 1
+                print '-', i.selfdestruct, i.name
                 if i.selfdestruct == 0:
                     self.msg.m('Your ' + i.name + ' falls apart!', True)
                     self.inv.purge(i)
@@ -1363,7 +1387,17 @@ class World:
                 self.tick()
 
         elif cc == 'c' and i.desc:
-            draw_window(i.desc, self.w, self.h)
+            ss = i.desc[:]
+            ss.append('')
+            if i.slot == 'a': ss.append('Slot: head')
+            elif i.slot == 'b': ss.append('Slot: neck')
+            elif i.slot == 'c': ss.append('Slot: trunk')
+            elif i.slot == 'd': ss.append('Slot: left hand')
+            elif i.slot == 'e': ss.append('Slot: right hand')
+            elif i.slot == 'f': ss.append('Slot: legs')
+            elif i.slot == 'g': ss.append('Slot: feet')
+            else: ss.append('Slot: backpack')
+            draw_window(ss, self.w, self.h)
             self.inv.take(i)
             self.tick()
 
@@ -1490,19 +1524,23 @@ class World:
             else:
                 self.msg.m('You are at the spot. Look around.')
 
+        elif item.tracker:
+            self.visitedmap[(self.px, self.py)] = 1
+            self.msg.m("You mark this spot in your tracker's memory.")
+
         elif item.detector:
             s = []
             if item.detect_monsters:
                 s.append('You detect the following monsters:')
                 for v in self.monmap.itervalues():
-                    s.append('  '+v.name)
+                    s.append('  '+str(v))
                 s.append('')
 
             if item.detect_items:
                 s.append('You detect the following items:')
                 for v in self.itemap.itervalues():
                     for vv in v:
-                        s.append('  '+vv.name)
+                        s.append('  '+str(vv))
                 s.append('')
 
             if len(s) > 19:
@@ -1519,6 +1557,10 @@ class World:
 
         elif item.wishing:
             self.wish()
+            return None
+
+        elif item.mapper:
+            self.mapping = item.mapper
             return None
 
         elif item.jinni:
@@ -1620,17 +1662,6 @@ class World:
             self.itemap[(self.px, self.py)] = [i]
         self.tick()
 
-    def take_scavenge(self, item):
-        if item.ammo > 0:
-            for i in self.inv:
-                if i and i.name == item.name and i.ammo < i.ammochance[1]:
-                    i.ammo += item.ammo
-                    i.ammo = min(i.ammo, i.ammochance[1])
-                    item.ammo = 0
-                    self.msg.m("You find some ammo for your " + i.name)
-                    return
-
-        self.msg.m('You have no free inventory slot for ' + str(item) + '!')
 
 
     def take(self):
@@ -1640,38 +1671,65 @@ class World:
 
         items = self.itemap[(self.px, self.py)]
 
-        if len(items) == 1:
-            ok = self.inv.take(items[0])
-            if ok:
-                self.msg.m('You take ' + str(items[0]) + '.')
-                del self.itemap[(self.px, self.py)]
-            else:
-                self.take_scavenge(items[0])
+        c = 0
+        if len(items) > 1:
+            s = []
+            for i in xrange(len(items)):
+                if i == 0:
+                    s.append('%c' % libtcod.COLCTRL_1)
+                    s[-1] += '%c) %s' % (chr(97 + i), str(items[i]))
+                elif i > 5:
+                    s.append('(There are other items here; clear away the pile to see more)')
+                    break
+                else:
+                    s.append('%c) %s' % (chr(97 + i), str(items[i])))
+
+            c = draw_window(s, self.w, self.h)
+            c = ord(c) - 97
+
+            if c < 0 or c >= len(items):
+                return
+
+        i = items[c]
+
+        did_scavenge = False
+
+        for ii in self.inv:
+            if ii and ii.name == i.name:
+                if ii.stackrange and ii.count < ii.stackrange:
+                    n = min(ii.stackrange - ii.count, i.count)
+                    ii.count += n
+                    i.count -= n
+
+                    self.msg.m('You now have ' + str(ii))
+                    did_scavenge = True
+
+                    if i.count == 0:
+                        del items[c]
+                        if len(items) == 0:
+                            del self.itemap[(self.px, self.py)]
+                            break
+
+                elif i.ammo > 0 and ii.ammo and ii.ammo < ii.ammochance[1]:
+                    n = min(ii.ammochance[1] - ii.ammo, i.ammo)
+                    ii.ammo += n
+                    i.ammo -= n
+                    self.msg.m("You find some ammo for your " + ii.name)
+                    did_scavenge = True
+
+        if did_scavenge:
+            self.tick()
             return
 
-        s = []
-        for i in xrange(len(items)):
-            if i == 0:
-                s.append('%c' % libtcod.COLCTRL_1)
-                s[-1] += '%c) %s' % (chr(97 + i), str(items[i]))
-            elif i > 5:
-                s.append('(There are other items here; clear away the pile to see more)')
-                break
-            else:
-                s.append('%c) %s' % (chr(97 + i), str(items[i])))
-
-        c = draw_window(s, self.w, self.h)
-        c = ord(c) - 97
-
-        if c < 0 or c >= len(items):
-            return
-
-        ok = self.inv.take(items[c])
+        ok = self.inv.take(i)
         if ok:
-            self.msg.m('You take ' + str(items[c]) + '.')
-            del self.itemap[(self.px, self.py)][c]
+            self.msg.m('You take ' + str(i) + '.')
+            del items[c]
+            if len(items) == 0:
+                del self.itemap[(self.px, self.py)]
         else:
-            self.take_scavenge(items[c])
+            self.msg.m('You have no free inventory slot for ' + str(i) + '!')
+
         self.tick()
 
 
@@ -2145,9 +2203,6 @@ class World:
                 mon.known_px = self.px
                 mon.known_py = self.py
 
-            if mon.heatseeking:
-                print '|', mon.name, mon.known_px, mon.known_py, self.px, self.py
-
             libtcod.path_compute(self.floorpath, x, y, mon.known_px, mon.known_py)
             mdx, mdy = libtcod.path_walk(self.floorpath, True)
 
@@ -2223,6 +2278,12 @@ class World:
         if self.blind:
             lightradius /= 2
 
+        if self.mapping > 0:
+            lightradius = 25
+            if withtime:
+                self.mapping -= 1
+
+
         libtcod.map_compute_fov(self.tcodmap, self.px, self.py, lightradius,
                                 True, libtcod.FOV_RESTRICTIVE)
 
@@ -2240,11 +2301,19 @@ class World:
 
                 if self.inv.neck and self.inv.neck.tracker:
                     if (x, y) in self.visitedmap:
-                        back = libtcod.dark_gray
+                        if self.visitedmap[(x, y)]:
+                            back = libtcod.red
+                        else:
+                            back = libtcod.dark_gray
                     else:
                         back = libtcod.black
 
-                if not libtcod.map_is_in_fov(self.tcodmap, x, y):
+                if self.mapping:
+                    in_fov = True
+                else:
+                    in_fov = libtcod.map_is_in_fov(self.tcodmap, x, y)
+
+                if not in_fov:
                     c = ' '
                     fore = libtcod.black
 
