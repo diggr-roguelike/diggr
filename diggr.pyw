@@ -691,14 +691,15 @@ class ItemStock:
         return r
 
 
+
 class Monster:
-    def __init__(self, name, skin=('x', libtcod.cyan), unique=False, level=1,
+    def __init__(self, name, skin=('x', libtcod.cyan), count=10, level=1,
                  attack=0.5, defence=0.5, explodeimmune=False, range=11,
                  itemdrop=None, heatseeking=False, desc=[], psyattack=0,
                  psyrange=0, confimmune=False, slow=False, selfdestruct=False):
         self.name = name
         self.skin = skin
-        self.unique = unique
+        self.count = count
         self.level = level
         self.attack = attack
         self.defence = defence
@@ -726,7 +727,7 @@ class Monster:
 
     def __str__(self):
         s = self.name
-        if not self.unique:
+        if self.count > 1:
             if s[0] in 'aeiouAEIOU':
                 s = 'an ' + s
             else:
@@ -740,47 +741,49 @@ class MonsterStock:
 
         self.add(Monster('inebriated bum', skin=('h', libtcod.sepia),
                          attack=0.1, defence=0.2, range=3, level=1,
-                         itemdrop='booze',
+                         itemdrop='booze', count=9,
                          desc=['A drunken homeless humanoid.']))
 
         self.add(Monster('lichen', skin=('F', libtcod.light_purple),
                          attack=0.3, defence=0.2, range=1, level=1,
-                         itemdrop='mushrooms', confimmune=True,
+                         itemdrop='mushrooms', confimmune=True, count=9,
                          desc=['Looks yummy.']))
 
         self.add(Monster('hobbit', skin=('h', libtcod.purple),
-                         attack=1.5, defence=0.2, range=8, level=2,
+                         attack=1.5, defence=0.2, range=8, level=2, count=5,
                          desc=['A nasty, brutish humanoid creature endemic to these caves.']))
 
         self.add(Monster('gnobold', skin=('k', libtcod.green),
-                         attack=1.0, defence=0.7, range=6, level=2,
+                         attack=1.0, defence=0.7, range=6, level=2, count=5,
                          desc=['A gnome-kobold hybrid.']))
 
         self.add(Monster('laminaria', skin=('p', libtcod.light_blue),
-                         attack=2.0, defence=0.1, range=10, level=3,
+                         attack=2.0, defence=0.1, range=10, level=3, count=7,
                          heatseeking=True,
                          desc=['Not a delicious condiment, but rather a gigantic pale-blue cave slug.',
                                'Being a cave creature, it seems to lack eyes of any sort.']))
 
         self.add(Monster('dromedary', skin=('q', libtcod.dark_sepia),
                          attack=0.7, psyattack=0.5, defence=0.6, range=5, psyrange=3, level=3,
+                         count=5,
                          desc=['A giant cave lizard with two hemisperical humps.']))
 
         self.add(Monster('spore plant', skin=('x', libtcod.dark_yellow),
                          attack=0.3, defence=0.2, range=7, level=3,
-                         itemdrop='bomb', confimmune=True,
+                         itemdrop='bomb', confimmune=True, count=7,
                          desc=['A large plantlike carnivorous creature.',
                                'It has large bulbous appendages growing out of its stalk.',
                                'It looks like it is radiating heat from the inside.']))
 
         self.add(Monster('cannibal', skin=('h', libtcod.light_red),
                          attack=7.0, defence=0.01, range=5, level=4,
+                         count=4,
                          desc=["A degenerate inhabitant of the caves who feeds on",
                                "other people's flesh for sustenance."]))
 
         self.add(Monster('nematode', skin=('w', libtcod.yellow),
                          attack=0, psyattack=2.0, defence=0.1, range=30, psyrange=4,
-                         level=4,
+                         level=4, count=5,
                          desc=['A gigantic (5 meter long) yellow worm.',
                                'It has no visible eyes, but instead has a ',
                                'giant, bulging, pulsating brain.']))
@@ -788,19 +791,19 @@ class MonsterStock:
         self.add(Monster('spore', skin=('x', libtcod.pink),
                          attack=0, defence=0.2, range=30, level=4,
                          itemdrop='bomb', heatseeking=True, selfdestruct=True,
-                         confimmune=True,
+                         confimmune=True, count=7,
                          desc=['A pulsating pink spherical spore, about 1 meter in diameter.',
                                'It is levitating.',
                                'It looks like it is radiating heat from the inside.']))
 
         self.add(Monster('cthulhumon', skin=('v', libtcod.gray),
                          attack=3.0, psyattack=2.0, defence=1.0, range=8, psyrange=8,
-                         level=5, confimmune=True,
+                         level=5, confimmune=True, count=4,
                          desc=['The other Pokemon nobody told you about.']))
 
         self.add(Monster('giant turtle', skin=('O', libtcod.green),
                          attack=1.0, defence=36.0, explodeimmune=True, range=30,
-                         confimmune=True, slow=True, level=5,
+                         confimmune=True, slow=True, level=5, count=4,
                          desc=['A giant, the size of a small house, turtle!']))
 
 
@@ -823,6 +826,24 @@ class MonsterStock:
                 m.items = [i]
 
         return m
+
+    def death(self, mon):
+        if mon.level not in self.monsters:
+            return (len(self.monsters) == 0)
+
+        m = self.monsters[mon.level]
+
+        for x in range(len(m)):
+            if mon.name == m[x].name and m[x].count == 1:
+                del m[x]
+            else:
+                m[x].count -= 1
+
+        if len(m) == 0:
+            del self.monsters[mon.level]
+
+        return (len(self.monsters) == 0)
+
 
 
 class World:
@@ -1191,7 +1212,7 @@ class World:
 
             elif i and i.selfdestruct > 0:
                 i.selfdestruct -= 1
-                print '-', i.selfdestruct, i.name
+                #print '-', i.selfdestruct, i.name
                 if i.selfdestruct == 0:
                     self.msg.m('Your ' + i.name + ' falls apart!', True)
                     self.inv.purge(i)
@@ -1748,6 +1769,14 @@ class World:
         if do_gain:
             self.killed_monsters.append((mon.level, self.plev, self.dlev, mon.name))
 
+        if self.monsterstock.death(mon):
+            while 1:
+                c = draw_window(['Congratulations! You have won the game.', '', 'Press space to exit.'], self.w, self.h)
+                if c == ' ': break
+
+            self.stats.health.reason = 'winning'
+            self.dead = True
+
 
     def explode(self, x0, y0, rad):
         chains = set()
@@ -1801,7 +1830,7 @@ class World:
         if player_move and item:
             plev = min(max(self.plev - d + 1, 1), self.plev)
             attack = item.rangeattack
-            print '+', d, plev, attack
+            #print '+', d, plev, attack
         else:
             plev = self.plev
             attack = max(self.inv.get_attack(), self.coef.unarmedattack)
@@ -1816,7 +1845,7 @@ class World:
                 d += random.uniform(0, defence)
 
             ret = max(a - d, 0)
-            print ' ->', ret, ':', attack, leva, '/', defence, levd
+            #print ' ->', ret, ':', attack, leva, '/', defence, levd
             return ret
 
         if player_move:
@@ -2279,9 +2308,10 @@ class World:
             lightradius /= 2
 
         if self.mapping > 0:
-            lightradius = 25
             if withtime:
                 self.mapping -= 1
+            if self.mapping > 0:
+                lightradius = 25
 
 
         libtcod.map_compute_fov(self.tcodmap, self.px, self.py, lightradius,
@@ -2304,7 +2334,7 @@ class World:
                         if self.visitedmap[(x, y)]:
                             back = libtcod.red
                         else:
-                            back = libtcod.dark_gray
+                            back = libtcod.darkest_gray
                     else:
                         back = libtcod.black
 
@@ -2392,7 +2422,7 @@ class World:
         f = None
         atts = [
           'grid', 'walkmap', 'watermap', 'exit', 'itemap', 'monmap', 'visitedmap',
-          'px', 'py', 'w', 'h',
+          'featmap', 'px', 'py', 'w', 'h',
           'done', 'dead', 'stats', 'msg', 'coef', 'inv', 'itemstock', 'monsterstock',
           'dlev', 'plev', 't', 'sleeping', 'resting', 'cooling', 'digging', 'blind',
           'killed_monsters'
