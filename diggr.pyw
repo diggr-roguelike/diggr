@@ -305,6 +305,18 @@ class Inventory:
         else:
             return None
 
+    def check(self, slot):
+        if   slot == 'a': return self.head
+        elif slot == 'b': return self.neck
+        elif slot == 'c': return self.trunk
+        elif slot == 'd': return self.left
+        elif slot == 'e': return self.right
+        elif slot == 'f': return self.legs
+        elif slot == 'g': return self.feet
+        elif slot == 'h': return self.backpack1
+        elif slot == 'i': return self.backpack2
+        return None
+
     class _iter:
         def __init__(self, i):
             self.inv = i
@@ -376,7 +388,7 @@ class Item:
                  detect_monsters=False, detect_items=False, food=None,
                  tracker=False, wishing=False, repelrange=None, selfdestruct=None,
                  digray=None, jinni=False, heatbonus=0, use_an=False,
-                 stackrange=None, mapper=None):
+                 stackrange=None, mapper=None, converts=None):
         self.slot = slot
         self.bonus = bonus
         self.name = name
@@ -422,6 +434,7 @@ class Item:
         self.use_an = use_an
         self.stackrange = stackrange
         self.mapper = mapper
+        self.converts = converts
 
         self.ammo = None
         self.gencount = 0
@@ -476,12 +489,22 @@ class ItemStock:
 
         self.dynamite = Item('stick$s of dynamite', count=3,
                              skin=('!', libtcod.red), applies=True, explodes=True,
-                             radius=4, rarity=8,
+                             radius=4, rarity=8, converts='litdynamite',
                              desc=['Sticks of dynamite can be lit to create an explosive device.'])
+
+        self.minibomb = Item('minibomb$s', count=3, skin=('(', libtcod.pink),
+                             applies=True, explodes=True, radius=1, rarity=8,
+                             converts='litminibomb',
+                             desc=['Tiny hand-held grenades.'])
 
         self.litdynamite = Item('burning stick of dynamite',
                                 skin=('!', libtcod.yellow), explodes=True,
                                 liveexplode=7, slot='d', radius=4, throwable=True,
+                                desc=['Watch out!!'])
+
+        self.litminibomb = Item('armed minibomb', skin=('!', libtcod.yellow),
+                                explodes=True, liveexplode=2, slot='d', radius=1,
+                                throwable=True,
                                 desc=['Watch out!!'])
 
         self.bomb = Item('exploding spore', skin=('!', libtcod.yellow), explodes=True,
@@ -657,7 +680,7 @@ class ItemStock:
         return None
 
     def find(self, item):
-        if len(item) < 4:
+        if len(item) < 3:
             return None
 
         l = []
@@ -1343,10 +1366,27 @@ class World:
             self.inv.take(i, slot)
             return
 
-        i = self.apply(i)
-        if i:
-            self.inv.take(i)
+        i2 = self.apply(i)
+        if i2:
+            self.inv.take(i2)
+        else:
+            if i.count > 0:
+                i.count -= 1
+            if i.count > 0:
+                self.inv.take(i)
+
         self.tick()
+
+
+    def slot_to_name(self, slot):
+        if slot == 'a': return 'head'
+        elif slot == 'b': return 'neck'
+        elif slot == 'c': return 'trunk'
+        elif slot == 'd': return 'left hand'
+        elif slot == 'e': return 'right hand'
+        elif slot == 'f': return 'legs'
+        elif slot == 'g': return 'feet'
+        else: return 'backpack'
 
 
     def showinv_interact(self):
@@ -1394,9 +1434,15 @@ class World:
             return
 
         if cc == 'a' and i.applies:
-            i = self.apply(i)
-            if i:
-                self.inv.take(i)
+            i2 = self.apply(i)
+            if i2:
+                self.inv.take(i2)
+            else:
+                if i.count > 0:
+                    i.count -= 1
+                if i.count > 0:
+                    self.inv.take(i)
+
             self.tick()
 
         elif cc == 'b':
@@ -1410,14 +1456,7 @@ class World:
         elif cc == 'c' and i.desc:
             ss = i.desc[:]
             ss.append('')
-            if i.slot == 'a': ss.append('Slot: head')
-            elif i.slot == 'b': ss.append('Slot: neck')
-            elif i.slot == 'c': ss.append('Slot: trunk')
-            elif i.slot == 'd': ss.append('Slot: left hand')
-            elif i.slot == 'e': ss.append('Slot: right hand')
-            elif i.slot == 'f': ss.append('Slot: legs')
-            elif i.slot == 'g': ss.append('Slot: feet')
-            else: ss.append('Slot: backpack')
+            ss.append('Slot: ' + self.slot_to_name(i))
             draw_window(ss, self.w, self.h)
             self.inv.take(i)
             self.tick()
@@ -1458,18 +1497,21 @@ class World:
 
     def apply(self, item):
         if not item.applies:
-            return
+            return item
 
-        if item.explodes and item.count > 0:
-            if self.inv.left or self.inv.right:
-                self.msg.m('Both your right and left hands need to be free to light a stick of dynamite.')
+        if item.converts:
+            inew = self.itemstock.get(item.converts)
+
+            if self.inv.check(inew.slot) is not None:
+                self.msg.m('Your ' + self.slot_to_name(inew.slot) + ' slot needs to be free to use this.')
                 return item
-            self.msg.m('You light a stick a dynamite. It is now in your left hand!', True)
-            item.count -= 1
-            self.inv.take(self.itemstock.get('litdynamite'))
 
-            if item.count <= 0:
-                return None
+            self.inv.take(inew)
+            s = str(inew)
+            s = s[0].upper() + s[1:]
+            self.msg.m(s + ' is now in your ' + self.slot_to_name(inew.slot) + ' slot!', True)
+
+            return None
 
         elif item.digging:
             k = draw_window(['Dig in which direction?'], self.w, self.h, True)
@@ -2103,7 +2145,7 @@ class World:
         while 1:
             k = draw_window(['Whish for what? : ' + s], self.w, self.h)
             k = k.lower()
-            if k in 'abcdefghijklmnopqrstuvwxyz ':
+            if k in "abcdefghijklmnopqrstuvwxyz' ":
                 s = s + k
             elif ord(k) == 8 or ord(k) == 127:
                 if len(s) > 0:
