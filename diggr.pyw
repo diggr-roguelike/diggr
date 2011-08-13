@@ -347,7 +347,7 @@ class Inventory:
         elif self.right == item: self.right = None
         elif self.legs == item: self.legs = None
         elif self.feet == item: self.feet = None
-        elif self.backback1 == item: self.backpack1 = None
+        elif self.backpack1 == item: self.backpack1 = None
         elif self.backpack2 == item: self.backpack2 = None
 
     def get_lightradius(self):
