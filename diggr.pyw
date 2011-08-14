@@ -3,11 +3,34 @@ import math
 import os
 import random
 import copy
+import time
 
 import cPickle
 
 import libtcodpy as libtcod
 
+
+global _inputs
+global _inputqueue
+_inputqueue = None
+class fakekey:
+    def __init__(self, c, vk):
+        self.c = c
+        self.vk = vk
+
+
+def console_wait_for_keypress():
+    global _inputqueue
+    if _inputqueue:
+        c, vk = _inputqueue[0]
+        _inputqueue = _inputqueue[1:]
+        libtcod.console_check_for_keypress()
+        libtcod.sys_sleep_milli(100)
+        return fakekey(c, vk)
+
+    k = libtcod.console_wait_for_keypress(False)
+    _inputs.append((k.c, k.vk))
+    return k
 
 
 class Coeffs:
@@ -137,7 +160,10 @@ def draw_window(msg, w, h, do_mapping=False):
     libtcod.console_set_default_background(None, libtcod.black)
 
     libtcod.console_flush()
-    k = libtcod.console_wait_for_keypress(False)
+    #k = libtcod.console_wait_for_keypress(False)
+    #_inputs.append((k.c, k.vk))
+    k = console_wait_for_keypress()
+
     libtcod.console_rect(None, x0, 0, w - x0, y0, True)
     libtcod.console_flush()
 
@@ -542,11 +568,22 @@ class ItemStock:
                         use_an=True,
                         desc=['A metal tube that holds a single explosive rocket.'])
 
+        self.killerwand = Item('killer wand', slot='e', skin=('/', libtcod.red),
+                               rarity=5, applies=True, rangeexplode=True, range=(1, 3),
+                               explodes=True, radius=0, attack=0, ammochance=(1,1),
+                               desc=['A metallic wand with a skull-and-crossbones embossed on it.',
+                                     'There is an annoying blinking LED light mounted in the handle.'])
+
         self.mauser = Item("Mauser C96", slot='e', skin=('(', libtcod.blue),
                            rangeattack=7.0, range=(0,15), ammochance=(0, 10),
                            straightline=True, applies=True, rarity=15,
                            desc=['This antique beauty is a powerful handgun, ',
                                  'though a bit rusty for some reason.'])
+
+        self.ak47 = Item('AK-47', slot='e', skin=('(', libtcod.desaturated_blue),
+                         rangeattack=3.5, range=(0, 7), ammochance=(0, 30),
+                         straightline=True, applies=True, rarity=15,
+                         desc=['A semi-automatic rifle.'])
 
         self.shotgun = Item('shotgun', slot='e', skin=('(', libtcod.turquoise),
                             rangeattack=14.0, range=(2,5), ammochance=(1,4),
@@ -914,6 +951,11 @@ class World:
         self.monsters_in_view = []
 
         self.killed_monsters = []
+
+        self._seed = None
+        self._inputs = []
+
+
 
 
     def makegrid(self, w_, h_):
@@ -1675,6 +1717,7 @@ class World:
                                      monstop=item.straightline)
                 if nx is not None:
                     break
+            #print '//', nx, ny
             if nx < 0:
                 return item
 
@@ -2117,21 +2160,23 @@ class World:
         yy = None
         while 1:
             tmpx, tmpy = libtcod.line_step()
-            if not tmpx:
+
+            if tmpx is None:
                 return (xx, yy)
 
-            if minrange:
-                d = math.sqrt(math.pow(abs(tmpx - self.px), 2) +
-                              math.pow(abs(tmpy - self.py), 2))
-                if d < minrange:
-                    continue
-
-            if monstop and (tmpx, tmpy) in self.monmap:
-                return (tmpx, tmpy)
-
             if (tmpx, tmpy) in self.walkmap:
+                if minrange:
+                    d = math.sqrt(math.pow(abs(tmpx - self.px), 2) +
+                                  math.pow(abs(tmpy - self.py), 2))
+                    if d < minrange:
+                        continue
+
                 xx = tmpx
                 yy = tmpy
+
+                if monstop and (tmpx, tmpy) in self.monmap:
+                    return (xx, yy)
+
             else:
                 return (xx, yy)
 
@@ -2467,7 +2512,7 @@ class World:
           'featmap', 'px', 'py', 'w', 'h',
           'done', 'dead', 'stats', 'msg', 'coef', 'inv', 'itemstock', 'monsterstock',
           'dlev', 'plev', 't', 'sleeping', 'resting', 'cooling', 'digging', 'blind',
-          'killed_monsters'
+          'killed_monsters', '_seed', '_inputs'
           ]
         state = {}
 
@@ -2496,6 +2541,10 @@ class World:
         for k,v in state.iteritems():
             setattr(self, k, v)
 
+        random.seed(self._seed)
+        global _inputs
+        _inputs = self._inputs
+
         self.make_map()
         self.make_paths()
         return True
@@ -2506,7 +2555,9 @@ class World:
         hs = {'plev': self.plev,
               'dlev': self.dlev,
               'kills': self.killed_monsters,
-              'reason': self.stats.health.reason}
+              'reason': self.stats.health.reason,
+              'seed': self._seed,
+              'inputs': self._inputs}
 
         # Clobber the savefile.
         try:
@@ -2617,9 +2668,78 @@ class World:
 
 
 
-def main():
+def start_game(world, w, h, oldseed=None):
+
+    if oldseed or not world.load():
+        if oldseed:
+            world._seed = oldseed
+        else:
+            world._seed = int(time.time())
+
+        random.seed(world._seed)
+        global _inputs
+        _inputs = world._inputs
+
+        world.regen(w, h)
+        world.place()
+        world.generate_inv()
+        world.msg.m("Please press '?' to see help.")
+
+def check_autoplay(world):
+
+    if world.sleeping > 0:
+        if world.stats.sleep.x >= 3.0:
+            world.msg.m('You wake up.')
+            world.sleeping = 0
+            return 1
+        else:
+            world.sleep()
+            return -1
+
+    if world.resting:
+        if world.stats.tired.x >= 3.0:
+            world.msg.m('You stop resting.')
+            world.resting = False
+            return 1
+        else:
+            world.rest()
+            return -1
+
+    if world.digging:
+        if world.grid[world.digging[1]][world.digging[0]] <= -10:
+            world.convert_to_floor(world.digging[0], world.digging[1])
+            world.digging = None
+            return 1
+        else:
+            world.grid[world.digging[1]][world.digging[0]] -= 0.1
+            world.tick()
+            return -1
+
+    return 0
+
+
+def main(replay=None):
+
+    oldseed = None
+
+    if replay:
+        hss = []
+        try:
+            hsf = open('highscore', 'r')
+            hss = cPickle.load(hsf)
+        except:
+            pass
+
+        oldseed = hss[replay]['seed']
+        oldinputs = hss[replay]['inputs']
+
+        global _inputqueue
+        _inputqueue = oldinputs
+
+
     w = 80
     h = 25
+
 
     #libtcod.sys_set_renderer(libtcod.RENDERER_SDL)
 
@@ -2633,17 +2753,13 @@ def main():
     world = World()
     world.make_keymap()
 
-    if not world.load():
-        world.regen(w, h)
-        world.place()
-        world.generate_inv()
-        world.msg.m("Please press '?' to see help.")
+    start_game(world, w, h, oldseed)
 
     while 1:
 
         if libtcod.console_is_window_closed():
-            #world.stats.health.reason = 'quitting'
-            world.save()
+            if not replay:
+                world.save()
             break
 
         if world.done or world.dead: break
@@ -2651,43 +2767,20 @@ def main():
         world.draw()
         libtcod.console_flush()
 
-        if world.sleeping > 0:
-            if world.stats.sleep.x >= 3.0:
-                world.msg.m('You wake up.')
-                world.sleeping = 0
-                world.draw(False)
-                libtcod.console_flush()
-            else:
-                world.sleep()
-                libtcod.console_check_for_keypress()
-                continue
+        r = check_autoplay(world)
+        if r == -1:
+            libtcod.console_check_for_keypress()
+            continue
+        elif r == 1:
+            world.draw(False)
+            libtcod.console_flush()
 
-        if world.resting:
-            if world.stats.tired.x >= 3.0:
-                world.msg.m('You stop resting.')
-                world.resting = False
-                world.draw(False)
-                libtcod.console_flush()
-            else:
-                world.rest()
-                libtcod.console_check_for_keypress()
-                continue
-
-        if world.digging:
-            if world.grid[world.digging[1]][world.digging[0]] <= -10:
-                world.convert_to_floor(world.digging[0], world.digging[1])
-                world.digging = None
-                world.draw(False)
-                libtcod.console_flush()
-            else:
-                world.grid[world.digging[1]][world.digging[0]] -= 0.1
-                world.tick()
-                libtcod.console_check_for_keypress()
-                continue
 
         if world.dead: break
 
-        key = libtcod.console_wait_for_keypress(True)
+        #key = libtcod.console_wait_for_keypress(True)
+        #world._inputs.append((key.c, key.vk))
+        key = console_wait_for_keypress()
 
         if chr(key.c) in world.ckeys:
             world.ckeys[chr(key.c)]()
@@ -2700,7 +2793,7 @@ def main():
     libtcod.console_flush()
     libtcod.console_wait_for_keypress(False)
 
-    if world.dead:
+    if not replay and world.dead:
         world.form_highscore()
 
 
