@@ -2811,7 +2811,7 @@ def main(replay=None, highscorefilename='highscore'):
     while 1:
 
         if libtcod.console_is_window_closed():
-            if replay is not None:
+            if replay is None:
                 world.save()
             break
 
@@ -2846,7 +2846,7 @@ def main(replay=None, highscorefilename='highscore'):
     libtcod.console_flush()
     libtcod.console_wait_for_keypress(False)
 
-    if replay is not None and world.dead:
+    if replay is None and world.dead:
         world.form_highscore()
 
 
