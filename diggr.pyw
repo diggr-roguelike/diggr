@@ -542,6 +542,10 @@ class ItemStock:
                             desc=['Ostensibly to be used as an aid in traversing the caves,',
                                   'this sporting item is a good makeshift weapon.'])
 
+        self.longsword = Item('longsword', slot='e', skin=('(', libtcod.silver),
+                              attack=6.0, rarity=8,
+                              desc=['Ye olde assault weapon.'])
+
         self.booze = Item("potion$s of booze", slot='d', skin=('!', libtcod.green),
                           booze=True, cursedchance=10, applies=True, stackrange=2,
                           count=1, rarity=10,
@@ -1180,6 +1184,18 @@ class World:
                     self.itemap[(x, y)] = [item]
                 else:
                     self.itemap[(x, y)].append(item)
+
+        for pl,dl,itm in self.bones:
+            #print '!!!', pl, dl, [i.name for i in itm]
+            if dl == self.dlev and len(itm) > 0:
+                itm2 = [copy.copy(i) for i in itm]
+
+                x, y = ll[random.randint(0, len(ll)-1)]
+                #print x,y,itm
+                if (x, y) not in self.itemap:
+                    self.itemap[(x,y)] = itm2
+                else:
+                    self.itemap[(x,y)].extend(itm2)
 
 
     def regen(self, w_, h_):
@@ -2528,7 +2544,17 @@ class World:
         self.done = True
 
 
+    def load_bones(self):
+        self.bones = []
+        try:
+            bf = open('bones', 'r')
+            self.bones = cPickle.load(bf)
+        except:
+            pass
+
+
     def load(self):
+        print 'LOADING!'
         f = None
         state = None
 
@@ -2557,7 +2583,8 @@ class World:
               'kills': self.killed_monsters,
               'reason': self.stats.health.reason,
               'seed': self._seed,
-              'inputs': self._inputs}
+              'inputs': self._inputs,
+              'bones': self.bones}
 
         # Clobber the savefile.
         try:
@@ -2565,6 +2592,7 @@ class World:
         except:
             pass
 
+        # Append to highscore.
         hss = []
         try:
             hsf = open('highscore', 'r')
@@ -2579,6 +2607,26 @@ class World:
             cPickle.dump(hss, hsf)
         except:
             pass
+
+
+        # Form bones.
+        bones = []
+        try:
+            bf = open('bones', 'r')
+            bones = cPickle.load(bf)
+        except:
+            pass
+
+        bones.append((self.plev, self.dlev, [i for i in self.inv if i is not None]))
+        bones = bones[-3:]
+
+        try:
+            bf = open('bones', 'w')
+            cPickle.dump(bones, bf)
+        except:
+            pass
+
+        # Show some info.
 
         s = ['']
         s.append('%c%d total games logged.' % (libtcod.COLCTRL_1, len(hss)))
@@ -2668,7 +2716,12 @@ class World:
 
 
 
-def start_game(world, w, h, oldseed=None):
+def start_game(world, w, h, oldseed=None, oldbones=None):
+
+    if oldbones:
+        world.bones = oldbones
+    else:
+        world.load_bones()
 
     if oldseed or not world.load():
         if oldseed:
@@ -2676,6 +2729,7 @@ def start_game(world, w, h, oldseed=None):
         else:
             world._seed = int(time.time())
 
+        print 'SEEDING!: ', world._seed
         random.seed(world._seed)
         global _inputs
         _inputs = world._inputs
@@ -2718,20 +2772,19 @@ def check_autoplay(world):
     return 0
 
 
-def main(replay=None):
+def main(replay=None, highscorefilename='highscore'):
 
     oldseed = None
+    oldbones = None
 
-    if replay:
+    if replay is not None:
         hss = []
-        try:
-            hsf = open('highscore', 'r')
-            hss = cPickle.load(hsf)
-        except:
-            pass
+        hsf = open(highscorefilename, 'r')
+        hss = cPickle.load(hsf)
 
         oldseed = hss[replay]['seed']
         oldinputs = hss[replay]['inputs']
+        oldbones = hss[replay]['bones']
 
         global _inputqueue
         _inputqueue = oldinputs
@@ -2753,12 +2806,12 @@ def main(replay=None):
     world = World()
     world.make_keymap()
 
-    start_game(world, w, h, oldseed)
+    start_game(world, w, h, oldseed=oldseed, oldbones=oldbones)
 
     while 1:
 
         if libtcod.console_is_window_closed():
-            if not replay:
+            if replay is not None:
                 world.save()
             break
 
@@ -2793,7 +2846,7 @@ def main(replay=None):
     libtcod.console_flush()
     libtcod.console_wait_for_keypress(False)
 
-    if not replay and world.dead:
+    if replay is not None and world.dead:
         world.form_highscore()
 
 
@@ -2801,4 +2854,5 @@ def main(replay=None):
 #import cProfile
 #cProfile.run('main()')
 
-main()
+if __name__=='__main__':
+    main()
