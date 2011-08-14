@@ -55,7 +55,7 @@ def main():
         hsf = open('highscore', 'r')
         hss = cPickle.load(hsf)
     except:
-        passs
+        pass
 
     if len(hss) < 3:
         n = 0
