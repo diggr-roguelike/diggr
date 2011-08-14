@@ -899,10 +899,12 @@ class MonsterStock:
         m = self.monsters[mon.level]
 
         for x in range(len(m)):
-            if mon.name == m[x].name and m[x].count == 1:
-                del m[x]
-            else:
-                m[x].count -= 1
+            if mon.name == m[x].name:
+                if m[x].count == 1:
+                    del m[x]
+                else:
+                    m[x].count -= 1
+                break
 
         if len(m) == 0:
             del self.monsters[mon.level]
