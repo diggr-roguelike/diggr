@@ -24,6 +24,7 @@ def console_wait_for_keypress():
     if _inputqueue:
         c, vk = _inputqueue[0]
         _inputqueue = _inputqueue[1:]
+        #libtcod.console_wait_for_keypress(False)
         libtcod.console_check_for_keypress()
         libtcod.sys_sleep_milli(100)
         return fakekey(c, vk)
@@ -1186,12 +1187,11 @@ class World:
                     self.itemap[(x, y)].append(item)
 
         for pl,dl,itm in self.bones:
-            #print '!!!', pl, dl, [i.name for i in itm]
             if dl == self.dlev and len(itm) > 0:
                 itm2 = [copy.copy(i) for i in itm]
 
                 x, y = ll[random.randint(0, len(ll)-1)]
-                #print x,y,itm
+
                 if (x, y) not in self.itemap:
                     self.itemap[(x,y)] = itm2
                 else:
@@ -2076,7 +2076,7 @@ class World:
                         s.append('You see a cave floor.')
 
                 else:
-                        s.append('You see a cave wall. ' + str(self.grid[ty][tx]))
+                        s.append('You see a cave wall.')
 
             k = draw_window(s, self.w, self.h, True)
 
@@ -2554,7 +2554,6 @@ class World:
 
 
     def load(self):
-        print 'LOADING!'
         f = None
         state = None
 
@@ -2563,6 +2562,7 @@ class World:
             state = cPickle.load(f)
         except:
             return False
+        #print 'LOADING!'
 
         for k,v in state.iteritems():
             setattr(self, k, v)
@@ -2718,7 +2718,7 @@ class World:
 
 def start_game(world, w, h, oldseed=None, oldbones=None):
 
-    if oldbones:
+    if oldbones is not None:
         world.bones = oldbones
     else:
         world.load_bones()
@@ -2729,7 +2729,7 @@ def start_game(world, w, h, oldseed=None, oldbones=None):
         else:
             world._seed = int(time.time())
 
-        print 'SEEDING!: ', world._seed
+        #print 'SEEDING!: ', world._seed
         random.seed(world._seed)
         global _inputs
         _inputs = world._inputs
