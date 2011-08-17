@@ -878,11 +878,12 @@ class MonsterStock:
         self.add(Monster('shaihulud', skin=('W', libtcod.gray),
                          attack=2.0, defence=3.0, explodeimmune=True, range=30,
                          level=6, count=4, straightline=True, stoneeating=True,
+                         heatseeking=True,
                          desc=['A giant worm. It is gray in color and has a skin made of something like granite.',
                                'It is about 15 meters in length.']))
 
         self.add(Monster('sleep faerie', skin=('f', libtcod.light_pink),
-                         attack=2.0, defence=1.0, range=9, level=6, count=5,
+                         attack=1.0, defence=1.0, range=9, level=6, count=5,
                          sleepattack=True,
                          desc=["A tiny fay creature dressed in pink ballet clothes.",
                                "It looks adorable."]))
@@ -963,6 +964,7 @@ class World:
         self.plev = 1
         self.t = 0
         self.sleeping = 0
+        self.forcedsleep = False
         self.resting = False
         self.cooling = 0
         self.digging = None
@@ -1382,8 +1384,10 @@ class World:
 
         if self.sleeping > 0:
             self.sleeping -= 1
+        else:
+            self.forcedsleep = False
 
-    def start_sleep(self, force = False, quick = False):
+    def start_sleep(self, force = False, quick = False, realforced = False):
         if not force and self.stats.sleep.x > -2.0:
             self.msg.m('You don\'t feel like sleeping yet.')
             return
@@ -1397,6 +1401,9 @@ class World:
             self.sleep = 10
         self.digging = None
         self.resting = False
+
+        if realforced:
+            self.forcedsleep = True
 
     def start_rest(self):
         self.msg.m('You start resting.')
@@ -2036,13 +2043,13 @@ class World:
                 else:
                     self.msg.m(smu + ' misses.')
 
-            self.stats.health.dec(dmg, sm)
-
             if mon.sleepattack:
                 self.msg.m('You fall asleep!')
-                self.start_sleep(force=True, quick=True)
+                self.start_sleep(force=True, quick=True, realforced=True)
                 self.tick_checkstats()
                 return
+
+            self.stats.health.dec(dmg, sm)
 
             if self.resting:
                 self.msg.m('You stop resting.')
@@ -2294,6 +2301,9 @@ class World:
         draw_window(s, self.w, self.h)
 
 
+    def gainlev(self):
+        self.plev += 1
+
     def make_keymap(self):
         self.ckeys = {
             'h': self.move_left,
@@ -2319,6 +2329,7 @@ class World:
             '?': self.show_help,
             'S': self.save,
 
+            'z': self.gainlev,
             'x': self.debug_descend,
             'w': self.wish
             }
@@ -2335,7 +2346,7 @@ class World:
         if mon.slow and (self.t & 1) == 0:
             return None, None
 
-        if dist > mon.range or mon.confused:
+        if dist > mon.range or mon.confused or (mon.sleepattack and self.sleeping):
             mdx = x + random.randint(-1, 1)
             mdy = y + random.randint(-1, 1)
             if (mdx, mdy) not in self.walkmap:
@@ -2343,12 +2354,6 @@ class World:
                 mdy = None
             if mon.confused:
                 mon.confused -= 1
-
-        elif mon.straightline:
-
-            libtcod.line_init(mon.x, mon.y, self.px, self.py)
-
-            mdx, mdy = libtcod.line_step()
 
         else:
 
@@ -2370,8 +2375,12 @@ class World:
                 mon.known_px = self.px
                 mon.known_py = self.py
 
-            libtcod.path_compute(self.floorpath, x, y, mon.known_px, mon.known_py)
-            mdx, mdy = libtcod.path_walk(self.floorpath, True)
+            if mon.straightline:
+                libtcod.line_init(x, y, mon.known_px, mon.known_py)
+                mdx, mdy = libtcod.line_step()
+            else:
+                libtcod.path_compute(self.floorpath, x, y, mon.known_px, mon.known_py)
+                mdx, mdy = libtcod.path_walk(self.floorpath, True)
 
         if mon.stoneeating:
             if mdx is not None:
@@ -2782,7 +2791,7 @@ def start_game(world, w, h, oldseed=None, oldbones=None):
 def check_autoplay(world):
 
     if world.sleeping > 0:
-        if world.stats.sleep.x >= 3.0:
+        if world.stats.sleep.x >= 3.0 and not world.forcedsleep:
             world.msg.m('You wake up.')
             world.sleeping = 0
             return 1
