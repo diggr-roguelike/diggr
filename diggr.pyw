@@ -617,7 +617,7 @@ class ItemStock:
                                    'Useful for tricking predators with infrared vision.'])
 
         self.tinfoil = Item("tin foil", slot='a', skin=('[', libtcod.lightest_sepia), count=0,
-                            psyimmune=True, rarity=12, selfdestruct=(300, 100),
+                            psyimmune=True, rarity=12, selfdestruct=(450, 100),
                             desc=['Not as good as a real tin foil hat, but will still help in emergencies.'])
 
         self.springboots = Item("springy boots", slot='g', count=0,
@@ -650,7 +650,7 @@ class ItemStock:
                              desc=['A lamp that is somewhat brighter than a generic lamp.'])
 
         self.helmetlamp = Item("flashlight helmet", slot='a',
-                               skin=('[', libtcod.orange), defence=0.15, rarity=4, lightradius=4,
+                               skin=('[', libtcod.orange), defence=0.15, rarity=8, lightradius=4,
                                desc=['A plastic helment with a lamp mounted on it.'])
 
         self.pelorusm = Item('pelorus', slot='b', skin=('"', libtcod.gray),
@@ -761,7 +761,8 @@ class Monster:
     def __init__(self, name, skin=('x', libtcod.cyan), count=10, level=1,
                  attack=0.5, defence=0.5, explodeimmune=False, range=11,
                  itemdrop=None, heatseeking=False, desc=[], psyattack=0,
-                 psyrange=0, confimmune=False, slow=False, selfdestruct=False):
+                 psyrange=0, confimmune=False, slow=False, selfdestruct=False,
+                 straightline=False, stoneeating=False, sleepattack=False):
         self.name = name
         self.skin = skin
         self.count = count
@@ -778,6 +779,9 @@ class Monster:
         self.confimmune = confimmune
         self.slow = slow
         self.selfdestruct = selfdestruct
+        self.straightline = straightline
+        self.stoneeating = stoneeating
+        self.sleepattack = sleepattack
 
         self.x = 0
         self.y = 0
@@ -870,6 +874,18 @@ class MonsterStock:
                          attack=1.0, defence=36.0, explodeimmune=True, range=30,
                          confimmune=True, slow=True, level=5, count=4,
                          desc=['A giant, the size of a small house, turtle!']))
+
+        self.add(Monster('shaihulud', skin=('W', libtcod.gray),
+                         attack=2.0, defence=3.0, explodeimmune=True, range=30,
+                         level=6, count=4, straightline=True, stoneeating=True,
+                         desc=['A giant worm. It is gray in color and has a skin made of something like granite.',
+                               'It is about 15 meters in length.']))
+
+        self.add(Monster('sleep faerie', skin=('f', libtcod.light_pink),
+                         attack=2.0, defence=1.0, range=9, level=6, count=5,
+                         sleepattack=True,
+                         desc=["A tiny fay creature dressed in pink ballet clothes.",
+                               "It looks adorable."]))
 
 
     def add(self, mon):
@@ -1402,10 +1418,15 @@ class World:
 
         self.tick()
 
-    def convert_to_floor(self, x, y):
+    def convert_to_floor(self, x, y, rubble=0):
         self.walkmap.add((x,y))
-        if (x,y) in self.featmap and self.featmap[(x,y)] == '*':
-            del self.featmap[(x,y)]
+        if rubble == 0:
+            if (x,y) in self.featmap and self.featmap[(x,y)] == '*':
+                del self.featmap[(x,y)]
+        elif rubble == 1:
+            if (x, y) not in self.featmap:
+                self.featmap[(x,y)] = '*'
+
         libtcod.map_set_properties(self.tcodmap, x, y, True, True)
 
 
@@ -2017,6 +2038,12 @@ class World:
 
             self.stats.health.dec(dmg, sm)
 
+            if mon.sleepattack:
+                self.msg.m('You fall asleep!')
+                self.start_sleep(force=True, quick=True)
+                self.tick_checkstats()
+                return
+
             if self.resting:
                 self.msg.m('You stop resting.')
                 self.resting = False
@@ -2317,6 +2344,12 @@ class World:
             if mon.confused:
                 mon.confused -= 1
 
+        elif mon.straightline:
+
+            libtcod.line_init(mon.x, mon.y, self.px, self.py)
+
+            mdx, mdy = libtcod.line_step()
+
         else:
 
             if mon.psyrange > 0 and dist <= mon.psyrange:
@@ -2339,6 +2372,11 @@ class World:
 
             libtcod.path_compute(self.floorpath, x, y, mon.known_px, mon.known_py)
             mdx, mdy = libtcod.path_walk(self.floorpath, True)
+
+        if mon.stoneeating:
+            if mdx is not None:
+                if (mdx, mdy) not in self.walkmap:
+                    self.convert_to_floor(mdx, mdy, rubble=1)
 
         return mdx, mdy
 
