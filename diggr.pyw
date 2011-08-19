@@ -9,24 +9,30 @@ import cPickle
 
 import libtcodpy as libtcod
 
-# make ring mail less powerful -- have items for a full suit of armor, 
-# more powerful when together, but less powerful when each item by itself
+# - make ring mail less powerful -- have items for a full suit of armor, 
+# - more powerful when together, but less powerful when each item by itself
 #
 # sticky glue -- applying it creates a trap feature. monsters stepping on it
 # get stuck for a few turns. while stuck they only have 1/3 defence.
 # (flying monsters cannot get stuck)
 # 
-# 'black knight' monster -- attack and defence equal to player in full armor
+# - 'black knight' monster -- attack and defence equal to player in full armor
 # with longsword
+#
+# leipreachan -- attack to hunger
 #
 # portable hole -- pressing it will teleport player 3 squares in random direction.
 # stackable with 1-3 holes in stack by default, up to 5 max.
 #
 # explosion-immune armor (self-destructing)
+#
 # telepathy helmet (see monsters in radius 8 regardless of fov and lightsource)
 #
-# versioning in replays!
+# - versioning in replays!
 #
+
+global _version
+_version = '11.08.21'
 
 global _inputs
 global _inputqueue
@@ -39,7 +45,11 @@ class fakekey:
 
 def console_wait_for_keypress():
     global _inputqueue
-    if _inputqueue:
+    if _inputqueue is not None:
+
+        if len(_inputqueue) == 0:
+            raise Exception('Malformed replay file.')
+
         c, vk = _inputqueue[0]
         _inputqueue = _inputqueue[1:]
         #libtcod.console_wait_for_keypress(False)
@@ -408,7 +418,7 @@ class Inventory:
 
     def get_defence(self):
         return getattr(self.head, 'defence', 0) + \
-               getattr(self.neck, 'defence', 0) + \
+               getattr(self.left, 'defence', 0) + \
                getattr(self.trunk, 'defence', 0) + \
                getattr(self.legs, 'defence', 0) + \
                getattr(self.feet, 'defence', 0)
@@ -656,11 +666,11 @@ class ItemStock:
                                      "Here in the caves there is nothing to be ashamed of, really."])
 
         self.furpants = Item('fur pants', slot='f', count=0,
-                             skin=('[', libtcod.gray), defence=0.5, heatbonus=0.005, rarity=5,
+                             skin=('[', libtcod.gray), defence=0.15, heatbonus=0.005, rarity=5,
                              desc=['Shaggy pants made of fur. You would look like a true barbarian in them.'])
 
         self.furcoat = Item('fur coat', slot='c',
-                             skin=('[', libtcod.gray), defence=0.5, heatbonus=0.005, rarity=5,
+                             skin=('[', libtcod.gray), defence=0.15, heatbonus=0.005, rarity=5,
                              desc=['A shaggy coat made of fur. You would look like a true barbarian in it.'])
 
         self.halolamp = Item("halogen lamp", slot='b', lightradius=12, rarity=3,
@@ -707,8 +717,24 @@ class ItemStock:
                                   selfdestruct=(1000, 100),
                                   desc=['A vest that proves a portable force-field shileld.'])
 
+        self.vikinghelmet = Item('viking helmet', slot='a', skin=('[', libtcod.green),
+                                 rarity=5, defence=0.5,
+                                 desc=['An iron helmet with large horns, for extra protection.'])
+
+        self.shield = Item('shield', slot='d', skin=('[', libtcod.dark_green), 
+                           rarity=5, defence=1.0,
+                           desc=['A sturdy wooden shield.'])
+
+        self.metalboots = Item('metal boots', slot='g', skin=('[', libtcod.brass),
+                               rarity=5, defence=0.5,
+                               desc=['Heavy boots made out of a single piece of sheet metal.'])
+
+        self.legarmor = Item('leg armor', slot='f', skin=('[', libtcod.copper),
+                             rarity=5, defence=0.5, 
+                             desc=['Protective iron plates that go on your thighs and shins.'])
+
         self.ringmail = Item('ring mail', slot='c', skin=('[', libtcod.gold),
-                             rarity=5, defence=3.0,
+                             rarity=5, defence=2.0,
                              desc=['Ye olde body protection armor.'])
 
         self.magiclamp = Item('magic lamp', slot='d', skin=('(', libtcod.gold),
@@ -905,6 +931,16 @@ class MonsterStock:
                          sleepattack=True,
                          desc=["A tiny fay creature dressed in pink ballet clothes.",
                                "It looks adorable."]))
+
+        self.add(Monster('black knight', skin=('k', libtcod.darker_grey),
+                         attack=6.0, defence=4.5, range=8, level=7, count=5,
+                         desc=['An evil humanoid in black cast-iron armor.',
+                               'He is armed with a longsword.']))
+
+        self.add(Monster('juggernaut', skin=('k', libtcod.darkest_grey),
+                         attack=6.0, defence=4.5, range=8, level=8, count=5,
+                         desc=['A larger, comically deformed version of the black knight.',
+                               'He has ridiculously bulging muscles and a tiny head.']))
 
 
     def add(self, mon):
@@ -2651,7 +2687,8 @@ class World:
               'reason': self.stats.health.reason,
               'seed': self._seed,
               'inputs': self._inputs,
-              'bones': self.bones}
+              'bones': self.bones,
+              'version': _version}
 
         # Clobber the savefile.
         try:
@@ -2856,6 +2893,8 @@ def main(replay=None, highscorefilename='highscore'):
         global _inputqueue
         _inputqueue = oldinputs
 
+        if _version != hss[replay]['version']:
+            return False
 
     w = 80
     h = 25
@@ -2916,6 +2955,7 @@ def main(replay=None, highscorefilename='highscore'):
     if replay is None and world.dead:
         world.form_highscore()
 
+    return True
 
 
 #import cProfile

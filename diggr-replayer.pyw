@@ -115,7 +115,13 @@ def main():
 
         elif k == 'z':
             name = input_name()
-            diggr.main(replay=0, highscorefilename=name)
+            ok = diggr.main(replay=0, highscorefilename=name)
+            if not ok:
+                diggr.draw_window(['Wrong version of replay file!'],
+                                  w, h)
+
+            if len(diggr._inputs) != 0:
+                raise Exception('Malformed replay file.')
 
         elif k in 'abc':
             thisn = n + (ord(k)-97)
@@ -128,7 +134,14 @@ def main():
             k2 = diggr.draw_window(s2, w, h, True)
 
             if k2 == 'a':
-                diggr.main(replay=thisn)
+                ok = diggr.main(replay=thisn)
+                if not ok:
+                    diggr.draw_window(['Wrong version of replay file!'],
+                                      w, h)
+
+                if len(diggr._inputs) != 0:
+                    raise Exception('Malformed replay file.')
+
             elif k2 == 'b':
                 name = input_name()
                 if len(name) > 0:
