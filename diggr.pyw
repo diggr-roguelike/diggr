@@ -9,6 +9,24 @@ import cPickle
 
 import libtcodpy as libtcod
 
+# make ring mail less powerful -- have items for a full suit of armor, 
+# more powerful when together, but less powerful when each item by itself
+#
+# sticky glue -- applying it creates a trap feature. monsters stepping on it
+# get stuck for a few turns. while stuck they only have 1/3 defence.
+# (flying monsters cannot get stuck)
+# 
+# 'black knight' monster -- attack and defence equal to player in full armor
+# with longsword
+#
+# portable hole -- pressing it will teleport player 3 squares in random direction.
+# stackable with 1-3 holes in stack by default, up to 5 max.
+#
+# explosion-immune armor (self-destructing)
+# telepathy helmet (see monsters in radius 8 regardless of fov and lightsource)
+#
+# versioning in replays!
+#
 
 global _inputs
 global _inputqueue
@@ -871,7 +889,7 @@ class MonsterStock:
                          desc=['The other Pokemon nobody told you about.']))
 
         self.add(Monster('giant turtle', skin=('O', libtcod.green),
-                         attack=1.0, defence=36.0, explodeimmune=True, range=30,
+                         attack=1.0, defence=24.0, explodeimmune=True, range=30,
                          confimmune=True, slow=True, level=5, count=4,
                          desc=['A giant, the size of a small house, turtle!']))
 
