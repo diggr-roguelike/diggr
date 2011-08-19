@@ -9,24 +9,9 @@ import cPickle
 
 import libtcodpy as libtcod
 
-# - make ring mail less powerful -- have items for a full suit of armor, 
-# - more powerful when together, but less powerful when each item by itself
-#
 # sticky glue -- applying it creates a trap feature. monsters stepping on it
 # get stuck for a few turns. while stuck they only have 1/3 defence.
 # (flying monsters cannot get stuck)
-# 
-# - 'black knight' monster -- attack and defence equal to player in full armor
-# with longsword
-#
-# leipreachan -- attack to hunger
-#
-# portable hole -- pressing it will teleport player 3 squares in random direction.
-# stackable with 1-3 holes in stack by default, up to 5 max.
-#
-# explosion-immune armor (self-destructing)
-#
-# telepathy helmet (see monsters in radius 8 regardless of fov and lightsource)
 #
 # - versioning in replays!
 #
@@ -443,7 +428,8 @@ class Item:
                  detect_monsters=False, detect_items=False, food=None,
                  tracker=False, wishing=False, repelrange=None, selfdestruct=None,
                  digray=None, jinni=False, heatbonus=0, use_an=False,
-                 stackrange=None, mapper=None, converts=None):
+                 stackrange=None, mapper=None, converts=None, jumprange=None,
+                 explodeimmune=False, telepathyrange=None):
         self.slot = slot
         self.bonus = bonus
         self.name = name
@@ -490,6 +476,9 @@ class Item:
         self.stackrange = stackrange
         self.mapper = mapper
         self.converts = converts
+        self.jumprange = jumprange
+        self.explodeimmune = explodeimmune
+        self.telepathyrange = telepathyrange
 
         self.ammo = None
         self.gencount = 0
@@ -679,7 +668,7 @@ class ItemStock:
 
         self.helmetlamp = Item("flashlight helmet", slot='a',
                                skin=('[', libtcod.orange), defence=0.15, rarity=8, lightradius=4,
-                               desc=['A plastic helment with a lamp mounted on it.'])
+                               desc=['A plastic helmet with a lamp mounted on it.'])
 
         self.pelorusm = Item('pelorus', slot='b', skin=('"', libtcod.gray),
                             applies=True, detector=True, rarity=3, detect_monsters=True,
@@ -721,7 +710,7 @@ class ItemStock:
                                  rarity=5, defence=0.5,
                                  desc=['An iron helmet with large horns, for extra protection.'])
 
-        self.shield = Item('shield', slot='d', skin=('[', libtcod.dark_green), 
+        self.shield = Item('shield', slot='d', skin=('[', libtcod.dark_green),
                            rarity=5, defence=1.0,
                            desc=['A sturdy wooden shield.'])
 
@@ -730,7 +719,7 @@ class ItemStock:
                                desc=['Heavy boots made out of a single piece of sheet metal.'])
 
         self.legarmor = Item('leg armor', slot='f', skin=('[', libtcod.copper),
-                             rarity=5, defence=0.5, 
+                             rarity=5, defence=0.5,
                              desc=['Protective iron plates that go on your thighs and shins.'])
 
         self.ringmail = Item('ring mail', slot='c', skin=('[', libtcod.gold),
@@ -744,6 +733,22 @@ class ItemStock:
         self.magicmapper = Item('magic mapper', slot='e', skin=('"', libtcod.light_yellow),
                                 rarity=6, applies=True, mapper=4,
                                 desc=['A strange device that looks something like a large fishing sonar.'])
+
+
+        self.portablehole = Item('portable hole$s', slot='d', skin=('`', libtcod.sepia),
+                                 rarity=6, applies=True, jumprange=3, stackrange=5,
+                                 count=2,
+                                 desc=['A portable hole. Used as an escape device.'])
+
+        self.bombsuit = Item('bomb suit', slot='c', skin=('[', libtcod.lightest_yellow),
+                             explodeimmune=True, rarity=3, defence=0.1,
+                             selfdestruct=(300, 50),
+                             desc=['The standard protective suit for bomb squads.'])
+
+        self.psyhelmet = Item('crystal helmet', slot='a', skin=('[', libtcod.white),
+                               telepathyrange=6, rarity=6,
+                               desc=['An ornate helmet made of crystal.',
+                                     'It is a powerful artifact of psyonic magic.'])
 
 
         self.regenpool()
@@ -806,7 +811,8 @@ class Monster:
                  attack=0.5, defence=0.5, explodeimmune=False, range=11,
                  itemdrop=None, heatseeking=False, desc=[], psyattack=0,
                  psyrange=0, confimmune=False, slow=False, selfdestruct=False,
-                 straightline=False, stoneeating=False, sleepattack=False):
+                 straightline=False, stoneeating=False, sleepattack=False,
+                 hungerattack=False):
         self.name = name
         self.skin = skin
         self.count = count
@@ -826,6 +832,7 @@ class Monster:
         self.straightline = straightline
         self.stoneeating = stoneeating
         self.sleepattack = sleepattack
+        self.hungerattack = hungerattack
 
         self.x = 0
         self.y = 0
@@ -931,6 +938,11 @@ class MonsterStock:
                          sleepattack=True,
                          desc=["A tiny fay creature dressed in pink ballet clothes.",
                                "It looks adorable."]))
+
+        self.add(Monster('leipreachan', skin=('f', libtcod.azure),
+                         attack=2.5, defence=1.5, range=9, level=7, count=5,
+                         hungerattack=True,
+                         desc=['A fay creature in the form of a dirty, lecherous old man.']))
 
         self.add(Monster('black knight', skin=('k', libtcod.darker_grey),
                          attack=6.0, defence=4.5, range=8, level=7, count=5,
@@ -1598,7 +1610,7 @@ class World:
         elif cc == 'c' and i.desc:
             ss = i.desc[:]
             ss.append('')
-            ss.append('Slot: ' + self.slot_to_name(i))
+            ss.append('Slot: ' + self.slot_to_name(i.slot))
             draw_window(ss, self.w, self.h)
             self.inv.take(i)
             self.tick()
@@ -1806,6 +1818,23 @@ class World:
             self.msg.m('The wand explodes in a brilliant white flash!')
             return None
 
+        elif item.jumprange:
+            l = []
+            for x in xrange(self.px - item.jumprange, self.px + item.jumprange + 1):
+                for y in [self.py - item.jumprange, self.px + item.jumprange]:
+                    if (x,y) in self.walkmap:
+                        l.append((x,y))
+
+            for y in xrange(self.py - item.jumprange - 1, self.py + item.jumprange):
+                for x in [self.px - item.jumprange, self.px + item.jumprange]:
+                    if (x,y) in self.walkmap:
+                        l.append((x,y))
+
+            l = l[random.randint(0, len(l)-1)]
+            self.px = l[0]
+            self.py = l[1]
+            return None
+
         elif item.rangeattack or item.rangeexplode:
             if item.ammo <= 0:
                 self.msg.m("It's out of ammo!")
@@ -1974,7 +2003,8 @@ class World:
                 libtcod.map_set_properties(self.tcodmap, x, y, True, True)
             self.walkmap.add((x, y))
 
-            if x == self.px and y == self.py:
+            if x == self.px and y == self.py and \
+                not (self.inv.trunk and self.inv.trunk.explodeimmune):
                 self.stats.health.dec(6.0, "explosion")
                 self.tick_checkstats()
 
@@ -2103,7 +2133,10 @@ class World:
                 self.tick_checkstats()
                 return
 
-            self.stats.health.dec(dmg, sm)
+            if mon.hungerattack:
+                self.stats.hunger.dec(dmg)
+            else:
+                self.stats.health.dec(dmg, sm)
 
             if self.resting:
                 self.msg.m('You stop resting.')
@@ -2549,6 +2582,16 @@ class World:
                 else:
                     in_fov = libtcod.map_is_in_fov(self.tcodmap, x, y)
 
+                is_lit = False
+
+                if self.inv.head and self.inv.head.telepathyrange:
+                    if (x, y) in self.monmap:
+                        d = math.sqrt(math.pow(abs(y - self.py),2) + math.pow(abs(x - self.px),2))
+                        if d <= self.inv.head.telepathyrange:
+                            in_fov = True
+                            is_lit = True
+
+
                 if not in_fov:
                     c = ' '
                     fore = libtcod.black
@@ -2587,9 +2630,10 @@ class World:
                             fore = libtcod.desaturated_blue #libtcod.Color(100, 128, 255)
                         c = '#'
 
-                    d = math.sqrt(math.pow(abs(y - self.py),2) + math.pow(abs(x - self.px),2))
+                    if not is_lit:
+                        d = math.sqrt(math.pow(abs(y - self.py),2) + math.pow(abs(x - self.px),2))
 
-                    fore = libtcod.color_lerp(fore, back, min(d/lightradius, 1.0))
+                        fore = libtcod.color_lerp(fore, back, min(d/lightradius, 1.0))
 
                 if x == _hlx and y == _hly:
                     # hack
