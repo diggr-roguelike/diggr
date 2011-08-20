@@ -9,9 +9,6 @@ import cPickle
 
 import libtcodpy as libtcod
 
-# sticky glue -- applying it creates a trap feature. monsters stepping on it
-# get stuck for a few turns. while stuck they only have 1/3 defence.
-# (flying monsters cannot get stuck)
 #
 # - versioning in replays!
 #
@@ -418,6 +415,11 @@ class Inventory:
     def get_confattack(self):
         return getattr(self.right, 'confattack', None)
 
+    def get_psyimmune(self):
+        return getattr(self.head, 'psyimmune', None) or \
+               getattr(self.right, 'psyimmune', None) or \
+               getattr(self.left, 'psyimmune', None)
+
 
 class Item:
     def __init__(self, name, slot='', bonus=0, count=None, ident=False,
@@ -568,6 +570,10 @@ class ItemStock:
                               attack=6.0, rarity=8,
                               desc=['Ye olde assault weapon.'])
 
+        self.excalibur = Item('Excalibur', slot='e', skin=('(', libtcod.silver),
+                              attack=7.5, count=0,
+                              desc=['A larger-than-life sword.'])
+
         self.booze = Item("potion$s of booze", slot='d', skin=('!', libtcod.green),
                           booze=True, cursedchance=10, applies=True, stackrange=2,
                           count=1, rarity=10,
@@ -629,8 +635,20 @@ class ItemStock:
 
         self.tinfoilhat = Item('tin foil hat', slot='a', skin=('[', libtcod.gray),
                                psyimmune=True, rarity=6,
+                               selfdestruct=(3000,500),
                                desc=['A metallic hat that protects against attempts of ',
                                      'mind control by various crazies.'])
+
+        self.tinfoilcrystal = Item('crystal of tin', slot='d', skin=('+', libtcod.gray),
+                                   psyimmune=True, rarity=6,
+                                   selfdestruct=(3000,500),
+                                   desc=['A magical crystal of tin.',
+                                         'It acts much the same as a tin foil hat.'])
+
+        self.tinstaff = Item('eldritch staff', slot='e', skin=('/', libtcod.gray),
+                             psyimmune=True, rarity=5, attack=0.01,
+                             desc=['A staff covered with ornate carvings of lovecraftian horrors.',
+                                   'It seems to be a powerful psyonic artefact, albeit a useless weapon.'])
 
         self.coolpack = Item("some cold mud", slot='d', skin=('%', libtcod.light_blue),
                              applies=True, cooling=True, rarity=12, count=0,
@@ -821,7 +839,7 @@ class Monster:
                  itemdrop=None, heatseeking=False, desc=[], psyattack=0,
                  psyrange=0, confimmune=False, slow=False, selfdestruct=False,
                  straightline=False, stoneeating=False, sleepattack=False,
-                 hungerattack=False):
+                 hungerattack=False, flying=False):
         self.name = name
         self.skin = skin
         self.count = count
@@ -842,6 +860,7 @@ class Monster:
         self.stoneeating = stoneeating
         self.sleepattack = sleepattack
         self.hungerattack = hungerattack
+        self.flying = flying
 
         self.x = 0
         self.y = 0
@@ -921,7 +940,7 @@ class MonsterStock:
         self.add(Monster('spore', skin=('x', libtcod.pink),
                          attack=0, defence=0.2, range=30, level=4,
                          itemdrop='bomb', heatseeking=True, selfdestruct=True,
-                         confimmune=True, count=7,
+                         confimmune=True, count=7, flying=True,
                          desc=['A pulsating pink spherical spore, about 1 meter in diameter.',
                                'It is levitating.',
                                'It looks like it is radiating heat from the inside.']))
@@ -945,7 +964,7 @@ class MonsterStock:
 
         self.add(Monster('sleep faerie', skin=('f', libtcod.light_pink),
                          attack=1.0, defence=1.0, range=9, level=6, count=5,
-                         sleepattack=True,
+                         sleepattack=True, flying=True,
                          desc=["A tiny fay creature dressed in pink ballet clothes.",
                                "It looks adorable."]))
 
@@ -963,6 +982,21 @@ class MonsterStock:
                          attack=6.0, defence=4.5, range=8, level=8, count=5,
                          desc=['A larger, comically deformed version of the black knight.',
                                'He has ridiculously bulging muscles and a tiny head.']))
+
+        self.add(Monster('Oberon', skin=('F', libtcod.purple),
+                         attack=3.0, defence=3.0, range=10, level=9, count=1,
+                         flying=True, explodeimmune=True, confimmune=True,
+                         psyrange=4, psyattack=1.0,
+                         desc=['A faerie king.',
+                               'He takes on the appearance of a 2 meter tall',
+                               'handsome man, wearing a delicate crown.']))
+
+        self.add(Monster('Conan', skin=('K', libtcod.sepia),
+                         attack=7.5, defence=5.5, range=8, level=10, count=1,
+                         confimmune=True, itemdrop='excalibur',
+                         desc=['A well-muscled adventurer,',
+                               'he looks like he just stepped off a movie poster.',
+                               "He hates competition."]))
 
 
     def add(self, mon):
@@ -2147,7 +2181,7 @@ class World:
             psy = False
 
             if d > 1 and mon.psyattack > 0:
-                if getattr(self.inv.head, 'psyimmune', False):
+                if self.inv.get_psyimmune():
                     return
                 attack = mon.psyattack
                 defence = self.coef.unarmeddefence
@@ -2535,7 +2569,7 @@ class World:
         mdx = mon.x
         mdy = mon.y
 
-        if (mdx, mdy) in self.featmap and self.featmap[(mdx, mdy)] == '^':
+        if (mdx, mdy) in self.featmap and self.featmap[(mdx, mdy)] == '^' and not mon.flying:
             mn = str(mon)
             mn = mn[0].upper() + mn[1:]
             self.msg.m(mn + ' gets stuck in some glue!')
@@ -2958,6 +2992,7 @@ def start_game(world, w, h, oldseed=None, oldbones=None):
         world.regen(w, h)
         world.place()
         world.generate_inv()
+        world.msg.m("Kill all the monsters in the dungeon to win the game.")
         world.msg.m("Please press '?' to see help.")
 
 def check_autoplay(world):
