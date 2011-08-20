@@ -84,6 +84,9 @@ class Coeffs:
         self.boozestrength = (2, 0.5)
         self.coolingduration = (50, 5)
 
+        self.glueduration = (10,1)
+        self.gluedefencepenalty = 3
+
 
 class Stat:
     def __init__(self):
@@ -429,7 +432,7 @@ class Item:
                  tracker=False, wishing=False, repelrange=None, selfdestruct=None,
                  digray=None, jinni=False, heatbonus=0, use_an=False,
                  stackrange=None, mapper=None, converts=None, jumprange=None,
-                 explodeimmune=False, telepathyrange=None):
+                 explodeimmune=False, telepathyrange=None, makestrap=False):
         self.slot = slot
         self.bonus = bonus
         self.name = name
@@ -479,6 +482,7 @@ class Item:
         self.jumprange = jumprange
         self.explodeimmune = explodeimmune
         self.telepathyrange = telepathyrange
+        self.makestrap = makestrap
 
         self.ammo = None
         self.gencount = 0
@@ -750,6 +754,11 @@ class ItemStock:
                                desc=['An ornate helmet made of crystal.',
                                      'It is a powerful artifact of psyonic magic.'])
 
+        self.stickyglue = Item('sticky glue$s', slot='d', skin=('+', libtcod.light_yellow),
+                               applies=True, makestrap=True, rarity=8, count=1,
+                               stackrange=4,
+                               desc=['A tube of very sticky glue. It can be used to make traps.'])
+
 
         self.regenpool()
 
@@ -844,6 +853,7 @@ class Monster:
         self.hp = 3.0
         self.items = []
         self.confused = 0
+        self.glued = 0
 
     def __str__(self):
         s = self.name
@@ -1036,6 +1046,7 @@ class World:
         self.digging = None
         self.blind = False
         self.mapping = 0
+        self.glued = 0
 
         self.floorpath = None
 
@@ -1327,6 +1338,17 @@ class World:
 
 
     def move(self, _dx, _dy, do_spring=True):
+
+        if self.glued > 0:
+            self.glued -= 1
+            if self.glued == 0:
+                self.msg.m('You dislodge yourself from the glue.')
+                del self.featmap[(self.px, self.py)]
+            else:
+                self.msg.m('You are stuck in the glue!')
+                self.tick()
+                return
+
         dx = _dx + self.px
         dy = _dy + self.py
         if (dx,dy) in self.walkmap and dx >= 0 and dx < self.w and dy < self.h:
@@ -1347,6 +1369,12 @@ class World:
                         self.msg.m("You see several items here.")
                     else:
                         self.msg.m("You see " + str(self.itemap[(self.px, self.py)][0]) + '.')
+
+                if (self.px, self.py) in self.featmap and \
+                    self.featmap[(self.px, self.py)] == '^':
+                        self.msg.m('You just stepped in some glue!', True)
+                        self.glued = max(int(random.gauss(*self.coef.glueduration)), 1)
+
 
         else:
             return
@@ -1835,6 +1863,19 @@ class World:
             self.py = l[1]
             return None
 
+        elif item.makestrap:
+            if (self.px,self.py) in self.featmap:
+                self.msg.m('Nothing happens.')
+                return item
+
+            if (self.px,self.py) in self.watermap:
+                self.msg.m("That won't work while you're standing on water.")
+                return item
+
+            self.featmap[(self.px, self.py)] = '^'
+            self.msg.m('You spread the glue liberally on the floor.')
+            return None
+
         elif item.rangeattack or item.rangeexplode:
             if item.ammo <= 0:
                 self.msg.m("It's out of ammo!")
@@ -2066,6 +2107,9 @@ class World:
         if player_move:
 
             defence = mon.defence
+            if mon.glued:
+                defence /= self.coef.gluedefencepenalty
+
             dmg = roll(attack, plev, defence, mon.level)
 
             mon.hp -= dmg
@@ -2111,6 +2155,8 @@ class World:
             else:
                 attack = mon.attack
                 defence = max(self.inv.get_defence(), self.coef.unarmeddefence)
+                if self.glued:
+                    defence /= self.coef.gluedefencepenalty
 
 
             if attack == 0:
@@ -2189,6 +2235,8 @@ class World:
                     f = self.featmap[(tx, ty)]
                     if f == '>':
                         s.append('You see a hole in the floor.')
+                    elif f == '^':
+                        s.append('You see a cave floor covered with glue.')
                     elif f == '*':
                         s.append('You see rubble.')
 
@@ -2433,6 +2481,13 @@ class World:
         if mon.slow and (self.t & 1) == 0:
             return None, None
 
+        if mon.glued > 0:
+            mon.glued -= 1
+            if mon.glued == 0:
+                del self.featmap[(mon.x, mon.y)]
+            else:
+                return None, None
+
         if dist > mon.range or mon.confused or (mon.sleepattack and self.sleeping):
             mdx = x + random.randint(-1, 1)
             mdy = y + random.randint(-1, 1)
@@ -2475,6 +2530,17 @@ class World:
                     self.convert_to_floor(mdx, mdy, rubble=1)
 
         return mdx, mdy
+
+    def process_monstep(self, mon):
+        mdx = mon.x
+        mdy = mon.y
+
+        if (mdx, mdy) in self.featmap and self.featmap[(mdx, mdy)] == '^':
+            mn = str(mon)
+            mn = mn[0].upper() + mn[1:]
+            self.msg.m(mn + ' gets stuck in some glue!')
+            mon.glued = max(int(random.gauss(*self.coef.glueduration)), 1)
+
 
 
     def process_world(self):
@@ -2529,6 +2595,8 @@ class World:
                 mon.y = mon.do_move[1]
                 self.monmap[mon.do_move] = mon
                 mon.do_move = None
+
+                self.process_monstep(mon)
 
             mon.did_move = False
 
@@ -2617,7 +2685,11 @@ class World:
 
                     elif (x, y) in self.featmap:
                         f = self.featmap[(x, y)]
-                        c = f
+                        if f == '^':
+                            c = 250
+                            fore = libtcod.red
+                        else:
+                            c = f
 
                     elif (x, y) in self.walkmap:
                         if (x,y) in self.watermap:
@@ -2675,6 +2747,7 @@ class World:
           'featmap', 'px', 'py', 'w', 'h',
           'done', 'dead', 'stats', 'msg', 'coef', 'inv', 'itemstock', 'monsterstock',
           'dlev', 'plev', 't', 'sleeping', 'resting', 'cooling', 'digging', 'blind',
+          'mapping', 'glued',
           'killed_monsters', '_seed', '_inputs'
           ]
         state = {}
