@@ -1101,6 +1101,7 @@ class World:
         self.dlev = 1
         self.plev = 1
         self.t = 0
+        self.oldt = -1
         self.sleeping = 0
         self.forcedsleep = False
         self.resting = False
@@ -1457,6 +1458,7 @@ class World:
         else:
             self.stats.warmth.inc(self.inv.get_heatbonus())
         self.tick_checkstats()
+        self.t += 1
 
     def tick_checkstats(self):
 
@@ -1470,7 +1472,8 @@ class World:
                         self.explode(self.px, self.py, i.radius)
                     self.inv.purge(i)
 
-            elif i and i.selfdestruct > 0:
+            elif i and i.selfdestruct > 0 and \
+                 i != self.inv.backpack1 and i != self.inv.backpack2:
                 i.selfdestruct -= 1
                 #print '-', i.selfdestruct, i.name
                 if i.selfdestruct == 0:
@@ -1529,6 +1532,7 @@ class World:
         else:
             self.stats.warmth.inc(self.inv.get_heatbonus())
         self.tick_checkstats()
+        self.t += 1
 
     def sleep(self):
         self.stats.tired.inc(self.coef.sleeptired)
@@ -1545,6 +1549,8 @@ class World:
             self.sleeping -= 1
         else:
             self.forcedsleep = False
+        self.t += 1
+
 
     def start_sleep(self, force = False, quick = False, realforced = False):
         if not force and self.stats.sleep.x > -2.0:
@@ -2268,7 +2274,7 @@ class World:
         ty = self.py
 
         while 1:
-            seen = self.draw(False, tx, ty)
+            seen = self.draw(tx, ty)
 
             s = []
 
@@ -2344,7 +2350,7 @@ class World:
 
     def target(self, range, minrange=None, monstop=False):
 
-        self.draw(False)
+        self.draw()
 
         monx = None
         mony = None
@@ -2365,7 +2371,7 @@ class World:
             break
 
         if monx is not None:
-            self.draw(False, monx, mony)
+            self.draw(monx, mony)
 
         k = draw_window(['Pick a target. '
                          "HJKL YUBN for directions, "
@@ -2705,7 +2711,11 @@ class World:
 
 
 
-    def draw(self, withtime=True, _hlx=None, _hly=None):
+    def draw(self, _hlx=None, _hly=None):
+        withtime = False
+        if self.oldt != self.t:
+            withtime = True
+
         back = libtcod.black
 
         lightradius = min(max(self.inv.get_lightradius(), 2), 15)
@@ -2834,7 +2844,7 @@ class World:
                     self.monsters_in_view.append(mon)
 
         if withtime:
-            self.t += 1
+            self.oldt = self.t
 
         return did_highlight
 
@@ -2845,7 +2855,7 @@ class World:
           'grid', 'walkmap', 'watermap', 'exit', 'itemap', 'monmap', 'visitedmap',
           'featmap', 'px', 'py', 'w', 'h',
           'done', 'dead', 'stats', 'msg', 'coef', 'inv', 'itemstock', 'monsterstock',
-          'dlev', 'plev', 't', 'sleeping', 'resting', 'cooling', 'digging', 'blind',
+          'dlev', 'plev', 't', 'oldt', 'sleeping', 'resting', 'cooling', 'digging', 'blind',
           'mapping', 'glued',
           'killed_monsters', '_seed', '_inputs'
           ]
@@ -3148,7 +3158,7 @@ def main(replay=None, highscorefilename='highscore'):
             libtcod.console_check_for_keypress()
             continue
         elif r == 1:
-            world.draw(False)
+            world.draw()
             libtcod.console_flush()
 
 
@@ -3165,7 +3175,7 @@ def main(replay=None, highscorefilename='highscore'):
             world.vkeys[key.vk]()
 
     world.msg.m('*** Press any key ***', True)
-    world.draw(False)
+    world.draw()
     libtcod.console_flush()
     libtcod.console_wait_for_keypress(False)
 
