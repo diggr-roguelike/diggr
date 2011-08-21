@@ -434,7 +434,8 @@ class Item:
                  tracker=False, wishing=False, repelrange=None, selfdestruct=None,
                  digray=None, jinni=False, heatbonus=0, use_an=False,
                  stackrange=None, mapper=None, converts=None, jumprange=None,
-                 explodeimmune=False, telepathyrange=None, makestrap=False):
+                 explodeimmune=False, telepathyrange=None, makestrap=False,
+                 summon=None):
         self.slot = slot
         self.bonus = bonus
         self.name = name
@@ -485,6 +486,7 @@ class Item:
         self.explodeimmune = explodeimmune
         self.telepathyrange = telepathyrange
         self.makestrap = makestrap
+        self.summon = summon
 
         self.ammo = None
         self.gencount = 0
@@ -737,11 +739,11 @@ class ItemStock:
                            desc=['A sturdy wooden shield.'])
 
         self.metalboots = Item('metal boots', slot='g', skin=('[', libtcod.brass),
-                               rarity=5, defence=0.5,
+                               count=0, rarity=5, defence=0.5,
                                desc=['Heavy boots made out of a single piece of sheet metal.'])
 
         self.legarmor = Item('leg armor', slot='f', skin=('[', libtcod.copper),
-                             rarity=5, defence=0.5,
+                             count=0, rarity=5, defence=0.5,
                              desc=['Protective iron plates that go on your thighs and shins.'])
 
         self.ringmail = Item('ring mail', slot='c', skin=('[', libtcod.gold),
@@ -777,6 +779,11 @@ class ItemStock:
                                stackrange=4,
                                desc=['A tube of very sticky glue. It can be used to make traps.'])
 
+
+        self.cclarva = Item('carrion crawler larva', slot='', skin=(',', libtcod.white),
+                            rarity=0, summon=('carrion crawler', 2),
+                            throwable=True, liveexplode=4,
+                            desc=['A tiny larva of the carrion crawler species.'])
 
         self.regenpool()
 
@@ -956,7 +963,7 @@ class MonsterStock:
                          desc=['A giant, the size of a small house, turtle!']))
 
         self.add(Monster('shaihulud', skin=('W', libtcod.gray),
-                         attack=2.0, defence=3.0, explodeimmune=True, range=30,
+                         attack=2.0, defence=4.5, explodeimmune=True, range=30,
                          level=6, count=4, straightline=True, stoneeating=True,
                          heatseeking=True,
                          desc=['A giant worm. It is gray in color and has a skin made of something like granite.',
@@ -983,10 +990,16 @@ class MonsterStock:
                          desc=['A larger, comically deformed version of the black knight.',
                                'He has ridiculously bulging muscles and a tiny head.']))
 
+        self.add(Monster('carrion crawler', skin=('w', libtcod.white),
+                         attack=2.0, defence=2.0, range=5, level=8, count=16,
+                         itemdrop='cclarva',
+                         desc=['A creature that looks like a maggot,',
+                               'only a thousand times bigger.']))
+
         self.add(Monster('Oberon', skin=('F', libtcod.purple),
                          attack=3.0, defence=3.0, range=10, level=9, count=1,
                          flying=True, explodeimmune=True, confimmune=True,
-                         psyrange=4, psyattack=1.0,
+                         psyrange=8, psyattack=2.0,
                          desc=['A faerie king.',
                                'He takes on the appearance of a 2 meter tall',
                                'handsome man, wearing a delicate crown.']))
@@ -1004,6 +1017,21 @@ class MonsterStock:
             self.monsters[mon.level] = [mon]
         else:
             self.monsters[mon.level].append(mon)
+
+    def find(self, name, n, itemstock):
+        for v in self.monsters.itervalues():
+            for m in v:
+                if m.name == name:
+                    l = []
+                    for x in xrange(n):
+                        mm = copy.copy(m)
+                        if mm.itemdrop:
+                            item = itemstock.get(mm.itemdrop)
+                            mm.items = [item]
+                        l.append(mm)
+                    return l
+
+        return []
 
     def generate(self, level, itemstock):
         while level > 0 and level not in self.monsters:
@@ -1436,7 +1464,10 @@ class World:
             if i and i.liveexplode > 0:
                 i.liveexplode -= 1
                 if i.liveexplode == 0:
-                    self.explode(self.px, self.py, i.radius)
+                    if i.summon:
+                        self.summon(self.px, self.py, i.summon[0], i.summon[1])
+                    else:
+                        self.explode(self.px, self.py, i.radius)
                     self.inv.purge(i)
 
             elif i and i.selfdestruct > 0:
@@ -2496,11 +2527,11 @@ class World:
             'P': self.show_messages,
             'Q': self.quit,
             '?': self.show_help,
-            'S': self.save,
+            'S': self.save
 
-            'z': self.gainlev,
-            'x': self.debug_descend,
-            'w': self.wish
+            #'z': self.gainlev,
+            #'x': self.debug_descend,
+            #'w': self.wish
             }
         self.vkeys = {
             libtcod.KEY_LEFT: self.move_left,
@@ -2576,19 +2607,53 @@ class World:
             mon.glued = max(int(random.gauss(*self.coef.glueduration)), 1)
 
 
+    def summon(self, x, y, monname, n):
+        m = self.monsterstock.find(monname, n, self.itemstock)
+        if len(m) == 0:
+            return
+
+        l = []
+        for xx in xrange(x-1,x+2):
+            for yy in xrange(y-1,y+2):
+                if (xx,yy) in self.walkmap and \
+                   (xx,yy) not in self.monmap and \
+                   (xx != self.px or yy != self.py):
+                    l.append((xx,yy))
+
+        for i in xrange(len(m)):
+            if len(l) == 0:
+                return
+            j = random.randint(0, len(l)-1)
+            xx,yy = l[j]
+            del l[j]
+
+            m[i].x = xx
+            m[i].y = yy
+            self.monmap[(xx, yy)] = m[i]
 
     def process_world(self):
 
         explodes = set()
         mons = []
+        delitems = []
 
         for k,v in self.itemap.iteritems():
             for i in v:
                 if i.liveexplode > 0:
                     i.liveexplode -= 1
                     if i.liveexplode == 0:
-                        explodes.add((k[0], k[1], i.radius))
+                        if i.summon:
+                            self.summon(k[0], k[1], i.summon[0], i.summon[1])
+                            delitems.append(k)
+                        else:
+                            explodes.add((k[0], k[1], i.radius))
 
+        for ix,iy in delitems:
+            for i in xrange(len(self.itemap[(ix,iy)])):
+                if self.itemap[(ix,iy)][i].liveexplode == 0:
+                    del self.itemap[(ix,iy)][i]
+                    if len(self.itemap[(ix,iy)]) == 0:
+                        del self.itemap[(ix,iy)]
 
         for k,mon in self.monmap.iteritems():
             if not mon.did_move:
