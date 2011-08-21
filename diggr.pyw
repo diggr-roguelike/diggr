@@ -900,7 +900,7 @@ class MonsterStock:
                          itemdrop='booze', count=9,
                          desc=['A drunken homeless humanoid.']))
 
-        self.add(Monster('lichen', skin=('F', libtcod.light_purple),
+        self.add(Monster('lichen', skin=('x', libtcod.light_purple),
                          attack=0.3, defence=0.2, range=1, level=1,
                          itemdrop='mushrooms', confimmune=True, count=9,
                          desc=['Looks yummy.']))
@@ -909,7 +909,7 @@ class MonsterStock:
                          attack=1.5, defence=0.2, range=8, level=2, count=5,
                          desc=['A nasty, brutish humanoid creature endemic to these caves.']))
 
-        self.add(Monster('gnobold', skin=('k', libtcod.green),
+        self.add(Monster('gnobold', skin=('g', libtcod.green),
                          attack=1.0, defence=0.7, range=6, level=2, count=5,
                          desc=['A gnome-kobold hybrid.']))
 
