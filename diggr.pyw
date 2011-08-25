@@ -91,12 +91,11 @@ class Stat:
         self.reason = None
 
     def dec(self, dx, reason=None):
-        self.x -= dx
-        if self.x <= -3.0: 
-            self.x = -3.0
-            return
-        if reason:
+        if reason and self.x > -3.0:
             self.reason = reason
+        self.x -= dx
+        if self.x <= -3.0: self.x = -3.0
+
 
     def inc(self, dx):
         self.x += dx
