@@ -14,7 +14,7 @@ import libtcodpy as libtcod
 #
 
 global _version
-_version = '11.08.21'
+_version = '11.08.28'
 
 global _inputs
 global _inputqueue
@@ -92,7 +92,9 @@ class Stat:
 
     def dec(self, dx, reason=None):
         self.x -= dx
-        if self.x < -3.0: self.x = -3.0
+        if self.x <= -3.0: 
+            self.x = -3.0
+            return
         if reason:
             self.reason = reason
 
@@ -1510,7 +1512,6 @@ class World:
             if self.digging: self.digging = None
 
         if self.stats.health.x <= -3.0:
-            self.msg.m('You die.', True)
             self.dead = True
             return
 
@@ -2105,6 +2106,7 @@ class World:
                 if c == ' ': break
 
             self.stats.health.reason = 'winning'
+            self.done = True
             self.dead = True
 
 
@@ -3179,6 +3181,11 @@ def main(replay=None, highscorefilename='highscore'):
         elif key.vk in world.vkeys:
             world.vkeys[key.vk]()
 
+
+    if world.dead and not world.done:
+        world.msg.m('You die.', True)
+
+    world.oldt = world.t
     world.msg.m('*** Press any key ***', True)
     world.draw()
     libtcod.console_flush()
