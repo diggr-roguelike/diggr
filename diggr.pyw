@@ -2122,7 +2122,6 @@ class World:
             if x == self.px and y == self.py and \
                 not (self.inv.trunk and self.inv.trunk.explodeimmune):
                 self.stats.health.dec(6.0, "explosion")
-                self.tick_checkstats()
 
             if (x, y) in self.itemap:
                 for i in self.itemap[(x, y)]:
@@ -2251,7 +2250,6 @@ class World:
             if mon.sleepattack:
                 self.msg.m('You fall asleep!')
                 self.start_sleep(force=True, quick=True, realforced=True)
-                self.tick_checkstats()
                 return
 
             if mon.hungerattack:
@@ -2270,7 +2268,6 @@ class World:
             if self.sleeping:
                 self.sleeping = 0
 
-            self.tick_checkstats()
 
 
     def look(self):
