@@ -186,6 +186,10 @@ def draw_window(msg, w, h, do_mapping=False):
         elif k.vk == libtcod.KEY_RIGHT: return 'l'
         elif k.vk == libtcod.KEY_UP: return 'k'
         elif k.vk == libtcod.KEY_DOWN: return 'j'
+        elif k.vk == libtcod.KEY_HOME: return 'y'
+        elif k.vk == libtcod.KEY_PAGEUP: return 'u'
+        elif k.vk == libtcod.KEY_END: return 'b'
+        elif k.vk == libtcod.KEY_PAGEDOWN: return 'n'
 
     return chr(k.c)
 
@@ -2543,7 +2547,11 @@ class World:
             libtcod.KEY_LEFT: self.move_left,
             libtcod.KEY_RIGHT: self.move_right,
             libtcod.KEY_UP: self.move_up,
-            libtcod.KEY_DOWN: self.move_down
+            libtcod.KEY_DOWN: self.move_down,
+            libtcod.KEY_HOME: self.move_upleft,
+            libtcod.KEY_PAGEUP: self.move_upright,
+            libtcod.KEY_END: self.move_downleft,
+            libtcod.KEY_PAGEDOWN: self.move_downright
             }
 
 
