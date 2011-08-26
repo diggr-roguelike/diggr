@@ -75,7 +75,7 @@ def main():
             n2 = n + 3
 
         ni = n
-        print n, n+3, len(hss)
+
         for v in hss[n:n+3]:
             s.append('')
             s.append('%c%c)%c  %s%c: #%c%d%c/%d:' % \
@@ -120,8 +120,9 @@ def main():
                 diggr.draw_window(['Wrong version of replay file!'],
                                   w, h)
 
-            if len(diggr._inputs) != 0:
+            if len(diggr._inputqueue) != 0:
                 raise Exception('Malformed replay file.')
+            diggr._inputqueue = None
 
         elif k in 'abc':
             thisn = n + (ord(k)-97)
@@ -139,8 +140,9 @@ def main():
                     diggr.draw_window(['Wrong version of replay file!'],
                                       w, h)
 
-                if len(diggr._inputs) != 0:
+                if len(diggr._inputqueue) != 0:
                     raise Exception('Malformed replay file.')
+                diggr._inputqueue = None
 
             elif k2 == 'b':
                 name = input_name()
