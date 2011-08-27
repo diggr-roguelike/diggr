@@ -10,7 +10,7 @@ import cPickle
 import libtcodpy as libtcod
 
 #
-# - versioning in replays!
+#
 #
 
 global _version
@@ -83,6 +83,9 @@ class Coeffs:
 
         self.glueduration = (10,1)
         self.gluedefencepenalty = 3
+
+        self.shivadecstat = 2.0
+        self.graceduration = 1000
 
 
 class Stat:
@@ -1109,12 +1112,17 @@ class World:
         self.oldt = -1
         self.sleeping = 0
         self.forcedsleep = False
+        self.forced2sleep = False
         self.resting = False
         self.cooling = 0
         self.digging = None
         self.blind = False
         self.mapping = 0
         self.glued = 0
+
+        self.s_grace = 0
+        self.b_grace = 0
+        self.v_grace = 0
 
         self.floorpath = None
 
@@ -1301,6 +1309,17 @@ class World:
         self.featmap[d] = '>'
         self.exit = d
 
+        a = random.randint(-1, 1)
+        d = m[random.randint(0, len(m)-1)]
+        if a == -1:
+            self.featmap[d] = 's'
+        elif a == 0:
+            self.featmap[d] = 'b'
+        elif a == 1:
+            self.featmap[d] = 'v'
+
+
+
     def make_paths(self):
         if self.floorpath:
             libtcod.path_delete(self.floorpath)
@@ -1462,6 +1481,11 @@ class World:
             self.stats.warmth.dec(self.coef.watercold)
         else:
             self.stats.warmth.inc(self.inv.get_heatbonus())
+
+        if self.b_grace > 0: self.b_grace -= 1
+        if self.v_grace > 0: self.v_grace -= 1
+        if self.s_grace > 0: self.s_grace -= 1
+
         self.tick_checkstats()
         self.t += 1
 
@@ -1551,12 +1575,15 @@ class World:
 
         if self.sleeping > 0:
             self.sleeping -= 1
-        else:
-            self.forcedsleep = False
+
+            if self.sleeping == 0:
+                self.forcedsleep = False
+                self.forced2sleep = False
         self.t += 1
 
 
-    def start_sleep(self, force = False, quick = False, realforced = False):
+    def start_sleep(self, force = False, quick = False,
+                    realforced = False, realforced2 = False):
         if not force and self.stats.sleep.x > -2.0:
             self.msg.m('You don\'t feel like sleeping yet.')
             return
@@ -1564,7 +1591,8 @@ class World:
         if quick:
             self.sleeping = int(random.gauss(*self.coef.quicksleeptime))
         else:
-            self.msg.m('You fall asleep.')
+            if not realforced2:
+                self.msg.m('You fall asleep.')
             self.sleeping = int(random.gauss(*self.coef.sleeptime))
         if self.sleep <= 10:
             self.sleep = 10
@@ -1573,6 +1601,8 @@ class World:
 
         if realforced:
             self.forcedsleep = True
+        elif realforced2:
+            self.forced2sleep = True
 
     def start_rest(self):
         self.msg.m('You start resting.')
@@ -1583,16 +1613,84 @@ class World:
             self.msg.m('There is no water here you could drink.')
             return
 
+        if self.v_grace:
+            self.msg.m('Your religion prohibits drinking from the floor.')
+            return
+
         self.stats.thirst.inc(6)
 
-        x = abs(random.gauss(0, 1))
-        if x > self.coef.waterpois:
-            self.stats.health.dec(x-self.coef.waterpois, "unclean water")
-            self.msg.m('This water has a bad smell.')
+        x = abs(random.gauss(0, 0.8))
+        tmp = x - self.coef.waterpois
+        if tmp < 0:
+            self.stats.health.dec(tmp, "unclean water")
+            if tmp < -0.3:
+                self.msg.m('This water has a bad smell.')
         else:
             self.msg.m('You drink from the puddle.')
 
         self.tick()
+
+    def pray(self):
+        if (self.px,self.py) not in self.featmap:
+            self.msg.m('You need to be standing at an altar to pray.')
+            return
+
+        a = self.featmap[(self.px, self.py)]
+        if a not in 'sbv':
+            self.msg.m('You need to be standing at an altar to pray.')
+            return
+
+        if a == 's':
+            if self.b_grace or self.v_grace:
+                self.msg.m("You don't believe in Shiva.")
+                return
+            if self.s_grace > self.coef.graceduration - 300:
+                self.msg.m('Nothing happens.')
+                return
+
+            ss = "sthwp"
+            decc = self.coef.shivadecstat
+            ss = ss[random.randint(0, len(ss)-1)]
+
+            if ss == 's': self.stats.sleep.dec(decc)
+            elif ss == 't': self.stats.tired.dec(decc)
+            elif ss == 'h': self.stats.hunger.dec(decc)
+            elif ss == 'w': self.stats.warmth.dec(decc)
+            elif ss == 'p': self.stats.health.dec(decc, 'the grace of Shiva')
+
+            self.msg.m('You pray to Shiva.')
+            self.wish('Shiva grants you a wish.')
+            self.s_grace = self.coef.graceduration
+            self.tick()
+
+        elif a == 'b':
+            if self.s_grace or self.v_grace:
+                self.msg.m("You don't believe in Brahma.")
+                return
+            self.msg.m('You feel enlightened.')
+            self.b_grace = self.coef.graceduration
+            self.tick()
+
+        elif a == 'v':
+            if self.s_grace or self.b_grace:
+                self.msg.m("You don't believe in Vishnu.")
+                return
+
+            if self.v_grace > self.coef.graceduration - 300:
+                self.msg.m('Nothing happens.')
+                return
+
+            self.msg.m('You meditate on the virtues of Vishnu.')
+            self.start_sleep(force=True, realforced2=True)
+
+            self.stats.health.inc(6.0)
+            self.stats.sleep.inc(6.0)
+            self.stats.tired.inc(6.0)
+            self.stats.hunger.inc(6.0)
+            self.stats.thirst.inc(6.0)
+            self.stats.warmth.inc(6.0)
+            self.v_grace = self.coef.graceduration
+            self.tick()
 
     def convert_to_floor(self, x, y, rubble=0):
         self.walkmap.add((x,y))
@@ -1796,6 +1894,11 @@ class World:
                 self.msg.m("You start hacking at the wall.")
 
         elif item.healing:
+
+            if self.v_grace:
+                self.msg.m('Your religion prohibits taking medicine.')
+                return item
+
             if item.bonus < 0:
                 self.msg.m('This pill makes your eyes pop out of their sockets!', True)
                 self.stats.tired.dec(max(random.gauss(*item.healing), 0))
@@ -1808,6 +1911,11 @@ class World:
             return None
 
         elif item.food:
+
+            if self.v_grace:
+                self.msg.m('Your religion prohibits eating unclean food.')
+                return item
+
             if item.bonus < 0:
                 self.msg.m('Yuck, eating this makes you vomit!', True)
                 self.stats.hunger.dec(max(random.gauss(*item.food), 0))
@@ -1817,6 +1925,11 @@ class World:
             return None
 
         elif item.booze:
+
+            if self.v_grace:
+                self.msg.m('Your religion prohibits alcohol.')
+                return item
+
             if item.bonus < 0:
                 self.msg.m("This stuff is contaminated! You fear you're going blind!", True)
                 self.blind = True
@@ -2029,7 +2142,7 @@ class World:
                 if i == 0:
                     s.append('%c' % libtcod.COLCTRL_1)
                     s[-1] += '%c) %s' % (chr(97 + i), str(items[i]))
-                elif i > 5:
+                elif i >= 5:
                     s.append('(There are other items here; clear away the pile to see more)')
                     break
                 else:
@@ -2163,6 +2276,10 @@ class World:
             attack = item.rangeattack
             #print '+', d, plev, attack
         else:
+            if self.b_grace and player_move:
+                self.msg.m('Your religion prohibits you from fighting.')
+                return
+
             plev = self.plev
             attack = max(self.inv.get_attack(), self.coef.unarmedattack)
 
@@ -2266,9 +2383,11 @@ class World:
                 self.msg.m('You stop digging.')
                 self.digging = None
 
-            if self.sleeping:
+            if self.sleeping and not self.forced2sleep:
                 self.sleeping = 0
 
+            if self.stats.health.x <= -3.0:
+                self.dead = True
 
 
     def look(self):
@@ -2310,6 +2429,12 @@ class World:
                         s.append('You see a hole in the floor.')
                     elif f == '^':
                         s.append('You see a cave floor covered with glue.')
+                    elif f == 's':
+                        s.append('You see an altar of Shiva.')
+                    elif f == 'b':
+                        s.append('You see an altar of Brahma.')
+                    elif f == 'v':
+                        s.append('You see an altar of Vishnu.')
                     elif f == '*':
                         s.append('You see rubble.')
 
@@ -2445,10 +2570,15 @@ class World:
         self.msg.show_all(self.w, self.h)
 
 
-    def wish(self):
+    def wish(self, msg=None):
         s = ''
         while 1:
-            k = draw_window(['Whish for what? : ' + s], self.w, self.h)
+            if msg:
+                k = draw_window([msg, '', 'Wish for what? : ' + s],
+                                self.w, self.h)
+            else:
+                k = draw_window(['Wish for what? : ' + s], self.w, self.h)
+
             k = k.lower()
             if k in "abcdefghijklmnopqrstuvwxyz' ":
                 s = s + k
@@ -2490,16 +2620,19 @@ class World:
     def show_help(self):
         s = ['',
              "Movement keys: roguelike 'hjkl' 'yubn' or the arrow keys.",
-             "               NOTE! To move diagonally, use 'yubn'.",
+             "",
              " . : Stand on one place for one turn.",
              " s : Start sleeping.",
              " r : Start resting.",
              " q : Drink from the floor.",
+             " p : Pray at an altar.",
              " > : Descend down to the next level.",
+             "",
              " a : Apply (use) an item from your inventory.",
              " i : Manipulate your inventory.",
              " d : Drop an item from your inventory.",
              " , : Pick up an item from the floor.",
+             "",
              " / : Look around at the terrain, items and monsters.",
              " P : Show a log of previous messages.",
              " Q : Quit the game by committing suicide.",
@@ -2526,6 +2659,7 @@ class World:
             's': self.start_sleep,
             'r': self.start_rest,
             'q': self.drink,
+            'p': self.pray,
             'a': self.showinv_apply,
             'i': self.showinv_interact,
             '>': self.descend,
@@ -2565,7 +2699,13 @@ class World:
             else:
                 return None, None
 
-        if dist > mon.range or mon.confused or (mon.sleepattack and self.sleeping):
+        rang = mon.range
+
+        if self.b_grace:
+            rang = 12 - int(9 * (float(self.b_grace) / self.coef.graceduration))
+            rang = min(rang, mon.range)
+
+        if dist > rang or mon.confused or (mon.sleepattack and self.sleeping):
             mdx = x + random.randint(-1, 1)
             mdy = y + random.randint(-1, 1)
             if (mdx, mdy) not in self.walkmap:
@@ -2729,6 +2869,10 @@ class World:
         if self.blind:
             lightradius /= 2
 
+        if self.b_grace:
+            n = int(15 * (float(self.b_grace) / self.coef.graceduration))
+            lightradius = max(lightradius, n)
+
         if self.mapping > 0:
             if withtime:
                 self.mapping -= 1
@@ -2803,6 +2947,15 @@ class World:
                         if f == '^':
                             c = 250
                             fore = libtcod.red
+                        elif f == 's':
+                            c = 234
+                            fore = libtcod.darker_grey
+                        elif f == 'b':
+                            c = 127
+                            fore = libtcod.white
+                        elif f == 'v':
+                            c = 233
+                            fore = libtcod.azure
                         else:
                             c = f
 
@@ -2862,7 +3015,8 @@ class World:
           'featmap', 'px', 'py', 'w', 'h',
           'done', 'dead', 'stats', 'msg', 'coef', 'inv', 'itemstock', 'monsterstock',
           'dlev', 'plev', 't', 'oldt', 'sleeping', 'resting', 'cooling', 'digging', 'blind',
-          'mapping', 'glued',
+          'mapping', 'glued', 's_grace', 'b_grace', 'v_grace', 'forcedsleep',
+          'forced2sleep',
           'killed_monsters', '_seed', '_inputs'
           ]
         state = {}
@@ -3023,6 +3177,10 @@ class World:
                  (hs['reason'], len(hss) - sortd2['reason'][0] - sortd2['reason'][1]))
 
         s.append('')
+        s.append('-' * 50)
+        s.append('')
+        s.extend((x[1] for x in self.msg.strings[2:7]))
+        s.append('')
         s.append('Press space.')
 
         while 1:
@@ -3079,7 +3237,7 @@ def start_game(world, w, h, oldseed=None, oldbones=None):
 def check_autoplay(world):
 
     if world.sleeping > 0:
-        if world.stats.sleep.x >= 3.0 and not world.forcedsleep:
+        if world.stats.sleep.x >= 3.0 and not world.forcedsleep and not world.forced2sleep:
             world.msg.m('You wake up.')
             world.sleeping = 0
             return 1
