@@ -63,7 +63,7 @@ class Coeffs:
 
         self.sleeptime = (350, 50)
         self.quicksleeptime = (50, 10)
-        self.waterpois = 1.5
+        self.waterpois = 0.85
         self.watercold = 0.03
 
         self.colddamage = 0.03
@@ -1619,11 +1619,11 @@ class World:
 
         self.stats.thirst.inc(6)
 
-        x = abs(random.gauss(0, 0.8))
+        x = abs(random.gauss(0, 0.7))
         tmp = x - self.coef.waterpois
-        if tmp < 0:
+        if tmp > 0:
             self.stats.health.dec(tmp, "unclean water")
-            if tmp < -0.3:
+            if tmp > 0.1:
                 self.msg.m('This water has a bad smell.')
         else:
             self.msg.m('You drink from the puddle.')
@@ -3164,6 +3164,11 @@ class World:
         s.append('Reached dungeon level %d. %d games reached a lower level and %d a higher one.' % \
                  (hs['dlev'], sortd2['dlev'][1], sortd2['dlev'][0]))
 
+        if hs['dlev'] < 10:
+            s[-1] += '  '
+        elif hs['dlev'] < 100:
+            s[-1] += ' '
+
         s.append('')
         s.append('Reached player level %d. %d games reached a higher level and %d a lower one.' % \
                  (hs['plev'], sortd2['plev'][1], sortd2['plev'][0]))
@@ -3179,7 +3184,7 @@ class World:
         s.append('')
         s.append('-' * 50)
         s.append('')
-        s.extend((x[1] for x in self.msg.strings[2:7]))
+        s.extend((x[1] for x in self.msg.strings[2:8]))
         s.append('')
         s.append('Press space.')
 
