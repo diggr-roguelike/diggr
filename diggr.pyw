@@ -159,7 +159,24 @@ class Stats:
 
 
 
-
+_kbdmap = {
+    libtcod.KEY_LEFT: 'h',
+    libtcod.KEY_RIGHT: 'l',
+    libtcod.KEY_UP: 'k',
+    libtcod.KEY_DOWN: 'j',
+    libtcod.KEY_HOME: 'y',
+    libtcod.KEY_PAGEUP: 'u',
+    libtcod.KEY_END: 'b',
+    libtcod.KEY_PAGEDOWN: 'n',
+    libtcod.KEY_KP4: 'h',
+    libtcod.KEY_KP6: 'l',
+    libtcod.KEY_KP8: 'k',
+    libtcod.KEY_KP2: 'j',
+    libtcod.KEY_KP7: 'y',
+    libtcod.KEY_KP9: 'u',
+    libtcod.KEY_KP1: 'b',
+    libtcod.KEY_KP3: 'n'
+}
 
 def draw_window(msg, w, h, do_mapping=False):
     maxl = 0
@@ -186,14 +203,7 @@ def draw_window(msg, w, h, do_mapping=False):
     libtcod.console_flush()
 
     if do_mapping:
-        if k.vk == libtcod.KEY_LEFT: return 'h'
-        elif k.vk == libtcod.KEY_RIGHT: return 'l'
-        elif k.vk == libtcod.KEY_UP: return 'k'
-        elif k.vk == libtcod.KEY_DOWN: return 'j'
-        elif k.vk == libtcod.KEY_HOME: return 'y'
-        elif k.vk == libtcod.KEY_PAGEUP: return 'u'
-        elif k.vk == libtcod.KEY_END: return 'b'
-        elif k.vk == libtcod.KEY_PAGEDOWN: return 'n'
+        if k.vk in _kbdmap: return _kbdmap[k.vk]
 
     return chr(k.c)
 
@@ -2676,6 +2686,15 @@ class World:
             #'w': self.wish
             }
         self.vkeys = {
+            libtcod.KEY_KP4: self.move_left,
+            libtcod.KEY_KP6: self.move_right,
+            libtcod.KEY_KP8: self.move_up,
+            libtcod.KEY_KP2: self.move_down,
+            libtcod.KEY_KP7: self.move_upleft,
+            libtcod.KEY_KP9: self.move_upright,
+            libtcod.KEY_KP1: self.move_downleft,
+            libtcod.KEY_KP3: self.move_downright,
+
             libtcod.KEY_LEFT: self.move_left,
             libtcod.KEY_RIGHT: self.move_right,
             libtcod.KEY_UP: self.move_up,
