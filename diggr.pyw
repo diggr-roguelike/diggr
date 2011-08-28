@@ -1623,7 +1623,7 @@ class World:
         tmp = x - self.coef.waterpois
         if tmp > 0:
             self.stats.health.dec(tmp, "unclean water")
-            if tmp > 0.1:
+            if tmp > 0.2:
                 self.msg.m('This water has a bad smell.')
         else:
             self.msg.m('You drink from the puddle.')
@@ -1632,12 +1632,12 @@ class World:
 
     def pray(self):
         if (self.px,self.py) not in self.featmap:
-            self.msg.m('You need to be standing at an altar to pray.')
+            self.msg.m('You need to be standing at a shrine to pray.')
             return
 
         a = self.featmap[(self.px, self.py)]
         if a not in 'sbv':
-            self.msg.m('You need to be standing at an altar to pray.')
+            self.msg.m('You need to be standing at a shrine to pray.')
             return
 
         if a == 's':
@@ -2430,11 +2430,11 @@ class World:
                     elif f == '^':
                         s.append('You see a cave floor covered with glue.')
                     elif f == 's':
-                        s.append('You see an altar of Shiva.')
+                        s.append('You see a shrine to Shiva.')
                     elif f == 'b':
-                        s.append('You see an altar of Brahma.')
+                        s.append('You see a shrine to Brahma.')
                     elif f == 'v':
-                        s.append('You see an altar of Vishnu.')
+                        s.append('You see a shrine to Vishnu.')
                     elif f == '*':
                         s.append('You see rubble.')
 
@@ -2625,7 +2625,7 @@ class World:
              " s : Start sleeping.",
              " r : Start resting.",
              " q : Drink from the floor.",
-             " p : Pray at an altar.",
+             " p : Pray at a shrine.",
              " > : Descend down to the next level.",
              "",
              " a : Apply (use) an item from your inventory.",
@@ -3107,7 +3107,7 @@ class World:
         except:
             pass
 
-        bones.append((self.plev, self.dlev, [i for i in self.inv if i is not None]))
+        bones.append((self.plev, self.dlev, [i for i in self.inv if i is not None and i.liveexplode is None]))
         bones = bones[-3:]
 
         try:
