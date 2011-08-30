@@ -1397,7 +1397,6 @@ class World:
 
         a = random.randint(-1, 1)
         d = m[random.randint(0, len(m)-1)]
-        print '!!',d
         if a == -1:
             self.featmap[d] = 's'
         elif a == 0:
