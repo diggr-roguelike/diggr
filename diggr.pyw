@@ -1086,6 +1086,47 @@ class MonsterStock:
 
 
 
+class Feature:
+    def __init__(self, walkable=False, visible=False, skin=('=', libtcod.white),
+                 name="something strange", stairs=False, sticky=False, water=None,
+                 s_shrine=False, b_shrine=False, v_shrine=False, height=-10):
+        self.walkable = walkable
+        self.visible = visible
+        self.water = water
+        self.skin = skin
+        self.stairs = stairs
+        self.name = name
+        self.sticky = sticky
+        self.s_shrine = s_shrine
+        self.b_shrine = b_shrine
+        self.v_shrine = v_shrine
+        self.height = height
+
+
+class FeatureStock:
+    def __init__(self):
+        self.f = {}
+
+        self.f['>'] = Feature(walkable=True, visible=True, skin=('>', libtcod.lightest_green), 
+                              stairs=True, name='a hole in the floor')
+
+        self.f['*'] = Feature(walkable=True, visible=False, skin=('*', libtcod.lightest_green),
+                              name='rubble')
+
+        self.f['^'] = Feature(walkable=True, visible=True, skin=(250, libtcod.red),
+                              sticky=True, name='a cave floor covered with glue')
+
+        self.f['s'] = Feature(walkable=True, visible=True, skin=(234,  libtcod.darker_grey),
+                              s_shrine=True, name='a shrine to Shiva')
+
+        self.f['b'] = Feature(walkable=True, visible=True, skin=(127, libtcod.white),
+                              b_shrine=True, name='a shrine to Brahma')
+
+        self.f['v'] = Feature(walkable=True, visible=True, skin=(233, libtcod.azure),
+                              v_shrine=True, name='a shrine to Vishnu')
+
+
+
 class World:
 
     def __init__(self):
@@ -1115,6 +1156,7 @@ class World:
         self.inv = Inventory()
         self.itemstock = ItemStock()
         self.monsterstock = MonsterStock()
+        self.featstock = FeatureStock()
 
         self.dlev = 1
         self.plev = 1
@@ -1303,10 +1345,44 @@ class World:
                     v = False
                     w = False
 
-                if (x,y) in self.featmap and self.featmap[(x, y)] == '*':
-                    v = False
+                if (x,y) in self.featmap:
+                    f = self.featstock.f[self.featmap[(x, y)]]
+                    w = f.walkable
+                    v = f.visible
 
                 libtcod.map_set_properties(self.tcodmap, x, y, v, w)
+
+    def set_feature(self, x, y, f_):
+        if (x, y) in self.featmap and self.featstock.f[self.featmap[(x, y)]].stairs:
+            return
+
+        if not f_:
+            self.walkmap.add((x, y))
+            if (x, y) in self.featmap:
+                del self.featmap[(x, y)]
+            libtcod.map_set_properties(self.tcodmap, x, y, True, True)
+            return
+
+        f = self.featstock.f[f_]
+        w = f.walkable
+        v = f.visible
+        libtcod.map_set_properties(self.tcodmap, x, y, v, w)
+        self.featmap[(x, y)] = f_
+
+        if w:
+            self.walkmap.add((x, y))
+        else:
+            if (x, y) in self.walkmap:
+                self.walkmap.discard((x, y))
+        self.grid[y][x] = f.height
+
+        if f.water:
+            self.watermap.add((x, y))
+        elif f.water is not None:
+            if (x, y) in self.watermap:
+                self.watermap.discard((x, y))
+
+
 
     def make_feats(self):
         m = list(self.walkmap - self.watermap)
@@ -1321,6 +1397,7 @@ class World:
 
         a = random.randint(-1, 1)
         d = m[random.randint(0, len(m)-1)]
+        print '!!',d
         if a == -1:
             self.featmap[d] = 's'
         elif a == 0:
@@ -1336,6 +1413,8 @@ class World:
 
         def floor_callback(xfrom, yfrom, xto, yto, world):
             if (xto, yto) in world.monmap:
+                return 0.0
+            elif (xto, yto) in world.featmap and not world.featstock.f[world.featmap[(xto, yto)]].walkable:
                 return 0.0
             elif (xto, yto) in world.walkmap:
                 return 1.0
@@ -1467,8 +1546,9 @@ class World:
                     else:
                         self.msg.m("You see " + str(self.itemap[(self.px, self.py)][0]) + '.')
 
-                if (self.px, self.py) in self.featmap and \
-                    self.featmap[(self.px, self.py)] == '^':
+                if (self.px, self.py) in self.featmap:
+                    f = self.featstock.f[self.featmap[(self.px, self.py)]]
+                    if f.sticky:
                         self.msg.m('You just stepped in some glue!', True)
                         self.glued = max(int(random.gauss(*self.coef.glueduration)), 1)
 
@@ -1645,12 +1725,9 @@ class World:
             self.msg.m('You need to be standing at a shrine to pray.')
             return
 
-        a = self.featmap[(self.px, self.py)]
-        if a not in 'sbv':
-            self.msg.m('You need to be standing at a shrine to pray.')
-            return
+        a = self.featstock.f[self.featmap[(self.px, self.py)]]
 
-        if a == 's':
+        if a.s_shrine:
             if self.b_grace or self.v_grace:
                 self.msg.m("You don't believe in Shiva.")
                 return
@@ -1673,7 +1750,7 @@ class World:
             self.s_grace = self.coef.graceduration
             self.tick()
 
-        elif a == 'b':
+        elif a.b_shrine:
             if self.s_grace or self.v_grace:
                 self.msg.m("You don't believe in Brahma.")
                 return
@@ -1681,7 +1758,7 @@ class World:
             self.b_grace = self.coef.graceduration
             self.tick()
 
-        elif a == 'v':
+        elif a.v_shrine:
             if self.s_grace or self.b_grace:
                 self.msg.m("You don't believe in Vishnu.")
                 return
@@ -1702,16 +1779,16 @@ class World:
             self.v_grace = self.coef.graceduration
             self.tick()
 
-    def convert_to_floor(self, x, y, rubble=0):
-        self.walkmap.add((x,y))
-        if rubble == 0:
-            if (x,y) in self.featmap and self.featmap[(x,y)] == '*':
-                del self.featmap[(x,y)]
-        elif rubble == 1:
-            if (x, y) not in self.featmap:
-                self.featmap[(x,y)] = '*'
+        else:
+            self.msg.m('You need to be standing at a shrine to pray.')
+            return
 
-        libtcod.map_set_properties(self.tcodmap, x, y, True, True)
+
+    def convert_to_floor(self, x, y, rubble=0):
+        if rubble == 0:
+            self.set_feature(x, y, None)
+        else:
+            self.set_feature(x, y, '*')
 
 
     def showinv(self):
@@ -2105,7 +2182,12 @@ class World:
 
 
     def descend(self):
-        if self.featmap.get((self.px,self.py), '') != '>':
+
+        if (self.px, self.py) not in self.featmap:
+            self.msg.m('You can\'t descend, there is no hole here.')
+            return
+
+        if not self.featstock.f[self.featmap[(self.px,self.py)]].stairs:
             self.msg.m('You can\'t descend, there is no hole here.')
             return
 
@@ -2236,12 +2318,9 @@ class World:
         chains = set()
         def func(x, y):
             if random.randint(0, 5) == 0:
-                libtcod.map_set_properties(self.tcodmap, x, y, False, True)
-                if (x, y) not in self.featmap:
-                    self.featmap[(x, y)] = '*'
+                self.set_feature(x, y, '*')
             else:
-                libtcod.map_set_properties(self.tcodmap, x, y, True, True)
-            self.walkmap.add((x, y))
+                self.set_feature(x, y, None)
 
             if x == self.px and y == self.py and \
                 not (self.inv.trunk and self.inv.trunk.explodeimmune):
@@ -2434,19 +2513,8 @@ class World:
                     s.append('')
 
                 if (tx, ty) in self.featmap:
-                    f = self.featmap[(tx, ty)]
-                    if f == '>':
-                        s.append('You see a hole in the floor.')
-                    elif f == '^':
-                        s.append('You see a cave floor covered with glue.')
-                    elif f == 's':
-                        s.append('You see a shrine to Shiva.')
-                    elif f == 'b':
-                        s.append('You see a shrine to Brahma.')
-                    elif f == 'v':
-                        s.append('You see a shrine to Vishnu.')
-                    elif f == '*':
-                        s.append('You see rubble.')
+                    f = self.featstock.f[self.featmap[(tx, ty)]]
+                    s.append('You see ' + f.name + '.')
 
                 elif (tx, ty) in self.walkmap:
                     if (tx, ty) in self.watermap:
@@ -2771,7 +2839,7 @@ class World:
         mdx = mon.x
         mdy = mon.y
 
-        if (mdx, mdy) in self.featmap and self.featmap[(mdx, mdy)] == '^' and not mon.flying:
+        if (mdx, mdy) in self.featmap and self.featstock.f[self.featmap[(mdx, mdy)]].sticky and not mon.flying:
             mn = str(mon)
             mn = mn[0].upper() + mn[1:]
             self.msg.m(mn + ' gets stuck in some glue!')
@@ -2962,21 +3030,8 @@ class World:
                         c, fore = self.itemap[(x, y)][0].skin
 
                     elif (x, y) in self.featmap:
-                        f = self.featmap[(x, y)]
-                        if f == '^':
-                            c = 250
-                            fore = libtcod.red
-                        elif f == 's':
-                            c = 234
-                            fore = libtcod.darker_grey
-                        elif f == 'b':
-                            c = 127
-                            fore = libtcod.white
-                        elif f == 'v':
-                            c = 233
-                            fore = libtcod.azure
-                        else:
-                            c = f
+                        f = self.featstock.f[self.featmap[(x, y)]]
+                        c, fore = f.skin
 
                     elif (x, y) in self.walkmap:
                         if (x,y) in self.watermap:
@@ -3036,7 +3091,7 @@ class World:
           'dlev', 'plev', 't', 'oldt', 'sleeping', 'resting', 'cooling', 'digging', 'blind',
           'mapping', 'glued', 's_grace', 'b_grace', 'v_grace', 'forcedsleep',
           'forced2sleep',
-          'killed_monsters', '_seed', '_inputs'
+          'killed_monsters', '_seed', '_inputs', 'featstock'
           ]
         state = {}
 
