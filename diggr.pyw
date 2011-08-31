@@ -1108,7 +1108,7 @@ class FeatureStock:
         self.f = {}
 
         self.f['>'] = Feature(walkable=True, visible=True, skin=('>', libtcod.lightest_green),
-                              stairs=True, name='a hole in the floor')
+                              stairs=1, name='a hole in the floor')
 
         self.f['*'] = Feature(walkable=True, visible=False, skin=('*', libtcod.lightest_green),
                               name='rubble')
@@ -1127,6 +1127,39 @@ class FeatureStock:
 
         self.f[':'] = Feature(walkable=False, visible=False, skin=(9, libtcod.white),
                               name='a column', height=0)
+
+        self.f['h'] = Feature(walkable=True, visible=True, skin=(242, libtcod.dark_red),
+                              stairs=6, name='an entrace to Hades')
+
+        self.f['a'] = Feature(walkable=True, visible=True, skin=(254, libtcod.green),
+                              name='an abandoned altar stone')
+
+        self.f['='] = Feature(walkable=False, visible=True, skin=(196, libtcod.gray),
+                              name='barricades')
+        self.f['l'] = Feature(walkable=False, visible=True, skin=(179, libtcod.gray),
+                              name='barricades')
+
+
+        self.f['|'] = Feature(walkable=False, visible=False, skin=(186, libtcod.white),
+                              name='a smooth stone wall', height=0)
+        self.f['-'] = Feature(walkable=False, visible=False, skin=(205, libtcod.white),
+                              name='a smooth stone wall', height=0)
+        self.f['+'] = Feature(walkable=False, visible=False, skin=(206, libtcod.white),
+                              name='a smooth stone wall', height=0)
+        self.f['R'] = Feature(walkable=False, visible=False, skin=(201, libtcod.white),
+                              name='a smooth stone wall', height=0)
+        self.f['L'] = Feature(walkable=False, visible=False, skin=(200, libtcod.white),
+                              name='a smooth stone wall', height=0)
+        self.f['T'] = Feature(walkable=False, visible=False, skin=(203, libtcod.white),
+                              name='a smooth stone wall', height=0)
+        self.f['F'] = Feature(walkable=False, visible=False, skin=(204, libtcod.white),
+                              name='a smooth stone wall', height=0)
+        self.f['J'] = Feature(walkable=False, visible=False, skin=(202, libtcod.white),
+                              name='a smooth stone wall', height=0)
+        self.f['7'] = Feature(walkable=False, visible=False, skin=(187, libtcod.white),
+                              name='a smooth stone wall', height=0)
+        self.f['/'] = Feature(walkable=False, visible=False, skin=(188, libtcod.white),
+                              name='a smooth stone wall', height=0)
 
 
 class Vault:
@@ -1162,43 +1195,95 @@ class VaultStock:
 
         v1 = Vault(chance=3, level=(1,6), count=3,
                    syms={' ': None,
-                         '.': ('*', False),
+                         '.': (None, False),
+                         '#': (0, False),
+                         'o': (':', False),
+                         'R': ('R', False),
+                         'L': ('L', False),
+                         'T': ('T', False),
+                         'F': ('F', False),
+                         'J': ('J', False),
+                         '7': ('7', False),
+                         '/': ('/', False),
+                         '-': ('-', False),
+                         '|': ('|', False),
+                         '+': ('+', False),
+                         'a': ('a', False),
+                         'h': ('h', False),
+                         '=': ('=', False),
+                         'l': ('l', False),
                          '@': (None, True)})
 
-        self.clone(v1, ["....",
-                        "....",
-                        "...@"])
+        self.clone(v1, [".........@..........",
+                        "====================",
+                        "...................."])
 
-        self.clone(v1, [".......@"])
+        self.clone(v1, [".l.",
+                        ".l.",
+                        "@l.",
+                        ".l.",
+                        ".l.",
+                        ".l."])
 
-        self.clone(v1, [".",
-                        ".",
-                        ".",
-                        ".",
-                        "."
-                        "@"])
-
-        self.clone(v1, ["@....",
-                        ".   .",
-                        ".   .",
-                        "....."])
-
-        self.clone(v1, ["  ..  ",
-                        " .... ",
-                        "..@...",
-                        " .... ",
-                        "  ..  "])
-
-        self.clone(v1, [".......",
-                        ". . . .",
-                        "...@...",
-                        ". . . .",
-                        "........"])
+        self.clone(v1, ["R---.---7",
+                        "|...o...|",
+                        "..o.@.o..",
+                        "|...o...|",
+                        "L---.---/"])
 
 
-    def clone(self, obj, pic):
+        self.clone(v1, ["  R-7  ",
+                        " R/.L7 ",
+                        "R/...L7",
+                        "|.....@",
+                        "L7...R/",
+                        " L7.R/ ",
+                        "  L-/  "])
+
+        self.clone(v1, ["R-.-T-.-T-.-7",
+                        "|...|...|...|",
+                        "F-.-+-@-+-.-+",
+                        "|...|...|...|",
+                        "L-.-J-.-J-.-/"])
+
+
+        self.clone(v1, ["            ....oo....            ",
+                        "       .....o........o.....       ",
+                        "    ...o..................o...    ",
+                        "  ..o........................o..  ",
+                        " .o............................o. ",
+                        ".o..............................o.",
+                        "................@.................",
+                        ".o..............................o.",
+                        " .o............................o. ",
+                        "  ..o........................o..  ",
+                        "    ...o..................o...    ",
+                        "       .....o........o.....       ",
+                        "            ....oo....            "])
+
+
+
+
+        self.clone(v1, ["o.o.o.o.o.o.o.o.o.o.o.o.o",
+                        ".........................",
+                        "o.R-T---------------T--.o",
+                        "..|.|.................o..",
+                        "o.|hF--.o.a.o.o.o.o.|...o",
+                        "..|.|.................o..",
+                        "o.L-J---------------J--.o",
+                        ".........................",
+                        "o.o.o.o.o.o.o.o.o.o.o.o.o"],
+                   count=2)
+
+
+
+
+
+    def clone(self, obj, pic, count=None):
         v = copy.copy(obj)
         v.pic = pic
+        if count:
+            v.count = count
         self.add(v)
 
     def add(self, v):
@@ -1466,10 +1551,17 @@ class World:
             return
 
         if not f_:
-            self.walkmap.add((x, y))
             if (x, y) in self.featmap:
                 del self.featmap[(x, y)]
-            libtcod.map_set_properties(self.tcodmap, x, y, True, True)
+
+            if f_ is None:
+                self.walkmap.add((x, y))
+                libtcod.map_set_properties(self.tcodmap, x, y, True, True)
+                self.grid[y][x] = -10
+            else:
+                self.walkmap.discard((x, y))
+                libtcod.map_set_properties(self.tcodmap, x, y, False, False)
+                self.grid[y][x] = 0
             return
 
         f = self.featstock.f[f_]
@@ -2334,12 +2426,13 @@ class World:
             self.msg.m('You can\'t descend, there is no hole here.')
             return
 
-        if not self.featstock.f[self.featmap[(self.px,self.py)]].stairs:
+        f = self.featstock.f[self.featmap[(self.px,self.py)]]
+        if not f.stairs:
             self.msg.m('You can\'t descend, there is no hole here.')
             return
 
         self.msg.m('You climb down the hole.')
-        self.dlev += 1
+        self.dlev += f.stairs
         self.regen(self.w, self.h)
         self.place()
         self.tick()
