@@ -10,7 +10,9 @@ import cPickle
 import libtcodpy as libtcod
 
 #
-#
+# mushroom farm, liquour store, medicine vault
+# stonehenge
+# sticky trap field
 #
 
 global _version
@@ -1089,7 +1091,8 @@ class MonsterStock:
 class Feature:
     def __init__(self, walkable=False, visible=False, skin=('=', libtcod.white),
                  name="something strange", stairs=False, sticky=False, water=None,
-                 s_shrine=False, b_shrine=False, v_shrine=False, height=-10):
+                 s_shrine=False, b_shrine=False, v_shrine=False, height=-10,
+                 shootable=False, warm=False):
         self.walkable = walkable
         self.visible = visible
         self.water = water
@@ -1101,6 +1104,8 @@ class Feature:
         self.b_shrine = b_shrine
         self.v_shrine = v_shrine
         self.height = height
+        self.shootable = shootable
+        self.warm = warm
 
 
 class FeatureStock:
@@ -1134,10 +1139,14 @@ class FeatureStock:
         self.f['a'] = Feature(walkable=True, visible=True, skin=(254, libtcod.green),
                               name='an abandoned altar stone')
 
+        self.f['@'] = Feature(walkable=True, visible=True, skin=(15, libtcod.yellow),
+                              name='a hearth', warm=True)
+
+
         self.f['='] = Feature(walkable=False, visible=True, skin=(196, libtcod.gray),
-                              name='barricades')
+                              name='barricades', shootable=True)
         self.f['l'] = Feature(walkable=False, visible=True, skin=(179, libtcod.gray),
-                              name='barricades')
+                              name='barricades', shootable=True)
 
 
         self.f['|'] = Feature(walkable=False, visible=False, skin=(186, libtcod.white),
@@ -1212,7 +1221,28 @@ class VaultStock:
                          'h': ('h', False),
                          '=': ('=', False),
                          'l': ('l', False),
+                         '*': ('@', True),
                          '@': (None, True)})
+
+
+        self.clone(v1, ["o.o.o.o.o.o.o.o.o.o.o.o.o",
+                        ".........................",
+                        "o.R-T---------------T--.o",
+                        "..|.|.................o..",
+                        "o.|hF--.o.a.o.o.o.o.|...o",
+                        "..|.|.................o..",
+                        "o.L-J---------------J--.o",
+                        ".........................",
+                        "o.o.o.o.o.o.o.o.o.o.o.o.o"],
+                   count=2)
+
+        self.clone(v1, ["   .......   ",
+                        " ........... ",
+                        ".............",
+                        "......*......",
+                        ".............",
+                        " ........... ",
+                        "   .......   "])
 
         self.clone(v1, [".........@..........",
                         "====================",
@@ -1264,19 +1294,6 @@ class VaultStock:
 
 
 
-        self.clone(v1, ["o.o.o.o.o.o.o.o.o.o.o.o.o",
-                        ".........................",
-                        "o.R-T---------------T--.o",
-                        "..|.|.................o..",
-                        "o.|hF--.o.a.o.o.o.o.|...o",
-                        "..|.|.................o..",
-                        "o.L-J---------------J--.o",
-                        ".........................",
-                        "o.o.o.o.o.o.o.o.o.o.o.o.o"],
-                   count=2)
-
-
-
 
 
     def clone(self, obj, pic, count=None):
@@ -1304,6 +1321,7 @@ class VaultStock:
         for x in xrange(len(self.vaults[level])):
             v = self.vaults[level][x]
 
+            print '? ', v.chance, v.count, v.pic
             if random.randint(1, v.chance) != 1:
                 continue
 
@@ -1646,6 +1664,12 @@ class World:
             self.paste_vault(vault, m)
 
 
+    def try_feature(self, x, y, att):
+        if (x,y) not in self.featmap:
+                return None
+        return getattr(self.featstock.f[self.featmap[(x, y)]], att, None)
+
+
     def make_paths(self):
         if self.floorpath:
             libtcod.path_delete(self.floorpath)
@@ -1653,7 +1677,7 @@ class World:
         def floor_callback(xfrom, yfrom, xto, yto, world):
             if (xto, yto) in world.monmap:
                 return 0.0
-            elif (xto, yto) in world.featmap and not world.featstock.f[world.featmap[(xto, yto)]].walkable:
+            elif world.try_feature(xto, yto, 'walkable'):
                 return 0.0
             elif (xto, yto) in world.walkmap:
                 return 1.0
@@ -1785,11 +1809,9 @@ class World:
                     else:
                         self.msg.m("You see " + str(self.itemap[(self.px, self.py)][0]) + '.')
 
-                if (self.px, self.py) in self.featmap:
-                    f = self.featstock.f[self.featmap[(self.px, self.py)]]
-                    if f.sticky:
-                        self.msg.m('You just stepped in some glue!', True)
-                        self.glued = max(int(random.gauss(*self.coef.glueduration)), 1)
+                if self.try_feature(self.px, self.py, 'sticky'):
+                    self.msg.m('You just stepped in some glue!', True)
+                    self.glued = max(int(random.gauss(*self.coef.glueduration)), 1)
 
 
         else:
@@ -1806,7 +1828,10 @@ class World:
         self.stats.sleep.dec(self.coef.movesleep)
         self.stats.thirst.dec(self.coef.movethirst)
         self.stats.hunger.dec(self.coef.movehunger)
-        if (self.px, self.py) in self.watermap or self.cooling:
+
+        if self.try_feature(self.px, self.py, 'warm'):
+            self.stats.warmth.inc(self.coef.watercold)
+        elif (self.px, self.py) in self.watermap or self.cooling:
             self.stats.warmth.dec(self.coef.watercold)
         else:
             self.stats.warmth.inc(self.inv.get_heatbonus())
@@ -1884,7 +1909,10 @@ class World:
         self.stats.sleep.dec(self.coef.restsleep)
         self.stats.thirst.dec(self.coef.restthirst)
         self.stats.hunger.dec(self.coef.resthunger)
-        if (self.px, self.py) in self.watermap or self.cooling:
+
+        if self.try_feature(self.px, self.py, 'warm'):
+            self.stats.warmth.inc(self.coef.watercold)
+        elif (self.px, self.py) in self.watermap or self.cooling:
             self.stats.warmth.dec(self.coef.watercold)
         else:
             self.stats.warmth.inc(self.inv.get_heatbonus())
@@ -1896,7 +1924,10 @@ class World:
         self.stats.sleep.inc(self.coef.sleepsleep)
         self.stats.thirst.dec(self.coef.sleepthirst)
         self.stats.hunger.dec(self.coef.sleephunger)
-        if (self.px, self.py) in self.watermap or self.cooling:
+
+        if self.try_feature(self.px, self.py, 'warm'):
+            self.stats.warmth.inc(self.coef.watercold)
+        elif (self.px, self.py) in self.watermap or self.cooling:
             self.stats.warmth.dec(self.coef.watercold)
         else:
             self.stats.warmth.inc(self.inv.get_heatbonus())
@@ -2422,26 +2453,17 @@ class World:
 
     def descend(self):
 
-        if (self.px, self.py) not in self.featmap:
-            self.msg.m('You can\'t descend, there is no hole here.')
-            return
-
-        f = self.featstock.f[self.featmap[(self.px,self.py)]]
-        if not f.stairs:
+        ss = self.try_feature(self.px, self.py, 'stairs')
+        if not ss:
             self.msg.m('You can\'t descend, there is no hole here.')
             return
 
         self.msg.m('You climb down the hole.')
-        self.dlev += f.stairs
+        self.dlev += ss
         self.regen(self.w, self.h)
         self.place()
         self.tick()
 
-    def debug_descend(self):
-        self.dlev += 1
-        self.regen(self.w, self.h)
-        self.place()
-        self.tick()
 
     def drop(self):
         slot = self.showinv()
@@ -2565,6 +2587,7 @@ class World:
             if x == self.px and y == self.py and \
                 not (self.inv.trunk and self.inv.trunk.explodeimmune):
                 self.stats.health.dec(6.0, "explosion")
+                self.dead = True
 
             if (x, y) in self.itemap:
                 for i in self.itemap[(x, y)]:
@@ -2752,6 +2775,8 @@ class World:
                         s.append(str(i[ix]))
                     s.append('')
 
+                s.append('// %d %d' % (libtcod.map_is_transparent(self.tcodmap, tx, ty), libtcod.map_is_walkable(self.tcodmap, tx, ty)))
+
                 if (tx, ty) in self.featmap:
                     f = self.featstock.f[self.featmap[(tx, ty)]]
                     s.append('You see ' + f.name + '.')
@@ -2867,7 +2892,8 @@ class World:
             if tmpx is None:
                 return (xx, yy)
 
-            if (tmpx, tmpy) in self.walkmap:
+            if (tmpx, tmpy) in self.walkmap or self.try_feature(tmpx, tmpy, 'shootable'):
+
                 if minrange:
                     d = math.sqrt(math.pow(abs(tmpx - self.px), 2) +
                                   math.pow(abs(tmpy - self.py), 2))
@@ -3079,7 +3105,7 @@ class World:
         mdx = mon.x
         mdy = mon.y
 
-        if (mdx, mdy) in self.featmap and self.featstock.f[self.featmap[(mdx, mdy)]].sticky and not mon.flying:
+        if self.try_feature(mdx, mdy, 'sticky') and not mon.flying:
             mn = str(mon)
             mn = mn[0].upper() + mn[1:]
             self.msg.m(mn + ' gets stuck in some glue!')
