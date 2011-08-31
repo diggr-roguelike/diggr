@@ -1071,7 +1071,7 @@ class MonsterStock:
 
         m = self.monsters[mon.level]
 
-        for x in range(len(m)):
+        for x in xrange(len(m)):
             if mon.name == m[x].name:
                 if m[x].count == 1:
                     del m[x]
@@ -1107,7 +1107,7 @@ class FeatureStock:
     def __init__(self):
         self.f = {}
 
-        self.f['>'] = Feature(walkable=True, visible=True, skin=('>', libtcod.lightest_green), 
+        self.f['>'] = Feature(walkable=True, visible=True, skin=('>', libtcod.lightest_green),
                               stairs=True, name='a hole in the floor')
 
         self.f['*'] = Feature(walkable=True, visible=False, skin=('*', libtcod.lightest_green),
@@ -1124,6 +1124,114 @@ class FeatureStock:
 
         self.f['v'] = Feature(walkable=True, visible=True, skin=(233, libtcod.azure),
                               v_shrine=True, name='a shrine to Vishnu')
+
+        self.f[':'] = Feature(walkable=False, visible=False, skin=(9, libtcod.white),
+                              name='a column', height=0)
+
+
+class Vault:
+    def __init__(self, syms=None, pic=None, chance=1, level=(1,10), count=10):
+        self.syms = syms
+        self.pic = pic
+        self.chance = chance
+        self.level = level
+        self.count = count
+
+    def postprocess(self):
+        a = None
+        for k,v in self.syms.iteritems():
+            if v and v[-1]:
+                a = k
+
+        self.h = len(self.pic)
+        self.w = max(len(x) for x in self.pic)
+
+        for y in xrange(len(self.pic)):
+            for x in xrange(len(self.pic[y])):
+                if self.pic[y][x] == a:
+                    self.anchor = (x, y)
+                    return
+
+        self.anchor = (0, 0)
+
+
+class VaultStock:
+
+    def __init__(self):
+        self.vaults = {}
+
+        v1 = Vault(chance=3, level=(1,6), count=3,
+                   syms={' ': None,
+                         '.': ('*', False),
+                         '@': (None, True)})
+
+        self.clone(v1, ["....",
+                        "....",
+                        "...@"])
+
+        self.clone(v1, [".......@"])
+
+        self.clone(v1, [".",
+                        ".",
+                        ".",
+                        ".",
+                        "."
+                        "@"])
+
+        self.clone(v1, ["@....",
+                        ".   .",
+                        ".   .",
+                        "....."])
+
+        self.clone(v1, ["  ..  ",
+                        " .... ",
+                        "..@...",
+                        " .... ",
+                        "  ..  "])
+
+        self.clone(v1, [".......",
+                        ". . . .",
+                        "...@...",
+                        ". . . .",
+                        "........"])
+
+
+    def clone(self, obj, pic):
+        v = copy.copy(obj)
+        v.pic = pic
+        self.add(v)
+
+    def add(self, v):
+        v.postprocess()
+
+        for x in xrange(v.level[0], v.level[1]+1):
+            if x not in self.vaults:
+                self.vaults[x] = []
+            self.vaults[x].append(v)
+
+    def get(self, level):
+        if len(self.vaults) == 0:
+            return None
+
+        while level not in self.vaults:
+            level -= 1
+
+        for x in xrange(len(self.vaults[level])):
+            v = self.vaults[level][x]
+
+            if random.randint(1, v.chance) != 1:
+                continue
+
+            if v.count == 1:
+                del self.vaults[level][x]
+                if len(self.vaults[level]) == 0:
+                    del self.vaults[level]
+            else:
+                v.count -= 1
+
+            return v
+
+        return None
 
 
 
@@ -1157,6 +1265,7 @@ class World:
         self.itemstock = ItemStock()
         self.monsterstock = MonsterStock()
         self.featstock = FeatureStock()
+        self.vaultstock = VaultStock()
 
         self.dlev = 1
         self.plev = 1
@@ -1384,6 +1493,40 @@ class World:
 
 
 
+    def paste_vault(self, v, m):
+        x = None
+        y = None
+
+        for x in xrange(5):
+            d = m[random.randint(0, len(m)-1)]
+
+            x0 = d[0] - v.anchor[0]
+            y0 = d[1] - v.anchor[1]
+
+            if x0 < 0 or y0 < 0 or x0 + v.w >= self.w or y0 + v.h >= self.h:
+                continue
+
+            x = x0
+            y = y0
+            break
+
+        for yi in xrange(v.h):
+            for xi in xrange(v.w):
+                z = v.pic[yi]
+                if len(z) != v.w:
+                    print '===',v.pic
+                if xi >= len(z):
+                    continue
+                z = z[xi]
+                z = v.syms[z]
+                if z is None:
+                    continue
+
+                self.set_feature(x + xi, y + yi, z[0])
+
+        print x, y, v.pic
+
+
     def make_feats(self):
         m = list(self.walkmap - self.watermap)
 
@@ -1404,6 +1547,11 @@ class World:
         elif a == 1:
             self.featmap[d] = 'v'
 
+
+        vault = self.vaultstock.get(self.dlev)
+
+        if vault:
+            self.paste_vault(vault, m)
 
 
     def make_paths(self):
@@ -3090,7 +3238,7 @@ class World:
           'dlev', 'plev', 't', 'oldt', 'sleeping', 'resting', 'cooling', 'digging', 'blind',
           'mapping', 'glued', 's_grace', 'b_grace', 'v_grace', 'forcedsleep',
           'forced2sleep',
-          'killed_monsters', '_seed', '_inputs', 'featstock'
+          'killed_monsters', '_seed', '_inputs', 'featstock', 'vaultstock'
           ]
         state = {}
 
