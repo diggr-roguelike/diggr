@@ -217,7 +217,7 @@ def draw_blast(x, y, w, h, r, func):
     for xi in xrange(x0, x1):
         for yi in xrange(y0, y1):
             d = math.sqrt(math.pow(abs(yi - y),2) + math.pow(abs(xi - x),2))
-            if d <= r:
+            if d <= r and xi >= 0 and xi < w and yi >= 0 and yi < h:
                 c.append((xi, yi))
 
     def dr():
@@ -1236,9 +1236,11 @@ class VaultStock:
                 'q': ('q', False),
                 'd': ('d', False),
                 '*': ('@', True),
+                '^': ('^', False),
                 '1': (None, 'mushrooms', False),
                 '2': (None, 'medpack', False),
                 '3': (None, 'killerwand', False),
+                '4': (None, 'cclarva', False),
                 'v': ('v', True),
                 's': ('s', True),
                 'b': ('b', True),
@@ -1246,8 +1248,7 @@ class VaultStock:
 
         #v1 = Vault(chance=3, level=(1,6), count=3,
 
-
-        self.add(Vault(syms=syms, 
+        self.add(Vault(syms=syms,
                        pic=["o.o.o.o.o.o.o.o.o.o.o.o.o",
                             ".........................",
                             "o.R-T---------------T--.o",
@@ -1259,7 +1260,7 @@ class VaultStock:
                             "o.o.o.o.o.o.o.o.o.o.o.o.o"],
                        chance=3, level=(2,7), count=2))
 
-        self.add(Vault(syms=syms, 
+        self.add(Vault(syms=syms,
                        pic=["   .......   ",
                             " ........... ",
                             ".............",
@@ -1269,13 +1270,13 @@ class VaultStock:
                             "   .......   "],
                        chance=3, level=(2,12), count=4))
 
-        self.add(Vault(syms=syms, 
+        self.add(Vault(syms=syms,
                        pic=[".........@..........",
                             "====================",
                             "...................."],
                        chance=3, level=(2,5), count=2))
 
-        self.add(Vault(syms=syms, 
+        self.add(Vault(syms=syms,
                        pic=[".l.",
                             ".l.",
                             "@l.",
@@ -1284,7 +1285,7 @@ class VaultStock:
                             ".l."],
                        chance=3, level=(2,5), count=2))
 
-        self.add(Vault(syms=syms, 
+        self.add(Vault(syms=syms,
                        pic=["  .^^^^^  ",
                             " ^^.^^^^^ ",
                             "^^^^.^^^^^",
@@ -1294,10 +1295,10 @@ class VaultStock:
                             "^^^p==d^^^",
                             "^^^^^^^^^^",
                             " ^^^^^^^^ ",
-                            "  ^^^^^^  "], 
+                            "  ^^^^^^  "],
                        chance=3, level=(2,10), count=1))
 
-        self.add(Vault(syms=syms, 
+        self.add(Vault(syms=syms,
                        pic=["  ^^^^^^  ",
                             " ^^^^^^^^ ",
                             "^^^^^^^^^^",
@@ -1310,7 +1311,7 @@ class VaultStock:
                             "  ^^^^^.  "],
                        chance=3, level=(2,10), count=1))
 
-        self.add(Vault(syms=syms, 
+        self.add(Vault(syms=syms,
                        pic=["  ^^^^^^  ",
                             " ^^^^^^^^.",
                             "^^^^^^^^.^",
@@ -1323,7 +1324,7 @@ class VaultStock:
                             "  ^^^^^^  "],
                        chance=3, level=(2,10), count=1))
 
-        self.add(Vault(syms=syms, 
+        self.add(Vault(syms=syms,
                        pic=["  ^^^^^^  ",
                             " ^^^^^^^^ ",
                             "^^^^^^^^^^",
@@ -1357,6 +1358,12 @@ class VaultStock:
                             "L---/"],
                        chance=3, level=(8,14), count=3))
 
+        self.add(Vault(syms=syms,
+                       pic=["R---7",
+                            "|444|",
+                            "|444|",
+                            "L---/"],
+                       chance=3, level=(10,14), count=3))
 
 
         # self.clone(v1, ["R---.---7",
@@ -1412,8 +1419,11 @@ class VaultStock:
         if len(self.vaults) == 0:
             return None
 
-        while level not in self.vaults:
+        while level > 0 and level not in self.vaults:
             level -= 1
+
+        if level == 0:
+            return None
 
         for x in xrange(len(self.vaults[level])):
             v = self.vaults[level][x]
@@ -1640,11 +1650,13 @@ class World:
             self.watermap.add(v)
 
         self.visitedmap = {}
+        self.featmap = {}
 
-        return self.grid, self.walkmap
 
     def make_map(self):
         self.tcodmap = libtcod.map_new(self.w, self.h)
+        libtcod.map_clear(self.tcodmap)
+
         for x in xrange(self.w):
             for y in xrange(self.h):
                 if (x,y) in self.walkmap:
@@ -1734,14 +1746,16 @@ class World:
 
                 xx = x + xi
                 yy = y + yi
+                print '!',xx, yy
                 self.set_feature(xx, yy, z[0])
 
                 if len(z) >= 3:
                     itm = self.itemstock.get(z[1])
-                    if (xx, yy) not in self.itemap:
-                        self.itemap[(xx, yy)] = [itm]
-                    else:
-                        self.itemap[(xx, yy)].append(itm)
+                    if itm:
+                        if (xx, yy) not in self.itemap:
+                            self.itemap[(xx, yy)] = [itm]
+                        else:
+                            self.itemap[(xx, yy)].append(itm)
 
 
         print x, y, v.pic
@@ -1786,8 +1800,6 @@ class World:
 
         def floor_callback(xfrom, yfrom, xto, yto, world):
             if (xto, yto) in world.monmap:
-                return 0.0
-            elif world.try_feature(xto, yto, 'walkable'):
                 return 0.0
             elif (xto, yto) in world.walkmap:
                 return 1.0
@@ -2592,13 +2604,7 @@ class World:
 
 
 
-    def take(self):
-        if (self.px, self.py) not in self.itemap:
-            self.msg.m('You see no item here to take.')
-            return
-
-        items = self.itemap[(self.px, self.py)]
-
+    def pick_one_item(self, items):
         c = 0
         if len(items) > 1:
             s = []
@@ -2616,9 +2622,21 @@ class World:
             c = ord(c) - 97
 
             if c < 0 or c >= len(items):
-                return
+                return None, None
 
         i = items[c]
+        return i, c
+
+    def take(self):
+        if (self.px, self.py) not in self.itemap:
+            self.msg.m('You see no item here to take.')
+            return
+
+        items = self.itemap[(self.px, self.py)]
+
+        i, c = self.pick_one_item(items)
+        if not i:
+            return
 
         did_scavenge = False
 
@@ -2657,6 +2675,38 @@ class World:
                 del self.itemap[(self.px, self.py)]
         else:
             self.msg.m('You have no free inventory slot for ' + str(i) + '!')
+
+        self.tick()
+
+
+    def ground_apply(self):
+        if (self.px, self.py) not in self.itemap:
+            self.msg.m('There is no item here to apply.')
+            return
+
+        items = self.itemap[(self.px, self.py)]
+        items = [i for i in items if i.applies]
+
+        if len(items) == 0:
+            self.msg.m('There is no item here to apply.')
+
+        i,c = self.pick_one_item(items)
+        if not i:
+            return
+
+        i2 = self.apply(i)
+        if not i2:
+            if i.count > 1:
+                i.count -= 1
+                self.tick()
+                return
+            for ix in xrange(len(self.itemap[(self.px, self.py)])):
+                if id(self.itemap[(self.px, self.py)][ix]) == id(i):
+                    del self.itemap[(self.px, self.py)][ix]
+
+                    if len(self.itemap[(self.px, self.py)]) == 0:
+                        del self.itemap[(self.px, self.py)]
+                    break
 
         self.tick()
 
@@ -3072,7 +3122,7 @@ class World:
 
 
     def show_help(self):
-        s = ['',
+        s = ['%c' % libtcod.COLCTRL_1,
              "Movement keys: roguelike 'hjkl' 'yubn' or the arrow keys.",
              "",
              " . : Stand on one place for one turn.",
@@ -3083,6 +3133,7 @@ class World:
              " > : Descend down to the next level.",
              "",
              " a : Apply (use) an item from your inventory.",
+             " A : Apply (use) an item from the ground.",
              " i : Manipulate your inventory.",
              " d : Drop an item from your inventory.",
              " , : Pick up an item from the floor.",
@@ -3115,6 +3166,7 @@ class World:
             'q': self.drink,
             'p': self.pray,
             'a': self.showinv_apply,
+            'A': self.ground_apply,
             'i': self.showinv_interact,
             '>': self.descend,
             'd': self.drop,
