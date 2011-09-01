@@ -12,7 +12,6 @@ import libtcodpy as libtcod
 #
 # mushroom farm, liquour store, medicine vault
 # stonehenge
-# sticky trap field
 #
 
 global _version
@@ -1147,6 +1146,14 @@ class FeatureStock:
                               name='barricades', shootable=True)
         self.f['l'] = Feature(walkable=False, visible=True, skin=(179, libtcod.gray),
                               name='barricades', shootable=True)
+        self.f['r'] = Feature(walkable=False, visible=True, skin=(218, libtcod.gray),
+                              name='barricades', shootable=True)
+        self.f['q'] = Feature(walkable=False, visible=True, skin=(191, libtcod.gray),
+                              name='barricades', shootable=True)
+        self.f['p'] = Feature(walkable=False, visible=True, skin=(192, libtcod.gray),
+                              name='barricades', shootable=True)
+        self.f['d'] = Feature(walkable=False, visible=True, skin=(217, libtcod.gray),
+                              name='barricades', shootable=True)
 
 
         self.f['|'] = Feature(walkable=False, visible=False, skin=(186, libtcod.white),
@@ -1168,6 +1175,8 @@ class FeatureStock:
         self.f['7'] = Feature(walkable=False, visible=False, skin=(187, libtcod.white),
                               name='a smooth stone wall', height=0)
         self.f['/'] = Feature(walkable=False, visible=False, skin=(188, libtcod.white),
+                              name='a smooth stone wall', height=0)
+        self.f['Z'] = Feature(walkable=False, visible=False, skin=(185, libtcod.white),
                               name='a smooth stone wall', height=0)
 
 
