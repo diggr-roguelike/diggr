@@ -899,6 +899,7 @@ class Monster:
         self.items = []
         self.confused = 0
         self.glued = 0
+        self.visible = False
 
     def __str__(self):
         s = self.name
@@ -1211,106 +1212,193 @@ class VaultStock:
     def __init__(self):
         self.vaults = {}
 
-        v1 = Vault(chance=3, level=(1,6), count=3,
-                   syms={' ': None,
-                         '.': (None, False),
-                         '#': (0, False),
-                         'o': (':', False),
-                         'R': ('R', False),
-                         'L': ('L', False),
-                         'T': ('T', False),
-                         'F': ('F', False),
-                         'J': ('J', False),
-                         '7': ('7', False),
-                         '/': ('/', False),
-                         '-': ('-', False),
-                         '|': ('|', False),
-                         '+': ('+', False),
-                         'a': ('a', False),
-                         'h': ('h', False),
-                         '=': ('=', False),
-                         'l': ('l', False),
-                         '*': ('@', True),
-                         '@': (None, True)})
+        syms = {' ': None,
+                '.': (None, False),
+                '#': (0, False),
+                'o': (':', False),
+                'R': ('R', False),
+                'L': ('L', False),
+                'T': ('T', False),
+                'F': ('F', False),
+                'J': ('J', False),
+                'Z': ('Z', False),
+                '7': ('7', False),
+                '/': ('/', False),
+                '-': ('-', False),
+                '|': ('|', False),
+                '+': ('+', False),
+                'a': ('a', False),
+                'h': ('h', False),
+                '=': ('=', False),
+                'l': ('l', False),
+                'p': ('p', False),
+                'r': ('r', False),
+                'q': ('q', False),
+                'd': ('d', False),
+                '*': ('@', True),
+                '1': (None, 'mushrooms', False),
+                '2': (None, 'medpack', False),
+                '3': (None, 'killerwand', False),
+                'v': ('v', True),
+                's': ('s', True),
+                'b': ('b', True),
+                '@': (None, True)}
+
+        #v1 = Vault(chance=3, level=(1,6), count=3,
 
 
-        self.clone(v1, ["o.o.o.o.o.o.o.o.o.o.o.o.o",
-                        ".........................",
-                        "o.R-T---------------T--.o",
-                        "..|.|.................o..",
-                        "o.|hF--.o.a.o.o.o.o.|...o",
-                        "..|.|.................o..",
-                        "o.L-J---------------J--.o",
-                        ".........................",
-                        "o.o.o.o.o.o.o.o.o.o.o.o.o"],
-                   count=2)
+        self.add(Vault(syms=syms, 
+                       pic=["o.o.o.o.o.o.o.o.o.o.o.o.o",
+                            ".........................",
+                            "o.R-T---------------T--.o",
+                            "..|.|.................o..",
+                            "o.|hF--.o.a.o.o.o.o.|...o",
+                            "..|.|.................o..",
+                            "o.L-J---------------J--.o",
+                            ".........................",
+                            "o.o.o.o.o.o.o.o.o.o.o.o.o"],
+                       chance=3, level=(2,7), count=2))
 
-        self.clone(v1, ["   .......   ",
-                        " ........... ",
-                        ".............",
-                        "......*......",
-                        ".............",
-                        " ........... ",
-                        "   .......   "])
+        self.add(Vault(syms=syms, 
+                       pic=["   .......   ",
+                            " ........... ",
+                            ".............",
+                            "......*......",
+                            ".............",
+                            " ........... ",
+                            "   .......   "],
+                       chance=3, level=(2,12), count=4))
 
-        self.clone(v1, [".........@..........",
-                        "====================",
-                        "...................."])
+        self.add(Vault(syms=syms, 
+                       pic=[".........@..........",
+                            "====================",
+                            "...................."],
+                       chance=3, level=(2,5), count=2))
 
-        self.clone(v1, [".l.",
-                        ".l.",
-                        "@l.",
-                        ".l.",
-                        ".l.",
-                        ".l."])
+        self.add(Vault(syms=syms, 
+                       pic=[".l.",
+                            ".l.",
+                            "@l.",
+                            ".l.",
+                            ".l.",
+                            ".l."],
+                       chance=3, level=(2,5), count=2))
 
-        self.clone(v1, ["R---.---7",
-                        "|...o...|",
-                        "..o.@.o..",
-                        "|...o...|",
-                        "L---.---/"])
+        self.add(Vault(syms=syms, 
+                       pic=["  .^^^^^  ",
+                            " ^^.^^^^^ ",
+                            "^^^^.^^^^^",
+                            "^^^r=.q^^^",
+                            "^^^l..l^^^",
+                            "^^^l..l^^^",
+                            "^^^p==d^^^",
+                            "^^^^^^^^^^",
+                            " ^^^^^^^^ ",
+                            "  ^^^^^^  "], 
+                       chance=3, level=(2,10), count=1))
+
+        self.add(Vault(syms=syms, 
+                       pic=["  ^^^^^^  ",
+                            " ^^^^^^^^ ",
+                            "^^^^^^^^^^",
+                            "^^^r==q^^^",
+                            "^^^l..l^^^",
+                            "^^^l..l^^^",
+                            "^^^p.=d^^^",
+                            "^^^^^.^^^^",
+                            " ^^^^^.^^ ",
+                            "  ^^^^^.  "],
+                       chance=3, level=(2,10), count=1))
+
+        self.add(Vault(syms=syms, 
+                       pic=["  ^^^^^^  ",
+                            " ^^^^^^^^.",
+                            "^^^^^^^^.^",
+                            "^^^r==q.^^",
+                            "^^^l...^^^",
+                            "^^^l..l^^^",
+                            "^^^p==d^^^",
+                            "^^^^^^^^^^",
+                            " ^^^^^^^^ ",
+                            "  ^^^^^^  "],
+                       chance=3, level=(2,10), count=1))
+
+        self.add(Vault(syms=syms, 
+                       pic=["  ^^^^^^  ",
+                            " ^^^^^^^^ ",
+                            "^^^^^^^^^^",
+                            "^^^r==q^^^",
+                            "^^^l..l^^^",
+                            "^^^...l^^^",
+                            "^^.p==d^^^",
+                            "^.^^^^^^^^",
+                            ".^^^^^^^^ ",
+                            "  ^^^^^^  "],
+                       chance=3, level=(2,10), count=1))
+
+        self.add(Vault(syms=syms,
+                       pic=["R---7",
+                            "|111|",
+                            "|111|",
+                            "L---/"],
+                       chance=3, level=(4,14), count=3))
+
+        self.add(Vault(syms=syms,
+                       pic=["R---7",
+                            "|222|",
+                            "|222|",
+                            "L---/"],
+                       chance=3, level=(6,14), count=3))
+
+        self.add(Vault(syms=syms,
+                       pic=["R---7",
+                            "|333|",
+                            "|333|",
+                            "L---/"],
+                       chance=3, level=(8,14), count=3))
 
 
-        self.clone(v1, ["  R-7  ",
-                        " R/.L7 ",
-                        "R/...L7",
-                        "|.....@",
-                        "L7...R/",
-                        " L7.R/ ",
-                        "  L-/  "])
 
-        self.clone(v1, ["R-.-T-.-T-.-7",
-                        "|...|...|...|",
-                        "F-.-+-@-+-.-+",
-                        "|...|...|...|",
-                        "L-.-J-.-J-.-/"])
+        # self.clone(v1, ["R---.---7",
+        #                 "|...o...|",
+        #                 "..o.@.o..",
+        #                 "|...o...|",
+        #                 "L---.---/"])
 
 
-        self.clone(v1, ["            ....oo....            ",
-                        "       .....o........o.....       ",
-                        "    ...o..................o...    ",
-                        "  ..o........................o..  ",
-                        " .o............................o. ",
-                        ".o..............................o.",
-                        "................@.................",
-                        ".o..............................o.",
-                        " .o............................o. ",
-                        "  ..o........................o..  ",
-                        "    ...o..................o...    ",
-                        "       .....o........o.....       ",
-                        "            ....oo....            "])
+        # self.clone(v1, ["  R-7  ",
+        #                 " R/.L7 ",
+        #                 "R/...L7",
+        #                 "|.....@",
+        #                 "L7...R/",
+        #                 " L7.R/ ",
+        #                 "  L-/  "])
+
+        # self.clone(v1, ["R-.-T-.-T-.-7",
+        #                 "|...|...|...|",
+        #                 "F-.-+-@-+-.-+",
+        #                 "|...|...|...|",
+        #                 "L-.-J-.-J-.-/"])
+
+
+        # self.clone(v1, ["            ....oo....            ",
+        #                 "       .....o........o.....       ",
+        #                 "    ...o..................o...    ",
+        #                 "  ..o........................o..  ",
+        #                 " .o............................o. ",
+        #                 ".o..............................o.",
+        #                 "................@.................",
+        #                 ".o..............................o.",
+        #                 " .o............................o. ",
+        #                 "  ..o........................o..  ",
+        #                 "    ...o..................o...    ",
+        #                 "       .....o........o.....       ",
+        #                 "            ....oo....            "])
 
 
 
 
 
-
-    def clone(self, obj, pic, count=None):
-        v = copy.copy(obj)
-        v.pic = pic
-        if count:
-            v.count = count
-        self.add(v)
 
     def add(self, v):
         v.postprocess()
@@ -1629,6 +1717,9 @@ class World:
             y = y0
             break
 
+        if x is None or y is None:
+            return
+
         for yi in xrange(v.h):
             for xi in xrange(v.w):
                 z = v.pic[yi]
@@ -1641,7 +1732,17 @@ class World:
                 if z is None:
                     continue
 
-                self.set_feature(x + xi, y + yi, z[0])
+                xx = x + xi
+                yy = y + yi
+                self.set_feature(xx, yy, z[0])
+
+                if len(z) >= 3:
+                    itm = self.itemstock.get(z[1])
+                    if (xx, yy) not in self.itemap:
+                        self.itemap[(xx, yy)] = [itm]
+                    else:
+                        self.itemap[(xx, yy)].append(itm)
+
 
         print x, y, v.pic
 
@@ -3115,9 +3216,10 @@ class World:
         mdy = mon.y
 
         if self.try_feature(mdx, mdy, 'sticky') and not mon.flying:
-            mn = str(mon)
-            mn = mn[0].upper() + mn[1:]
-            self.msg.m(mn + ' gets stuck in some glue!')
+            if mon.visible:
+                mn = str(mon)
+                mn = mn[0].upper() + mn[1:]
+                self.msg.m(mn + ' gets stuck in some glue!')
             mon.glued = max(int(random.gauss(*self.coef.glueduration)), 1)
 
 
@@ -3170,6 +3272,7 @@ class World:
                         del self.itemap[(ix,iy)]
 
         for k,mon in self.monmap.iteritems():
+            mon.visible = False
             if not mon.did_move:
                 x, y = k
                 dist = math.sqrt(math.pow(abs(self.px - x), 2) + math.pow(abs(self.py - y), 2))
@@ -3298,6 +3401,7 @@ class World:
 
                     elif (x, y) in self.monmap:
                         mon = self.monmap[(x, y)]
+                        mon.visible = True
                         c, fore = mon.skin
                         monsters_in_view.append(mon)
 
