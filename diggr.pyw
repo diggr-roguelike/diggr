@@ -10,8 +10,8 @@ import cPickle
 import libtcodpy as libtcod
 
 #
-# mushroom farm, liquour store, medicine vault
 # stonehenge
+# radiation bomb (via FOV)
 #
 
 global _version
@@ -87,6 +87,8 @@ class Coeffs:
 
         self.shivadecstat = 2.0
         self.graceduration = 1000
+
+        self.raddamage = 3.0
 
 
 class Stat:
@@ -235,6 +237,36 @@ def draw_blast(x, y, w, h, r, func):
     dr()
     for c0 in c:
         func(c0[0], c0[1])
+
+
+def draw_blast2(x, y, w, h, r, func1, func2):
+    x0 = min(x - r, 0)
+    y0 = min(y - r, 0)
+    x1 = max(x + r + 1, w)
+    y1 = max(y + r + 1, h)
+    c = []
+    for xi in xrange(x0, x1):
+        for yi in xrange(y0, y1):
+            d = math.sqrt(math.pow(abs(yi - y),2) + math.pow(abs(xi - x),2))
+            if d <= r and xi >= 0 and xi < w and yi >= 0 and yi < h:
+                if func1(xi, yi):
+                    c.append((xi, yi))
+
+    def dr():
+        for c0 in c:
+            libtcod.console_put_char_ex(None, c0[0], c0[1], '*', fore, back)
+        libtcod.console_flush()
+        libtcod.sys_sleep_milli(100)
+
+    back = libtcod.darkest_blue
+    fore = libtcod.light_azure
+    dr()
+    fore = libtcod.color_lerp(fore, back, 0.5)
+    dr()
+    fore = libtcod.color_lerp(fore, back, 0.5)
+    dr()
+    for c0 in c:
+        func2(c0[0], c0[1])
 
 
 
@@ -454,7 +486,7 @@ class Item:
                  digray=None, jinni=False, heatbonus=0, use_an=False,
                  stackrange=None, mapper=None, converts=None, jumprange=None,
                  explodeimmune=False, telepathyrange=None, makestrap=False,
-                 summon=None):
+                 summon=None, radimmune=False, radexplode=False):
         self.slot = slot
         self.bonus = bonus
         self.name = name
@@ -506,6 +538,8 @@ class Item:
         self.telepathyrange = telepathyrange
         self.makestrap = makestrap
         self.summon = summon
+        self.radimmune = radimmune
+        self.radexplode = radexplode
 
         self.ammo = None
         self.gencount = 0
@@ -568,6 +602,12 @@ class ItemStock:
                              converts='litminibomb',
                              desc=['Tiny hand-held grenades.'])
 
+        self.gbomb = Item('gamma bomb$s', count=5,
+                          skin=('!', libtcod.azure), applies=True, 
+                          rarity=5, converts='litgbomb',
+                          desc=["An object that looks something like a grenade, "
+                                "but with a 'radiation sickness' sign painted on it."])
+
         self.litdynamite = Item('burning stick of dynamite',
                                 skin=('!', libtcod.yellow), explodes=True,
                                 liveexplode=7, slot='d', radius=4, throwable=True,
@@ -577,6 +617,10 @@ class ItemStock:
                                 explodes=True, liveexplode=2, slot='d', radius=1,
                                 throwable=True,
                                 desc=['Watch out!!'])
+
+        self.litgbomb = Item('activated gamma bomb', skin=('!', libtcod.yellow),
+                             radexplode=True, liveexplode=4, slot='d', radius=7,
+                             throwable=True, desc=['Watch out!!'])
 
         self.bomb = Item('exploding spore', skin=('!', libtcod.yellow), explodes=True,
                          liveexplode=4, slot='d', radius=3, throwable=True,
@@ -653,6 +697,14 @@ class ItemStock:
                             rangeattack=0.5, ammochance=(10,30), straightline=True,
                             applies=True,
                             desc=['A small plastic gun loaded with suspicious-looking darts.'])
+
+        self.bigdartgun = Item('elephant sedative', slot='e', skin=('(', libtcod.crimson),
+                               attack=0.1, confattack=(150, 5), rarity=3, range=(0,4),
+                               rangeattack=4.5, ammochance=(2,4), straightline=True,
+                               applies=True,
+                               desc=['An applicator used for delivering ',
+                                     'sedative darts to elephants.'
+                                     'It looks like a small rocket launcher.'])
 
         self.tinfoilhat = Item('tin foil hat', slot='a', skin=('[', libtcod.gray),
                                psyimmune=True, rarity=6,
@@ -865,7 +917,7 @@ class Monster:
                  itemdrop=None, heatseeking=False, desc=[], psyattack=0,
                  psyrange=0, confimmune=False, slow=False, selfdestruct=False,
                  straightline=False, stoneeating=False, sleepattack=False,
-                 hungerattack=False, flying=False):
+                 hungerattack=False, flying=False, radimmune=False):
         self.name = name
         self.skin = skin
         self.count = count
@@ -887,6 +939,7 @@ class Monster:
         self.sleepattack = sleepattack
         self.hungerattack = hungerattack
         self.flying = flying
+        self.radimmune = radimmune
 
         self.x = 0
         self.y = 0
@@ -1879,7 +1932,7 @@ class World:
 
     def generate_inv(self):
         self.inv.take(self.itemstock.find('lamp'))
-        l = [self.itemstock.get('pickaxe')]
+        l = [self.itemstock.get('gbomb'), self.itemstock.get('pickaxe')]
         for x in range(3):
             l.append(self.itemstock.generate(1))
         if (self.px, self.py) not in self.itemap:
@@ -1973,6 +2026,8 @@ class World:
                 if i.liveexplode == 0:
                     if i.summon:
                         self.summon(self.px, self.py, i.summon[0], i.summon[1])
+                    elif i.radexplode:
+                        self.rayblast(self.px, self.py, i.radius)
                     else:
                         self.explode(self.px, self.py, i.radius)
                     self.inv.purge(i)
@@ -2736,6 +2791,30 @@ class World:
             self.dead = True
 
 
+    def rayblast(self, x0, y0, rad):
+
+        libtcod.map_compute_fov(self.tcodmap, x0, y0, rad,
+                                False, libtcod.FOV_RESTRICTIVE)
+
+        def func1(x, y):
+            return libtcod.map_is_in_fov(self.tcodmap, x, y)
+
+        def func2(x, y):
+            if x == self.px and y == self.py and \
+                not (self.inv.trunk and self.inv.trunk.radimmune):
+                self.stats.health.dec(self.coef.raddamage, "radiation")
+
+            if (x, y) in self.monmap:
+                mon = self.monmap[(x, y)]
+                if not mon.radimmune:
+                    mon.hp -= self.coef.raddamage
+                    if mon.hp <= -3.0:
+                        self.handle_mondeath(mon)
+                        del self.monmap[(x, y)]
+
+        draw_blast2(x0, y0, self.w, self.h, rad, func1, func2)
+
+
     def explode(self, x0, y0, rad):
         chains = set()
         def func(x, y):
@@ -3304,7 +3383,8 @@ class World:
         explodes = set()
         mons = []
         delitems = []
-
+        rblasts = []
+        
         for k,v in self.itemap.iteritems():
             for i in v:
                 if i.liveexplode > 0:
@@ -3313,8 +3393,14 @@ class World:
                         if i.summon:
                             self.summon(k[0], k[1], i.summon[0], i.summon[1])
                             delitems.append(k)
+                        elif i.radexplode:
+                            rblasts.append((k[0], k[1], i.radius))
+                            delitems.append(k)
                         else:
                             explodes.add((k[0], k[1], i.radius))
+
+        for x,y,r in rblasts:
+            self.rayblast(x, y, r)
 
         for ix,iy in delitems:
             for i in xrange(len(self.itemap[(ix,iy)])):
@@ -3397,15 +3483,14 @@ class World:
                 lightradius = 25
 
 
-        libtcod.map_compute_fov(self.tcodmap, self.px, self.py, lightradius,
-                                True, libtcod.FOV_RESTRICTIVE)
+        if withtime:
+            self.process_world()
 
         monsters_in_view = []
         did_highlight = False
 
-        if withtime:
-            self.process_world()
-
+        libtcod.map_compute_fov(self.tcodmap, self.px, self.py, lightradius,
+                                True, libtcod.FOV_RESTRICTIVE)
 
         for x in xrange(self.w):
             for y in xrange(self.h):
