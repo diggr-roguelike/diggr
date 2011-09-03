@@ -463,7 +463,8 @@ class Inventory:
                getattr(self.legs, 'heatbonus', 0)
 
     def get_confattack(self):
-        return getattr(self.right, 'confattack', None)
+        return getattr(self.right, 'confattack', None) or \
+               getattr(self.left, 'confattack', None)
 
     def get_psyimmune(self):
         return getattr(self.head, 'psyimmune', None) or \
@@ -694,6 +695,10 @@ class ItemStock:
         self.tazer = Item("tazer", slot='e', skin=('(', libtcod.gray),
                           attack=1.0, confattack=(10, 1), rarity=5,
                           desc=['Very useful for subduing enemies.'])
+
+        self.redgloves = Item("red hand gloves", slot='d', skin=('(', libtcod.dark_red),
+                          attack=0.1, confattack=(10, 1), rarity=3,
+                          desc=['These magical gloves have a very confusing red glow.'])
 
         self.dartgun = Item('dart gun', slot='e', skin=('(', libtcod.light_crimson),
                             attack=0.5, confattack=(30, 5), rarity=5, range=(0,5),
@@ -963,6 +968,7 @@ class Monster:
         self.confused = 0
         self.glued = 0
         self.visible = False
+        self.visible_old = False
 
     def __str__(self):
         s = self.name
@@ -3367,7 +3373,7 @@ class World:
         mdy = mon.y
 
         if self.try_feature(mdx, mdy, 'sticky') and not mon.flying:
-            if mon.visible:
+            if mon.visible_old:
                 mn = str(mon)
                 mn = mn[0].upper() + mn[1:]
                 self.msg.m(mn + ' gets stuck in some glue!')
@@ -3441,7 +3447,9 @@ class World:
                 summons.append((k, mon))
                 continue
 
+            mon.visible_old = mon.visible
             mon.visible = False
+
             if not mon.did_move:
                 x, y = k
                 dist = math.sqrt(math.pow(abs(self.px - x), 2) + math.pow(abs(self.py - y), 2))
