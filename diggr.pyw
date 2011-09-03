@@ -697,7 +697,7 @@ class ItemStock:
                           desc=['Very useful for subduing enemies.'])
 
         self.redgloves = Item("red hand gloves", slot='d', skin=('(', libtcod.dark_red),
-                          attack=0.1, confattack=(10, 1), rarity=3,
+                          attack=0.1, confattack=(10, 1), rarity=3, count=0,
                           desc=['These magical gloves have a very confusing red glow.'])
 
         self.dartgun = Item('dart gun', slot='e', skin=('(', libtcod.light_crimson),
