@@ -603,7 +603,7 @@ class ItemStock:
                              desc=['Tiny hand-held grenades.'])
 
         self.gbomb = Item('gamma bomb$s', count=5,
-                          skin=('!', libtcod.azure), applies=True, 
+                          skin=('!', libtcod.azure), applies=True,
                           rarity=5, converts='litgbomb',
                           desc=["An object that looks something like a grenade, "
                                 "but with a 'radiation sickness' sign painted on it."])
@@ -619,12 +619,16 @@ class ItemStock:
                                 desc=['Watch out!!'])
 
         self.litgbomb = Item('activated gamma bomb', skin=('!', libtcod.yellow),
-                             radexplode=True, liveexplode=4, slot='d', radius=7,
+                             radexplode=True, liveexplode=4, slot='d', radius=12,
                              throwable=True, desc=['Watch out!!'])
 
         self.bomb = Item('exploding spore', skin=('!', libtcod.yellow), explodes=True,
                          liveexplode=4, slot='d', radius=3, throwable=True,
                          desc=['Uh-oh.'])
+
+        self.radblob = Item('radiation blob', skin=('!', libtcod.yellow), radexplode=True,
+                            liveexplode=2, slot='d', radius=8, throwable=True,
+                            desc=['Uh-oh.'])
 
         self.pickaxe = Item("miner's pickaxe", slot='e', skin=('(', libtcod.gray),
                             attack=2.0, rarity=8, applies=True, digging=True,
@@ -840,6 +844,11 @@ class ItemStock:
                              selfdestruct=(300, 50),
                              desc=['The standard protective suit for bomb squads.'])
 
+        self.radsuit = Item('radiation suit', slot='c', skin=('[', libtcod.dark_lime),
+                             radimmune=True, rarity=0, defence=0.1,
+                             selfdestruct=(1000, 50),
+                             desc=['A very special piece of equipment that protects against radiation.'])
+
         self.psyhelmet = Item('crystal helmet', slot='a', skin=('[', libtcod.white),
                                telepathyrange=6, rarity=6,
                                desc=['An ornate helmet made of crystal.',
@@ -849,7 +858,6 @@ class ItemStock:
                                applies=True, makestrap=True, rarity=8, count=1,
                                stackrange=4,
                                desc=['A tube of very sticky glue. It can be used to make traps.'])
-
 
         self.cclarva = Item('carrion crawler larva', slot='', skin=(',', libtcod.white),
                             rarity=0, summon=('carrion crawler', 2),
@@ -917,7 +925,8 @@ class Monster:
                  itemdrop=None, heatseeking=False, desc=[], psyattack=0,
                  psyrange=0, confimmune=False, slow=False, selfdestruct=False,
                  straightline=False, stoneeating=False, sleepattack=False,
-                 hungerattack=False, flying=False, radimmune=False):
+                 hungerattack=False, flying=False, radimmune=False, no_a=False,
+                 summon=False):
         self.name = name
         self.skin = skin
         self.count = count
@@ -940,6 +949,8 @@ class Monster:
         self.hungerattack = hungerattack
         self.flying = flying
         self.radimmune = radimmune
+        self.no_a = no_a
+        self.summon = summon
 
         self.x = 0
         self.y = 0
@@ -956,7 +967,7 @@ class Monster:
 
     def __str__(self):
         s = self.name
-        if self.count > 1:
+        if not self.no_a and self.count > 1:
             if s[0] in 'aeiouAEIOU':
                 s = 'an ' + s
             else:
@@ -1084,6 +1095,22 @@ class MonsterStock:
                                'he looks like he just stepped off a movie poster.',
                                "He hates competition."]))
 
+        self.add(Monster('mosura-chan', skin=('x', libtcod.dark_lime),
+                         attack=0, defence=0.2, range=30, level=9,
+                         itemdrop='radblob', selfdestruct=True,
+                         radimmune=True, explodeimmune=True,
+                         confimmune=True, count=16, flying=True, no_a=True,
+                         desc=['A bird-sized, moth-like creature.',
+                               'It has a strange green glow.']))
+
+        self.add(Monster('Gojira-sama', skin=('G', libtcod.green),
+                         attack=6.0, defence=5.0, range=10, level=11, count=1,
+                         radimmune=True, explodeimmune=True,
+                         summon=('mosura-chan', 3), itemdrop=['gbomb', 'radsuit'],
+                         desc=['She really hates Japan after what they did',
+                               'to the nuclear power plant.']))
+
+
 
     def add(self, mon):
         if mon.level not in self.monsters:
@@ -1099,8 +1126,13 @@ class MonsterStock:
                     for x in xrange(n):
                         mm = copy.copy(m)
                         if mm.itemdrop:
-                            item = itemstock.get(mm.itemdrop)
-                            mm.items = [item]
+                            if type(mm.itemdrop) == type(''):
+                                item = itemstock.get(mm.itemdrop)
+                                if item:
+                                    mm.items = [item]
+                            else:
+                                item = [itemstock.get(ii) for ii in mm.itemdrop]
+                                mm.items = [ii for ii in item if ii]
                         l.append(mm)
                     return l
 
@@ -1114,9 +1146,13 @@ class MonsterStock:
         m = copy.copy(m[random.randint(0, len(m)-1)])
 
         if m.itemdrop:
-            i = itemstock.get(m.itemdrop)
-            if i:
-                m.items = [i]
+            if type(m.itemdrop) == type(''):
+                i = itemstock.get(m.itemdrop)
+                if i:
+                    m.items = [i]
+            else:
+                item = [itemstock.get(ii) for ii in m.itemdrop]
+                m.items = [ii for ii in item if ii]
 
         return m
 
@@ -1481,7 +1517,6 @@ class VaultStock:
         for x in xrange(len(self.vaults[level])):
             v = self.vaults[level][x]
 
-            print '? ', v.chance, v.count, v.pic
             if random.randint(1, v.chance) != 1:
                 continue
 
@@ -1788,8 +1823,6 @@ class World:
         for yi in xrange(v.h):
             for xi in xrange(v.w):
                 z = v.pic[yi]
-                if len(z) != v.w:
-                    print '===',v.pic
                 if xi >= len(z):
                     continue
                 z = z[xi]
@@ -1799,7 +1832,6 @@ class World:
 
                 xx = x + xi
                 yy = y + yi
-                print '!',xx, yy
                 self.set_feature(xx, yy, z[0])
 
                 if len(z) >= 3:
@@ -1809,9 +1841,6 @@ class World:
                             self.itemap[(xx, yy)] = [itm]
                         else:
                             self.itemap[(xx, yy)].append(itm)
-
-
-        print x, y, v.pic
 
 
     def make_feats(self):
@@ -1932,7 +1961,7 @@ class World:
 
     def generate_inv(self):
         self.inv.take(self.itemstock.find('lamp'))
-        l = [self.itemstock.get('gbomb'), self.itemstock.get('pickaxe')]
+        l = [self.itemstock.get('pickaxe')]
         for x in range(3):
             l.append(self.itemstock.generate(1))
         if (self.px, self.py) not in self.itemap:
@@ -3014,8 +3043,6 @@ class World:
                         s.append(str(i[ix]))
                     s.append('')
 
-                s.append('// %d %d' % (libtcod.map_is_transparent(self.tcodmap, tx, ty), libtcod.map_is_walkable(self.tcodmap, tx, ty)))
-
                 if (tx, ty) in self.featmap:
                     f = self.featstock.f[self.featmap[(tx, ty)]]
                     s.append('You see ' + f.name + '.')
@@ -3226,8 +3253,6 @@ class World:
         draw_window(s, self.w, self.h)
 
 
-    def gainlev(self):
-        self.plev += 1
 
     def make_keymap(self):
         self.ckeys = {
@@ -3255,10 +3280,6 @@ class World:
             'Q': self.quit,
             '?': self.show_help,
             'S': self.save
-
-            #'z': self.gainlev,
-            #'x': self.debug_descend,
-            #'w': self.wish
             }
         self.vkeys = {
             libtcod.KEY_KP4: self.move_left,
@@ -3357,7 +3378,7 @@ class World:
     def summon(self, x, y, monname, n):
         m = self.monsterstock.find(monname, n, self.itemstock)
         if len(m) == 0:
-            return
+            return []
 
         l = []
         for xx in xrange(x-1,x+2):
@@ -3367,9 +3388,10 @@ class World:
                    (xx != self.px or yy != self.py):
                     l.append((xx,yy))
 
+        ret = []
         for i in xrange(len(m)):
             if len(l) == 0:
-                return
+                return ret
             j = random.randint(0, len(l)-1)
             xx,yy = l[j]
             del l[j]
@@ -3377,6 +3399,9 @@ class World:
             m[i].x = xx
             m[i].y = yy
             self.monmap[(xx, yy)] = m[i]
+            ret.append(m[i])
+
+        return ret
 
     def process_world(self):
 
@@ -3384,7 +3409,7 @@ class World:
         mons = []
         delitems = []
         rblasts = []
-        
+
         for k,v in self.itemap.iteritems():
             for i in v:
                 if i.liveexplode > 0:
@@ -3409,7 +3434,14 @@ class World:
                     if len(self.itemap[(ix,iy)]) == 0:
                         del self.itemap[(ix,iy)]
 
+        summons = []
+
         for k,mon in self.monmap.iteritems():
+
+            if mon.summon and mon.visible and (self.t % mon.summon[1]) == 0:
+                summons.append((k, mon))
+                continue
+
             mon.visible = False
             if not mon.did_move:
                 x, y = k
@@ -3432,6 +3464,13 @@ class World:
 
                     mon.did_move = True
                     mons.append(mon)
+
+        for k,mon in summons:
+            smu = str(mon)
+            smu = smu[0].upper() + smu[1:]
+            q = self.summon(k[0], k[1], mon.summon[0], 1)
+            if len(q) > 0:
+                self.msg.m(smu + ' summons ' + str(q[0]) + '!')
 
         for mon in mons:
             if mon.do_move:
