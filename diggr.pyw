@@ -11,11 +11,10 @@ import libtcodpy as libtcod
 
 #
 # stonehenge
-# radiation bomb (via FOV)
 #
 
 global _version
-_version = '11.08.28'
+_version = '11.09.04'
 
 global _inputs
 global _inputqueue
