@@ -11,6 +11,7 @@ import libtcodpy as libtcod
 
 #
 # stonehenge
+# achievements!
 #
 
 global _version
@@ -2931,13 +2932,6 @@ class World:
 
             mon.hp -= dmg
 
-            if dmg > 2:
-                self.msg.m('You seriously wound ' + sm + '!')
-            elif dmg > 0:
-                self.msg.m('You hit ' + sm + '.')
-            else:
-                self.msg.m('You miss ' + sm + '.')
-
             if mon.hp <= -3.0:
                 self.msg.m('You killed ' + sm + '!')
                 self.handle_mondeath(mon)
@@ -2951,6 +2945,16 @@ class World:
                 if ca and dmg > 0 and not mon.confimmune:
                     self.msg.m(smu + ' looks totally dazed!')
                     mon.confused += int(max(random.gauss(*ca), 1))
+                elif dmg > 4:
+                    self.msg.m('You mortally wound ' + sm + '!')
+                elif dmg > 2:
+                    self.msg.m('You seriously wound ' + sm + '.')
+                elif dmg > 0.5:
+                    self.msg.m('You wound ' + sm + '.')
+                elif dmg > 0:
+                    self.msg.m('You barely wound ' + sm + '.')
+                else:
+                    self.msg.m('You miss ' + sm + '.')
 
             if dmg > 0:
                 mon.known_px = self.px
