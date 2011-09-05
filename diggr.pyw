@@ -1049,7 +1049,7 @@ class MonsterStock:
 
         self.add(Monster('Crocodylus porosus', skin=('R', libtcod.green),
                          branch='a', attack=5.0, defence=3.0, range=9, level=4,
-                         count=7, no_a=True, slow=True,
+                         count=7, no_a=True, slow=True, heatseeking=True,
                          desc=['(Also known as the saltwater crocodile.)',
                                'The largest of all living reptiles.']))
 
@@ -1069,6 +1069,7 @@ class MonsterStock:
 
         self.add(Monster('Gigantophis garstini', skin=('S', libtcod.green),
                          branch='a', attack=4.0, defence=1.0, range=20, level=5, count=9, no_a=True,
+                         heatseeking=True, confimmune=True,
                          desc=['One of the largest snakes known, it is an almost',
                                '10 meter long ancient relative of the modern boa constrictor.']))
 
@@ -1080,7 +1081,7 @@ class MonsterStock:
 
         self.add(Monster('Glyptodon perforatus', skin=('o', libtcod.brass),
                          branch='a', attack=0.2, defence=20.0, range=7, count=7, no_a=True,
-                         explodeimmune=True, level=6,
+                         explodeimmune=True, level=6, heatseeking=True,
                          desc=['A relative of the armadillo from the Pleistocene epoch.',
                                'Unlike the modern armadillos, this armored monstrocity is',
                                'the size and weight of a car.']))
@@ -1310,6 +1311,12 @@ class MonsterStock:
         return []
 
     def generate(self, branch, level, itemstock):
+        for k,v in self.monsters.iteritems():
+            n = sum(sum(m.count for m in v2) for v2 in v.itervalues())
+            at = sum(sum(m.attack for m in v2) for v2 in v.itervalues())
+            de = sum(sum(m.defence for m in v2) for v2 in v.itervalues())
+            print '//', k, n, at/n, de/n
+
         while level > 0 and level not in self.monsters[branch]:
             level -= 1
 
