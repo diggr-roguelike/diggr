@@ -12,6 +12,7 @@ import libtcodpy as libtcod
 #
 # stonehenge
 # achievements!
+# dungeon forks (cimmeria, lovecraft/shakespeare, lost world, dying earth/new sun, sci-fi/anime)
 #
 
 global _version
@@ -931,7 +932,7 @@ class Monster:
                  psyrange=0, confimmune=False, slow=False, selfdestruct=False,
                  straightline=False, stoneeating=False, sleepattack=False,
                  hungerattack=False, flying=False, radimmune=False, no_a=False,
-                 summon=False):
+                 summon=False, branch=None):
         self.name = name
         self.skin = skin
         self.count = count
@@ -956,6 +957,7 @@ class Monster:
         self.radimmune = radimmune
         self.no_a = no_a
         self.summon = summon
+        self.branch = branch
 
         self.x = 0
         self.y = 0
@@ -984,6 +986,163 @@ class Monster:
 class MonsterStock:
     def __init__(self):
         self.monsters = {}
+
+        # Megafauna dungeon branch
+
+        self.add(Monster('Australopithecus afarensis', skin=('h', libtcod.sepia),
+                         branch='a', attack=0.1, defence=0.3, range=4, level=1,
+                         itemdrop='booze', count=9, no_a=True,
+                         desc=['An early hominid, this creature walked upright',
+                               'but lacked the intelligence of the modern human.']))
+
+        self.add(Monster('Calvatia gigantea', skin=('x', libtcod.white),
+                         branch='a', attack=0.0, defence=0.2, range=1, level=1,
+                         itemdrop='mushrooms', confimmune=True, count=8, no_a=True,
+                         desc=['(Also known as the giant puffball.)',
+                               'An edible mushroom about the same size, color and texture',
+                               'as a volleyball.']))
+
+        self.add(Monster('Meganeura monyi', skin=('X', libtcod.light_gray),
+                         branch='a', attack=0.5, defence=1.7, range=5, level=2,
+                         count=7, confimmune=True, no_a=True, flying=True,
+                         desc=['One of the largest insects to have ever lived,',
+                               'it is a relative of the modern-day dragonfly from',
+                               'the Carboniferous period.',
+                               "It's about the same size as a modern-day crow."]))
+
+        self.add(Monster('Sus barbatus', skin=('q', libtcod.dark_sepia),
+                         branch='a', attack=1.2, defence=0.6, range=4, level=2,
+                         count=6, no_a=True,
+                         desc=['(Also known as the bearded pig.)',
+                               'A species of pig. It is characterized by its beard-like',
+                               'facial hair. It is native to the tropics.']))
+
+        self.add(Monster('Dinornis giganteus', skin=('B', libtcod.light_sepia),
+                         branch='a', attack=1.0, defence=0.5, range=7, level=2,
+                         count=5, no_a=True,
+                         desc=['(Also known as the giant moa.)',
+                               'A gigantic flightless bird, like the modern-day',
+                               'ostrich, only about twice as big.']))
+
+        self.add(Monster('Megatherium americanum', skin=('Q', libtcod.light_amber),
+                         branch='a', attack=0.5, defence=3.5, range=5, level=3,
+                         count=6, no_a=True, slow=True,
+                         desc=['A gigantic ground sloth from the Pliocene period.',
+                               'It was one of the largest land animals to ever live,',
+                               'larger than the modern-day African elephant.']))
+
+        self.add(Monster('Argentavis magnificens', skin=('B', libtcod.dark_blue),
+                         branch='a', attack=3.0, defence=0.3, range=17, level=3,
+                         count=6, no_a=True, flying=True,
+                         desc=['The largest flying bird to have ever lived.',
+                               'A relative of the modern-day Andean condor,',
+                               'this bird had a wingspan of 7 meters and weighed',
+                               'up to 80 kilograms.']))
+
+        self.add(Monster('Bos primigenius', skin=('Q', libtcod.lightest_gray),
+                         branch='a', attack=7.0, defence=1.0, range=10, level=3,
+                         count=3, no_a=True,
+                         desc=['(Also known as the aurochs.)',
+                               'This magnificent animal was the ancesor of modern-day',
+                               'domestic cattle. It is much larger and stronger than any',
+                               'domestic bull.']))
+
+        self.add(Monster('Crocodylus porosus', skin=('R', libtcod.green),
+                         branch='a', attack=5.0, defence=3.0, range=9, level=4,
+                         count=7, no_a=True, slow=True,
+                         desc=['(Also known as the saltwater crocodile.)',
+                               'The largest of all living reptiles.']))
+
+        self.add(Monster('Varanus komodoensis', skin=('R', libtcod.gray),
+                         branch='a', attack=2.0, defence=2.0, range=9, level=4,
+                         count=7, no_a=True,
+                         desc=['(Also known as the Komodo dragon.)',
+                               'Not as large as a crocodile, this truly huge',
+                               'lizard is still a fearsome opponent.']))
+
+        self.add(Monster('Colossochelys atlas', skin=('O', libtcod.darkest_green),
+                         branch='a', attack=1.0, defence=24.0, explodeimmune=True,
+                         range=10, confimmune=True, slow=True, level=5, count=4, no_a=True,
+                         desc=['The largest land turtle, ever.',
+                               'Found in the Pleistoce perood, it is the size and weight',
+                               'of your average SUV vehicle.']))
+
+        self.add(Monster('Gigantophis garstini', skin=('S', libtcod.green),
+                         branch='a', attack=4.0, defence=1.0, range=20, level=5, count=9, no_a=True,
+                         desc=['One of the largest snakes known, it is an almost',
+                               '10 meter long ancient relative of the modern boa constrictor.']))
+
+        self.add(Monster('Arctotherium bonariense', skin=('Q', libtcod.dark_sepia),
+                         branch='a', attack=10.0, defence=2.0, range=10, level=6, count=3, no_a=True,
+                         desc=['The most fearsome mammal to have ever lived, this bear',
+                               'lived during the Pleistocene epoch.',
+                               'It is more than twice the size of the modern-day grizzly bear.']))
+
+        self.add(Monster('Glyptodon perforatus', skin=('o', libtcod.brass),
+                         branch='a', attack=0.2, defence=20.0, range=7, count=7, no_a=True,
+                         explodeimmune=True, level=6,
+                         desc=['A relative of the armadillo from the Pleistocene epoch.',
+                               'Unlike the modern armadillos, this armored monstrocity is',
+                               'the size and weight of a car.']))
+
+        self.add(Monster('Pteranodon longiceps', skin=('B', libtcod.lightest_lime),
+                         branch='a', attack=3.0, defence=4.0, range=10, level=7, count=8,
+                         no_a=True,
+                         desc=['A flying reptile that had a wingspan of over 6 meters!',
+                               'It was a very common animal during the Cretaceous period.']))
+
+        self.add(Monster('Hippopotamus gorgops', skin=('Q', libtcod.light_azure),
+                         branch='a', attack=8.0, defence=2.0, range=4, level=7, count=5, no_a=True,
+                         desc=['This hippo from the Miocene period was much, much larger than',
+                               'its modern-day living relatives.']))
+
+        self.add(Monster('Velociraptor mongoliensis', skin=('d', libtcod.yellow),
+                         branch='a', attack=1.5, defence=1.0, range=20, level=8, count=24,
+                         no_a=True, summon=('Velociraptor mongoliensis', 4),
+                         desc=['A small theropod from the Cretaceous period.',
+                               'It is about the size of a chicken and is covered with',
+                               'bright, feathery plumage. It has a relatively large, ',
+                               'dangerous-looking beak.',
+                               'It was also a vicious pack-hunting carnivore.']))
+
+        self.add(Monster('Titanoceratops ouranos', skin=('D', libtcod.sepia), branch='a',
+                         attack=11.0, defence=4.0, range=3, level=8, count=8,
+                         no_a=True,
+                         desc=['The largest of many species of triceratops.',
+                               'You recognize the familiar triceratops profile from',
+                               'numerous film, cartoon and book descriptions of this',
+                               'dinosaur.']))
+
+        self.add(Monster('Indricotherium transouralicum', skin=('Q', libtcod.sepia),
+                         branch='a', attack=1.0, defence=6.0, range=7, level=9, count=6,
+                         no_a=True,
+                         desc=['Named after the mystical Indrik-Beast, this is the ',
+                               'largest land mammal ever to have lived!',
+                               'A relative of the rhinoceros, it looks like a ridiculously',
+                               'muscled cross between wooly mammoth and a giraffe.',
+                               'Its long neck reaches to 8 meters in height, more than',
+                               'a 3-story building!']))
+
+        self.add(Monster('Mammuthus primigenius', skin=('Q', libtcod.darker_amber),
+                         branch='a', attack=3.0, defence=4.0, range=6, level=9, count=6,
+                         no_a=True,
+                         desc=['Also known as the wooly mammoth.']))
+
+        self.add(Monster('Tyrannosaurus rex', skin=('D', libtcod.light_lime), branch='a',
+                         attack=15.0, defence=15.0, range=20, level=10, count=1, no_a=True,
+                         confimmune=True,
+                         desc=['The Tyrant Lizard King, in person. No introduction necessary.']))
+
+        self.add(Monster('Sauroposeidon proteles', skin=('D', libtcod.light_azure), branch='a',
+                         attack=1.0, defence=64.0, range=10, level=11, count=1, no_a=True,
+                         slow=True, confimmune=True, explodeimmune=True, radimmune=True,
+                         desc=['The Earthshaker-Lizard. A sauropod so truly, veritably huge that',
+                               'it might have indeed caused earthquakes merely by walking.',
+                               "Also, the World's Largest Dinosaur.",
+                               'For a creature so large, researchers have wondered how it survived',
+                               'with its tiny brain.']))
+
+##############
 
         self.add(Monster('inebriated bum', skin=('h', libtcod.sepia),
                          attack=0.1, defence=0.2, range=3, level=1,
@@ -1119,36 +1278,42 @@ class MonsterStock:
 
 
     def add(self, mon):
-        if mon.level not in self.monsters:
-            self.monsters[mon.level] = [mon]
+        if mon.branch not in self.monsters:
+            self.monsters[mon.branch] = {}
+
+        mms = self.monsters[mon.branch]
+
+        if mon.level not in mms:
+            mms[mon.level] = [mon]
         else:
-            self.monsters[mon.level].append(mon)
+            mms[mon.level].append(mon)
 
     def find(self, name, n, itemstock):
-        for v in self.monsters.itervalues():
-            for m in v:
-                if m.name == name:
-                    l = []
-                    for x in xrange(n):
-                        mm = copy.copy(m)
-                        if mm.itemdrop:
-                            if type(mm.itemdrop) == type(''):
-                                item = itemstock.get(mm.itemdrop)
-                                if item:
-                                    mm.items = [item]
-                            else:
-                                item = [itemstock.get(ii) for ii in mm.itemdrop]
-                                mm.items = [ii for ii in item if ii]
-                        l.append(mm)
-                    return l
+        for v2 in self.monsters.itervalues():
+            for v in v2.itervalues():
+                for m in v:
+                    if m.name == name:
+                        l = []
+                        for x in xrange(n):
+                            mm = copy.copy(m)
+                            if mm.itemdrop:
+                                if type(mm.itemdrop) == type(''):
+                                    item = itemstock.get(mm.itemdrop)
+                                    if item:
+                                        mm.items = [item]
+                                else:
+                                    item = [itemstock.get(ii) for ii in mm.itemdrop]
+                                    mm.items = [ii for ii in item if ii]
+                            l.append(mm)
+                        return l
 
         return []
 
-    def generate(self, level, itemstock):
-        while level > 0 and level not in self.monsters:
+    def generate(self, branch, level, itemstock):
+        while level > 0 and level not in self.monsters[branch]:
             level -= 1
 
-        m = self.monsters[level]
+        m = self.monsters[branch][level]
         m = copy.copy(m[random.randint(0, len(m)-1)])
 
         if m.itemdrop:
@@ -1163,10 +1328,10 @@ class MonsterStock:
         return m
 
     def death(self, mon):
-        if mon.level not in self.monsters:
-            return (len(self.monsters) == 0)
+        if mon.level not in self.monsters[mon.branch]:
+            return (len(self.monsters[mon.branch]) == 0)
 
-        m = self.monsters[mon.level]
+        m = self.monsters[mon.branch][mon.level]
 
         for x in xrange(len(m)):
             if mon.name == m[x].name:
@@ -1177,7 +1342,7 @@ class MonsterStock:
                 break
 
         if len(m) == 0:
-            del self.monsters[mon.level]
+            del self.monsters[mon.branch][mon.level]
 
         return (len(self.monsters) == 0)
 
@@ -1573,6 +1738,7 @@ class World:
 
         self.dlev = 1
         self.plev = 1
+        self.branch = 'a'
         self.t = 0
         self.oldt = -1
         self.sleeping = 0
@@ -1909,7 +2075,7 @@ class World:
                 x, y = ll[random.randint(0, len(ll)-1)]
                 if (x, y) not in self.monmap: break
 
-            m = self.monsterstock.generate(lev, self.itemstock)
+            m = self.monsterstock.generate(self.branch, lev, self.itemstock)
             if m:
                 m.x = x
                 m.y = y
@@ -3653,7 +3819,7 @@ class World:
         atts = [
           'grid', 'walkmap', 'watermap', 'exit', 'itemap', 'monmap', 'visitedmap',
           'featmap', 'px', 'py', 'w', 'h',
-          'done', 'dead', 'stats', 'msg', 'coef', 'inv', 'itemstock', 'monsterstock',
+          'done', 'dead', 'stats', 'msg', 'coef', 'inv', 'itemstock', 'monsterstock', 'branch',
           'dlev', 'plev', 't', 'oldt', 'sleeping', 'resting', 'cooling', 'digging', 'blind',
           'mapping', 'glued', 's_grace', 'b_grace', 'v_grace', 'forcedsleep',
           'forced2sleep',
