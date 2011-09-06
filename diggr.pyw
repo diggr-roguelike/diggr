@@ -973,6 +973,7 @@ class Monster:
         self.visible = False
         self.visible_old = False
 
+
     def __str__(self):
         s = self.name
         if not self.no_a and self.count > 1:
@@ -1143,7 +1144,148 @@ class MonsterStock:
                                'For a creature so large, researchers have wondered how it survived',
                                'with its tiny brain.']))
 
+        # Eldritch/Faerie dungeon branch
+
+        self.add(Monster('gibbering maniac', skin=('h', libtcod.gray),
+                         attack=0.3, defence=0.1, range=3, level=1,
+                         itemdrop='booze', count=7, branch='b',
+                         desc=['Eldritch horrors have driven this poor wretch',
+                               'to the cusp of insanity.',
+                               "He's probably an alumnus of Miskatonic University."]))
+
+        self.add(Monster('chanterelle', skin=('x', libtcod.orange),
+                         attack=0.0, defence=0.3, range=1, level=1,
+                         itemdrop='mushrooms', confimmune=True, count=6, branch='b',
+                         desc=['It looks delicious.']))
+
+        self.add(Monster('brownie', skin=('h', libtcod.light_red),
+                         attack=1.5, defence=0.2, range=8, level=2, count=5, branch='b',
+                         desc=['Once a friendly house spirit, this small fey humanoid',
+                               'has been driven to hate humanity after years of neglect',
+                               'and abuse by its master.']))
+
+        self.add(Monster('pixie', skin=('h', libtcod.green),
+                         attack=1.0, defence=0.7, range=6, level=2, count=5, branch='b',
+                         desc=['A magical creature that has been driven underground',
+                               'by human pollution and habitat loss.']))
+
+        self.add(Monster('nematode', skin=('w', libtcod.yellow),
+                         attack=0, psyattack=2.0, defence=0.1, range=30, psyrange=4,
+                         level=3, count=5, branch='b',
+                         desc=['A gigantic (5 meter long) yellow worm.',
+                               'It has no visible eyes, but instead has a ',
+                               'giant, bulging, pulsating brain.']))
+
+        self.add(Monster('shoggoth', skin=('x', libtcod.dark_sepia),
+                         attack=0.7, psyattack=0.5, defence=0.6, range=5, psyrange=3, level=3,
+                         count=5, branch='b',
+                         desc=['A creature of a terrible servant race created by the',
+                               'Elder Things. A shapeless congeries of protoplasmic',
+                               'bubbles, faintly self-luminous.']))
+
+        self.add(Monster('satyr', skin=('h', libtcod.light_sepia),
+                         attack=7.0, defence=0.01, range=5, level=4,
+                         count=4, branch='b',
+                         desc=["A savage worshipper of the Mad God Dionysus.",
+                                'He is completely naked and gibbering wildly.']))
+
+        self.add(Monster('sylphid', skin=('f', libtcod.light_blue),
+                         attack=1.4, defence=1.4, range=4, level=4,
+                         count=4, psyattack=0.1, psyrange=10, branch='b',
+                         desc=['An air elemental. It takes the form of a beautiful',
+                               'young woman.']))
+
+        self.add(Monster('chthonian', skin=('W', libtcod.dark_blue),
+                         attack=4.0, psyattack=2.0, defence=1.0, range=8, psyrange=2,
+                         level=5, count=4, straightline=True, stoneeating=True, branch='b',
+                         desc=['An immense squid-like creature that burrows in the',
+                               "dark, loathsome depths of the Earth's crust.",
+                               'It is covered in slime and is accompanied by a faint',
+                               'chanting sound.']))
+
+        self.add(Monster('gnophkeh', skin=('h', libtcod.gray),
+                         attack=7.0, defence=1.0, range=18,
+                         level=5, count=4, branch='b',
+                         desc=['A member of a race of disgusting, hairy cannibal humanoids.']))
+
+        self.add(Monster('sleep faerie', skin=('f', libtcod.light_pink),
+                         attack=1.0, defence=1.0, range=9, level=6, count=5,
+                         sleepattack=True, flying=True, branch='b',
+                         desc=["A tiny fay creature dressed in pink ballet clothes.",
+                               "It looks adorable."]))
+
+        self.add(Monster('aelf', skin=('f', libtcod.green),
+                         attack=3.0, defence=2.0, range=20, level=6, count=5,
+                         confimmune=True, flying=True, branch='b',
+                         desc=["A faery creature from the elemental plane of Aelfrice."]))
+
+        self.add(Monster('leipreachan', skin=('f', libtcod.azure),
+                         attack=2.5, defence=1.5, range=9, level=7, count=5,
+                         hungerattack=True, branch='b',
+                         desc=['A fay creature in the form of a dirty, lecherous old man.']))
+
+        self.add(Monster('black knight', skin=('k', libtcod.darker_grey),
+                         attack=6.0, defence=4.5, range=8, level=7, count=6, branch='b',
+                         desc=['An evil humanoid in black cast-iron armor.',
+                               'He is armed with a longsword.']))
+
+        self.add(Monster('frost giant', skin=('k', libtcod.lighter_sky),
+                         attack=6.0, defence=4.5, range=8, level=8, count=5, branch='b',
+                         desc=['A humanoid about twice the size of a human.',
+                               'He is an evil, emotionless immigrant from the dark',
+                               'planes of Jotunheim.']))
+
+        self.add(Monster('Oberon', skin=('F', libtcod.purple),
+                         attack=3.0, defence=3.0, range=10, level=9, count=1,
+                         flying=True, explodeimmune=True, confimmune=True,
+                         psyrange=8, psyattack=2.0, branch='b',
+                         desc=['A faerie king.',
+                               'He takes on the appearance of a 2 meter tall',
+                               'handsome man, wearing a delicate crown.']))
+
+        self.add(Monster('Caliban', skin=('H', libtcod.sea),
+                         attack=7.0, defence=7.0, range=10, level=9, count=1,
+                         confimmune=True, branch='b',
+                         desc=["A deformed beast-man. Half-devil on his father's side,"
+                               'he is a resentful slave of Prospero.']))
+
+        self.add(Monster('Prospero', skin=('H', libtcod.purple),
+                         attack=2.0, defence=7.0, range=20, level=10, count=1,
+                         explodeimmune=True, flying=True, confimmune=True,
+                         psyrange=2, psyattack=2.0, branch='b',
+                         summon=('black knight', 2),
+                         desc=["Self-styled royalty, self-styled wizard, self-styled",
+                               'ruler of this dungeon.',
+                               'He has instilled unthinking loyalty into his subjects',
+                               'and slaves.']))
+
+        self.add(Monster('Yog-Sothoth', skin=('X', libtcod.pink),
+                         attack=2.0, defence=7.0, range=20, level=10, count=1,
+                         explodeimmune=True, flying=True, confimmune=True,
+                         psyrange=20, psyattack=2.0, branch='b',
+                         summon=('Prospero', 2),
+                         desc=['An Outer God: The Lurker at the Threshold, The Key and the Gate,',
+                               'The Beyond One, Opener of the Way, The All-in-One',
+                               'and the One-in-All.',
+                               ' "Only a congeries of iridescent globes, yet stupendous',
+                               '  in its malign suggestiveness."']))
+
 ##############
+
+
+##1. gibbering maniac, chanterelle
+##2. brownie, pixie
+##3. nematode 5, shoggoth
+##4. sylphid, satyr
+##5. chthonian, gnophkeh
+##6. sleep faerie 5, aelf
+##7. leipreachan 5, black knight 5
+##8. juggernaut 5, frost giant
+##9. Oberon 1, Caliban
+##10. Prospero
+##11. Yog-Sothoth
+
+##########################
 
         self.add(Monster('inebriated bum', skin=('h', libtcod.sepia),
                          attack=0.1, defence=0.2, range=3, level=1,
@@ -1359,7 +1501,7 @@ class Feature:
     def __init__(self, walkable=False, visible=False, skin=('=', libtcod.white),
                  name="something strange", stairs=False, sticky=False, water=None,
                  s_shrine=False, b_shrine=False, v_shrine=False, height=-10,
-                 shootable=False, warm=False):
+                 shootable=False, warm=False, branch=None):
         self.walkable = walkable
         self.visible = visible
         self.water = water
@@ -1373,14 +1515,21 @@ class Feature:
         self.height = height
         self.shootable = shootable
         self.warm = warm
+        self.branch = branch
 
 
 class FeatureStock:
     def __init__(self):
         self.f = {}
 
-        self.f['>'] = Feature(walkable=True, visible=True, skin=('>', libtcod.lightest_green),
+        self.f['>'] = Feature(walkable=True, visible=True, skin=('>', libtcod.white),
                               stairs=1, name='a hole in the floor')
+
+        self.f['1'] = Feature(walkable=True, visible=True, skin=('>', libtcod.lime),
+                              stairs=1, name='a hole in the floor', branch='a')
+
+        self.f['2'] = Feature(walkable=True, visible=True, skin=('>', libtcod.crimson),
+                              stairs=1, name='a hole in the floor', branch='b')
 
         self.f['*'] = Feature(walkable=True, visible=False, skin=('*', libtcod.lightest_green),
                               name='rubble')
@@ -1449,12 +1598,13 @@ class FeatureStock:
 
 
 class Vault:
-    def __init__(self, syms=None, pic=None, chance=1, level=(1,10), count=10):
+    def __init__(self, syms=None, pic=None, chance=1, level=(1,10), count=10, branch=None):
         self.syms = syms
         self.pic = pic
         self.chance = chance
         self.level = level
         self.count = count
+        self.branch = branch
 
     def postprocess(self):
         a = None
@@ -1511,9 +1661,19 @@ class VaultStock:
                 'v': ('v', True),
                 's': ('s', True),
                 'b': ('b', True),
+                '1': ('1', True),
+                '2': ('2', True),
                 '@': (None, True)}
 
         #v1 = Vault(chance=3, level=(1,6), count=3,
+
+        self.add(Vault(syms=syms, pic=["2"], chance=3, level=(3,3), count=1, branch='a'))
+        self.add(Vault(syms=syms, pic=["2"], chance=3, level=(6,6), count=1, branch='a'))
+        self.add(Vault(syms=syms, pic=["2"], chance=3, level=(9,9), count=1, branch='a'))
+
+        self.add(Vault(syms=syms, pic=["1"], chance=3, level=(3,3), count=1, branch='b'))
+        self.add(Vault(syms=syms, pic=["1"], chance=3, level=(6,6), count=1, branch='b'))
+        self.add(Vault(syms=syms, pic=["1"], chance=3, level=(9,9), count=1, branch='b'))
 
         self.add(Vault(syms=syms,
                        pic=["o.o.o.o.o.o.o.o.o.o.o.o.o",
@@ -1677,31 +1837,49 @@ class VaultStock:
     def add(self, v):
         v.postprocess()
 
-        for x in xrange(v.level[0], v.level[1]+1):
-            if x not in self.vaults:
-                self.vaults[x] = []
-            self.vaults[x].append(v)
+        if v.branch:
+            if v.branch not in self.vaults:
+                self.vaults[v.branch] = {}
 
-    def get(self, level):
+        for k,val in self.vaults.iteritems():
+            if v.branch and v.branch != k:
+                continue
+
+            for x in xrange(v.level[0], v.level[1]+1):
+                if x not in val:
+                    val[x] = []
+                val[x].append(v)
+
+    def get(self, branch, level):
         if len(self.vaults) == 0:
             return None
 
-        while level > 0 and level not in self.vaults:
+        if branch not in self.vaults or len(self.vaults[branch]) == 0:
+            return None
+
+        while level > 0 and level not in self.vaults[branch]:
             level -= 1
 
         if level == 0:
             return None
 
-        for x in xrange(len(self.vaults[level])):
-            v = self.vaults[level][x]
+        for x in xrange(len(self.vaults[branch][level])):
+            v = self.vaults[branch][level][x]
+
+            print '| ', v.pic
 
             if random.randint(1, v.chance) != 1:
                 continue
 
             if v.count == 1:
-                del self.vaults[level][x]
-                if len(self.vaults[level]) == 0:
-                    del self.vaults[level]
+                del self.vaults[branch][level][x]
+
+                if len(self.vaults[branch][level]) == 0:
+                    del self.vaults[branch][level]
+
+                if len(self.vaults[branch]) == 0:
+                    del self.vaults[branch]
+
             else:
                 v.count -= 1
 
@@ -1745,7 +1923,7 @@ class World:
 
         self.dlev = 1
         self.plev = 1
-        self.branch = 'a'
+        self.branch = None
         self.t = 0
         self.oldt = -1
         self.sleeping = 0
@@ -1770,6 +1948,10 @@ class World:
 
         self._seed = None
         self._inputs = []
+
+        self.theme = { 'a': (libtcod.lighter_lime,),
+                       'b': (libtcod.lighter_crimson,) }
+
 
 
 
@@ -2043,7 +2225,7 @@ class World:
             self.featmap[d] = 'v'
 
 
-        vault = self.vaultstock.get(self.dlev)
+        vault = self.vaultstock.get(self.branch, self.dlev)
 
         if vault:
             self.paste_vault(vault, m)
@@ -2118,6 +2300,9 @@ class World:
 
 
     def regen(self, w_, h_):
+        if self.branch is None:
+            self.branch = random.choice(['a', 'b'])
+
         self.makegrid(w_, h_)
         self.terra()
         self.makerivers()
@@ -2845,6 +3030,11 @@ class World:
 
         self.msg.m('You climb down the hole.')
         self.dlev += ss
+
+        b = self.try_feature(self.px, self.py, 'branch')
+        if b:
+            self.branch = b
+
         self.regen(self.w, self.h)
         self.place()
         self.tick()
@@ -3212,6 +3402,7 @@ class World:
                 if (tx, ty) in self.monmap:
                     m = self.monmap[(tx, ty)]
                     s.append('You see ' + str(m) + ':')
+                    s.append('')
                     s.extend(m.desc)
                     s.append('')
 
@@ -3718,7 +3909,7 @@ class World:
         for x in xrange(self.w):
             for y in xrange(self.h):
 
-                fore = libtcod.lightest_green
+                fore = self.theme[self.branch][0] #libtcod.lightest_green
 
                 if self.inv.neck and self.inv.neck.tracker:
                     if (x, y) in self.visitedmap:
@@ -4164,7 +4355,7 @@ def main(replay=None, highscorefilename='highscore'):
     world.msg.m('*** Press any key ***', True)
     world.draw()
     libtcod.console_flush()
-    libtcod.console_wait_for_keypress(False)
+    libtcod.console_wait_for_keypress(True)
 
     if replay is None and world.dead:
         world.form_highscore()
