@@ -1159,15 +1159,19 @@ class MonsterStock:
                          desc=['It looks delicious.']))
 
         self.add(Monster('brownie', skin=('h', libtcod.light_red),
-                         attack=1.5, defence=0.2, range=8, level=2, count=5, branch='b',
+                         attack=1.5, defence=0.2, range=8, level=2, count=4, branch='b',
                          desc=['Once a friendly house spirit, this small fey humanoid',
                                'has been driven to hate humanity after years of neglect',
                                'and abuse by its master.']))
 
         self.add(Monster('pixie', skin=('h', libtcod.green),
-                         attack=1.0, defence=0.7, range=6, level=2, count=5, branch='b',
+                         attack=1.0, defence=0.7, range=6, level=2, count=4, branch='b',
                          desc=['A magical creature that has been driven underground',
                                'by human pollution and habitat loss.']))
+
+        self.add(Monster('sprite', skin=('f', libtcod.light_lime),
+                         attack=0.5, defence=0.9, range=8, level=2, count=3, branch='b',
+                         desc=['A ghost of a dead faerie.']))
 
         self.add(Monster('nematode', skin=('w', libtcod.yellow),
                          attack=0, psyattack=2.0, defence=0.1, range=30, psyrange=4,
@@ -1178,10 +1182,17 @@ class MonsterStock:
 
         self.add(Monster('shoggoth', skin=('x', libtcod.dark_sepia),
                          attack=0.7, psyattack=0.5, defence=0.6, range=5, psyrange=3, level=3,
-                         count=5, branch='b',
+                         count=3, branch='b',
                          desc=['A creature of a terrible servant race created by the',
                                'Elder Things. A shapeless congeries of protoplasmic',
                                'bubbles, faintly self-luminous.']))
+
+        self.add(Monster('ghost', skin=('h', libtcod.dark_grey),
+                         attack=0.1, defence=1.5, range=7, level=3,
+                         hungerattack=True, count=3, branch='b',
+                         desc=['A spirit of an adventurer that perished in these',
+                               'terrible and wondorous caves.',
+                               'Its eyes are glowing with a malignant hunger.']))
 
         self.add(Monster('satyr', skin=('h', libtcod.light_sepia),
                          attack=7.0, defence=0.01, range=5, level=4,
@@ -1269,21 +1280,6 @@ class MonsterStock:
                                'and the One-in-All.',
                                ' "Only a congeries of iridescent globes, yet stupendous',
                                '  in its malign suggestiveness."']))
-
-##############
-
-
-##1. gibbering maniac, chanterelle
-##2. brownie, pixie
-##3. nematode 5, shoggoth
-##4. sylphid, satyr
-##5. chthonian, gnophkeh
-##6. sleep faerie 5, aelf
-##7. leipreachan 5, black knight 5
-##8. juggernaut 5, frost giant
-##9. Oberon 1, Caliban
-##10. Prospero
-##11. Yog-Sothoth
 
 ##########################
 
