@@ -4271,6 +4271,7 @@ class World:
             pass
 
         hss.append(hs)
+        hss = hss[-25:]
 
         try:
             hsf = open('highscore', 'w')
