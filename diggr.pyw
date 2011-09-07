@@ -870,6 +870,11 @@ class ItemStock:
                             throwable=True, liveexplode=4,
                             desc=['A tiny larva of the carrion crawler species.'])
 
+        self.triffidlarva = Item('triffid seed', slot='', skin=(',', libtcod.peach),
+                                 rarity=0, summon=('triffid', 1),
+                                 throwable=True, liveexplode=4,
+                                 desc=['A tiny larva of the carrion crawler species.'])
+
         self.regenpool()
 
     def regenpool(self):
@@ -972,6 +977,7 @@ class Monster:
         self.glued = 0
         self.visible = False
         self.visible_old = False
+        self.gencount = 0
 
 
     def __str__(self):
@@ -1281,6 +1287,154 @@ class MonsterStock:
                                ' "Only a congeries of iridescent globes, yet stupendous',
                                '  in its malign suggestiveness."']))
 
+
+        # Cyberspace dungeon branch.
+
+
+        self.add(Monster('cyberpunk', skin=('h', libtcod.light_purple),
+                         attack=0.2, defence=0.1, range=4, level=1,
+                         itemdrop='booze', count=6, branch='c',
+                         desc=['Stoned out of his gourd, he is chatting with his avatar',
+                               'in cyberspace while wearing VR glasses.']))
+
+        self.add(Monster('cramration', skin=('x', libtcod.pink),
+                         attack=0.0, defence=0.2, range=1, level=1,
+                         itemdrop='mushrooms', confimmune=True, count=6, branch='c',
+                         desc=['A mushroom/pork genetically engineered vegetarian',
+                               'food ration. It sports tiny legs.']))
+
+        self.add(Monster('snorlax', skin=('v', libtcod.purple),
+                         attack=1.0, defence=1.2, range=5, slow=True, level=2, count=5,
+                         branch='c',
+                         desc=['A 2 meter tall, enourmously obese creature of',
+                               'some indeterminate cat-bear-dog race. It has',
+                               'a pinkish-purple hide.']))
+
+        self.add(Monster('charizard', skin=('v', libtcod.green),
+                         attack=1.0, defence=0.4, range=8, level=2, count=5,
+                         branch='c',
+                         desc=['A creature of indeterminate race, looking like',
+                               'some sort of small dragonish flying reptile.',
+                               'It is greenish in color.']))
+
+        self.add(Monster('squirtle', skin=('v', libtcod.light_blue),
+                         attack=0.4, defence=1.0, range=6, level=2, count=7,
+                         heatseeking=True, branch='c',
+                         desc=['A bluish creature of indeterminate race.',
+                               'It looks like a cute turtle.']))
+
+        self.add(Monster('spore plant', skin=('x', libtcod.dark_yellow),
+                         attack=0.3, defence=0.2, range=7, level=3,
+                         itemdrop='bomb', confimmune=True, count=7,
+                         heatseeking=True, branch='c',
+                         desc=['A large plantlike carnivorous creature.',
+                               'It has large bulbous appendages growing out of its stalk.',
+                               'It looks like it is radiating heat from the inside.']))
+
+        self.add(Monster('scavenger drone', skin=('Z', libtcod.silver),
+                         attack=1.0, defence=24.0, explodeimmune=True, range=30,
+                         confimmune=True, slow=True, level=3, count=4, branch='c',
+                         desc=['A remotely-controlled robot used for exploring the dungeon.']))
+
+        self.add(Monster('memetic virus', skin=('v', libtcod.dark_gray),
+                         attack=0.3, defence=0.3, explodeimmune=True, radimmune=True,
+                         branch='c',
+                         range=30, level=3, count=16, summon=('memetic virus', 5),
+                         desc=["It doesn't exist. It's a memetic virus."]))
+
+        self.add(Monster('spore', skin=('x', libtcod.pink),
+                         attack=0, defence=0.2, range=30, level=4,
+                         itemdrop='bomb', heatseeking=True, selfdestruct=True,
+                         confimmune=True, count=7, flying=True, branch='c',
+                         desc=['A pulsating pink spherical spore, about 1 meter in diameter.',
+                               'It is levitating.',
+                               'It looks like it is radiating heat from the inside.']))
+
+        self.add(Monster('xenomorph', skin=('X', libtcod.silver),
+                         attack=7.0, defence=7.0, range=5, level=4,
+                         count=2, confimmune=True, radimmune=True, branch='c',
+                         desc=["A horrifying alien creature. It looks like a giant,",
+                               "very evil insect. It is truly scary."]))
+
+        self.add(Monster('cthulhumon', skin=('v', libtcod.gray),
+                         attack=3.0, psyattack=2.0, defence=1.0, range=8, psyrange=8,
+                         level=5, confimmune=True, count=4, branch='c',
+                         desc=['The other Pokemon nobody told you about.']))
+
+        self.add(Monster('cyberdemon', skin=('Z', libtcod.red),
+                         attack=7.0, defence=2.0, range=4, level=5, count=2,
+                         explodeimmune=True, summon=('spore', 2), branch='c',
+                         desc=['A 3 meter tall hellish demon-robot hybrid.',
+                               'Fleshy parts of its demonic body have rotted away,',
+                               'to be replaced with crude stainless-steel robotic parts.']))
+
+        self.add(Monster('shai-hulud', skin=('W', libtcod.gray),
+                         attack=2.0, defence=4.5, explodeimmune=True, range=30,
+                         level=6, count=4, straightline=True, stoneeating=True,
+                         heatseeking=True, branch='c',
+                         desc=['A giant worm. It is gray in color and has a skin made of something like granite.',
+                               'It is about 15 meters in length.']))
+
+        self.add(Monster('klingon', skin=('k', libtcod.brass),
+                         attack=5.0, defence=0.5, range=5, level=6,
+                         count=5, branch='c',
+                         desc=["A member of a chivalrous warrior race of extraterrestrial aliens."]))
+
+        self.add(Monster('autobot', skin=('z', libtcod.silver),
+                         attack=1.5, defence=1.5, range=15, level=7,
+                         itemdrop='bomb', confimmune=True, radimmune=True,
+                         explodeimmune=True, count=7, branch='c',
+                         desc=['An extraterrestrial sentient robot from the planet',
+                               'Cybertron. Powered by the energy source Nucleon,',
+                               'he fights for intergalactic Good.']))
+
+        self.add(Monster('T-1 terminator', skin=('z', libtcod.lightest_sepia),
+                         attack=0.4, defence=0.4, range=7, level=7,
+                         itemdrop='radblob', confimmune=True, count=7,
+                         radimmune=True, heatseeking=True, branch='c',
+                         desc=["The very first model in Cyberdine's robot-killer lineup.",
+                               '(Brought to you by Skynet.)']))
+
+        self.add(Monster('decepticon', skin=('z', libtcod.dark_gray),
+                         attack=1.5, defence=1.5, range=15, level=8,
+                         confimmune=True, radimmune=True, branch='c',
+                         explodeimmune=True, count=7, summon=('autobot', 3),
+                         desc=['An extraterrestrial sentient robot from the planet',
+                               'Cybertron. Powered by the energy source Nucleon,',
+                               'he fights for intergalactic Evil.']))
+
+        self.add(Monster('triffid', skin=('x', libtcod.peach),
+                         attack=2.0, defence=2.0, range=5, level=8, count=16,
+                         itemdrop='triffidlarva', confimmune=True, branch='c',
+                         desc=['A carnivorous plant. It is a sneaky pest that is very',
+                               'hard to get rid of.']))
+
+        self.add(Monster('mosura-chan', skin=('x', libtcod.dark_lime),
+                         attack=0, defence=0.2, range=30, level=9,
+                         itemdrop='radblob', selfdestruct=True,
+                         radimmune=True, explodeimmune=True, branch='c',
+                         confimmune=True, count=16, flying=True, no_a=True,
+                         desc=['A bird-sized, moth-like creature.',
+                               'It has a strange green glow.']))
+
+        self.add(Monster('Wintermute', skin=('V', libtcod.azure),
+                         attack=0.5, defence=4.0, range=30, sleepattack=True,
+                         confimmune=True, explodeimmune=True, radimmune=True, flying=True,
+                         no_a=True, count=2, level=9, branch='c',
+                         desc=["A manifestation of the powerful AI construct named 'Wintermute'."]))
+
+        self.add(Monster('Voltron', skin=('Z', libtcod.white),
+                         attack=6.0, defence=5.0, range=5, level=10, count=1,
+                         explodeimmune=True, confimmune=True, branch='c', heatseeking=True,
+                         desc=['Defender of the Universe.']))
+
+        self.add(Monster('Gojira-sama', skin=('G', libtcod.green),
+                         attack=6.0, defence=5.0, range=10, level=11, count=1,
+                         radimmune=True, explodeimmune=True, branch='c',
+                         summon=('mosura-chan', 3), itemdrop=['gbomb', 'radsuit'],
+                         desc=['She really hates Japan after what they did',
+                               'to the nuclear power plant.']))
+
 ##########################
 
         self.add(Monster('inebriated bum', skin=('h', libtcod.sepia),
@@ -1433,7 +1587,14 @@ class MonsterStock:
                 for m in v:
                     if m.name == name:
                         l = []
-                        for x in xrange(n):
+
+                        if m.gencount >= m.count - 1:
+                            return l
+
+                        n2 = min(n, m.count - m.gencount - 1)
+                        m.gencount += n2
+
+                        for x in xrange(n2):
                             mm = copy.copy(m)
                             if mm.itemdrop:
                                 if type(mm.itemdrop) == type(''):
@@ -1444,6 +1605,7 @@ class MonsterStock:
                                     item = [itemstock.get(ii) for ii in mm.itemdrop]
                                     mm.items = [ii for ii in item if ii]
                             l.append(mm)
+
                         return l
 
         return []
@@ -1480,7 +1642,7 @@ class MonsterStock:
 
         for x in xrange(len(m)):
             if mon.name == m[x].name:
-                if m[x].count == 1:
+                if m[x].count <= 1:
                     del m[x]
                 else:
                     m[x].count -= 1
@@ -1526,6 +1688,9 @@ class FeatureStock:
 
         self.f['2'] = Feature(walkable=True, visible=True, skin=('>', libtcod.crimson),
                               stairs=1, name='a hole in the floor', branch='b')
+
+        self.f['3'] = Feature(walkable=True, visible=True, skin=('>', libtcod.sky),
+                              stairs=1, name='a hole in the floor', branch='c')
 
         self.f['*'] = Feature(walkable=True, visible=False, skin=('*', libtcod.lightest_green),
                               name='rubble')
@@ -1659,6 +1824,7 @@ class VaultStock:
                 'b': ('b', True),
                 '1': ('1', True),
                 '2': ('2', True),
+                '3': ('3', True),
                 '@': (None, True)}
 
         #v1 = Vault(chance=3, level=(1,6), count=3,
@@ -1666,10 +1832,23 @@ class VaultStock:
         self.add(Vault(syms=syms, pic=["2"], chance=3, level=(3,3), count=1, branch='a'))
         self.add(Vault(syms=syms, pic=["2"], chance=3, level=(6,6), count=1, branch='a'))
         self.add(Vault(syms=syms, pic=["2"], chance=3, level=(9,9), count=1, branch='a'))
+        self.add(Vault(syms=syms, pic=["3"], chance=3, level=(3,3), count=1, branch='a'))
+        self.add(Vault(syms=syms, pic=["3"], chance=3, level=(6,6), count=1, branch='a'))
+        self.add(Vault(syms=syms, pic=["3"], chance=3, level=(9,9), count=1, branch='a'))
 
         self.add(Vault(syms=syms, pic=["1"], chance=3, level=(3,3), count=1, branch='b'))
         self.add(Vault(syms=syms, pic=["1"], chance=3, level=(6,6), count=1, branch='b'))
         self.add(Vault(syms=syms, pic=["1"], chance=3, level=(9,9), count=1, branch='b'))
+        self.add(Vault(syms=syms, pic=["3"], chance=3, level=(3,3), count=1, branch='b'))
+        self.add(Vault(syms=syms, pic=["3"], chance=3, level=(6,6), count=1, branch='b'))
+        self.add(Vault(syms=syms, pic=["3"], chance=3, level=(9,9), count=1, branch='b'))
+
+        self.add(Vault(syms=syms, pic=["2"], chance=3, level=(3,3), count=1, branch='c'))
+        self.add(Vault(syms=syms, pic=["2"], chance=3, level=(6,6), count=1, branch='c'))
+        self.add(Vault(syms=syms, pic=["2"], chance=3, level=(9,9), count=1, branch='c'))
+        self.add(Vault(syms=syms, pic=["1"], chance=3, level=(3,3), count=1, branch='c'))
+        self.add(Vault(syms=syms, pic=["1"], chance=3, level=(6,6), count=1, branch='c'))
+        self.add(Vault(syms=syms, pic=["1"], chance=3, level=(9,9), count=1, branch='c'))
 
         self.add(Vault(syms=syms,
                        pic=["o.o.o.o.o.o.o.o.o.o.o.o.o",
@@ -1946,7 +2125,8 @@ class World:
         self._inputs = []
 
         self.theme = { 'a': (libtcod.lighter_lime,),
-                       'b': (libtcod.lighter_crimson,) }
+                       'b': (libtcod.lighter_crimson,),
+                       'c': (libtcod.lighter_sky,) }
 
 
 
@@ -2297,7 +2477,7 @@ class World:
 
     def regen(self, w_, h_):
         if self.branch is None:
-            self.branch = random.choice(['a', 'b'])
+            self.branch = random.choice(['a', 'b', 'c'])
 
         self.makegrid(w_, h_)
         self.terra()
