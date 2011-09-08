@@ -2656,7 +2656,7 @@ class World:
 
     def regen(self, w_, h_):
         if self.branch is None:
-            self.branch = 'd' #random.choice(['a', 'b', 'c', 'd'])
+            self.branch = random.choice(['a', 'b', 'c', 'd'])
 
         self.makegrid(w_, h_)
         self.terra()
