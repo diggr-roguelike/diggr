@@ -865,6 +865,10 @@ class ItemStock:
                                stackrange=4,
                                desc=['A tube of very sticky glue. It can be used to make traps.'])
 
+        self.gluegun = Item('gluegun', slot='d', skin=('+', libtcod.light_yellow),
+                            applies=True, makestrap=True, rarity=0, count=None,
+                            desc=['A device that holds a practically unlimited amount of glue.'])
+
         self.cclarva = Item('carrion crawler larva', slot='', skin=(',', libtcod.white),
                             rarity=0, summon=('carrion crawler', 2),
                             throwable=True, liveexplode=4,
@@ -874,6 +878,15 @@ class ItemStock:
                                  rarity=0, summon=('triffid', 1),
                                  throwable=True, liveexplode=4,
                                  desc=['A tiny larva of the carrion crawler species.'])
+
+        self.avern = Item('avern', slot='e', skin=('(', libtcod.dark_green),
+                          attack=6.0, rarity=0, selfdestruct=(500, 100),
+                          desc=['A makeshift weapon made from the poisonous avern plant.'])
+
+        self.alzabobrain = Item('alzabo brain matter', slot='', skin=(',', libtcod.darkest_red),
+                                 rarity=0, summon=('alzabo', 1),
+                                 throwable=True, liveexplode=4, count=0,
+                                 desc=["Bits and pieces of the alzabo's brain."])
 
         self.regenpool()
 
@@ -982,7 +995,7 @@ class Monster:
 
     def __str__(self):
         s = self.name
-        if not self.no_a and self.count > 1:
+        if not self.no_a:
             if s[0] in 'aeiouAEIOU':
                 s = 'an ' + s
             else:
@@ -1255,14 +1268,14 @@ class MonsterStock:
         self.add(Monster('Oberon', skin=('F', libtcod.purple),
                          attack=3.0, defence=3.0, range=10, level=9, count=1,
                          flying=True, explodeimmune=True, confimmune=True,
-                         psyrange=8, psyattack=2.0, branch='b',
+                         psyrange=8, psyattack=2.0, branch='b', no_a=True,
                          desc=['A faerie king.',
                                'He takes on the appearance of a 2 meter tall',
                                'handsome man, wearing a delicate crown.']))
 
         self.add(Monster('Caliban', skin=('H', libtcod.sea),
                          attack=7.0, defence=7.0, range=10, level=9, count=1,
-                         confimmune=True, branch='b',
+                         confimmune=True, branch='b', no_a=True,
                          desc=["A deformed beast-man. Half-devil on his father's side,"
                                'he is a resentful slave of Prospero.']))
 
@@ -1270,7 +1283,7 @@ class MonsterStock:
                          attack=2.0, defence=7.0, range=20, level=10, count=1,
                          explodeimmune=True, flying=True, confimmune=True,
                          psyrange=2, psyattack=2.0, branch='b',
-                         summon=('black knight', 2),
+                         summon=('black knight', 2), no_a=True,
                          desc=["Self-styled royalty, self-styled wizard, self-styled",
                                'ruler of this dungeon.',
                                'He has instilled unthinking loyalty into his subjects',
@@ -1280,7 +1293,7 @@ class MonsterStock:
                          attack=2.0, defence=7.0, range=20, level=10, count=1,
                          explodeimmune=True, flying=True, confimmune=True,
                          psyrange=20, psyattack=2.0, branch='b',
-                         summon=('Prospero', 2),
+                         summon=('Prospero', 2), no_a=True,
                          desc=['An Outer God: The Lurker at the Threshold, The Key and the Gate,',
                                'The Beyond One, Opener of the Way, The All-in-One',
                                'and the One-in-All.',
@@ -1424,52 +1437,163 @@ class MonsterStock:
                          desc=["A manifestation of the powerful AI construct named 'Wintermute'."]))
 
         self.add(Monster('Voltron', skin=('Z', libtcod.white),
-                         attack=6.0, defence=5.0, range=5, level=10, count=1,
+                         attack=6.0, defence=5.0, range=5, level=10, count=1, no_a=True,
                          explodeimmune=True, confimmune=True, branch='c', heatseeking=True,
                          desc=['Defender of the Universe.']))
 
         self.add(Monster('Gojira-sama', skin=('G', libtcod.green),
                          attack=6.0, defence=5.0, range=10, level=11, count=1,
-                         radimmune=True, explodeimmune=True, branch='c',
+                         radimmune=True, explodeimmune=True, branch='c', no_a=True,
                          summon=('mosura-chan', 3), itemdrop=['gbomb', 'radsuit'],
                          desc=['She really hates Japan after what they did',
                                'to the nuclear power plant.']))
 
-# 1. omophagist, avern
-# 2. armiger (physical), exultant (summons armiger)
-# 3. aquastor (hunger attack), eidolon (psyattack)
-# 4. destrier (purely physical), cacogen (radexplode after death)
-# 5. ascian (psyattack), smilodon (purely physical)
-# 6. alzabo (resurrects), undine (sleepattack)
-# 7. Scylla (-rad, -explode, -conf)
-# 8. Uroboros (-rad, -explode)
-# 9. Erebus (-rad)
-# 10. Arioch (all immunities)
-# 11. Abaia (all immunities, summons undine)
+        # Urthian dungeon branch.
 
-# hyperborean barbarian
-# aquilonian marshall
-# cimmerian pirate
-# stygian priest
-# turanian nomad
-# lemurian wizard
-# atlantian sorceror
-# amazon warrior
-# thulian prince
-# Conan
-# wolf
-# vampire
-# zombie
-# giant spider
-# carrion crawler
-# giant slug
-# apeman
-# cannibal
-# evil demon
-# giant serpent
-# Crom
-# peasant
-# lichen
+
+        self.add(Monster('omphagist', skin=('h', libtcod.dark_purple),
+                         attack=0.3, defence=0.1, range=4, level=1,
+                         count=4, branch='d',
+                         desc=['A poor, degenerate inhabitant of the poorest parts of the City.',
+                               '(Those parts that are composed of mostly ancient ruins.)',
+                               'He might be a little insane and a cannibal, as well.']))
+
+        self.add(Monster('avern', skin=('x', libtcod.green),
+                         attack=0.3, defence=0.01, range=1, level=1,
+                         itemdrop='avern', confimmune=True, count=4, branch='d',
+                         desc=['A poisonous, carnivorous species of plant.',
+                               '(It might actually be at least in part an animal.)']))
+
+        self.add(Monster('armiger', skin=('k', libtcod.silver),
+                         attack=2.0, defence=1.0, range=8, level=2,
+                         count=4, branch='d',
+                         desc=['A member of the warrior caste.']))
+
+        self.add(Monster('exultant', skin=('h', libtcod.gold),
+                         attack=0.5, defence=0.5, range=8, level=2,
+                         count=3, branch='d', summon=('armiger', 2),
+                         desc=['A member of the nobility caste.']))
+
+        self.add(Monster('aquastor', skin=('v', libtcod.gray),
+                         attack=1.5, defence=1.0, range=10, level=3, count=4,
+                         hungerattack=True, branch='d', flying=True,
+                         desc=['An entity formed by the power of a concentrated thought',
+                               'and which assumed a physical form.']))
+
+        self.add(Monster('eidolon', skin=('v', libtcod.white),
+                         attack=0.0, defence=2.0, range=8, level=3,
+                         count=4, psyattack=1.5, psyrange=7, branch='d', flying=True,
+                         desc=["A spirit-image of a living or dead person;",
+                               "a shade or phantom look-alike of the human form."]))
+
+        self.add(Monster('destrier', skin=('q', libtcod.dark_gray),
+                         attack=2.5, defence=1.5, range=6, level=4, count=3,
+                         branch='d',
+                         desc=['A mount; A highly modified horse, possessing',
+                               'clawed feet (for better traction) and large canine teeth.',
+                               'It is carnivorous.']))
+
+        self.add(Monster('cacogen', skin=('u', libtcod.silver),
+                         attack=0.5, defence=1.0, range=10, level=4, count=3,
+                         summon=('eidolon', 2), itemdrop='radblob',
+                         branch='d',
+                         desc=['In fact an extraterrestrial who disguises itself as an',
+                               'urthly monster.']))
+
+        self.add(Monster('ascian', skin=('h', libtcod.gray),
+                         attack=2.0, defence=1.0, range=5, level=5,
+                         psyattack=1.5, psyrange=10,
+                         count=4, branch='d',
+                         desc=['A human from Ascia, the tyrannical empire ruled',
+                               'by the evil Abaia. His mind is warped to the point',
+                               'where he cannot any longer speak or understand any',
+                               'real human language.']))
+
+        self.add(Monster('smilodon', skin=('Q', libtcod.dark_orange),
+                         attack=2.5, defence=1.5, range=12, level=5, count=3,
+                         branch='d',
+                         desc=['An ancient genetically-engineered feline animal.',
+                               'It looks somewhat like the familiar sabre-toothed tiger.']))
+
+        self.add(Monster('alzabo', skin=('u', libtcod.darkest_red),
+                         attack=2.0, defence=2.0, range=12, level=6, count=3,
+                         branch='d', itemdrop='alzabobrain',
+                         desc=[' "The red orbs of the alzabo were something more, neither',
+                               '  the intelligence of humankind nor the the innocence of',
+                               '  the brutes. So a fiend might look, I thought, when it had',
+                               '  at last struggled up from the pit of some dark star."']))
+
+        self.add(Monster('undine', skin=('u', libtcod.darkest_blue),
+                         attack=0.7, defence=3.0, range=10, level=6, count=5,
+                         sleepattack=True,
+                         desc=["A monstrous slave-servant of its megetherian overlords.",
+                               'It looks like humongous, deformed mermaid.']))
+
+        self.add(Monster('Scylla', skin=('U', libtcod.white),
+                         attack=10, defence=10, range=15, level=7, count=1,
+                         branch='d', no_a=True,
+                         desc=['A megatherian: an evil, immortal, gigantic creature of',
+                               'possibly extraterrestrial origin. They are hellbent on ruling',
+                               'Urth. They are powerful enough and amoral enough to be',
+                               'essentially equal to gods.']))
+
+        self.add(Monster('Uroboros', skin=('U', libtcod.light_green),
+                         attack=10, defence=10, range=15, level=8, count=1,
+                         branch='d', confimmune=True, no_a=True,
+                         desc=['A megatherian: an evil, immortal, gigantic creature of',
+                               'possibly extraterrestrial origin. They are hellbent on ruling',
+                               'Urth. They are powerful enough and amoral enough to be',
+                               'essentially equal to gods.']))
+
+        self.add(Monster('Erebus', skin=('U', libtcod.light_pink),
+                         attack=10, defence=10, range=15, level=9, count=1,
+                         branch='d', confimmune=True, explodeimmune=True, no_a=True,
+                         desc=['A megatherian: an evil, immortal, gigantic creature of',
+                               'possibly extraterrestrial origin. They are hellbent on ruling',
+                               'Urth. They are powerful enough and amoral enough to be',
+                               'essentially equal to gods.']))
+
+        self.add(Monster('Arioch', skin=('U', libtcod.light_sky),
+                         attack=10, defence=10, range=15, level=10, count=1, no_a=True,
+                         branch='d', confimmune=True, explodeimmune=True, radimmune=True,
+                         desc=['A megatherian: an evil, immortal, gigantic creature of',
+                               'possibly extraterrestrial origin. They are hellbent on ruling',
+                               'Urth. They are powerful enough and amoral enough to be',
+                               'essentially equal to gods.']))
+
+        self.add(Monster('Abaia', skin=('U', libtcod.grey),
+                         attack=10, defence=10, range=15, level=11, count=1,
+                         branch='d', confimmune=True, explodeimmune=True, radimmune=True,
+                         summon=('undine', 3), no_a=True, itemdrop='gluegun',
+                         desc=['A megatherian: an evil, immortal, gigantic creature of',
+                               'possibly extraterrestrial origin. They are hellbent on ruling',
+                               'Urth. They are powerful enough and amoral enough to be',
+                               'essentially equal to gods.']))
+
+
+##hyperborean barbarian
+##aquilonian marshall
+##cimmerian pirate
+##stygian priest
+##turanian nomad
+##lemurian wizard
+##atlantian sorceror
+##amazon warrior
+##thulian prince
+##Conan
+##wolf
+##vampire
+##zombie
+##giant spider
+##carrion crawler
+##giant slug
+##apeman
+##cannibal
+##evil demon
+##giant serpent
+##Crom
+##peasant
+##lichen
 
 ##########################
 
@@ -1672,6 +1796,7 @@ class MonsterStock:
             if tmp.gencount >= tmp.count:
                 continue
             tmp.gencount += 1
+            break
 
         m = copy.copy(tmp)
 
@@ -2178,7 +2303,8 @@ class World:
 
         self.theme = { 'a': (libtcod.lighter_lime,),
                        'b': (libtcod.lighter_crimson,),
-                       'c': (libtcod.lighter_sky,) }
+                       'c': (libtcod.lighter_sky,),
+                       'd': (libtcod.dark_grey,) }
 
 
 
@@ -2480,7 +2606,7 @@ class World:
 
     def make_monsters(self):
 
-        self.clear_gencount()
+        self.monsterstock.clear_gencount()
         self.monmap = {}
         n = int(max(random.gauss(*self.coef.nummonsters), 1))
         ll = list(self.walkmap)
@@ -2530,7 +2656,7 @@ class World:
 
     def regen(self, w_, h_):
         if self.branch is None:
-            self.branch = random.choice(['a', 'b', 'c'])
+            self.branch = 'd' #random.choice(['a', 'b', 'c', 'd'])
 
         self.makegrid(w_, h_)
         self.terra()
@@ -3218,6 +3344,9 @@ class World:
 
             self.featmap[(self.px, self.py)] = '^'
             self.msg.m('You spread the glue liberally on the floor.')
+
+            if item.count is None:
+                return item
             return None
 
         elif item.rangeattack or item.rangeexplode:
@@ -4075,6 +4204,8 @@ class World:
             q = self.summon(k[0], k[1], mon.summon[0], 1)
             if len(q) > 0:
                 self.msg.m(smu + ' summons ' + str(q[0]) + '!')
+            else:
+                mon.summon = None
 
         for mon in mons:
             if mon.do_move:
