@@ -1435,6 +1435,18 @@ class MonsterStock:
                          desc=['She really hates Japan after what they did',
                                'to the nuclear power plant.']))
 
+# 1. omophagist, avern
+# 2. armiger, exultant
+# 3. aquastor, eidolon
+# 4. destrier, cacogen
+# 5. ascian, smilodon
+# 6. alzabo, undine
+# 7. Scylla
+# 8. Uroboros
+# 9. Erebus
+# 10. Arioch
+# 11. Abaia
+
 ##########################
 
         self.add(Monster('inebriated bum', skin=('h', libtcod.sepia),
@@ -1581,6 +1593,14 @@ class MonsterStock:
         else:
             mms[mon.level].append(mon)
 
+
+    def clear_gencount(self):
+        for v2 in self.monsters.itervalues():
+            for v in v2.itervalues():
+                for m in v:
+                    m.gencount = 0
+
+
     def find(self, name, n, itemstock):
         for v2 in self.monsters.itervalues():
             for v in v2.itervalues():
@@ -1588,10 +1608,10 @@ class MonsterStock:
                     if m.name == name:
                         l = []
 
-                        if m.gencount >= m.count - 1:
+                        if m.gencount >= m.count:
                             return l
 
-                        n2 = min(n, m.count - m.gencount - 1)
+                        n2 = min(n, m.count - m.gencount)
                         m.gencount += n2
 
                         for x in xrange(n2):
@@ -1621,7 +1641,15 @@ class MonsterStock:
             level -= 1
 
         m = self.monsters[branch][level]
-        m = copy.copy(m[random.randint(0, len(m)-1)])
+        tmp = None
+
+        for x in xrange(5):
+            tmp = m[random.randint(0, len(m)-1)]
+            if tmp.gencount >= tmp.count:
+                continue
+            tmp.gencount += 1
+
+        m = copy.copy(tmp)
 
         if m.itemdrop:
             if type(m.itemdrop) == type(''):
@@ -2428,6 +2456,7 @@ class World:
 
     def make_monsters(self):
 
+        self.clear_gencount()
         self.monmap = {}
         n = int(max(random.gauss(*self.coef.nummonsters), 1))
         ll = list(self.walkmap)
