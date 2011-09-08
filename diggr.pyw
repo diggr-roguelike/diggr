@@ -1869,6 +1869,9 @@ class FeatureStock:
         self.f['3'] = Feature(walkable=True, visible=True, skin=('>', libtcod.sky),
                               stairs=1, name='a hole in the floor', branch='c')
 
+        self.f['4'] = Feature(walkable=True, visible=True, skin=('>', libtcod.dark_gray),
+                              stairs=1, name='a hole in the floor', branch='c')
+
         self.f['*'] = Feature(walkable=True, visible=False, skin=('*', libtcod.lightest_green),
                               name='rubble')
 
@@ -2002,6 +2005,7 @@ class VaultStock:
                 '1': ('1', True),
                 '2': ('2', True),
                 '3': ('3', True),
+                '4': ('4', True),
                 '@': (None, True)}
 
         #v1 = Vault(chance=3, level=(1,6), count=3,
@@ -2012,20 +2016,39 @@ class VaultStock:
         self.add(Vault(syms=syms, pic=["3"], chance=3, level=(3,3), count=1, branch='a'))
         self.add(Vault(syms=syms, pic=["3"], chance=3, level=(6,6), count=1, branch='a'))
         self.add(Vault(syms=syms, pic=["3"], chance=3, level=(9,9), count=1, branch='a'))
+        self.add(Vault(syms=syms, pic=["4"], chance=3, level=(3,3), count=1, branch='a'))
+        self.add(Vault(syms=syms, pic=["4"], chance=3, level=(6,6), count=1, branch='a'))
+        self.add(Vault(syms=syms, pic=["4"], chance=3, level=(9,9), count=1, branch='a'))
 
         self.add(Vault(syms=syms, pic=["1"], chance=3, level=(3,3), count=1, branch='b'))
         self.add(Vault(syms=syms, pic=["1"], chance=3, level=(6,6), count=1, branch='b'))
         self.add(Vault(syms=syms, pic=["1"], chance=3, level=(9,9), count=1, branch='b'))
+        self.add(Vault(syms=syms, pic=["4"], chance=3, level=(3,3), count=1, branch='b'))
+        self.add(Vault(syms=syms, pic=["4"], chance=3, level=(6,6), count=1, branch='b'))
+        self.add(Vault(syms=syms, pic=["4"], chance=3, level=(9,9), count=1, branch='b'))
         self.add(Vault(syms=syms, pic=["3"], chance=3, level=(3,3), count=1, branch='b'))
         self.add(Vault(syms=syms, pic=["3"], chance=3, level=(6,6), count=1, branch='b'))
         self.add(Vault(syms=syms, pic=["3"], chance=3, level=(9,9), count=1, branch='b'))
 
-        self.add(Vault(syms=syms, pic=["2"], chance=3, level=(3,3), count=1, branch='c'))
-        self.add(Vault(syms=syms, pic=["2"], chance=3, level=(6,6), count=1, branch='c'))
-        self.add(Vault(syms=syms, pic=["2"], chance=3, level=(9,9), count=1, branch='c'))
+        self.add(Vault(syms=syms, pic=["4"], chance=3, level=(3,3), count=1, branch='c'))
+        self.add(Vault(syms=syms, pic=["4"], chance=3, level=(6,6), count=1, branch='c'))
+        self.add(Vault(syms=syms, pic=["4"], chance=3, level=(9,9), count=1, branch='c'))
         self.add(Vault(syms=syms, pic=["1"], chance=3, level=(3,3), count=1, branch='c'))
         self.add(Vault(syms=syms, pic=["1"], chance=3, level=(6,6), count=1, branch='c'))
         self.add(Vault(syms=syms, pic=["1"], chance=3, level=(9,9), count=1, branch='c'))
+        self.add(Vault(syms=syms, pic=["2"], chance=3, level=(3,3), count=1, branch='c'))
+        self.add(Vault(syms=syms, pic=["2"], chance=3, level=(6,6), count=1, branch='c'))
+        self.add(Vault(syms=syms, pic=["2"], chance=3, level=(9,9), count=1, branch='c'))
+
+        self.add(Vault(syms=syms, pic=["3"], chance=3, level=(3,3), count=1, branch='d'))
+        self.add(Vault(syms=syms, pic=["3"], chance=3, level=(6,6), count=1, branch='d'))
+        self.add(Vault(syms=syms, pic=["3"], chance=3, level=(9,9), count=1, branch='d'))
+        self.add(Vault(syms=syms, pic=["2"], chance=3, level=(3,3), count=1, branch='d'))
+        self.add(Vault(syms=syms, pic=["2"], chance=3, level=(6,6), count=1, branch='d'))
+        self.add(Vault(syms=syms, pic=["2"], chance=3, level=(9,9), count=1, branch='d'))
+        self.add(Vault(syms=syms, pic=["1"], chance=3, level=(3,3), count=1, branch='d'))
+        self.add(Vault(syms=syms, pic=["1"], chance=3, level=(6,6), count=1, branch='d'))
+        self.add(Vault(syms=syms, pic=["1"], chance=3, level=(9,9), count=1, branch='d'))
 
         self.add(Vault(syms=syms,
                        pic=["o.o.o.o.o.o.o.o.o.o.o.o.o",
