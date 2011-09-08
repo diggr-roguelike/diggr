@@ -1207,7 +1207,7 @@ class MonsterStock:
                                'bubbles, faintly self-luminous.']))
 
         self.add(Monster('ghost', skin=('h', libtcod.dark_grey),
-                         attack=0.1, defence=1.5, range=7, level=3,
+                         attack=0.5, defence=2.5, range=7, level=3,
                          hungerattack=True, count=3, branch='b',
                          desc=['A spirit of an adventurer that perished in these',
                                'terrible and wondorous caves.',
