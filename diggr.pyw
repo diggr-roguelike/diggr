@@ -1436,16 +1436,40 @@ class MonsterStock:
                                'to the nuclear power plant.']))
 
 # 1. omophagist, avern
-# 2. armiger, exultant
-# 3. aquastor, eidolon
-# 4. destrier, cacogen
-# 5. ascian, smilodon
-# 6. alzabo, undine
-# 7. Scylla
-# 8. Uroboros
-# 9. Erebus
-# 10. Arioch
-# 11. Abaia
+# 2. armiger (physical), exultant (summons armiger)
+# 3. aquastor (hunger attack), eidolon (psyattack)
+# 4. destrier (purely physical), cacogen (radexplode after death)
+# 5. ascian (psyattack), smilodon (purely physical)
+# 6. alzabo (resurrects), undine (sleepattack)
+# 7. Scylla (-rad, -explode, -conf)
+# 8. Uroboros (-rad, -explode)
+# 9. Erebus (-rad)
+# 10. Arioch (all immunities)
+# 11. Abaia (all immunities, summons undine)
+
+# hyperborean barbarian
+# aquilonian marshall
+# cimmerian pirate
+# stygian priest
+# turanian nomad
+# lemurian wizard
+# atlantian sorceror
+# amazon warrior
+# thulian prince
+# Conan
+# wolf
+# vampire
+# zombie
+# giant spider
+# carrion crawler
+# giant slug
+# apeman
+# cannibal
+# evil demon
+# giant serpent
+# Crom
+# peasant
+# lichen
 
 ##########################
 
