@@ -1890,8 +1890,8 @@ class FeatureStock:
         self.f[':'] = Feature(walkable=False, visible=False, skin=(9, libtcod.white),
                               name='a column', height=0)
 
-        self.f['h'] = Feature(walkable=True, visible=True, skin=(242, libtcod.dark_red),
-                              stairs=6, name='an entrace to Hades')
+        self.f['h'] = Feature(walkable=True, visible=True, skin=(242, libtcod.white),
+                              stairs=6, name='a dropchute')
 
         self.f['a'] = Feature(walkable=True, visible=True, skin=(254, libtcod.green),
                               name='an abandoned altar stone')
