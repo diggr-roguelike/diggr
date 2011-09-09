@@ -13,6 +13,8 @@ import libtcodpy as libtcod
 # stonehenge
 # achievements!
 # dungeon forks (cimmeria, lovecraft/shakespeare, lost world, dying earth/new sun, sci-fi/anime)
+# fire/flamethrower!
+# nanoparticle camouflage
 #
 
 global _version
@@ -488,7 +490,8 @@ class Item:
                  digray=None, jinni=False, heatbonus=0, use_an=False,
                  stackrange=None, mapper=None, converts=None, jumprange=None,
                  explodeimmune=False, telepathyrange=None, makestrap=False,
-                 summon=None, radimmune=False, radexplode=False):
+                 summon=None, radimmune=False, radexplode=False, fires=None,
+                 camorange=None):
         self.slot = slot
         self.bonus = bonus
         self.name = name
@@ -542,6 +545,8 @@ class Item:
         self.summon = summon
         self.radimmune = radimmune
         self.radexplode = radexplode
+        self.fires = fires
+        self.camorange = camorange
 
         self.ammo = None
         self.gencount = 0
@@ -694,6 +699,12 @@ class ItemStock:
                             desc=['A powerful, killer weapon.',
                                   'You learned that much from playing videogames.'])
 
+        self.flamethrower = Item("flamethrower", slot='e', skin=('(', libtcod.orange),
+                                 rangeattack=7.0, range=(2,6), ammochance=(1, 6),
+                                 straightline=True, applies=True, rarity=15, fires=10,
+                                 desc=['A device for setting monsters on fire.',
+                                       'Truly ingenious.'])
+
         self.tazer = Item("tazer", slot='e', skin=('(', libtcod.gray),
                           attack=1.0, confattack=(10, 1), rarity=5,
                           desc=['Very useful for subduing enemies.'])
@@ -810,6 +821,13 @@ class ItemStock:
                                   repelrange=3, rarity=3, defence=0.01,
                                   selfdestruct=(1000, 100),
                                   desc=['A vest that proves a portable force-field shileld.'])
+
+        self.camo = Item('nanoparticle camouflage', slot='c', skin=('[', libtcod.dark_green),
+                                  camorange=3, rarity=3, defence=0.01,
+                                  selfdestruct=(1000, 100),
+                                  desc=['An ultra-hightech piece of camoflage clothing.',
+                                        "It's made of nanoparticles that render the wearer",
+                                        'practically invisible.'])
 
         self.vikinghelmet = Item('viking helmet', slot='a', skin=('[', libtcod.green),
                                  rarity=5, defence=0.5,
@@ -950,7 +968,7 @@ class Monster:
                  psyrange=0, confimmune=False, slow=False, selfdestruct=False,
                  straightline=False, stoneeating=False, sleepattack=False,
                  hungerattack=False, flying=False, radimmune=False, no_a=False,
-                 summon=False, branch=None):
+                 summon=False, branch=None, fireimmune=False):
         self.name = name
         self.skin = skin
         self.count = count
@@ -976,6 +994,7 @@ class Monster:
         self.no_a = no_a
         self.summon = summon
         self.branch = branch
+        self.fireimmune = fireimmune
 
         self.x = 0
         self.y = 0
@@ -991,6 +1010,10 @@ class Monster:
         self.visible = False
         self.visible_old = False
         self.gencount = 0
+
+        self.onfire = 0
+        self.fireattack = None
+        self.fireduration = 0
 
 
     def __str__(self):
@@ -1570,30 +1593,33 @@ class MonsterStock:
                                'Urth. They are powerful enough and amoral enough to be',
                                'essentially equal to gods.']))
 
+        # Hyborian dungeon branch
 
-##hyperborean barbarian
-##aquilonian marshall
-##cimmerian pirate
-##stygian priest
-##turanian nomad
-##lemurian wizard
-##atlantian sorceror
-##amazon warrior
-##thulian prince
-##Conan
-##wolf
-##vampire
-##zombie
-##giant spider
-##carrion crawler
-##giant slug
-##apeman
-##cannibal
-##evil demon
-##giant serpent
-##Crom
-##peasant
-##lichen
+        self.add(Monster('peasant', skin=('h', libtcod.dark_sepia),
+                         attack=0.1, defence=0.2, range=3, level=1,
+                         itemdrop='booze', count=9, branch='e',
+                         desc=["He's dirty, suspicious and closed-minded."]))
+
+        self.add(Monster('lichen', skin=('x', libtcod.light_purple),
+                         attack=0.3, defence=0.2, range=1, level=1, branch='e',
+                         itemdrop='mushrooms', confimmune=True, count=9,
+                         desc=['Looks yummy.']))
+
+        self.add(Monster('aquilonian marshall', skin=('h', libtcod.dark_blue),
+                         attack=1.0, defence=0.5, range=6, level=2, count=8,
+                         desc=['A gnome-kobold hybrid.']))
+
+##
+## 2. aquilonian marshall -> marshall, giant spider, turanian nomad
+## 3. cimmerian pirate -> pirate, wolf, hyperborean barbarian
+## 4. stygian priest -> wolf, giant slug -> giant slug, zombie
+## 5. amazon warrior, giant serpent
+## 6. thulian prince -> amazon warrior, cannibal
+## 7. lemurian wizard -> cannibal, apeman
+## 8. atlantian sorceror -> evil demon, evil demon -> giant serpent
+## 9. carrion crawler -> death/ccrawler, vampire -> zombie
+## 10. Conan
+## 11. Crom -> Conan
 
 ##########################
 
@@ -2703,7 +2729,7 @@ class World:
 
     def generate_inv(self):
         self.inv.take(self.itemstock.find('lamp'))
-        l = [self.itemstock.get('pickaxe')]
+        l = [self.itemstock.get('flamethrower'), self.itemstock.get('pickaxe')]
         for x in range(3):
             l.append(self.itemstock.generate(1))
         if (self.px, self.py) not in self.itemap:
@@ -3632,7 +3658,7 @@ class World:
             self.explode(x, y, r)
 
 
-    def fight(self, mon, player_move, item=None):
+    def fight(self, mon, player_move, item=None, attackstat=None):
 
         sm = str(mon)
         smu = sm[0].upper() + sm[1:]
@@ -3645,6 +3671,11 @@ class World:
             plev = min(max(self.plev - d + 1, 1), self.plev)
             attack = item.rangeattack
             #print '+', d, plev, attack
+
+        elif player_move and attackstat:
+            plev = attackstat[0]
+            attack = attackstat[1]
+
         else:
             if self.b_grace and player_move:
                 self.msg.m('Your religion prohibits you from fighting.')
@@ -3677,18 +3708,41 @@ class World:
             mon.hp -= dmg
 
             if mon.hp <= -3.0:
-                self.msg.m('You killed ' + sm + '!')
+                if mon.visible or mon.visible_old:
+                    self.msg.m('You killed ' + sm + '!')
                 self.handle_mondeath(mon)
                 del self.monmap[(mon.x, mon.y)]
             else:
+
+                fires = None
+                ca = None
+
                 if item:
                     ca = item.confattack
-                else:
+                    fires = item.fires
+                elif not attackstat:
                     ca = self.inv.get_confattack()
 
                 if ca and dmg > 0 and not mon.confimmune:
-                    self.msg.m(smu + ' looks totally dazed!')
+                    if mon.visible or mon.visible_old:
+                        self.msg.m(smu + ' looks totally dazed!')
                     mon.confused += int(max(random.gauss(*ca), 1))
+
+                elif fires and dmg > 0 and not mon.fireimmune:
+                    if mon.visible or mon.visile_old:
+                        self.msg.m('You set ' + sm + ' on fire!')
+
+                    mon.onfire = fires
+                    mon.fireduration = fires
+
+                    if mon.fireattack:
+                        mon.fireattack = (max(plev, mon.fireattack[0]), max(dmg, mon.fireattack[1]))
+                    else:
+                        mon.fireattack = (plev, dmg)
+
+                elif not (mon.visible or mon.visible_old):
+                    pass
+
                 elif dmg > 4:
                     self.msg.m('You mortally wound ' + sm + '!')
                 elif dmg > 2:
@@ -3700,7 +3754,7 @@ class World:
                 else:
                     self.msg.m('You miss ' + sm + '.')
 
-            if dmg > 0:
+            if dmg > 0 and (mon.visible or mon.visible_old):
                 mon.known_px = self.px
                 mon.known_py = self.py
 
@@ -4074,6 +4128,9 @@ class World:
             rang = 12 - int(9 * (float(self.b_grace) / self.coef.graceduration))
             rang = min(rang, mon.range)
 
+        if self.inv.trunk and self.inv.trunk.camorange:
+            rang = min(rang, self.inv.trunk.camorange)
+
         if dist > rang or mon.confused or (mon.sleepattack and self.sleeping):
             mdx = x + random.randint(-1, 1)
             mdy = y + random.randint(-1, 1)
@@ -4122,7 +4179,7 @@ class World:
         mdy = mon.y
 
         if self.try_feature(mdx, mdy, 'sticky') and not mon.flying:
-            if mon.visible_old:
+            if mon.visible or mon.visible_old:
                 mn = str(mon)
                 mn = mn[0].upper() + mn[1:]
                 self.msg.m(mn + ' gets stuck in some glue!')
@@ -4189,6 +4246,7 @@ class World:
                         del self.itemap[(ix,iy)]
 
         summons = []
+        fired = []
 
         for k,mon in self.monmap.iteritems():
 
@@ -4198,6 +4256,9 @@ class World:
 
             mon.visible_old = mon.visible
             mon.visible = False
+
+            if mon.onfire > 0:
+                fired.append(mon)
 
             if not mon.did_move:
                 x, y = k
@@ -4251,6 +4312,13 @@ class World:
 
             mon.did_move = False
 
+        for mon in fired:
+            self.fight(mon, True, attackstat=mon.fireattack)
+            mon.onfire -= 1
+            if mon.onfire <= 0:
+                mon.fireattack = None
+                mon.fireduration = 0
+
         for x, y, r in explodes:
             del self.itemap[(x, y)]
             self.explode(x, y, r)
@@ -4262,7 +4330,7 @@ class World:
         if self.oldt != self.t:
             withtime = True
 
-        back = libtcod.black
+        default_back = libtcod.black
 
         lightradius = min(max(self.inv.get_lightradius(), 2), 15)
 
@@ -4318,6 +4386,8 @@ class World:
                             is_lit = True
 
 
+                back = default_back
+
                 if not in_fov:
                     c = ' '
                     fore = libtcod.black
@@ -4338,6 +4408,11 @@ class World:
                         mon.visible = True
                         c, fore = mon.skin
                         monsters_in_view.append(mon)
+
+                        if mon.onfire:
+                            back = libtcod.color_lerp(libtcod.orange, default_back,
+                                                      1.0 - (float(mon.onfire) / mon.fireduration))
+
 
                     elif (x, y) in self.itemap:
                         c, fore = self.itemap[(x, y)][0].skin
@@ -4362,14 +4437,11 @@ class World:
 
                         fore = libtcod.color_lerp(fore, back, min(d/lightradius, 1.0))
 
-                if x == _hlx and y == _hly:
-                    # hack
-                    if c != ' ':
+                    if x == _hlx and y == _hly:
+                        back = libtcod.white
                         did_highlight = True
 
-                    libtcod.console_put_char_ex(None, x, y, c, fore, libtcod.white)
-                else:
-                    libtcod.console_put_char_ex(None, x, y, c, fore, back)
+                libtcod.console_put_char_ex(None, x, y, c, fore, back)
 
         if self.px > self.w / 2:
             self.stats.draw(0, 0)
