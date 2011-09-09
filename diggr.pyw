@@ -1605,18 +1605,134 @@ class MonsterStock:
                          itemdrop='mushrooms', confimmune=True, count=9,
                          desc=['Looks yummy.']))
 
-        self.add(Monster('aquilonian marshall', skin=('h', libtcod.dark_blue),
+        self.add(Monster('Aquilonian marshall', skin=('h', libtcod.dark_blue),
                          attack=1.0, defence=0.5, range=6, level=2, count=8,
-                         desc=['A gnome-kobold hybrid.']))
+                         summon=('aquilonian marshall', 5), branch='e',
+                         desc=['A mercenary, sent from the Aquilonian cities on',
+                               'the surface to partol these dangerous tunnels.']))
+
+        self.add(Monster('giant spider', skin=('X', libtcod.gray),
+                         attack=0.7, defence=0.7, range=5, level=2, count=8,
+                         branch='e',
+                         desc=['A huge, very ugly and disturbing spider.']))
+
+        self.add(Monster('Turanian nomad', skin=('h', libtcod.orange),
+                         attack=1.3, defence=0.4, range=7, level=2, count=8,
+                         branch='e',
+                         desc=['A nomad from the boundless steppes of Turania.']))
+
+        self.add(Monster('Cimmerian pirate', skin=('h', libtcod.red),
+                         attack=1.5, defence=0.6, range=7, level=3, count=8,
+                         branch='e', summon=('cimmerian pirate', 4),
+                         desc=['A cruel-hearted Cimmerian tribesman, turned to piracy',
+                               'in search of loot and women.',
+                               "The poor man is probably looking for treasure in these",
+                               'caves.']))
+
+        self.add(Monster('wolf', skin=('q', libtcod.silver),
+                         attack=1.8, defence=0.5, range=9, level=3, count=8,
+                         branch='e',
+                         desc=['A man-eating wolf.']))
+
+        self.add(Monster('Hyperborean barbarian', skin=('h', libtcod.peach),
+                         attack=2.2, defence=0.9, range=6, level=3, count=6,
+                         branch='e',
+                         desc=['A barbarian who hails from one of the hearty tribes',
+                               'of great frosty Hyperborea.']))
+
+        self.add(Monster('Stygian priest', skin=('h', libtcod.light_sepia),
+                         attack=1.0, defence=1.0, range=8, level=4, count=6,
+                         branch='e', summon=('wolf', 3),
+                         desc=['Hailing from the banks of the river Stygs, he has',
+                               'a swarthy complexion and sports a completely shaved head.',
+                               'He is skilled in the arcane worship of the enigmatic',
+                               'Stygian gods.']))
+
+        self.add(Monster('giant slug', skin=('w', libtcod.purple),
+                         attack=0.7, defence=2.8, range=4, level=4, count=10,
+                         branch='e', summon=('giant slug', 2),
+                         desc=['It is truly giant and truly disgusting.']))
+
+        self.add(Monster('zombie', skin=('y', libtcod.silver),
+                         attack=1.8, defence=2.9, range=3, level=4, count=10,
+                         branch='e',
+                         desc=['A decomposed corpse brought back to unlife by',
+                               'the darkest arts.']))
+
+        self.add(Monster('Amazon warrior', skin=('h', libtcod.pink),
+                         attack=1.8, defence=1.8, range=10, level=5, count=8,
+                         branch='e',
+                         desc=['She is a woman-warrior from the enigmatic Amazonian tribe.',
+                               'She hates men.']))
+
+        self.add(Monster('giant serpent', skin=('S', libtcod.darkest_lime),
+                         attack=3.5, defence=3.0, range=7, level=5, count=10,
+                         branch='e',
+                         desc=['A malevolent nag, a giant snake borne from the',
+                               'unholy mixture of human and cobra seed.']))
+
+        self.add(Monster('Thulian price', skin=('h', libtcod.sky),
+                         attack=1.0, defence=1.0, range=18, level=6, count=8,
+                         branch='e', summon=('amazon warrior', 1),
+                         desc=['Ultima Thule is the mystical land of fancy and dark legend.',
+                               "You're not sure he is really from Thule, much less a real price."]))
+
+        self.add(Monster('cannibal', skin=('h', libtcod.dark_purple),
+                         attack=2.0, defence=2.0, range=15, level=6, count=8,
+                         branch='e',
+                         desc=['A deranged human who developed an unnatural, unholy',
+                               'addiction to human flesh.']))
+
+        self.add(Monster('Lemurian wizard', skin=('h', libtcod.dark_han),
+                         attack=1.2, defence=1.2, range=15, level=7, count=6,
+                         branch='e', summon=('cannibal', 2),
+                         desc=['Lemuria is the mythical island-empire of evil magicians',
+                               'and demon-worshippers.']))
+
+        self.add(Monster('apeman', skin=('h', libtcod.light_pink),
+                         attack=2.5, defence=2.5, range=10, level=7, count=8,
+                         branch='e',
+                         desc=['Part human, part ape, if he has any intelligence, then his',
+                               'gaze does not betray any, only pure malevolence.']))
+
+        self.add(Monster('Atlantian sorceror', skin=('h', libtcod.light_han),
+                         attack=1.2, defence=1.2, range=15, level=8, count=6,
+                         branch='e', summon=('evil demon', 2),
+                         desc=['Atlantis is another evil island-empire, the competitor',
+                               'to Lemuria in the dark art of demon-worship.']))
+
+        self.add(Monster('evil demon', skin=('Y', libtcod.red),
+                         attack=1.0, defence=1.6, range=10, level=8, count=6,
+                         branch='e', summon=('giant serpent', 2),
+                         desc=['Summoned from the depths of Infernus to commit',
+                               'unspeakable deeds of evil and hatred.']))
+
+        self.add(Monster('carrion crawler', skin=('w', libtcod.white),
+                         attack=2.0, defence=2.0, range=5, level=9, count=16,
+                         itemdrop='cclarva',
+                         desc=['A creature that looks like a maggot,',
+                               'only a thousand times bigger.']))
+
+        self.add(Monster('vampire', skin=('Y', libtcod.blue),
+                         attack=2.5, defence=2.5, range=15, level=9, count=5,
+                         branch='e', summon=('zombie', 1),
+                         desc=['One of the Elder Ones, the most ancient and powerful of',
+                               'vampires.']))
+
+        self.add(Monster('Conan', skin=('K', libtcod.sepia),
+                         attack=7.5, defence=5.5, range=8, level=10, count=1,
+                         confimmune=True, itemdrop='excalibur',
+                         desc=['A well-muscled adventurer,',
+                               'he looks like he just stepped off a movie poster.',
+                               "He hates competition."]))
+
+        self.add(Monster('Crom', skin=('K', libtcod.peach),
+                         attack=7.5, defence=7.5, range=10, level=10, count=1,
+                         explodeimmune=True, fireimmune=True,
+                         confimmune=True, summon('Conan', 1),
+                         desc=['']))
 
 ##
-## 2. aquilonian marshall -> marshall, giant spider, turanian nomad
-## 3. cimmerian pirate -> pirate, wolf, hyperborean barbarian
-## 4. stygian priest -> wolf, giant slug -> giant slug, zombie
-## 5. amazon warrior, giant serpent
-## 6. thulian prince -> amazon warrior, cannibal
-## 7. lemurian wizard -> cannibal, apeman
-## 8. atlantian sorceror -> evil demon, evil demon -> giant serpent
 ## 9. carrion crawler -> death/ccrawler, vampire -> zombie
 ## 10. Conan
 ## 11. Crom -> Conan
