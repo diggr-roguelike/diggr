@@ -1628,11 +1628,11 @@ class MonsterStock:
                                'in search of loot and women.',
                                "The poor man is probably looking for treasure in these",
                                'caves.']))
-
-        self.add(Monster('wolf', skin=('q', libtcod.silver),
+        self.add(Monster('giant serpent', skin=('S', libtcod.darkest_lime),
                          attack=1.8, defence=0.5, range=9, level=3, count=8,
                          branch='e',
-                         desc=['A man-eating wolf.']))
+                         desc=['A malevolent nag, a giant snake borne from the',
+                               'unholy mixture of human and cobra seed.']))
 
         self.add(Monster('Hyperborean barbarian', skin=('h', libtcod.peach),
                          attack=2.2, defence=0.9, range=6, level=3, count=6,
@@ -1642,7 +1642,7 @@ class MonsterStock:
 
         self.add(Monster('Stygian priest', skin=('h', libtcod.light_sepia),
                          attack=1.0, defence=1.0, range=8, level=4, count=6,
-                         branch='e', summon=('wolf', 3),
+                         branch='e', summon=('giant serpent', 3),
                          desc=['Hailing from the banks of the river Stygs, he has',
                                'a swarthy complexion and sports a completely shaved head.',
                                'He is skilled in the arcane worship of the enigmatic',
@@ -1665,11 +1665,10 @@ class MonsterStock:
                          desc=['She is a woman-warrior from the enigmatic Amazonian tribe.',
                                'She hates men.']))
 
-        self.add(Monster('giant serpent', skin=('S', libtcod.darkest_lime),
+        self.add(Monster('wolf', skin=('q', libtcod.silver),
                          attack=3.5, defence=3.0, range=7, level=5, count=10,
                          branch='e',
-                         desc=['A malevolent nag, a giant snake borne from the',
-                               'unholy mixture of human and cobra seed.']))
+                         desc=['A man-eating wolf.']))
 
         self.add(Monster('Thulian price', skin=('h', libtcod.sky),
                          attack=1.0, defence=1.0, range=18, level=6, count=8,
@@ -1703,7 +1702,7 @@ class MonsterStock:
 
         self.add(Monster('evil demon', skin=('Y', libtcod.red),
                          attack=1.0, defence=1.6, range=10, level=8, count=6,
-                         branch='e', summon=('giant serpent', 2),
+                         branch='e', summon=('wolf', 2),
                          desc=['Summoned from the depths of Infernus to commit',
                                'unspeakable deeds of evil and hatred.']))
 
@@ -1729,8 +1728,10 @@ class MonsterStock:
         self.add(Monster('Crom', skin=('K', libtcod.peach),
                          attack=7.5, defence=7.5, range=10, level=10, count=1,
                          explodeimmune=True, fireimmune=True,
-                         confimmune=True, summon('Conan', 1),
-                         desc=['']))
+                         confimmune=True, summon=('Conan', 1),
+                         desc=['The most high god of all Cimmerians, Crom is the god',
+                               'of valor and battle. He is a dark, vengeful and',
+                               'judgemental god.']))
 
 ##
 ## 9. carrion crawler -> death/ccrawler, vampire -> zombie
@@ -2012,7 +2013,10 @@ class FeatureStock:
                               stairs=1, name='a hole in the floor', branch='c')
 
         self.f['4'] = Feature(walkable=True, visible=True, skin=('>', libtcod.dark_gray),
-                              stairs=1, name='a hole in the floor', branch='c')
+                              stairs=1, name='a hole in the floor', branch='d')
+
+        self.f['5'] = Feature(walkable=True, visible=True, skin=('>', libtcod.light_gray),
+                              stairs=1, name='a hole in the floor', branch='e')
 
         self.f['*'] = Feature(walkable=True, visible=False, skin=('*', libtcod.lightest_green),
                               name='rubble')
@@ -2148,10 +2152,14 @@ class VaultStock:
                 '2': ('2', True),
                 '3': ('3', True),
                 '4': ('4', True),
+                '5': ('5', True),
                 '@': (None, True)}
 
         #v1 = Vault(chance=3, level=(1,6), count=3,
 
+        self.add(Vault(syms=syms, pic=["5"], chance=3, level=(3,3), count=1, branch='a'))
+        self.add(Vault(syms=syms, pic=["5"], chance=3, level=(6,6), count=1, branch='a'))
+        self.add(Vault(syms=syms, pic=["5"], chance=3, level=(9,9), count=1, branch='a'))
         self.add(Vault(syms=syms, pic=["2"], chance=3, level=(3,3), count=1, branch='a'))
         self.add(Vault(syms=syms, pic=["2"], chance=3, level=(6,6), count=1, branch='a'))
         self.add(Vault(syms=syms, pic=["2"], chance=3, level=(9,9), count=1, branch='a'))
@@ -2165,6 +2173,9 @@ class VaultStock:
         self.add(Vault(syms=syms, pic=["1"], chance=3, level=(3,3), count=1, branch='b'))
         self.add(Vault(syms=syms, pic=["1"], chance=3, level=(6,6), count=1, branch='b'))
         self.add(Vault(syms=syms, pic=["1"], chance=3, level=(9,9), count=1, branch='b'))
+        self.add(Vault(syms=syms, pic=["5"], chance=3, level=(3,3), count=1, branch='b'))
+        self.add(Vault(syms=syms, pic=["5"], chance=3, level=(6,6), count=1, branch='b'))
+        self.add(Vault(syms=syms, pic=["5"], chance=3, level=(9,9), count=1, branch='b'))
         self.add(Vault(syms=syms, pic=["4"], chance=3, level=(3,3), count=1, branch='b'))
         self.add(Vault(syms=syms, pic=["4"], chance=3, level=(6,6), count=1, branch='b'))
         self.add(Vault(syms=syms, pic=["4"], chance=3, level=(9,9), count=1, branch='b'))
@@ -2181,6 +2192,9 @@ class VaultStock:
         self.add(Vault(syms=syms, pic=["2"], chance=3, level=(3,3), count=1, branch='c'))
         self.add(Vault(syms=syms, pic=["2"], chance=3, level=(6,6), count=1, branch='c'))
         self.add(Vault(syms=syms, pic=["2"], chance=3, level=(9,9), count=1, branch='c'))
+        self.add(Vault(syms=syms, pic=["5"], chance=3, level=(3,3), count=1, branch='c'))
+        self.add(Vault(syms=syms, pic=["5"], chance=3, level=(6,6), count=1, branch='c'))
+        self.add(Vault(syms=syms, pic=["5"], chance=3, level=(9,9), count=1, branch='c'))
 
         self.add(Vault(syms=syms, pic=["3"], chance=3, level=(3,3), count=1, branch='d'))
         self.add(Vault(syms=syms, pic=["3"], chance=3, level=(6,6), count=1, branch='d'))
@@ -2188,9 +2202,25 @@ class VaultStock:
         self.add(Vault(syms=syms, pic=["2"], chance=3, level=(3,3), count=1, branch='d'))
         self.add(Vault(syms=syms, pic=["2"], chance=3, level=(6,6), count=1, branch='d'))
         self.add(Vault(syms=syms, pic=["2"], chance=3, level=(9,9), count=1, branch='d'))
+        self.add(Vault(syms=syms, pic=["5"], chance=3, level=(3,3), count=1, branch='d'))
+        self.add(Vault(syms=syms, pic=["5"], chance=3, level=(6,6), count=1, branch='d'))
+        self.add(Vault(syms=syms, pic=["5"], chance=3, level=(9,9), count=1, branch='d'))
         self.add(Vault(syms=syms, pic=["1"], chance=3, level=(3,3), count=1, branch='d'))
         self.add(Vault(syms=syms, pic=["1"], chance=3, level=(6,6), count=1, branch='d'))
         self.add(Vault(syms=syms, pic=["1"], chance=3, level=(9,9), count=1, branch='d'))
+
+        self.add(Vault(syms=syms, pic=["2"], chance=3, level=(3,3), count=1, branch='e'))
+        self.add(Vault(syms=syms, pic=["2"], chance=3, level=(6,6), count=1, branch='e'))
+        self.add(Vault(syms=syms, pic=["2"], chance=3, level=(9,9), count=1, branch='e'))
+        self.add(Vault(syms=syms, pic=["4"], chance=3, level=(3,3), count=1, branch='e'))
+        self.add(Vault(syms=syms, pic=["4"], chance=3, level=(6,6), count=1, branch='e'))
+        self.add(Vault(syms=syms, pic=["4"], chance=3, level=(9,9), count=1, branch='e'))
+        self.add(Vault(syms=syms, pic=["1"], chance=3, level=(3,3), count=1, branch='e'))
+        self.add(Vault(syms=syms, pic=["1"], chance=3, level=(6,6), count=1, branch='e'))
+        self.add(Vault(syms=syms, pic=["1"], chance=3, level=(9,9), count=1, branch='e'))
+        self.add(Vault(syms=syms, pic=["3"], chance=3, level=(3,3), count=1, branch='e'))
+        self.add(Vault(syms=syms, pic=["3"], chance=3, level=(6,6), count=1, branch='e'))
+        self.add(Vault(syms=syms, pic=["3"], chance=3, level=(9,9), count=1, branch='e'))
 
         self.add(Vault(syms=syms,
                        pic=["o.o.o.o.o.o.o.o.o.o.o.o.o",
@@ -2469,7 +2499,8 @@ class World:
         self.theme = { 'a': (libtcod.lighter_lime,),
                        'b': (libtcod.lighter_crimson,),
                        'c': (libtcod.lighter_sky,),
-                       'd': (libtcod.dark_grey,) }
+                       'd': (libtcod.dark_grey,),
+                       'e': (libtcod.silver,) }
 
 
 
@@ -2821,7 +2852,7 @@ class World:
 
     def regen(self, w_, h_):
         if self.branch is None:
-            self.branch = random.choice(['a', 'b', 'c', 'd'])
+            self.branch = 'e' #random.choice(['a', 'b', 'c', 'd', 'e'])
 
         self.makegrid(w_, h_)
         self.terra()
@@ -2845,7 +2876,7 @@ class World:
 
     def generate_inv(self):
         self.inv.take(self.itemstock.find('lamp'))
-        l = [self.itemstock.get('flamethrower'), self.itemstock.get('pickaxe')]
+        l = [self.itemstock.get('pickaxe')]
         for x in range(3):
             l.append(self.itemstock.generate(1))
         if (self.px, self.py) not in self.itemap:
