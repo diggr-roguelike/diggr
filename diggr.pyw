@@ -1828,7 +1828,7 @@ class MonsterStock:
             de = sum(sum(m.defence for m in v2) for v2 in v.itervalues())
             atw = sum(sum(m.attack*m.level for m in v2) for v2 in v.itervalues())
             dew = sum(sum(m.defence*m.level for m in v2) for v2 in v.itervalues())
-            print '//', k, n, at/n, de/n, '|', atw/n, dew/n
+            #print '//', k, n, at/n, de/n, '|', atw/n, dew/n
 
         while level > 0 and level not in self.monsters[branch]:
             level -= 1
@@ -1836,7 +1836,9 @@ class MonsterStock:
         m = self.monsters[branch][level]
         tmp = None
 
-        for x in xrange(5):
+        for x in xrange(6):
+            if x >= 5:
+                return None
             tmp = m[random.randint(0, len(m)-1)]
             if tmp.gencount >= tmp.count:
                 continue
@@ -3825,6 +3827,9 @@ class World:
                         mon.fireattack = (plev, dmg)
 
                 elif not (mon.visible or mon.visible_old):
+                    pass
+
+                elif attackstat:
                     pass
 
                 elif dmg > 4:
