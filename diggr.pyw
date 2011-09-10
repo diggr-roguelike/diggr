@@ -12,13 +12,41 @@ import libtcodpy as libtcod
 #
 # stonehenge
 # achievements!
-# dungeon forks (cimmeria, lovecraft/shakespeare, lost world, dying earth/new sun, sci-fi/anime)
-# fire/flamethrower!
-# nanoparticle camouflage
 #
 
+# B: large bird
+# d: small dinosaur
+# D: dinosaur
+# f: faerie
+# F: powerful faerie
+# G: Japanese giant reptile
+# h: humanoid
+# H: powerful human
+# k: knight, warrior or soldier
+# K: epic hero, demigod or deity
+# o: turtle, armadillo or porcupine
+# O: large turtle
+# q: quadruped mammal
+# Q: huge quadriped mammal
+# R: large reptile
+# S: large snake
+# u: urthian being
+# U: urthian megatherian
+# v: apparition, illusion or digital construct
+# V: powerful digital construct
+# w: worm
+# W: giant worm
+# x: insect, fungus or plant
+# X: huge insect or insectoid
+# y: undead
+# Y: elder undead
+# z: robot
+# Z: large robot
+
+
+
 global _version
-_version = '11.09.04'
+_version = '11.09.11'
 
 global _inputs
 global _inputqueue
@@ -823,11 +851,11 @@ class ItemStock:
                                   desc=['A vest that proves a portable force-field shileld.'])
 
         self.camo = Item('nanoparticle camouflage', slot='c', skin=('[', libtcod.dark_green),
-                                  camorange=3, rarity=3, defence=0.01,
-                                  selfdestruct=(1000, 100),
-                                  desc=['An ultra-hightech piece of camoflage clothing.',
-                                        "It's made of nanoparticles that render the wearer",
-                                        'practically invisible.'])
+                         camorange=3, rarity=3, defence=0.01,
+                         selfdestruct=(1000, 100),
+                         desc=['An ultra-hightech piece of camoflage clothing.',
+                               "It's made of nanoparticles that render the wearer",
+                               'practically invisible.'])
 
         self.vikinghelmet = Item('viking helmet', slot='a', skin=('[', libtcod.green),
                                  rarity=5, defence=0.5,
@@ -1551,7 +1579,7 @@ class MonsterStock:
 
         self.add(Monster('undine', skin=('u', libtcod.darkest_blue),
                          attack=0.7, defence=3.0, range=10, level=6, count=5,
-                         sleepattack=True,
+                         sleepattack=True, branch='d',
                          desc=["A monstrous slave-servant of its megetherian overlords.",
                                'It looks like humongous, deformed mermaid.']))
 
@@ -1715,7 +1743,7 @@ class MonsterStock:
 
         self.add(Monster('carrion crawler', skin=('w', libtcod.white),
                          attack=2.0, defence=2.0, range=5, level=9, count=16,
-                         itemdrop='cclarva',
+                         itemdrop='cclarva', branch='e',
                          desc=['A creature that looks like a maggot,',
                                'only a thousand times bigger.']))
 
@@ -1727,156 +1755,19 @@ class MonsterStock:
 
         self.add(Monster('Conan', skin=('K', libtcod.sepia),
                          attack=7.5, defence=5.5, range=8, level=10, count=1,
-                         confimmune=True, itemdrop='excalibur',
+                         confimmune=True, itemdrop='excalibur', branch='e',
                          desc=['A well-muscled adventurer,',
                                'he looks like he just stepped off a movie poster.',
                                "He hates competition."]))
 
         self.add(Monster('Crom', skin=('K', libtcod.peach),
                          attack=7.5, defence=7.5, range=10, level=10, count=1,
-                         explodeimmune=True, fireimmune=True,
+                         explodeimmune=True, fireimmune=True, branch='e',
                          confimmune=True, summon=('Conan', 1),
                          desc=['The most high god of all Cimmerians, Crom is the god',
                                'of valor and battle. He is a dark, vengeful and',
                                'judgemental god.']))
 
-##
-## 9. carrion crawler -> death/ccrawler, vampire -> zombie
-## 10. Conan
-## 11. Crom -> Conan
-
-##########################
-
-        self.add(Monster('inebriated bum', skin=('h', libtcod.sepia),
-                         attack=0.1, defence=0.2, range=3, level=1,
-                         itemdrop='booze', count=9,
-                         desc=['A drunken homeless humanoid.']))
-
-        self.add(Monster('lichen', skin=('x', libtcod.light_purple),
-                         attack=0.3, defence=0.2, range=1, level=1,
-                         itemdrop='mushrooms', confimmune=True, count=9,
-                         desc=['Looks yummy.']))
-
-        self.add(Monster('hobbit', skin=('h', libtcod.purple),
-                         attack=1.5, defence=0.2, range=8, level=2, count=5,
-                         desc=['A nasty, brutish humanoid creature endemic to these caves.']))
-
-        self.add(Monster('gnobold', skin=('g', libtcod.green),
-                         attack=1.0, defence=0.7, range=6, level=2, count=5,
-                         desc=['A gnome-kobold hybrid.']))
-
-        self.add(Monster('laminaria', skin=('p', libtcod.light_blue),
-                         attack=2.0, defence=0.1, range=10, level=3, count=7,
-                         heatseeking=True,
-                         desc=['Not a delicious condiment, but rather a gigantic pale-blue cave slug.',
-                               'Being a cave creature, it seems to lack eyes of any sort.']))
-
-        self.add(Monster('dromedary', skin=('q', libtcod.dark_sepia),
-                         attack=0.7, psyattack=0.5, defence=0.6, range=5, psyrange=3, level=3,
-                         count=5,
-                         desc=['A giant cave lizard with two hemisperical humps.']))
-
-        self.add(Monster('spore plant', skin=('x', libtcod.dark_yellow),
-                         attack=0.3, defence=0.2, range=7, level=3,
-                         itemdrop='bomb', confimmune=True, count=7,
-                         desc=['A large plantlike carnivorous creature.',
-                               'It has large bulbous appendages growing out of its stalk.',
-                               'It looks like it is radiating heat from the inside.']))
-
-        self.add(Monster('cannibal', skin=('h', libtcod.light_red),
-                         attack=7.0, defence=0.01, range=5, level=4,
-                         count=4,
-                         desc=["A degenerate inhabitant of the caves who feeds on",
-                               "other people's flesh for sustenance."]))
-
-        self.add(Monster('nematode', skin=('w', libtcod.yellow),
-                         attack=0, psyattack=2.0, defence=0.1, range=30, psyrange=4,
-                         level=4, count=5,
-                         desc=['A gigantic (5 meter long) yellow worm.',
-                               'It has no visible eyes, but instead has a ',
-                               'giant, bulging, pulsating brain.']))
-
-        self.add(Monster('spore', skin=('x', libtcod.pink),
-                         attack=0, defence=0.2, range=30, level=4,
-                         itemdrop='bomb', heatseeking=True, selfdestruct=True,
-                         confimmune=True, count=7, flying=True,
-                         desc=['A pulsating pink spherical spore, about 1 meter in diameter.',
-                               'It is levitating.',
-                               'It looks like it is radiating heat from the inside.']))
-
-        self.add(Monster('cthulhumon', skin=('v', libtcod.gray),
-                         attack=3.0, psyattack=2.0, defence=1.0, range=8, psyrange=8,
-                         level=5, confimmune=True, count=4,
-                         desc=['The other Pokemon nobody told you about.']))
-
-        self.add(Monster('giant turtle', skin=('O', libtcod.green),
-                         attack=1.0, defence=24.0, explodeimmune=True, range=30,
-                         confimmune=True, slow=True, level=5, count=4,
-                         desc=['A giant, the size of a small house, turtle!']))
-
-        self.add(Monster('shaihulud', skin=('W', libtcod.gray),
-                         attack=2.0, defence=4.5, explodeimmune=True, range=30,
-                         level=6, count=4, straightline=True, stoneeating=True,
-                         heatseeking=True,
-                         desc=['A giant worm. It is gray in color and has a skin made of something like granite.',
-                               'It is about 15 meters in length.']))
-
-        self.add(Monster('sleep faerie', skin=('f', libtcod.light_pink),
-                         attack=1.0, defence=1.0, range=9, level=6, count=5,
-                         sleepattack=True, flying=True,
-                         desc=["A tiny fay creature dressed in pink ballet clothes.",
-                               "It looks adorable."]))
-
-        self.add(Monster('leipreachan', skin=('f', libtcod.azure),
-                         attack=2.5, defence=1.5, range=9, level=7, count=5,
-                         hungerattack=True,
-                         desc=['A fay creature in the form of a dirty, lecherous old man.']))
-
-        self.add(Monster('black knight', skin=('k', libtcod.darker_grey),
-                         attack=6.0, defence=4.5, range=8, level=7, count=5,
-                         desc=['An evil humanoid in black cast-iron armor.',
-                               'He is armed with a longsword.']))
-
-        self.add(Monster('juggernaut', skin=('k', libtcod.darkest_grey),
-                         attack=6.0, defence=4.5, range=8, level=8, count=5,
-                         desc=['A larger, comically deformed version of the black knight.',
-                               'He has ridiculously bulging muscles and a tiny head.']))
-
-        self.add(Monster('carrion crawler', skin=('w', libtcod.white),
-                         attack=2.0, defence=2.0, range=5, level=8, count=16,
-                         itemdrop='cclarva',
-                         desc=['A creature that looks like a maggot,',
-                               'only a thousand times bigger.']))
-
-        self.add(Monster('Oberon', skin=('F', libtcod.purple),
-                         attack=3.0, defence=3.0, range=10, level=9, count=1,
-                         flying=True, explodeimmune=True, confimmune=True,
-                         psyrange=8, psyattack=2.0,
-                         desc=['A faerie king.',
-                               'He takes on the appearance of a 2 meter tall',
-                               'handsome man, wearing a delicate crown.']))
-
-        self.add(Monster('Conan', skin=('K', libtcod.sepia),
-                         attack=7.5, defence=5.5, range=8, level=10, count=1,
-                         confimmune=True, itemdrop='excalibur',
-                         desc=['A well-muscled adventurer,',
-                               'he looks like he just stepped off a movie poster.',
-                               "He hates competition."]))
-
-        self.add(Monster('mosura-chan', skin=('x', libtcod.dark_lime),
-                         attack=0, defence=0.2, range=30, level=9,
-                         itemdrop='radblob', selfdestruct=True,
-                         radimmune=True, explodeimmune=True,
-                         confimmune=True, count=16, flying=True, no_a=True,
-                         desc=['A bird-sized, moth-like creature.',
-                               'It has a strange green glow.']))
-
-        self.add(Monster('Gojira-sama', skin=('G', libtcod.green),
-                         attack=6.0, defence=5.0, range=10, level=11, count=1,
-                         radimmune=True, explodeimmune=True,
-                         summon=('mosura-chan', 3), itemdrop=['gbomb', 'radsuit'],
-                         desc=['She really hates Japan after what they did',
-                               'to the nuclear power plant.']))
 
 
 
@@ -1930,6 +1821,8 @@ class MonsterStock:
 
     def generate(self, branch, level, itemstock):
         for k,v in self.monsters.iteritems():
+            if not k:
+                print [[m.name for m in v2] for v2 in v.itervalues()]
             n = sum(sum(m.count for m in v2) for v2 in v.itervalues())
             at = sum(sum(m.attack for m in v2) for v2 in v.itervalues())
             de = sum(sum(m.defence for m in v2) for v2 in v.itervalues())
@@ -1964,6 +1857,9 @@ class MonsterStock:
         return m
 
     def death(self, mon):
+        if not mon.branch:
+            return
+
         if mon.level not in self.monsters[mon.branch]:
             return (len(self.monsters[mon.branch]) == 0)
 
@@ -2092,6 +1988,11 @@ class FeatureStock:
         self.f['Z'] = Feature(walkable=False, visible=False, skin=(185, libtcod.white),
                               name='a smooth stone wall', height=0)
 
+        self.f['Y'] = Feature(walkable=False, visible=False, skin=(157, libtcod.green),
+                              name='a tree', height=5)
+        self.f['!'] = Feature(walkable=True, visible=False, skin=(173, libtcod.dark_green),
+                              name='a giant fern')
+
 
 class Vault:
     def __init__(self, syms=None, pic=None, chance=1, level=(1,10), count=10, branch=None):
@@ -2154,82 +2055,90 @@ class VaultStock:
                 '2': (None, 'medpack', False),
                 '3': (None, 'killerwand', False),
                 '4': (None, 'cclarva', False),
+                '5': (None, 'stickyglue', False),
+                '6': (None, 'minibomb', False),
+                '7': (None, 'coolpack', False),
+                '8': (None, 'gbomb', False),
                 'v': ('v', True),
                 's': ('s', True),
                 'b': ('b', True),
-                '1': ('1', True),
-                '2': ('2', True),
-                '3': ('3', True),
-                '4': ('4', True),
-                '5': ('5', True),
+                'Y': ('Y', False),
+                '!': ('!', False),
                 '@': (None, True)}
+
+        symsb = { '1': ('1', True),
+                  '2': ('2', True),
+                  '3': ('3', True),
+                  '4': ('4', True),
+                  '5': ('5', True) }
+
 
         #v1 = Vault(chance=3, level=(1,6), count=3,
 
-        self.add(Vault(syms=syms, pic=["5"], chance=3, level=(3,3), count=1, branch='a'))
-        self.add(Vault(syms=syms, pic=["5"], chance=3, level=(6,6), count=1, branch='a'))
-        self.add(Vault(syms=syms, pic=["5"], chance=3, level=(9,9), count=1, branch='a'))
-        self.add(Vault(syms=syms, pic=["2"], chance=3, level=(3,3), count=1, branch='a'))
-        self.add(Vault(syms=syms, pic=["2"], chance=3, level=(6,6), count=1, branch='a'))
-        self.add(Vault(syms=syms, pic=["2"], chance=3, level=(9,9), count=1, branch='a'))
-        self.add(Vault(syms=syms, pic=["3"], chance=3, level=(3,3), count=1, branch='a'))
-        self.add(Vault(syms=syms, pic=["3"], chance=3, level=(6,6), count=1, branch='a'))
-        self.add(Vault(syms=syms, pic=["3"], chance=3, level=(9,9), count=1, branch='a'))
-        self.add(Vault(syms=syms, pic=["4"], chance=3, level=(3,3), count=1, branch='a'))
-        self.add(Vault(syms=syms, pic=["4"], chance=3, level=(6,6), count=1, branch='a'))
-        self.add(Vault(syms=syms, pic=["4"], chance=3, level=(9,9), count=1, branch='a'))
+        self.add(Vault(syms=symsb, pic=["5"], chance=3, level=(3,3), count=1, branch='a'))
+        self.add(Vault(syms=symsb, pic=["5"], chance=3, level=(6,6), count=1, branch='a'))
+        self.add(Vault(syms=symsb, pic=["5"], chance=3, level=(9,9), count=1, branch='a'))
+        self.add(Vault(syms=symsb, pic=["2"], chance=3, level=(3,3), count=1, branch='a'))
+        self.add(Vault(syms=symsb, pic=["2"], chance=3, level=(6,6), count=1, branch='a'))
+        self.add(Vault(syms=symsb, pic=["2"], chance=3, level=(9,9), count=1, branch='a'))
+        self.add(Vault(syms=symsb, pic=["3"], chance=3, level=(3,3), count=1, branch='a'))
+        self.add(Vault(syms=symsb, pic=["3"], chance=3, level=(6,6), count=1, branch='a'))
+        self.add(Vault(syms=symsb, pic=["3"], chance=3, level=(9,9), count=1, branch='a'))
+        self.add(Vault(syms=symsb, pic=["4"], chance=3, level=(3,3), count=1, branch='a'))
+        self.add(Vault(syms=symsb, pic=["4"], chance=3, level=(6,6), count=1, branch='a'))
+        self.add(Vault(syms=symsb, pic=["4"], chance=3, level=(9,9), count=1, branch='a'))
 
-        self.add(Vault(syms=syms, pic=["1"], chance=3, level=(3,3), count=1, branch='b'))
-        self.add(Vault(syms=syms, pic=["1"], chance=3, level=(6,6), count=1, branch='b'))
-        self.add(Vault(syms=syms, pic=["1"], chance=3, level=(9,9), count=1, branch='b'))
-        self.add(Vault(syms=syms, pic=["5"], chance=3, level=(3,3), count=1, branch='b'))
-        self.add(Vault(syms=syms, pic=["5"], chance=3, level=(6,6), count=1, branch='b'))
-        self.add(Vault(syms=syms, pic=["5"], chance=3, level=(9,9), count=1, branch='b'))
-        self.add(Vault(syms=syms, pic=["4"], chance=3, level=(3,3), count=1, branch='b'))
-        self.add(Vault(syms=syms, pic=["4"], chance=3, level=(6,6), count=1, branch='b'))
-        self.add(Vault(syms=syms, pic=["4"], chance=3, level=(9,9), count=1, branch='b'))
-        self.add(Vault(syms=syms, pic=["3"], chance=3, level=(3,3), count=1, branch='b'))
-        self.add(Vault(syms=syms, pic=["3"], chance=3, level=(6,6), count=1, branch='b'))
-        self.add(Vault(syms=syms, pic=["3"], chance=3, level=(9,9), count=1, branch='b'))
+        self.add(Vault(syms=symsb, pic=["1"], chance=3, level=(3,3), count=1, branch='b'))
+        self.add(Vault(syms=symsb, pic=["1"], chance=3, level=(6,6), count=1, branch='b'))
+        self.add(Vault(syms=symsb, pic=["1"], chance=3, level=(9,9), count=1, branch='b'))
+        self.add(Vault(syms=symsb, pic=["5"], chance=3, level=(3,3), count=1, branch='b'))
+        self.add(Vault(syms=symsb, pic=["5"], chance=3, level=(6,6), count=1, branch='b'))
+        self.add(Vault(syms=symsb, pic=["5"], chance=3, level=(9,9), count=1, branch='b'))
+        self.add(Vault(syms=symsb, pic=["4"], chance=3, level=(3,3), count=1, branch='b'))
+        self.add(Vault(syms=symsb, pic=["4"], chance=3, level=(6,6), count=1, branch='b'))
+        self.add(Vault(syms=symsb, pic=["4"], chance=3, level=(9,9), count=1, branch='b'))
+        self.add(Vault(syms=symsb, pic=["3"], chance=3, level=(3,3), count=1, branch='b'))
+        self.add(Vault(syms=symsb, pic=["3"], chance=3, level=(6,6), count=1, branch='b'))
+        self.add(Vault(syms=symsb, pic=["3"], chance=3, level=(9,9), count=1, branch='b'))
 
-        self.add(Vault(syms=syms, pic=["4"], chance=3, level=(3,3), count=1, branch='c'))
-        self.add(Vault(syms=syms, pic=["4"], chance=3, level=(6,6), count=1, branch='c'))
-        self.add(Vault(syms=syms, pic=["4"], chance=3, level=(9,9), count=1, branch='c'))
-        self.add(Vault(syms=syms, pic=["1"], chance=3, level=(3,3), count=1, branch='c'))
-        self.add(Vault(syms=syms, pic=["1"], chance=3, level=(6,6), count=1, branch='c'))
-        self.add(Vault(syms=syms, pic=["1"], chance=3, level=(9,9), count=1, branch='c'))
-        self.add(Vault(syms=syms, pic=["2"], chance=3, level=(3,3), count=1, branch='c'))
-        self.add(Vault(syms=syms, pic=["2"], chance=3, level=(6,6), count=1, branch='c'))
-        self.add(Vault(syms=syms, pic=["2"], chance=3, level=(9,9), count=1, branch='c'))
-        self.add(Vault(syms=syms, pic=["5"], chance=3, level=(3,3), count=1, branch='c'))
-        self.add(Vault(syms=syms, pic=["5"], chance=3, level=(6,6), count=1, branch='c'))
-        self.add(Vault(syms=syms, pic=["5"], chance=3, level=(9,9), count=1, branch='c'))
+        self.add(Vault(syms=symsb, pic=["4"], chance=3, level=(3,3), count=1, branch='c'))
+        self.add(Vault(syms=symsb, pic=["4"], chance=3, level=(6,6), count=1, branch='c'))
+        self.add(Vault(syms=symsb, pic=["4"], chance=3, level=(9,9), count=1, branch='c'))
+        self.add(Vault(syms=symsb, pic=["1"], chance=3, level=(3,3), count=1, branch='c'))
+        self.add(Vault(syms=symsb, pic=["1"], chance=3, level=(6,6), count=1, branch='c'))
+        self.add(Vault(syms=symsb, pic=["1"], chance=3, level=(9,9), count=1, branch='c'))
+        self.add(Vault(syms=symsb, pic=["2"], chance=3, level=(3,3), count=1, branch='c'))
+        self.add(Vault(syms=symsb, pic=["2"], chance=3, level=(6,6), count=1, branch='c'))
+        self.add(Vault(syms=symsb, pic=["2"], chance=3, level=(9,9), count=1, branch='c'))
+        self.add(Vault(syms=symsb, pic=["5"], chance=3, level=(3,3), count=1, branch='c'))
+        self.add(Vault(syms=symsb, pic=["5"], chance=3, level=(6,6), count=1, branch='c'))
+        self.add(Vault(syms=symsb, pic=["5"], chance=3, level=(9,9), count=1, branch='c'))
 
-        self.add(Vault(syms=syms, pic=["3"], chance=3, level=(3,3), count=1, branch='d'))
-        self.add(Vault(syms=syms, pic=["3"], chance=3, level=(6,6), count=1, branch='d'))
-        self.add(Vault(syms=syms, pic=["3"], chance=3, level=(9,9), count=1, branch='d'))
-        self.add(Vault(syms=syms, pic=["2"], chance=3, level=(3,3), count=1, branch='d'))
-        self.add(Vault(syms=syms, pic=["2"], chance=3, level=(6,6), count=1, branch='d'))
-        self.add(Vault(syms=syms, pic=["2"], chance=3, level=(9,9), count=1, branch='d'))
-        self.add(Vault(syms=syms, pic=["5"], chance=3, level=(3,3), count=1, branch='d'))
-        self.add(Vault(syms=syms, pic=["5"], chance=3, level=(6,6), count=1, branch='d'))
-        self.add(Vault(syms=syms, pic=["5"], chance=3, level=(9,9), count=1, branch='d'))
-        self.add(Vault(syms=syms, pic=["1"], chance=3, level=(3,3), count=1, branch='d'))
-        self.add(Vault(syms=syms, pic=["1"], chance=3, level=(6,6), count=1, branch='d'))
-        self.add(Vault(syms=syms, pic=["1"], chance=3, level=(9,9), count=1, branch='d'))
+        self.add(Vault(syms=symsb, pic=["3"], chance=3, level=(3,3), count=1, branch='d'))
+        self.add(Vault(syms=symsb, pic=["3"], chance=3, level=(6,6), count=1, branch='d'))
+        self.add(Vault(syms=symsb, pic=["3"], chance=3, level=(9,9), count=1, branch='d'))
+        self.add(Vault(syms=symsb, pic=["2"], chance=3, level=(3,3), count=1, branch='d'))
+        self.add(Vault(syms=symsb, pic=["2"], chance=3, level=(6,6), count=1, branch='d'))
+        self.add(Vault(syms=symsb, pic=["2"], chance=3, level=(9,9), count=1, branch='d'))
+        self.add(Vault(syms=symsb, pic=["5"], chance=3, level=(3,3), count=1, branch='d'))
+        self.add(Vault(syms=symsb, pic=["5"], chance=3, level=(6,6), count=1, branch='d'))
+        self.add(Vault(syms=symsb, pic=["5"], chance=3, level=(9,9), count=1, branch='d'))
+        self.add(Vault(syms=symsb, pic=["1"], chance=3, level=(3,3), count=1, branch='d'))
+        self.add(Vault(syms=symsb, pic=["1"], chance=3, level=(6,6), count=1, branch='d'))
+        self.add(Vault(syms=symsb, pic=["1"], chance=3, level=(9,9), count=1, branch='d'))
 
-        self.add(Vault(syms=syms, pic=["2"], chance=3, level=(3,3), count=1, branch='e'))
-        self.add(Vault(syms=syms, pic=["2"], chance=3, level=(6,6), count=1, branch='e'))
-        self.add(Vault(syms=syms, pic=["2"], chance=3, level=(9,9), count=1, branch='e'))
-        self.add(Vault(syms=syms, pic=["4"], chance=3, level=(3,3), count=1, branch='e'))
-        self.add(Vault(syms=syms, pic=["4"], chance=3, level=(6,6), count=1, branch='e'))
-        self.add(Vault(syms=syms, pic=["4"], chance=3, level=(9,9), count=1, branch='e'))
-        self.add(Vault(syms=syms, pic=["1"], chance=3, level=(3,3), count=1, branch='e'))
-        self.add(Vault(syms=syms, pic=["1"], chance=3, level=(6,6), count=1, branch='e'))
-        self.add(Vault(syms=syms, pic=["1"], chance=3, level=(9,9), count=1, branch='e'))
-        self.add(Vault(syms=syms, pic=["3"], chance=3, level=(3,3), count=1, branch='e'))
-        self.add(Vault(syms=syms, pic=["3"], chance=3, level=(6,6), count=1, branch='e'))
-        self.add(Vault(syms=syms, pic=["3"], chance=3, level=(9,9), count=1, branch='e'))
+        self.add(Vault(syms=symsb, pic=["2"], chance=3, level=(3,3), count=1, branch='e'))
+        self.add(Vault(syms=symsb, pic=["2"], chance=3, level=(6,6), count=1, branch='e'))
+        self.add(Vault(syms=symsb, pic=["2"], chance=3, level=(9,9), count=1, branch='e'))
+        self.add(Vault(syms=symsb, pic=["4"], chance=3, level=(3,3), count=1, branch='e'))
+        self.add(Vault(syms=symsb, pic=["4"], chance=3, level=(6,6), count=1, branch='e'))
+        self.add(Vault(syms=symsb, pic=["4"], chance=3, level=(9,9), count=1, branch='e'))
+        self.add(Vault(syms=symsb, pic=["1"], chance=3, level=(3,3), count=1, branch='e'))
+        self.add(Vault(syms=symsb, pic=["1"], chance=3, level=(6,6), count=1, branch='e'))
+        self.add(Vault(syms=symsb, pic=["1"], chance=3, level=(9,9), count=1, branch='e'))
+        self.add(Vault(syms=symsb, pic=["3"], chance=3, level=(3,3), count=1, branch='e'))
+        self.add(Vault(syms=symsb, pic=["3"], chance=3, level=(6,6), count=1, branch='e'))
+        self.add(Vault(syms=symsb, pic=["3"], chance=3, level=(9,9), count=1, branch='e'))
 
         self.add(Vault(syms=syms,
                        pic=["o.o.o.o.o.o.o.o.o.o.o.o.o",
@@ -2241,7 +2150,35 @@ class VaultStock:
                             "o.L-J---------------J--.o",
                             ".........................",
                             "o.o.o.o.o.o.o.o.o.o.o.o.o"],
-                       chance=3, level=(2,7), count=2))
+                       chance=3, level=(2,7), count=2, branch='b'))
+
+        self.add(Vault(syms=syms,
+                       pic=[" !       .     ...   .   ",
+                            "!....   ... . ..YY.....  ",
+                            "...!!. .Y ........  .!!..",
+                            "  !!...YY...YY..      ...",
+                            " ...Y..Y.....YY!!   ..Y..",
+                            "...YYY.!!.  !h!!!!!!!Y.. ",
+                            "   .!YY...   !!!YYY...   ",
+                            "!!!!!!Y..!! ..YYYY...... ",
+                            "  !!!Y..... .....   !  !.",
+                            " !!!....YY...  ..! !.... ",
+                            "    !  ..     !.. !  !! !"],
+                       chance=3, level=(2,7), count=2, branch='a'))
+
+        self.add(Vault(syms=syms,
+                       pic=[" Y   !!. .   !! ..   .   ",
+                            "  !  .!.... . ..!Y..... !",
+                            "  Y!!. .Y .....!.!Y .!!..",
+                            "  !!...YY...!!.! YYYY ...",
+                            " ...Y..Y.....  !!YYY..Y..",
+                            "...YYYh!!. !.....     .. ",
+                            "   .!YY...   !!!YYY..!! Y",
+                            "YY!. ....!! ..YY.....!.Y ",
+                            " YY!!..Y... ...YY !!!  !.",
+                            " .YY  ..YY...  Y.YYY.!!. ",
+                            ".  Y!! ..     !..!Y! .. Y"],
+                       chance=3, level=(3,8), count=2, branch='a'))
 
         self.add(Vault(syms=syms,
                        pic=["   .......   ",
@@ -2257,7 +2194,7 @@ class VaultStock:
                        pic=[".........@..........",
                             "====================",
                             "...................."],
-                       chance=3, level=(2,5), count=2))
+                       chance=3, level=(2,5), count=2, branch='c'))
 
         self.add(Vault(syms=syms,
                        pic=[".l.",
@@ -2266,7 +2203,7 @@ class VaultStock:
                             ".l.",
                             ".l.",
                             ".l."],
-                       chance=3, level=(2,5), count=2))
+                       chance=3, level=(2,5), count=2, branch='c'))
 
         self.add(Vault(syms=syms,
                        pic=["  .^^^^^  ",
@@ -2279,7 +2216,7 @@ class VaultStock:
                             "^^^^^^^^^^",
                             " ^^^^^^^^ ",
                             "  ^^^^^^  "],
-                       chance=3, level=(2,10), count=1))
+                       chance=3, level=(2,10), count=1, branch='c'))
 
         self.add(Vault(syms=syms,
                        pic=["  ^^^^^^  ",
@@ -2292,7 +2229,7 @@ class VaultStock:
                             "^^^^^.^^^^",
                             " ^^^^^.^^ ",
                             "  ^^^^^.  "],
-                       chance=3, level=(2,10), count=1))
+                       chance=3, level=(2,10), count=1, branch='c'))
 
         self.add(Vault(syms=syms,
                        pic=["  ^^^^^^  ",
@@ -2305,7 +2242,7 @@ class VaultStock:
                             "^^^^^^^^^^",
                             " ^^^^^^^^ ",
                             "  ^^^^^^  "],
-                       chance=3, level=(2,10), count=1))
+                       chance=3, level=(2,10), count=1, branch='c'))
 
         self.add(Vault(syms=syms,
                        pic=["  ^^^^^^  ",
@@ -2318,7 +2255,7 @@ class VaultStock:
                             "^.^^^^^^^^",
                             ".^^^^^^^^ ",
                             "  ^^^^^^  "],
-                       chance=3, level=(2,10), count=1))
+                       chance=3, level=(2,10), count=1, branch='c'))
 
         self.add(Vault(syms=syms,
                        pic=["R---7",
@@ -2336,54 +2273,45 @@ class VaultStock:
 
         self.add(Vault(syms=syms,
                        pic=["R---7",
-                            "|333|",
-                            "|333|",
-                            "L---/"],
-                       chance=3, level=(8,14), count=3))
-
-        self.add(Vault(syms=syms,
-                       pic=["R---7",
                             "|444|",
                             "|444|",
                             "L---/"],
                        chance=3, level=(10,14), count=3))
 
+        self.add(Vault(syms=syms,
+                       pic=["R---7",
+                            "|333|",
+                            "|333|",
+                            "L---/"],
+                       chance=3, level=(8,14), count=3, branch='e'))
 
-        # self.clone(v1, ["R---.---7",
-        #                 "|...o...|",
-        #                 "..o.@.o..",
-        #                 "|...o...|",
-        #                 "L---.---/"])
+        self.add(Vault(syms=syms,
+                       pic=["R---7",
+                            "|555|",
+                            "|555|",
+                            "L---/"],
+                       chance=3, level=(4,14), count=3, branch='d'))
 
+        self.add(Vault(syms=syms,
+                       pic=["R---7",
+                            "|666|",
+                            "|666|",
+                            "L---/"],
+                       chance=3, level=(4,14), count=3, branch='a'))
 
-        # self.clone(v1, ["  R-7  ",
-        #                 " R/.L7 ",
-        #                 "R/...L7",
-        #                 "|.....@",
-        #                 "L7...R/",
-        #                 " L7.R/ ",
-        #                 "  L-/  "])
+        self.add(Vault(syms=syms,
+                       pic=["R---7",
+                            "|777|",
+                            "|777|",
+                            "L---/"],
+                       chance=3, level=(4,14), count=3, branch='c'))
 
-        # self.clone(v1, ["R-.-T-.-T-.-7",
-        #                 "|...|...|...|",
-        #                 "F-.-+-@-+-.-+",
-        #                 "|...|...|...|",
-        #                 "L-.-J-.-J-.-/"])
-
-
-        # self.clone(v1, ["            ....oo....            ",
-        #                 "       .....o........o.....       ",
-        #                 "    ...o..................o...    ",
-        #                 "  ..o........................o..  ",
-        #                 " .o............................o. ",
-        #                 ".o..............................o.",
-        #                 "................@.................",
-        #                 ".o..............................o.",
-        #                 " .o............................o. ",
-        #                 "  ..o........................o..  ",
-        #                 "    ...o..................o...    ",
-        #                 "       .....o........o.....       ",
-        #                 "            ....oo....            "])
+        self.add(Vault(syms=syms,
+                       pic=["R---7",
+                            "|888|",
+                            "|888|",
+                            "L---/"],
+                       chance=3, level=(4,14), count=3, branch='b'))
 
 
 
@@ -2861,7 +2789,7 @@ class World:
 
     def regen(self, w_, h_):
         if self.branch is None:
-            self.branch = 'e' #random.choice(['a', 'b', 'c', 'd', 'e'])
+            self.branch = random.choice(['a', 'b', 'c', 'd', 'e'])
 
         self.makegrid(w_, h_)
         self.terra()
@@ -4551,6 +4479,7 @@ class World:
                 else:
 
                     if x == self.px and y == self.py:
+                        fore = libtcod.white
                         c = '@'
                         if self.sleeping > 1 and (self.t & 1) == 1:
                             c = '*'
