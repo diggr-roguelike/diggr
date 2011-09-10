@@ -1231,7 +1231,7 @@ class MonsterStock:
 
         self.add(Monster('ghost', skin=('h', libtcod.dark_grey),
                          attack=0.5, defence=2.5, range=7, level=3,
-                         hungerattack=True, count=3, branch='b',
+                         hungerattack=True, count=3, branch='b', fireimmune=True,
                          desc=['A spirit of an adventurer that perished in these',
                                'terrible and wondorous caves.',
                                'Its eyes are glowing with a malignant hunger.']))
@@ -1269,7 +1269,7 @@ class MonsterStock:
 
         self.add(Monster('aelf', skin=('f', libtcod.green),
                          attack=3.0, defence=2.0, range=20, level=6, count=5,
-                         confimmune=True, flying=True, branch='b',
+                         confimmune=True, flying=True, branch='b', fireimmune=True,
                          desc=["A faery creature from the elemental plane of Aelfrice."]))
 
         self.add(Monster('leipreachan', skin=('f', libtcod.azure),
@@ -1315,7 +1315,7 @@ class MonsterStock:
         self.add(Monster('Yog-Sothoth', skin=('X', libtcod.pink),
                          attack=2.0, defence=7.0, range=20, level=10, count=1,
                          explodeimmune=True, flying=True, confimmune=True,
-                         psyrange=20, psyattack=2.0, branch='b',
+                         psyrange=20, psyattack=2.0, branch='b', fireimmune=True,
                          summon=('Prospero', 2), no_a=True,
                          desc=['An Outer God: The Lurker at the Threshold, The Key and the Gate,',
                                'The Beyond One, Opener of the Way, The All-in-One',
@@ -1370,11 +1370,12 @@ class MonsterStock:
         self.add(Monster('scavenger drone', skin=('Z', libtcod.silver),
                          attack=1.0, defence=24.0, explodeimmune=True, range=30,
                          confimmune=True, slow=True, level=3, count=4, branch='c',
+                         fireimmune=True,
                          desc=['A remotely-controlled robot used for exploring the dungeon.']))
 
         self.add(Monster('memetic virus', skin=('v', libtcod.dark_gray),
                          attack=0.3, defence=0.3, explodeimmune=True, radimmune=True,
-                         branch='c',
+                         branch='c', fireimmune=True,
                          range=30, level=3, count=16, summon=('memetic virus', 5),
                          desc=["It doesn't exist. It's a memetic virus."]))
 
@@ -1388,7 +1389,7 @@ class MonsterStock:
 
         self.add(Monster('xenomorph', skin=('X', libtcod.silver),
                          attack=7.0, defence=7.0, range=5, level=4,
-                         count=2, confimmune=True, radimmune=True, branch='c',
+                         count=2, confimmune=True, radimmune=True, branch='c', fireimmune=True,
                          desc=["A horrifying alien creature. It looks like a giant,",
                                "very evil insect. It is truly scary."]))
 
@@ -1427,7 +1428,7 @@ class MonsterStock:
         self.add(Monster('T-1 terminator', skin=('z', libtcod.lightest_sepia),
                          attack=0.4, defence=0.4, range=7, level=7,
                          itemdrop='radblob', confimmune=True, count=7,
-                         radimmune=True, heatseeking=True, branch='c',
+                         radimmune=True, heatseeking=True, branch='c', fireimmune=True,
                          desc=["The very first model in Cyberdine's robot-killer lineup.",
                                '(Brought to you by Skynet.)']))
 
@@ -1456,12 +1457,13 @@ class MonsterStock:
         self.add(Monster('Wintermute', skin=('V', libtcod.azure),
                          attack=0.5, defence=4.0, range=30, sleepattack=True,
                          confimmune=True, explodeimmune=True, radimmune=True, flying=True,
-                         no_a=True, count=2, level=9, branch='c',
+                         no_a=True, count=2, level=9, branch='c', fireimmune=True,
                          desc=["A manifestation of the powerful AI construct named 'Wintermute'."]))
 
         self.add(Monster('Voltron', skin=('Z', libtcod.white),
                          attack=6.0, defence=5.0, range=5, level=10, count=1, no_a=True,
                          explodeimmune=True, confimmune=True, branch='c', heatseeking=True,
+                         fireimmune=True,
                          desc=['Defender of the Universe.']))
 
         self.add(Monster('Gojira-sama', skin=('G', libtcod.green),
@@ -1506,6 +1508,7 @@ class MonsterStock:
         self.add(Monster('eidolon', skin=('v', libtcod.white),
                          attack=0.0, defence=2.0, range=8, level=3,
                          count=4, psyattack=1.5, psyrange=7, branch='d', flying=True,
+                         fireimmune=True,
                          desc=["A spirit-image of a living or dead person;",
                                "a shade or phantom look-alike of the human form."]))
 
@@ -1571,6 +1574,7 @@ class MonsterStock:
         self.add(Monster('Erebus', skin=('U', libtcod.light_pink),
                          attack=10, defence=10, range=15, level=9, count=1,
                          branch='d', confimmune=True, explodeimmune=True, no_a=True,
+                         fireimmune=True,
                          desc=['A megatherian: an evil, immortal, gigantic creature of',
                                'possibly extraterrestrial origin. They are hellbent on ruling',
                                'Urth. They are powerful enough and amoral enough to be',
@@ -1579,6 +1583,7 @@ class MonsterStock:
         self.add(Monster('Arioch', skin=('U', libtcod.light_sky),
                          attack=10, defence=10, range=15, level=10, count=1, no_a=True,
                          branch='d', confimmune=True, explodeimmune=True, radimmune=True,
+                         fireimmune=True,
                          desc=['A megatherian: an evil, immortal, gigantic creature of',
                                'possibly extraterrestrial origin. They are hellbent on ruling',
                                'Urth. They are powerful enough and amoral enough to be',
@@ -1587,6 +1592,7 @@ class MonsterStock:
         self.add(Monster('Abaia', skin=('U', libtcod.grey),
                          attack=10, defence=10, range=15, level=11, count=1,
                          branch='d', confimmune=True, explodeimmune=True, radimmune=True,
+                         fireimmune=True,
                          summon=('undine', 3), no_a=True, itemdrop='gluegun',
                          desc=['A megatherian: an evil, immortal, gigantic creature of',
                                'possibly extraterrestrial origin. They are hellbent on ruling',
@@ -1607,7 +1613,7 @@ class MonsterStock:
 
         self.add(Monster('Aquilonian marshall', skin=('h', libtcod.dark_blue),
                          attack=1.0, defence=0.5, range=6, level=2, count=8,
-                         summon=('aquilonian marshall', 5), branch='e',
+                         summon=('Aquilonian marshall', 5), branch='e',
                          desc=['A mercenary, sent from the Aquilonian cities on',
                                'the surface to partol these dangerous tunnels.']))
 
@@ -1623,11 +1629,12 @@ class MonsterStock:
 
         self.add(Monster('Cimmerian pirate', skin=('h', libtcod.red),
                          attack=1.5, defence=0.6, range=7, level=3, count=8,
-                         branch='e', summon=('cimmerian pirate', 4),
+                         branch='e', summon=('Cimmerian pirate', 4),
                          desc=['A cruel-hearted Cimmerian tribesman, turned to piracy',
                                'in search of loot and women.',
                                "The poor man is probably looking for treasure in these",
                                'caves.']))
+
         self.add(Monster('giant serpent', skin=('S', libtcod.darkest_lime),
                          attack=1.8, defence=0.5, range=9, level=3, count=8,
                          branch='e',
@@ -1672,7 +1679,7 @@ class MonsterStock:
 
         self.add(Monster('Thulian price', skin=('h', libtcod.sky),
                          attack=1.0, defence=1.0, range=18, level=6, count=8,
-                         branch='e', summon=('amazon warrior', 1),
+                         branch='e', summon=('Amazon warrior', 1),
                          desc=['Ultima Thule is the mystical land of fancy and dark legend.',
                                "You're not sure he is really from Thule, much less a real price."]))
 
@@ -1702,7 +1709,7 @@ class MonsterStock:
 
         self.add(Monster('evil demon', skin=('Y', libtcod.red),
                          attack=1.0, defence=1.6, range=10, level=8, count=6,
-                         branch='e', summon=('wolf', 2),
+                         branch='e', summon=('wolf', 2), fireimmune=True,
                          desc=['Summoned from the depths of Infernus to commit',
                                'unspeakable deeds of evil and hatred.']))
 
@@ -1926,7 +1933,9 @@ class MonsterStock:
             n = sum(sum(m.count for m in v2) for v2 in v.itervalues())
             at = sum(sum(m.attack for m in v2) for v2 in v.itervalues())
             de = sum(sum(m.defence for m in v2) for v2 in v.itervalues())
-            print '//', k, n, at/n, de/n
+            atw = sum(sum(m.attack*m.level for m in v2) for v2 in v.itervalues())
+            dew = sum(sum(m.defence*m.level for m in v2) for v2 in v.itervalues())
+            print '//', k, n, at/n, de/n, '|', atw/n, dew/n
 
         while level > 0 and level not in self.monsters[branch]:
             level -= 1
