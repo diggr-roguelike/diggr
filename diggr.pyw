@@ -1821,8 +1821,6 @@ class MonsterStock:
 
     def generate(self, branch, level, itemstock):
         for k,v in self.monsters.iteritems():
-            if not k:
-                print [[m.name for m in v2] for v2 in v.itervalues()]
             n = sum(sum(m.count for m in v2) for v2 in v.itervalues())
             at = sum(sum(m.attack for m in v2) for v2 in v.itervalues())
             de = sum(sum(m.defence for m in v2) for v2 in v.itervalues())
@@ -2146,7 +2144,7 @@ class VaultStock:
                        pic=["o.o.o.o.o.o.o.o.o.o.o.o.o",
                             ".........................",
                             "o.R-T---------------T--.o",
-                            "..|.|.................o..",
+                            "..|.|.......@.........o..",
                             "o.|hF--.o.a.o.o.o.o.|...o",
                             "..|.|.................o..",
                             "o.L-J---------------J--.o",
@@ -2162,25 +2160,51 @@ class VaultStock:
                             " ...Y..Y.....YY!!   ..Y..",
                             "...YYY.!!.  !h!!!!!!!Y.. ",
                             "   .!YY...   !!!YYY...   ",
-                            "!!!!!!Y..!! ..YYYY...... ",
+                            "!!!!!!Y..!! .@YYYY...... ",
                             "  !!!Y..... .....   !  !.",
                             " !!!....YY...  ..! !.... ",
                             "    !  ..     !.. !  !! !"],
-                       chance=3, level=(2,7), count=2, branch='a'))
+                       chance=3, level=(2,7), count=1, branch='a'))
 
         self.add(Vault(syms=syms,
                        pic=[" Y   !!. .   !! ..   .   ",
                             "  !  .!.... . ..!Y..... !",
                             "  Y!!. .Y .....!.!Y .!!..",
                             "  !!...YY...!!.! YYYY ...",
-                            " ...Y..Y.....  !!YYY..Y..",
+                            " ...Y..Y@....  !!YYY..Y..",
                             "...YYYh!!. !.....     .. ",
                             "   .!YY...   !!!YYY..!! Y",
                             "YY!. ....!! ..YY.....!.Y ",
                             " YY!!..Y... ...YY !!!  !.",
                             " .YY  ..YY...  Y.YYY.!!. ",
                             ".  Y!! ..     !..!Y! .. Y"],
-                       chance=3, level=(3,8), count=2, branch='a'))
+                       chance=3, level=(3,8), count=1, branch='a'))
+
+        self.add(Vault(syms=syms,
+                       pic=[" r====q.=========.r====q ",
+                            "......l...........l......",
+                            ".l....l...r.=.q...l....l.",
+                            ".p===...==d.@.p==...===d.",
+                            "......l...........l......",
+                            "......l.....h.....l......",
+                            ".r===...==q...r==...===q ",
+                            " l....l...p.=.d...l....l.",
+                            " .....l...........l..... ",
+                            " =====d ========= p===== "],
+                       chance=3, level=(2,7), count=1, branch='c'))
+
+        self.add(Vault(syms=syms,
+                       pic=[" r====q.=====q.=====q.=q ",
+                            ".l....l......l......l....",
+                            ".l..r=..=q.==..=q.==..=q.",
+                            ".l..l....l...@..l......l.",
+                            ".l..l..r=..=q.==..=q...l.",
+                            ".l..l..l....lh.....l...l.",
+                            ".l..l.....==..====..l..l ",
+                            " l..p=====..........d..l.",
+                            " l..........r====q.....l ",
+                            " p==========d    p=====d "],
+                       chance=3, level=(3,8), count=1, branch='c'))
 
         self.add(Vault(syms=syms,
                        pic=["   .......   ",
@@ -2351,8 +2375,6 @@ class VaultStock:
 
         for x in xrange(len(self.vaults[branch][level])):
             v = self.vaults[branch][level][x]
-
-            print '| ', v.pic
 
             if random.randint(1, v.chance) != 1:
                 continue
