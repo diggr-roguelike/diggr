@@ -10,7 +10,6 @@ import cPickle
 import libtcodpy as libtcod
 
 #
-# stonehenge
 # achievements!
 #
 
@@ -519,7 +518,7 @@ class Item:
                  stackrange=None, mapper=None, converts=None, jumprange=None,
                  explodeimmune=False, telepathyrange=None, makestrap=False,
                  summon=None, radimmune=False, radexplode=False, fires=None,
-                 camorange=None):
+                 camorange=None, sounding=False):
         self.slot = slot
         self.bonus = bonus
         self.name = name
@@ -575,6 +574,7 @@ class Item:
         self.radexplode = radexplode
         self.fires = fires
         self.camorange = camorange
+        self.sounding = sounding
 
         self.ammo = None
         self.gencount = 0
@@ -687,6 +687,10 @@ class ItemStock:
         self.homing = Item("dowsing rod", slot='d', skin=(')', libtcod.cyan),
                            applies=True, rarity=8, homing=True,
                            desc=["A low-tech device for finding holes."])
+
+        self.sonar = Item("rock sonar", slot='d', skin=(')', libtcod.darker_cyan),
+                          applies=True, rarity=7, sounding=True,
+                          desc=["A device that uses sonar for discovering rock thickness."])
 
         self.medpack = Item("magic pill$s", slot='d', skin=('%', libtcod.white),
                             rarity=20, applies=True, healing=(3, 0.5),
@@ -1640,7 +1644,7 @@ class MonsterStock:
                          desc=['Looks yummy.']))
 
         self.add(Monster('Aquilonian marshall', skin=('h', libtcod.dark_blue),
-                         attack=1.0, defence=0.5, range=6, level=2, count=8,
+                         attack=0.5, defence=0.5, range=6, level=2, count=8,
                          summon=('Aquilonian marshall', 5), branch='e',
                          desc=['A mercenary, sent from the Aquilonian cities on',
                                'the surface to partol these dangerous tunnels.']))
@@ -1755,7 +1759,7 @@ class MonsterStock:
 
         self.add(Monster('Conan', skin=('K', libtcod.sepia),
                          attack=7.5, defence=5.5, range=8, level=10, count=1,
-                         confimmune=True, itemdrop='excalibur', branch='e',
+                         confimmune=True, itemdrop='excalibur', branch='e', no_a=True,
                          desc=['A well-muscled adventurer,',
                                'he looks like he just stepped off a movie poster.',
                                "He hates competition."]))
@@ -1763,7 +1767,7 @@ class MonsterStock:
         self.add(Monster('Crom', skin=('K', libtcod.peach),
                          attack=7.5, defence=7.5, range=10, level=10, count=1,
                          explodeimmune=True, fireimmune=True, branch='e',
-                         confimmune=True, summon=('Conan', 1),
+                         confimmune=True, summon=('Conan', 1), no_a=True,
                          desc=['The most high god of all Cimmerians, Crom is the god',
                                'of valor and battle. He is a dark, vengeful and',
                                'judgemental god.']))
@@ -1993,6 +1997,9 @@ class FeatureStock:
         self.f['!'] = Feature(walkable=True, visible=False, skin=(173, libtcod.dark_green),
                               name='a giant fern')
 
+        self.f['w'] = Feature(walkable=True, visible=True, skin=('-', libtcod.sky),
+                              water=True, name='a pool of water')
+
 
 class Vault:
     def __init__(self, syms=None, pic=None, chance=1, level=(1,10), count=10, branch=None):
@@ -2057,13 +2064,14 @@ class VaultStock:
                 '4': (None, 'cclarva', False),
                 '5': (None, 'stickyglue', False),
                 '6': (None, 'minibomb', False),
-                '7': (None, 'coolpack', False),
+                '9': (None, 'coolpack', False),
                 '8': (None, 'gbomb', False),
                 'v': ('v', True),
                 's': ('s', True),
                 'b': ('b', True),
                 'Y': ('Y', False),
                 '!': ('!', False),
+                'w': ('w', False),
                 '@': (None, True)}
 
         symsb = { '1': ('1', True),
@@ -2150,7 +2158,7 @@ class VaultStock:
                             "o.L-J---------------J--.o",
                             ".........................",
                             "o.o.o.o.o.o.o.o.o.o.o.o.o"],
-                       chance=3, level=(2,7), count=1 branch='b'))
+                       chance=3, level=(2,7), count=1, branch='b'))
 
         self.add(Vault(syms=syms,
                        pic=["       R7.R7.R7.R7       ",
@@ -2164,7 +2172,7 @@ class VaultStock:
                             "  ..R7.............R7..  ",
                             "    L/.R7.R7.R7.R7.L/    ",
                             "       L/.L/.L/.L/       "],
-                       chance=3, level=(3,8), count=1, branch='b))
+                       chance=3, level=(3,8), count=1, branch='b'))
 
         self.add(Vault(syms=syms,
                        pic=[" !       .     ...   .   ",
@@ -2204,7 +2212,7 @@ class VaultStock:
                             ".r===...==q...r==...===q ",
                             " l....l...p.=.d...l....l.",
                             " .....l...........l..... ",
-                            " =====d ========= p===== "],
+                            " p====d ========= p====d "],
                        chance=3, level=(2,7), count=1, branch='c'))
 
         self.add(Vault(syms=syms,
@@ -2245,6 +2253,35 @@ class VaultStock:
                             "L ....l........  .l....R/",
                             " L-------------  ------/ "],
                        chance=3, level=(2,8), count=1, branch='d'))
+
+
+        self.add(Vault(syms=syms,
+                       pic=["        .........        ",
+                            "    ......Y.Y.Y......    ",
+                            "  .....Y.Y......Y.Y....  ",
+                            " ..Y.Y....YYYYYY....Y... ",
+                            "..YYY...YYwwwwwwYY....Y..",
+                            ".YYYYY..YYwwh.wwYY.......",
+                            "..YYY...YYwwwwwwYY....Y..",
+                            " ..Y.Y....YYYYYY....Y... ",
+                            "  .....Y.Y......Y.Y....  ",
+                            "    ......Y.Y.Y......    ",
+                            "        .........        "],
+                       chance=3, level=(2,7), count=1, branch='e'))
+
+        self.add(Vault(syms=syms,
+                       pic=["wwwwwwwwwwwwwwwwwwwwwwwww",
+                            "wR-----7wwwwwwwwwR-----7w",
+                            "w|h....L---------/.....|w",
+                            "w|.....................|w",
+                            "wL-7.R-J---------J-7.R-/w",
+                            "www|.|             |.|www",
+                            "wR-/.L-T---/.L---T-/.L-7w",
+                            "w|.....................|w",
+                            "w|.....R---/.L---7.....|w",
+                            "wL-----/...@.....L-----/w",
+                            "wwwwwwwwwwwwwwwwwwwwwwwww"],
+                       chance=3, level=(3,8), count=1, branch='e'))
 
         self.add(Vault(syms=syms,
                        pic=["   .......   ",
@@ -2367,8 +2404,8 @@ class VaultStock:
 
         self.add(Vault(syms=syms,
                        pic=["R---7",
-                            "|777|",
-                            "|777|",
+                            "|999|",
+                            "|999|",
                             "L---/"],
                        chance=3, level=(4,14), count=3, branch='c'))
 
@@ -2400,7 +2437,29 @@ class VaultStock:
                     val[x] = []
                 val[x].append(v)
 
+    def purge(self, vault):
+        l = []
+
+        print 'vaultstock: purge'
+        for branch,v in self.vaults.iteritems():
+            for level,v2 in v.iteritems():
+                for x in xrange(len(v2)):
+                    if id(vault) == id(v2[x]):
+                        print 'vaultstock: purge', id(v)
+                        l.append((branch, level, x))
+
+        for branch,level,x in l:
+            del self.vaults[branch][level][x]
+
+            if len(self.vaults[branch][level]) == 0:
+                del self.vaults[branch][level]
+
+            if len(self.vaults[branch]) == 0:
+                del self.vaults[branch]
+
+
     def get(self, branch, level):
+        print 'vaultstock: get'
         if len(self.vaults) == 0:
             return None
 
@@ -2416,21 +2475,18 @@ class VaultStock:
         for x in xrange(len(self.vaults[branch][level])):
             v = self.vaults[branch][level][x]
 
+            print 'vaultstock:', v.pic, v.count
             if random.randint(1, v.chance) != 1:
                 continue
 
             if v.count == 1:
-                del self.vaults[branch][level][x]
-
-                if len(self.vaults[branch][level]) == 0:
-                    del self.vaults[branch][level]
-
-                if len(self.vaults[branch]) == 0:
-                    del self.vaults[branch]
+                print 'vaultstock:',id(v),id(self.vaults[branch][level][x])
+                self.purge(v)
 
             else:
                 v.count -= 1
 
+            print 'vaultstock: return', v.pic
             return v
 
         return None
@@ -2716,7 +2772,7 @@ class World:
         x = None
         y = None
 
-        for x in xrange(5):
+        for x in xrange(10):
             d = m[random.randint(0, len(m)-1)]
 
             x0 = d[0] - v.anchor[0]
@@ -2729,6 +2785,7 @@ class World:
             y = y0
             break
 
+        print 'vaultstock: pasting at', x, y
         if x is None or y is None:
             return
 
@@ -2775,6 +2832,10 @@ class World:
         elif a == 1:
             self.featmap[d] = 'v'
 
+        # HACK!
+        # This is done here, and not in make_items(),
+        # so that vaults could generate items.
+        self.itemap = {}
 
         vault = self.vaultstock.get(self.branch, self.dlev)
 
@@ -2824,7 +2885,6 @@ class World:
 
     def make_items(self):
 
-        self.itemap = {}
         n = int(max(random.gauss(self.coef.numitems[0] + self.dlev, self.coef.numitems[1]), 1))
         ll = list(self.walkmap)
 
@@ -3435,6 +3495,29 @@ class World:
                 self.msg.m("This thing is buring!")
             else:
                 self.msg.m('You are at the spot. Look around.')
+
+        elif item.sounding:
+            k = draw_window(['Check in which direction?'], self.w, self.h, True)
+
+            s = None
+            if k == 'h': s = (-1, 0)
+            elif k == 'j': s = (0, 1)
+            elif k == 'k': s = (0, -1)
+            elif k == 'l': s = (1, 0)
+            else:
+                return item
+
+            n = 0
+            x = self.px
+            y = self.py
+            while x >= 0 and y >= 0 and x < self.w and y < self.h:
+                x += s[0]
+                y += s[1]
+                if (x,y) in self.walkmap:
+                    break
+                n += 1
+
+            draw_window(['Rock depth: ' + str(n)], self.w, self.h)
 
         elif item.tracker:
             self.visitedmap[(self.px, self.py)] = 1
@@ -4188,9 +4271,9 @@ class World:
 
     def show_help(self):
         s = ['%c' % libtcod.COLCTRL_1,
-             "Movement keys: roguelike 'hjkl' 'yubn' or the arrow keys.",
+             "Movement keys: roguelike 'hjkl' 'yubn' or the numpad/arrow keys.",
              "",
-             " . : Stand on one place for one turn.",
+             " . : Stand in place for one turn.",
              " s : Start sleeping.",
              " r : Start resting.",
              " q : Drink from the floor.",
