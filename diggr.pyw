@@ -1508,7 +1508,7 @@ class MonsterStock:
         # Urthian dungeon branch.
 
 
-        self.add(Monster('omphagist', skin=('h', libtcod.dark_purple),
+        self.add(Monster('omophagist', skin=('h', libtcod.dark_purple),
                          attack=0.3, defence=0.1, range=4, level=1,
                          count=4, branch='d',
                          desc=['A poor, degenerate inhabitant of the poorest parts of the City.',
