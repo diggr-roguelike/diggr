@@ -855,7 +855,7 @@ class ItemStock:
                                   desc=['A vest that proves a portable force-field shileld.'])
 
         self.camo = Item('nanoparticle camouflage', slot='c', skin=('[', libtcod.dark_green),
-                         camorange=3, rarity=3, defence=0.01,
+                         camorange=3, rarity=3, defence=0.01, count=0,
                          selfdestruct=(1000, 100),
                          desc=['An ultra-hightech piece of camoflage clothing.',
                                "It's made of nanoparticles that render the wearer",
@@ -1660,7 +1660,7 @@ class MonsterStock:
                          desc=['A nomad from the boundless steppes of Turania.']))
 
         self.add(Monster('Cimmerian pirate', skin=('h', libtcod.red),
-                         attack=1.5, defence=0.6, range=7, level=3, count=8,
+                         attack=1.2, defence=0.6, range=7, level=3, count=8,
                          branch='e', summon=('Cimmerian pirate', 4),
                          desc=['A cruel-hearted Cimmerian tribesman, turned to piracy',
                                'in search of loot and women.',
@@ -1824,13 +1824,13 @@ class MonsterStock:
         return []
 
     def generate(self, branch, level, itemstock):
-        for k,v in self.monsters.iteritems():
-            n = sum(sum(m.count for m in v2) for v2 in v.itervalues())
-            at = sum(sum(m.attack for m in v2) for v2 in v.itervalues())
-            de = sum(sum(m.defence for m in v2) for v2 in v.itervalues())
-            atw = sum(sum(m.attack*m.level for m in v2) for v2 in v.itervalues())
-            dew = sum(sum(m.defence*m.level for m in v2) for v2 in v.itervalues())
-            #print '//', k, n, at/n, de/n, '|', atw/n, dew/n
+        #for k,v in self.monsters.iteritems():
+        #    n = sum(sum(m.count for m in v2) for v2 in v.itervalues())
+        #    at = sum(sum(m.attack for m in v2) for v2 in v.itervalues())
+        #    de = sum(sum(m.defence for m in v2) for v2 in v.itervalues())
+        #    atw = sum(sum(m.attack*m.level for m in v2) for v2 in v.itervalues())
+        #    dew = sum(sum(m.defence*m.level for m in v2) for v2 in v.itervalues())
+        #    print '//', k, n, at/n, de/n, '|', atw/n, dew/n
 
         while level > 0 and level not in self.monsters[branch]:
             level -= 1
@@ -2440,12 +2440,10 @@ class VaultStock:
     def purge(self, vault):
         l = []
 
-        print 'vaultstock: purge'
         for branch,v in self.vaults.iteritems():
             for level,v2 in v.iteritems():
                 for x in xrange(len(v2)):
                     if id(vault) == id(v2[x]):
-                        print 'vaultstock: purge', id(v)
                         l.append((branch, level, x))
 
         for branch,level,x in l:
@@ -2459,7 +2457,6 @@ class VaultStock:
 
 
     def get(self, branch, level):
-        print 'vaultstock: get'
         if len(self.vaults) == 0:
             return None
 
@@ -2475,18 +2472,15 @@ class VaultStock:
         for x in xrange(len(self.vaults[branch][level])):
             v = self.vaults[branch][level][x]
 
-            print 'vaultstock:', v.pic, v.count
             if random.randint(1, v.chance) != 1:
                 continue
 
             if v.count == 1:
-                print 'vaultstock:',id(v),id(self.vaults[branch][level][x])
                 self.purge(v)
 
             else:
                 v.count -= 1
 
-            print 'vaultstock: return', v.pic
             return v
 
         return None
@@ -2785,7 +2779,6 @@ class World:
             y = y0
             break
 
-        print 'vaultstock: pasting at', x, y
         if x is None or y is None:
             return
 
@@ -3640,7 +3633,6 @@ class World:
                                      monstop=item.straightline)
                 if nx is not None:
                     break
-            #print '//', nx, ny
             if nx < 0:
                 return item
 
@@ -4745,7 +4737,6 @@ class World:
             state = cPickle.load(f)
         except:
             return False
-        #print 'LOADING!'
 
         for k,v in state.iteritems():
             setattr(self, k, v)
@@ -4923,7 +4914,6 @@ def start_game(world, w, h, oldseed=None, oldbones=None):
         else:
             world._seed = int(time.time())
 
-        #print 'SEEDING!: ', world._seed
         random.seed(world._seed)
         global _inputs
         _inputs = world._inputs
