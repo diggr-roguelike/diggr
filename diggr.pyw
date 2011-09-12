@@ -2488,6 +2488,36 @@ class VaultStock:
         return None
 
 
+class Achieve:
+    def __init__(self, tag=None, desc=None):
+        self.tag = tag
+        self.desc = desc
+
+
+class Achievements:
+    def __init__(self):
+        self.achs = []
+
+    def finish(self, world):
+        self.add('plev%d' % world.plev, 'Reached player level %d' % world.plev)
+        self.add('dlev%d' % world.dlev, 'Reached dungeon level %d' % world.dlev)
+
+        if len(world.killed_monsters):
+            self.add('loser', 'Scored *no* kills.')
+        else:
+            killbucket = ((len(world.killed_monsters) / 5) * 5)
+            if killbucket > 0:
+                self.add('%dkills' % killbucket, 'Killed at least %d monsters' % killbucket)
+
+        reason = world.stats.health.reason
+        self.add('dead_%s' % reason, 'Killed by %s' % reason)
+
+    def __iter__(self):
+        return iter(self.achs)
+
+    def add(self, tag, desc):
+        self.achs.append(Achieve(tag=tag, desc=desc))
+
 
 class World:
 
@@ -2520,6 +2550,7 @@ class World:
         self.monsterstock = MonsterStock()
         self.featstock = FeatureStock()
         self.vaultstock = VaultStock()
+        self.achievements = Achievements()
 
         self.dlev = 1
         self.plev = 1
@@ -4705,7 +4736,8 @@ class World:
           'dlev', 'plev', 't', 'oldt', 'sleeping', 'resting', 'cooling', 'digging', 'blind',
           'mapping', 'glued', 's_grace', 'b_grace', 'v_grace', 'forcedsleep',
           'forced2sleep',
-          'killed_monsters', '_seed', '_inputs', 'featstock', 'vaultstock'
+          'killed_monsters', '_seed', '_inputs', 'featstock', 'vaultstock',
+          'achievements'
           ]
         state = {}
 
@@ -4779,6 +4811,9 @@ class World:
 
         # Save to highscore.
 
+        self.achievements.finish(self)
+
+
         conn = sqlite3.connect('highscore.db')
         c = conn.cursor()
 
@@ -4790,11 +4825,6 @@ class World:
         c.execute('create table if not exists ' + tbl_achievements + \
                   ' (achievement text, game_id int)')
 
-        achs = [ 'plev%d' % self.plev,
-                 'dlev%d' % self.dlev,
-                 '%dkills' % ((len(self.killed_monsters) / 5) * 5),
-                 'dead_%s' % self.stats.health.reason ]
-
         score = (self.plev * 5) + (self.dlev * 5) + len(self.killed_monsters)
 
 
@@ -4803,9 +4833,9 @@ class World:
 
         gameid = c.lastrowid
 
-        for a in achs:
+        for a in self.achievements:
             c.execute('insert into ' + tbl_achievements + '(achievement, game_id) values (?, ?)',
-                      (a, gameid))
+                      (a.tag, gameid))
 
         conn.commit()
 
@@ -4817,12 +4847,12 @@ class World:
 
         atotals = []
 
-        for a in achs:
+        for a in self.achievements:
             c.execute(('select sum(score >= %d),count(*) from ' % score) + \
                       (' %s join %s on (game_id = id)' % (tbl_games, tbl_achievements)) + \
-                      ' where achievement = ?', (a,))
+                      ' where achievement = ?', (a.tag,))
             p1,t1 = c.fetchone()
-            atotals.append((p1, t1, a))
+            atotals.append((p1, t1, a.desc))
 
         c.close()
         conn.close()
@@ -4830,7 +4860,7 @@ class World:
         if len(atotals) >= 5:
             atotals = reversed(sorted(atotals))[:5]
 
-        s = ['']
+        s = []
 
         s.append('%cYour score: %c%d%c.    (#%c%d%c of %d%s)' % \
                 (libtcod.COLCTRL_5, libtcod.COLCTRL_1, score, libtcod.COLCTRL_5,
@@ -4840,11 +4870,13 @@ class World:
         s.append('')
 
         for p1,t1,a in atotals:
-            s.append('%c%s%c:' % (libtcod.COLCTRL_1, a, libtcod.COLCTRL_5))
-            s.append('     #%c%d%c of %d%s' % (libtcod.COLCTRL_1, p1, libtcod.COLCTRL_5, t1, '!' if p1 == 1 else '.'))
+            s.append('%c%s%c:%s     #%c%d%c of %d%s' % (libtcod.COLCTRL_1, a, libtcod.COLCTRL_5,
+                     ' '*max(0, 50 - len(a)), libtcod.COLCTRL_1, p1,
+                     libtcod.COLCTRL_5, t1, '!' if p1 == 1 else '.'))
             s.append('')
 
-
+        s.append('-' * 50)
+        s.extend((x[1] for x in self.msg.strings[2:8]))
         s.append('')
         s.append('Press space to exit.')
 
