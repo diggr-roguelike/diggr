@@ -2489,9 +2489,10 @@ class VaultStock:
 
 
 class Achieve:
-    def __init__(self, tag=None, desc=None):
+    def __init__(self, tag=None, desc=None, weight=0):
         self.tag = tag
         self.desc = desc
+        self.weight = weight
 
 
 class Achievements:
@@ -2503,20 +2504,34 @@ class Achievements:
         self.add('dlev%d' % world.dlev, 'Reached dungeon level %d' % world.dlev)
 
         if len(world.killed_monsters):
-            self.add('loser', 'Scored *no* kills.')
+            self.add('loser', 'Scored *no* kills')
         else:
             killbucket = ((len(world.killed_monsters) / 5) * 5)
             if killbucket > 0:
-                self.add('%dkills' % killbucket, 'Killed at least %d monsters' % killbucket)
+                self.add('%dkills' % killbucket, 'Killed at least %d monsters' % killbucket, weight=10)
+
+        if world.dlev >= world.plev+5:
+            self.add('tourist', 'Dived to a very deep dungeon', weight=50)
+        elif world.dlev >= world.plev+2:
+            self.add('small_tourist', 'Dived to a deep dungeon', weight=10)
 
         reason = world.stats.health.reason
         self.add('dead_%s' % reason, 'Killed by %s' % reason)
 
+    def winner(self):
+        self.add('winner', ' =*= Won the game =*= ', weight=100)
+
+    def mondeath(self, world, mon):
+        if mon.level >= world.plev+5:
+            self.add('stealth', 'Killed a monster massively out of depth', weight=50)
+        elif mon.level >= world.plev+2:
+            self.add('small_stealth', 'Killed a monster out of depth', weight=10)
+
     def __iter__(self):
         return iter(self.achs)
 
-    def add(self, tag, desc):
-        self.achs.append(Achieve(tag=tag, desc=desc))
+    def add(self, tag, desc, weight=0):
+        self.achs.append(Achieve(tag=tag, desc=desc, weight=weight))
 
 
 class World:
@@ -3841,6 +3856,7 @@ class World:
 
         if do_gain:
             self.killed_monsters.append((mon.level, self.plev, self.dlev, mon.name))
+            self.achievements.mondeath(self, mon)
 
         if self.monsterstock.death(mon):
             while 1:
@@ -3850,6 +3866,7 @@ class World:
             self.stats.health.reason = 'winning'
             self.done = True
             self.dead = True
+            self.achievements.winner()
 
 
     def rayblast(self, x0, y0, rad):
@@ -4852,13 +4869,15 @@ class World:
                       (' %s join %s on (game_id = id)' % (tbl_games, tbl_achievements)) + \
                       ' where achievement = ?', (a.tag,))
             p1,t1 = c.fetchone()
-            atotals.append((p1, t1, a.desc))
+            atotals.append((p1, 100 - a.weight, t1, a.desc))
 
         c.close()
         conn.close()
 
+        atotals.sort()
+
         if len(atotals) >= 5:
-            atotals = reversed(sorted(atotals))[:5]
+            atotals = atotals[:5]
 
         s = []
 
@@ -4869,7 +4888,7 @@ class World:
         s.append('Your achievements:')
         s.append('')
 
-        for p1,t1,a in atotals:
+        for p1,w,t1,a in atotals:
             s.append('%c%s%c:%s     #%c%d%c of %d%s' % (libtcod.COLCTRL_1, a, libtcod.COLCTRL_5,
                      ' '*max(0, 50 - len(a)), libtcod.COLCTRL_1, p1,
                      libtcod.COLCTRL_5, t1, '!' if p1 == 1 else '.'))
