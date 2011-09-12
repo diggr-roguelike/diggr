@@ -9,6 +9,8 @@ import cPickle
 
 import libtcodpy as libtcod
 
+import sqlite3
+
 #
 # achievements!
 #
@@ -627,17 +629,17 @@ class ItemStock:
                           skin=('[', libtcod.sepia), defence=0.1,
                           desc=['Steel-toed boots made of genuine leather.'])
 
-        self.dynamite = Item('stick$s of dynamite', count=3,
+        self.dynamite = Item('stick$s of dynamite', count=3, stackrange=3,
                              skin=('!', libtcod.red), applies=True, explodes=True,
                              radius=4, rarity=8, converts='litdynamite',
                              desc=['Sticks of dynamite can be lit to create an explosive device.'])
 
         self.minibomb = Item('minibomb$s', count=3, skin=('(', libtcod.pink),
                              applies=True, explodes=True, radius=1, rarity=8,
-                             converts='litminibomb',
+                             converts='litminibomb', stackrange=3,
                              desc=['Tiny hand-held grenades.'])
 
-        self.gbomb = Item('gamma bomb$s', count=5,
+        self.gbomb = Item('gamma bomb$s', count=5, stackrange=5,
                           skin=('!', libtcod.azure), applies=True,
                           rarity=5, converts='litgbomb',
                           desc=["An object that looks something like a grenade, "
@@ -852,7 +854,7 @@ class ItemStock:
         self.repellerarmor = Item('repeller armor', slot='c', skin=('[', libtcod.white),
                                   repelrange=3, rarity=3, defence=0.01,
                                   selfdestruct=(1000, 100),
-                                  desc=['A vest that proves a portable force-field shileld.'])
+                                  desc=['A vest that provides a portable force-field shield.'])
 
         self.camo = Item('nanoparticle camouflage', slot='c', skin=('[', libtcod.dark_green),
                          camorange=3, rarity=3, defence=0.01, count=0,
@@ -4752,38 +4754,11 @@ class World:
 
     def form_highscore(self):
 
-        hs = {'plev': self.plev,
-              'dlev': self.dlev,
-              'kills': self.killed_monsters,
-              'reason': self.stats.health.reason,
-              'seed': self._seed,
-              'inputs': self._inputs,
-              'bones': self.bones,
-              'version': _version}
-
         # Clobber the savefile.
         try:
             open('savefile', 'w').truncate(0)
         except:
             pass
-
-        # Append to highscore.
-        hss = []
-        try:
-            hsf = open('highscore', 'r')
-            hss = cPickle.load(hsf)
-        except:
-            pass
-
-        hss.append(hs)
-        hss = hss[-25:]
-
-        try:
-            hsf = open('highscore', 'w')
-            cPickle.dump(hss, hsf)
-        except:
-            pass
-
 
         # Form bones.
         bones = []
@@ -4802,96 +4777,74 @@ class World:
         except:
             pass
 
-        # Show some info.
+        # Save to highscore.
+
+        conn = sqlite3.connect('highscore.db')
+        c = conn.cursor()
+
+        tbl_games = 'Games%s' % _version.replace('.', '')
+        tbl_achievements = 'Achievements%s' % _version.replace('.', '')
+
+        c.execute('create table if not exists ' + tbl_games + \
+                  ' (id INTEGER PRIMARY KEY, seed int, score int, bones blob, inputs blob)')
+        c.execute('create table if not exists ' + tbl_achievements + \
+                  ' (achievement text, game_id int)')
+
+        achs = [ 'plev%d' % self.plev,
+                 'dlev%d' % self.dlev,
+                 '%dkills' % ((len(self.killed_monsters) / 5) * 5),
+                 'dead_%s' % self.stats.health.reason ]
+
+        score = (self.plev * 5) + (self.dlev * 5) + len(self.killed_monsters)
+
+
+        c.execute('insert into ' + tbl_games + '(id, seed, score, bones, inputs) values (NULL, ?, ?, ?, ?)',
+                  (self._seed, score, cPickle.dumps(self.bones), cPickle.dumps(self._inputs)))
+
+        gameid = c.lastrowid
+
+        for a in achs:
+            c.execute('insert into ' + tbl_achievements + '(achievement, game_id) values (?, ?)',
+                      (a, gameid))
+
+        conn.commit()
+
+
+        # Show placements.
+
+        c.execute(('select sum(score >= %d),count(*) from ' % score) + tbl_games)
+        place, total = c.fetchone()
+
+        atotals = []
+
+        for a in achs:
+            c.execute(('select sum(score >= %d),count(*) from ' % score) + \
+                      (' %s join %s on (game_id = id)' % (tbl_games, tbl_achievements)) + \
+                      ' where achievement = ?', (a,))
+            p1,t1 = c.fetchone()
+            atotals.append((p1, t1, a))
+
+        c.close()
+        conn.close()
+
+        if len(atotals) >= 5:
+            atotals = reversed(sorted(atotals))[:5]
 
         s = ['']
-        s.append('%c%d total games logged.' % (libtcod.COLCTRL_1, len(hss)))
 
-        sortd = {}
-        for x in hss:
-            total = (x['plev'] * 5) + (x['dlev'] * 5) + len(x['kills'])
-            x['score'] = total
-            x['kills'] = len(x['kills'])
-
-            for k,v in x.iteritems():
-                if k not in sortd:
-                    sortd[k] = []
-                sortd[k].append(v)
-
-            if x == hs and len(s) == 0:
-                s.append('%d points: Level %d character, killed by %s on dlev '
-                         '%d, and scored %d kills.' % \
-                         (total, x['plev'], x['reason'], x['dlev'], x['kills']))
-
-        def count(ll, x):
-            less = 0
-            more = 0
-            place = None
-            inn = 0
-            for i in ll:
-                inn += 1
-                if i == x and place is None:
-                    place = inn
-                if i < x:
-                    less += 1
-                elif i > x:
-                    more += 1
-            return less,more,place
-
-        sortd2 = {}
-        for k,v in sortd.iteritems():
-            sortd2[k] = count(list(reversed(sorted(v))), hs[k])
-
+        s.append('%cYour score: %c%d%c.    (#%c%d%c of %d%s)' % \
+                (libtcod.COLCTRL_5, libtcod.COLCTRL_1, score, libtcod.COLCTRL_5,
+                 libtcod.COLCTRL_1, place, libtcod.COLCTRL_5, total, '!' if place == 1 else '.'))
         s.append('')
-        s.append('Scored %d points. That is #%d out of %d, with %d scoring lower and %d higher.' % \
-                 (hs['score'], sortd2['score'][2], len(hss), sortd2['score'][0], sortd2['score'][1]))
-
+        s.append('Your achievements:')
         s.append('')
-        s.append('Reached dungeon level %d. %d games reached a lower level and %d a higher one.' % \
-                 (hs['dlev'], sortd2['dlev'][1], sortd2['dlev'][0]))
 
-        if hs['dlev'] < 10:
-            s[-1] += '  '
-        elif hs['dlev'] < 100:
-            s[-1] += ' '
+        for p1,t1,a in atotals:
+            s.append('%c%s%c:' % (libtcod.COLCTRL_1, a, libtcod.COLCTRL_5))
+            s.append('     #%c%d%c of %d%s' % (libtcod.COLCTRL_1, p1, libtcod.COLCTRL_5, t1, '!' if p1 == 1 else '.'))
+            s.append('')
 
-        s.append('')
-        s.append('Reached player level %d. %d games reached a higher level and %d a lower one.' % \
-                 (hs['plev'], sortd2['plev'][1], sortd2['plev'][0]))
 
-        s.append('')
-        s.append('Killed %d monsters. %d games had more kills, %d less.' % \
-                 (hs['kills'], sortd2['kills'][1], sortd2['kills'][0]))
-
-        s.append('')
-        s.append('Killed by %s. %d games ended for the same reason.'% \
-                 (hs['reason'], len(hss) - sortd2['reason'][0] - sortd2['reason'][1]))
-
-        s.append('')
-        s.append('-' * 50)
-        s.append('')
-        s.extend((x[1] for x in self.msg.strings[2:8]))
-        s.append('')
-        s.append('Press space.')
-
-        while 1:
-            if draw_window(s, self.w, self.h) == ' ':
-                break
-
-        s = ['']
-        sortd = {}
-        for x in hss:
-            if x['reason'] not in sortd:
-                sortd[x['reason']] = 1
-            else:
-                sortd[x['reason']] += 1
-
-        sortd = list(reversed(sorted((n,r) for (r,n) in sortd.iteritems())))
-        sortd = sortd[:10]
-        s.append('Top 10 reasons for death:')
-        s.append('')
-        for n,r in sortd:
-            s.append('%5d: %s' % (n,r))
         s.append('')
         s.append('Press space to exit.')
 
