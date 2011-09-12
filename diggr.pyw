@@ -4961,7 +4961,7 @@ def check_autoplay(world):
     return 0
 
 
-def main(replay=None, highscorefilename='highscore'):
+def main(replay=None):
 
     oldseed = None
     oldbones = None
@@ -4971,15 +4971,12 @@ def main(replay=None, highscorefilename='highscore'):
         hsf = open(highscorefilename, 'r')
         hss = cPickle.load(hsf)
 
-        oldseed = hss[replay]['seed']
-        oldinputs = hss[replay]['inputs']
-        oldbones = hss[replay]['bones']
+        oldseed = replay[0]
+        oldinputs = replay[1]
+        oldbones = replay[2]
 
         global _inputqueue
         _inputqueue = oldinputs
-
-        if _version != hss[replay]['version']:
-            return False
 
     w = 80
     h = 25
