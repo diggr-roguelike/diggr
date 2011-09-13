@@ -3624,7 +3624,7 @@ class World:
             self.visitedmap[(self.px, self.py)] = 1
             self.msg.m("You mark this spot in your tracker's memory.")
             self.achievements.use(item)
-                       
+
         elif item.detector:
             s = []
             if item.detect_monsters:
@@ -4349,7 +4349,7 @@ class World:
                 k = draw_window(['Wish for what? : ' + s], self.w, self.h)
 
             k = k.lower()
-            if k in "abcdefghijklmnopqrstuvwxyz' ":
+            if k in "abcdefghijklmnopqrstuvwxyz' -":
                 s = s + k
             elif ord(k) == 8 or ord(k) == 127:
                 if len(s) > 0:
@@ -4915,15 +4915,17 @@ class World:
         tbl_achievements = 'Achievements%s' % _version.replace('.', '')
 
         c.execute('create table if not exists ' + tbl_games + \
-                  ' (id INTEGER PRIMARY KEY, seed int, score int, bones blob, inputs blob)')
+                  ' (id INTEGER PRIMARY KEY, seed INTEGER, score INTEGER, bones BLOB, inputs BLOB)')
         c.execute('create table if not exists ' + tbl_achievements + \
-                  ' (achievement text, game_id int)')
+                  ' (achievement TEXT, game_id INTEGER)')
 
         score = (self.plev * 5) + (self.dlev * 5) + sum(x[0] for x in self.achievements.killed_monsters)
 
 
         c.execute('insert into ' + tbl_games + '(id, seed, score, bones, inputs) values (NULL, ?, ?, ?, ?)',
-                  (self._seed, score, cPickle.dumps(self.bones), cPickle.dumps(self._inputs)))
+                  (self._seed, score,
+                   sqlite3.Binary(cPickle.dumps(self.bones)),
+                   sqlite3.Binary(cPickle.dumps(self._inputs))))
 
         gameid = c.lastrowid
 

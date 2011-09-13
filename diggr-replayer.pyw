@@ -53,8 +53,8 @@ def main():
 
 
     n = 0
-    limit = 5
-    
+    limit = 9
+
     conn = sqlite3.connect('highscore.db')
     c = conn.cursor()
 
@@ -65,6 +65,7 @@ def main():
     tbl_achievements = 'Achievements%s' % diggr._version.replace('.', '')
 
 
+
     while 1:
         if libtcod.console_is_window_closed():
             break
@@ -72,9 +73,9 @@ def main():
         if mode == 1:
             if achievement:
                 c.execute('select id, seed, score from %s join %s on (game_id = id) '
-                          ' where achievement = ? order by seed desc' 
+                          ' where achievement = ? order by seed desc'
                           ' limit %d offset %d' % (tbl_games, tbl_achievements, limit, n),
-                          achievement)
+                          (achievement,))
             else:
                 c.execute('select id, seed, score from %s order by seed desc '
                           'limit %d offset %d' % (tbl_games, limit, n))
@@ -82,9 +83,9 @@ def main():
         elif mode == 2:
             if achievement:
                 c.execute('select id, seed, score from %s join %s on (game_id = id) '
-                          ' where achievement = ? order by score desc' 
+                          ' where achievement = ? order by score desc'
                           ' limit %d offset %d' % (tbl_games, tbl_achievements, limit, n),
-                          achievement)
+                          (achievement,))
             else:
                 c.execute('select id, seed, score from %s order by score desc '
                           'limit %d offset %d' % (tbl_games, limit, n))
@@ -92,19 +93,20 @@ def main():
 
         qq = 0
         choice = {}
+        s = []
 
         for gameid,seed,score in c.fetchall():
             chh = chr(97+qq)
             s.append('')
             s.append('%c%c)%c  Game #%c%d%c at %s, score %c%d%c' % \
-                     (_c1, chh, _c2, _c1, gameid, _c5, 
+                     (_c1, chh, _c2, _c1, gameid, _c5,
                       time.ctime(seed), _c1, score, _c5))
             qq += 1
             choice[chh] = gameid
 
         s.append('')
-        s.append(":  Left and right keys to scroll")
-        s.append(":  Type a letter to select entry")
+        s.append(":  Left and right keys to scroll entries")
+        s.append(":  Type its letter to select an entry")
         s.append(":  '?' for help; Other keys: s, w, z, q")
         s.append('')
         s.append('*WARNING*: Only games from the _same_ version of Diggr will replay correctly!')
@@ -122,15 +124,15 @@ def main():
 
         elif k == '?':
             s = ['',
-                 'Left and right keys to scroll.',
-                 'Type a letter to select entry.',
+                 'Left and right keys to scroll entries.',
+                 'Type its letter to select an entry.',
                  ''
                  ' s : Switch sorting mode between "date" and "score".',
                  ' w : Filter scores by achievement.',
                  ' z : Load scores from another file on disk.',
                  ' q : Quit.'
                  '']
-            draw_window(s, w, h)
+            diggr.draw_window(s, w, h)
 
 
         elif k == 's':
@@ -143,7 +145,7 @@ def main():
         elif k == 'w':
 
             n2 = 0
-            limit2 = 5
+            limit2 = 9
 
             while 1:
                 c.execute('select achievement, count(*) from %s join %s '
@@ -154,13 +156,14 @@ def main():
                 qq = 0
                 choices2 = {}
                 for aach,cnt in c.fetchall():
+                    aach = aach.encode('ascii')
                     chh = chr(97+qq)
                     s.append('')
-                    s.append('%c%c) %s%c:%s%d games' % \
-                             (_c1, chh, aach, _c5, ' '*(max(0, 50-len(aach))), cnt))
+                    s.append('%c%c%c) %c%s%c: %s%d games' % \
+                             (_c1, chh, _c5, _c1, aach, _c5, ' '*(max(0, 50-len(aach))), cnt))
                     qq += 1
                     choices2[chh] = aach
-                                                        
+
                 k2 = diggr.draw_window(s, w, h, True)
 
                 if k2 == 'h':
@@ -171,22 +174,33 @@ def main():
                 elif k2 == 'l':
                     if len(choices2) > 0:
                         n2 += limit
-                
+
                 elif k2 in choices2:
                     achievement = choices2[k2]
                     n = 0
+                    break
 
                 else:
                     achievement = None
                     n = 0
-        
+                    break
+
         elif k in choice:
-            gameid = choice[(ord(k)-97)]
+            gameid = choice[k]
 
             s2 = ['',
                   'Do what?',
                   '  a) replay this game',
-                  '  b) save this game to a file on disk']
+                  '  b) save this game to a file on disk',
+                  '',
+                  'Achievements of this game:',
+                  '']
+
+            c.execute('select achievement from %s where game_id = %d' % (tbl_achievements, gameid))
+
+            for aach in c.fetchall():
+                aach = aach[0].encode('ascii')
+                s2.append('    ' + aach)
 
             k2 = diggr.draw_window(s2, w, h, True)
 
@@ -195,6 +209,8 @@ def main():
                           (tbl_games, gameid))
 
                 seed,inputs,bones = c.fetchone()
+                inputs = cPickle.loads(str(inputs))
+                bones = cPickle.loads(str(bones))
 
                 ok = diggr.main(replay=(seed,inputs,bones))
                 if not ok:
@@ -228,14 +244,16 @@ def main():
                         gameid2 = c2.lastrowid
                         c.execute('select achievement from %s where game_id = %d' % (tbl_achievements, gameid))
                         for ach in c.fetchall():
+                            ach = ach[0]
                             c2.execute('insert into ' + tbl_achievements + '(achievement, game_id) values (?, ?)',
-                                       ach, gameid2)
+                                       (ach, gameid2))
 
+                    conn2.commit()
                     c2.close()
                     conn2.close()
                     diggr.draw_window(['Saved to "%s".' % name,
                                        'Press any key to continue.'], w, h)
-            
+
 
 
         elif k == 'z':
