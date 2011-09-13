@@ -2499,6 +2499,11 @@ class Achievements:
     def __init__(self):
         self.achs = []
         self.killed_monsters = []
+        self.prayed = 0
+        self.shrines = set()
+        self.used = 0
+        self.wishes = 0
+        self.rangeattacks = 0
 
     def finish(self, world):
         self.add('plev%d' % world.plev, 'Reached player level %d' % world.plev)
@@ -2509,7 +2514,7 @@ class Achievements:
         else:
             killbucket = ((len(self.killed_monsters) / 5) * 5)
             if killbucket > 0:
-                self.add('%dkills' % killbucket, 'Killed at least %d monsters' % killbucket, weight=10)
+                self.add('%dkills' % killbucket, 'Killed at least %d monsters' % killbucket, weight=10*killbucket)
 
         if world.dlev >= world.plev+5:
             self.add('tourist', 'Dived to a very deep dungeon', weight=50)
@@ -2518,6 +2523,34 @@ class Achievements:
 
         reason = world.stats.health.reason
         self.add('dead_%s' % reason, 'Killed by %s' % reason)
+
+        if len(self.shrines) >= 3:
+            self.add('3gods', 'Worshipped 3 gods', weight=60)
+        elif len(self.shrines) >= 2:
+            self.add('2gods', 'Worshipped 2 gods.', weight=50)
+        elif len(self.shrines) >= 1:
+            self.add('religion', 'Worshipped a god')
+
+        praybucket = ((self.prayed / 3) * 3)
+        if praybucket > 0:
+            self.add('%dprayers' % praybucket, 'Prayed at least %d times' % praybucket, weight=10*praybucket)
+
+        usebucket = ((self.used / 20) * 20)
+        if usebucket > 0:
+            self.add('%duses' % usebucket, 'Used an item at least %d times' % usebucket, weight=10)
+
+        if self.wishes == 0:
+            self.add('nowish', 'Never wished for an item')
+        else:
+            self.add('%dwish' % self.wishes, 'Wished for an item %d times' % self.wishes)
+
+        if self.rangeattacks == 0:
+            self.add('nogun', 'Never used a firearm', weight=20)
+        else:
+            firebucket = ((self.rangeattacks / 10) * 10)
+            if firebucket > 0:
+                self.add('%dfires' % firebucket, 'Used a firearm at least %d times' % firebucket, weight=20)
+
 
     def winner(self):
         self.add('winner', ' =*= Won the game =*= ', weight=100)
@@ -2528,6 +2561,19 @@ class Achievements:
         elif mon.level >= world.plev+2:
             self.add('small_stealth', 'Killed a monster out of depth', weight=10)
         self.killed_monsters.append((mon.level, mon.name, world.dlev, world.plev))
+
+    def pray(self, shrine):
+        self.shrines.add(shrine)
+        self.prayed += 1
+
+    def use(self, item):
+        self.used += 1
+
+        if item.rangeattack or item.rangeexplode:
+            self.rangeattacks += 1
+
+    def wish(self):
+        self.wishes += 1
 
     def __iter__(self):
         return iter(self.achs)
@@ -3242,6 +3288,7 @@ class World:
             self.wish('Shiva grants you a wish.')
             self.s_grace = self.coef.graceduration
             self.tick()
+            self.achievements.pray('s')
 
         elif a.b_shrine:
             if self.s_grace or self.v_grace:
@@ -3250,6 +3297,7 @@ class World:
             self.msg.m('You feel enlightened.')
             self.b_grace = self.coef.graceduration
             self.tick()
+            self.achievements.pray('b')
 
         elif a.v_shrine:
             if self.s_grace or self.b_grace:
@@ -3271,6 +3319,7 @@ class World:
             self.stats.warmth.inc(6.0)
             self.v_grace = self.coef.graceduration
             self.tick()
+            self.achievements.pray('v')
 
         else:
             self.msg.m('You need to be standing at a shrine to pray.')
@@ -3446,6 +3495,7 @@ class World:
             s = s[0].upper() + s[1:]
             self.msg.m(s + ' is now in your ' + self.slot_to_name(inew.slot) + ' slot!', True)
 
+            self.achievements.use(item)
             return None
 
         elif item.digging:
@@ -3472,6 +3522,7 @@ class World:
                 self.digging = None
             else:
                 self.msg.m("You start hacking at the wall.")
+                self.achievements.use(item)
 
         elif item.healing:
 
@@ -3488,6 +3539,8 @@ class World:
                 self.stats.health.inc(max(random.gauss(*item.healing), 0))
                 self.stats.hunger.dec(max(random.gauss(*item.healing), 0))
                 self.stats.sleep.dec(max(random.gauss(*item.healing), 0))
+
+            self.achievements.use(item)
             return None
 
         elif item.food:
@@ -3502,6 +3555,8 @@ class World:
             else:
                 self.msg.m('Mm, yummy.')
                 self.stats.hunger.inc(max(random.gauss(*item.food), 0))
+
+            self.achievements.use(item)
             return None
 
         elif item.booze:
@@ -3517,6 +3572,8 @@ class World:
                 self.msg.m('Aaahh.')
                 self.stats.sleep.dec(max(random.gauss(*self.coef.boozestrength), 0))
                 self.stats.warmth.inc(max(random.gauss(*self.coef.boozestrength), 0))
+
+            self.achievements.use(item)
             return None
 
         elif item.homing:
@@ -3536,6 +3593,8 @@ class World:
                 self.msg.m("This thing is buring!")
             else:
                 self.msg.m('You are at the spot. Look around.')
+
+            self.achievements.use(item)
 
         elif item.sounding:
             k = draw_window(['Check in which direction?'], self.w, self.h, True)
@@ -3559,11 +3618,13 @@ class World:
                 n += 1
 
             draw_window(['Rock depth: ' + str(n)], self.w, self.h)
+            self.achievements.use(item)
 
         elif item.tracker:
             self.visitedmap[(self.px, self.py)] = 1
             self.msg.m("You mark this spot in your tracker's memory.")
-
+            self.achievements.use(item)
+                       
         elif item.detector:
             s = []
             if item.detect_monsters:
@@ -3584,19 +3645,25 @@ class World:
                 s.append('(There is more information, but it does not fit on the screen)')
 
             draw_window(s, self.w, self.h)
-
+            self.achievements.use(item)
 
         elif item.cooling:
             self.cooling = max(int(random.gauss(*self.coef.coolingduration)), 1)
             self.msg.m("You cover yourself in cold mud.")
+
+            self.achievements.use(item)
             return None
 
         elif item.wishing:
             self.wish()
+
+            self.achievements.use(item)
             return None
 
         elif item.mapper:
             self.mapping = item.mapper
+
+            self.achievements.use(item)
             return None
 
         elif item.jinni:
@@ -3625,6 +3692,8 @@ class World:
             jinni.y = q[1]
             jinni.items = [self.itemstock.get('wishing')]
             self.monmap[q] = jinni
+
+            self.achievements.use(item)
             return None
 
         elif item.digray:
@@ -3635,6 +3704,8 @@ class World:
                 for y in xrange(0, self.h):
                     self.convert_to_floor(self.px, y)
             self.msg.m('The wand explodes in a brilliant white flash!')
+
+            self.achievements.use(item)
             return None
 
         elif item.jumprange:
@@ -3652,6 +3723,8 @@ class World:
             l = l[random.randint(0, len(l)-1)]
             self.px = l[0]
             self.py = l[1]
+
+            self.achievements.use(item)
             return None
 
         elif item.makestrap:
@@ -3665,6 +3738,8 @@ class World:
 
             self.featmap[(self.px, self.py)] = '^'
             self.msg.m('You spread the glue liberally on the floor.')
+
+            self.achievements.use(item)
 
             if item.count is None:
                 return item
@@ -3695,6 +3770,7 @@ class World:
             if item.ammo <= 0:
                 return None
 
+            self.achievements.use(item)
 
         return item
 
@@ -4282,6 +4358,8 @@ class World:
                 break
 
         i = self.itemstock.find(s)
+
+        self.achievements.wish()
 
         if not i:
             self.msg.m('Nothing happened!')
