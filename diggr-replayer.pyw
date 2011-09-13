@@ -2,8 +2,11 @@
 import cPickle
 import time
 import string
+import os
 
 import libtcodpy as libtcod
+
+import sqlite3
 
 import diggr
 
@@ -49,83 +52,136 @@ def main():
         return name
 
 
+    n = 0
+    limit = 5
+    
+    conn = sqlite3.connect('highscore.db')
+    c = conn.cursor()
 
-    hss = []
-    try:
-        hsf = open('highscore', 'r')
-        hss = cPickle.load(hsf)
-    except:
-        pass
+    mode = 1
+    achievement = None
 
-    if len(hss) < 3:
-        n = 0
-    else:
-        n = len(hss)-3
+    tbl_games = 'Games%s' % diggr._version.replace('.', '')
+    tbl_achievements = 'Achievements%s' % diggr._version.replace('.', '')
+
 
     while 1:
         if libtcod.console_is_window_closed():
             break
 
-        s = []
-        end = False
-        if len(hss)-n < 3:
-            n2 = len(hss)
-            end = True
-        else:
-            n2 = n + 3
+        if mode == 1:
+            if achievement:
+                c.execute('select id, seed, score from %s join %s on (game_id = id) '
+                          ' where achievement = ? order by seed desc' 
+                          ' limit %d offset %d' % (tbl_games, tbl_achievements, limit, n),
+                          achievement)
+            else:
+                c.execute('select id, seed, score from %s order by seed desc '
+                          'limit %d offset %d' % (tbl_games, limit, n))
 
-        ni = n
+        elif mode == 2:
+            if achievement:
+                c.execute('select id, seed, score from %s join %s on (game_id = id) '
+                          ' where achievement = ? order by score desc' 
+                          ' limit %d offset %d' % (tbl_games, tbl_achievements, limit, n),
+                          achievement)
+            else:
+                c.execute('select id, seed, score from %s order by score desc '
+                          'limit %d offset %d' % (tbl_games, limit, n))
 
-        for v in hss[n:n+3]:
+
+        qq = 0
+        choice = {}
+
+        for gameid,seed,score in c.fetchall():
+            chh = chr(97+qq)
             s.append('')
-            s.append('%c%c)%c  %s%c: #%c%d%c/%d:' % \
-                    (_c1, chr(97+ni-n), _c2, time.ctime(v['seed']), _c5,
-                     _c1, ni+1, _c5, len(hss)))
+            s.append('%c%c)%c  Game #%c%d%c at %s, score %c%d%c' % \
+                     (_c1, chh, _c2, _c1, gameid, _c5, 
+                      time.ctime(seed), _c1, score, _c5))
+            qq += 1
+            choice[chh] = gameid
 
-            score = (v['plev'] * 5) + (v['dlev'] * 5) + len(v['kills'])
-            s.append('%c    Player level %c%d%c, with a total score of %c%d%c.' % \
-                     (_c5, _c1, v['plev'], _c5, _c3, score, _c5))
-            pad = ''
-            reason = v['reason']
-            if len(reason) < 30:
-                pad = pad + (' ' * (20 - len(reason)))
-            s.append('    Died on dungeon level %c%d%c, killed by %c%s%c.%s' % \
-                     (_c1, v['dlev'], _c5, _c1, reason, _c5, pad))
-            ni += 1
-
-        s.append('')
         s.append('')
         s.append(":  Left and right keys to scroll")
         s.append(":  Type a letter to select entry")
-        s.append(":  'q' to quit")
-        s.append(":  'z' to replay a game from a file on disk.")
+        s.append(":  '?' for help; Other keys: s, w, z, q")
         s.append('')
         s.append('*WARNING*: Only games from the _same_ version of Diggr will replay correctly!')
 
         k = diggr.draw_window(s, w, h, True)
 
         if k == 'h':
-            n -= 3
+            n -= limit
             if n < 0:
-                n = len(hss)+n
+                n = 0
+
         elif k == 'l':
-            n += 3
-            if n >= len(hss):
-                n -= len(hss)
+            if len(choice) > 0:
+                n += limit
 
-        elif k == 'z':
-            name = input_name()
-            ok = diggr.main(replay=0, highscorefilename=name)
-            if not ok:
-                diggr.draw_window(['Wrong version of replay file!'],
-                                  w, h)
+        elif k == '?':
+            s = ['',
+                 'Left and right keys to scroll.',
+                 'Type a letter to select entry.',
+                 ''
+                 ' s : Switch sorting mode between "date" and "score".',
+                 ' w : Filter scores by achievement.',
+                 ' z : Load scores from another file on disk.',
+                 ' q : Quit.'
+                 '']
+            draw_window(s, w, h)
 
-            if len(diggr._inputqueue) != 0:
-                raise Exception('Malformed replay file.')
-            diggr._inputqueue = None
 
-        elif k in 'abc':
-            thisn = n + (ord(k)-97)
+        elif k == 's':
+            if mode == 1:
+                mode = 2
+            else:
+                mode = 1
+            n = 0
+
+        elif k == 'w':
+
+            n2 = 0
+            limit2 = 5
+
+            while 1:
+                c.execute('select achievement, count(*) from %s join %s '
+                          'on (game_id = id) group by 1 order by 2 desc '
+                          ' limit %d offset %d' % (tbl_games, tbl_achievements, limit2, n2))
+
+                s = []
+                qq = 0
+                choices2 = {}
+                for aach,cnt in c.fetchall():
+                    chh = chr(97+qq)
+                    s.append('')
+                    s.append('%c%c) %s%c:%s%d games' % \
+                             (_c1, chh, aach, _c5, ' '*(max(0, 50-len(aach))), cnt))
+                    qq += 1
+                    choices2[chh] = aach
+                                                        
+                k2 = diggr.draw_window(s, w, h, True)
+
+                if k2 == 'h':
+                    n2 -= limit
+                    if n2 < 0:
+                        n2 = 0
+
+                elif k2 == 'l':
+                    if len(choices2) > 0:
+                        n2 += limit
+                
+                elif k2 in choices2:
+                    achievement = choices2[k2]
+                    n = 0
+
+                else:
+                    achievement = None
+                    n = 0
+        
+        elif k in choice:
+            gameid = choice[(ord(k)-97)]
 
             s2 = ['',
                   'Do what?',
@@ -135,7 +191,12 @@ def main():
             k2 = diggr.draw_window(s2, w, h, True)
 
             if k2 == 'a':
-                ok = diggr.main(replay=thisn)
+                c.execute('select seed, inputs, bones from %s where id = %d' % \
+                          (tbl_games, gameid))
+
+                seed,inputs,bones = c.fetchone()
+
+                ok = diggr.main(replay=(seed,inputs,bones))
                 if not ok:
                     diggr.draw_window(['Wrong version of replay file!'],
                                       w, h)
@@ -146,11 +207,64 @@ def main():
 
             elif k2 == 'b':
                 name = input_name()
+
                 if len(name) > 0:
-                    namef = open(name, 'w')
-                    minihs = [hss[thisn]]
-                    cPickle.dump(minihs, namef)
-                    namef.close()
+
+                    name = os.path.join('replays', name)
+                    conn2 = sqlite3.connect(name)
+                    c2 = conn2.cursor()
+
+                    c2.execute('create table if not exists ' + tbl_games + \
+                               ' (id INTEGER PRIMARY KEY, seed int, score int, bones blob, inputs blob)')
+                    c2.execute('create table if not exists ' + tbl_achievements + \
+                               ' (achievement text, game_id int)')
+
+                    c.execute('select seed, score, bones, inputs from %s where id = %d' % \
+                              (tbl_games, gameid))
+
+                    for seed,score,bones,inputs in c.fetchall():
+                        c2.execute('insert into ' + tbl_games + '(id, seed, score, bones, inputs) values (NULL, ?, ?, ?, ?)',
+                                   (seed, score, bones, inputs))
+                        gameid2 = c2.lastrowid
+                        c.execute('select achievement from %s where game_id = %d' % (tbl_achievements, gameid))
+                        for ach in c.fetchall():
+                            c2.execute('insert into ' + tbl_achievements + '(achievement, game_id) values (?, ?)',
+                                       ach, gameid2)
+
+                    c2.close()
+                    conn2.close()
+                    diggr.draw_window(['Saved to "%s".' % name,
+                                       'Press any key to continue.'], w, h)
+            
+
+
+        elif k == 'z':
+            name = input_name()
+
+            if len(name) > 0:
+                name = os.path.join('replays', name)
+
+                ok = True
+                try:
+                    os.stat(name)
+                except:
+                    diggr.draw_window(['File not found: "%s".' % name,
+                                       'Press any key to continue.'], w, h)
+                    ok = False
+
+                if ok:
+                    c.close()
+                    conn.close()
+                    conn = sqlite3.connect(name)
+                    c = conn.cursor()
+                    n = 0
+            else:
+                c.close()
+                conn.close()
+                conn = sqlite3.connect('highscore.db')
+                c = conn.cursor()
+                n = 0
+
 
         elif k == 'q':
             break

@@ -5044,10 +5044,6 @@ def main(replay=None):
     oldbones = None
 
     if replay is not None:
-        hss = []
-        hsf = open(highscorefilename, 'r')
-        hss = cPickle.load(hsf)
-
         oldseed = replay[0]
         oldinputs = replay[1]
         oldbones = replay[2]
