@@ -12,6 +12,48 @@ import diggr
 
 Item = diggr.Item
 
+
+def ach_tag_to_text(tag):
+    whole = {'loser': 'Scored *no* kills',
+             'tourist' : 'Dived to a very deep dungeon',
+             'small_tourist': 'Dived to a deep dungeon',
+             'religion': 'Worshipped a god',
+             'nowish': 'Never wished for an item',
+             'nogun': 'Never used a firearm',
+             'winner': ' =*= Won the game =*= ',
+             'stealth': 'Killed a monster massively out of depth',
+             'small_stealth': 'Killed a monster out of depth',
+             'onebranch': 'Visited only one dungeon branch'
+             }
+
+    prefix = {'plev': 'Reached player level %s',
+              'dlev': 'Reached dungeon level %s',
+              'dead_': 'Killed by %s'
+              }
+
+    suffix = {'kills': 'Killed at least %s monsters',
+              'gods': 'Worshipped %s gods',
+              'prayers': 'Prayed at least %s times',
+              'uses': 'Used an item at least %s times',
+              'wish': 'Wished for an item %s times',
+              'fires': 'Used a firearm at least %s times',
+              'branch': 'Visited %s dungeon branches',
+              'xting': 'Extinguished %s monster species'
+              }
+
+    if tag in whole:
+        return whole[tag]
+
+    for k,v in prefix.iteritems():
+        if tag.startswith(k):
+            return v % tag[len(k):]
+
+    for k,v in suffix.iteritems():
+        if tag.endswith(k):
+            return v % tag[:-len(k)]
+
+    return tag
+
 def main():
 
     w = 80
@@ -158,9 +200,10 @@ def main():
                 for aach,cnt in c.fetchall():
                     aach = aach.encode('ascii')
                     chh = chr(97+qq)
+                    achtext = ach_tag_to_text(aach)
                     s.append('')
                     s.append('%c%c%c) %c%s%c: %s%d games' % \
-                             (_c1, chh, _c5, _c1, aach, _c5, ' '*(max(0, 50-len(aach))), cnt))
+                             (_c1, chh, _c5, _c1, achtext, _c5, ' '*(max(0, 50-len(achtext))), cnt))
                     qq += 1
                     choices2[chh] = aach
 
@@ -200,7 +243,7 @@ def main():
 
             for aach in c.fetchall():
                 aach = aach[0].encode('ascii')
-                s2.append('    ' + aach)
+                s2.append('    %c%s%c' % (_c1, ach_tag_to_text(aach), _c5))
 
             k2 = diggr.draw_window(s2, w, h, True)
 

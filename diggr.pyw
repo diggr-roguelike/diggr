@@ -2504,6 +2504,9 @@ class Achievements:
         self.used = 0
         self.wishes = 0
         self.rangeattacks = 0
+        self.branches = set()
+        self.onlyonce = set()
+        self.extinguished = 0
 
     def finish(self, world):
         self.add('plev%d' % world.plev, 'Reached player level %d' % world.plev)
@@ -2515,11 +2518,6 @@ class Achievements:
             killbucket = ((len(self.killed_monsters) / 5) * 5)
             if killbucket > 0:
                 self.add('%dkills' % killbucket, 'Killed at least %d monsters' % killbucket, weight=10*killbucket)
-
-        if world.dlev >= world.plev+5:
-            self.add('tourist', 'Dived to a very deep dungeon', weight=50)
-        elif world.dlev >= world.plev+2:
-            self.add('small_tourist', 'Dived to a deep dungeon', weight=10)
 
         reason = world.stats.health.reason
         self.add('dead_%s' % reason, 'Killed by %s' % reason)
@@ -2540,9 +2538,9 @@ class Achievements:
             self.add('%duses' % usebucket, 'Used an item at least %d times' % usebucket, weight=10)
 
         if self.wishes == 0:
-            self.add('nowish', 'Never wished for an item')
+            self.add('nowish', 'Never wished for an item', weight=20)
         else:
-            self.add('%dwish' % self.wishes, 'Wished for an item %d times' % self.wishes)
+            self.add('%dwish' % self.wishes, 'Wished for an item %d times' % self.wishes, weight=20)
 
         if self.rangeattacks == 0:
             self.add('nogun', 'Never used a firearm', weight=20)
@@ -2550,6 +2548,23 @@ class Achievements:
             firebucket = ((self.rangeattacks / 10) * 10)
             if firebucket > 0:
                 self.add('%dfires' % firebucket, 'Used a firearm at least %d times' % firebucket, weight=20)
+
+        if len(self.branches) == 1:
+            self.add('onebranch', 'Visited only one dungeon branch', weight=15)
+        else:
+            self.add('%dbranch' % len(self.branches), 'Visited %d dungeon branches' % len(self.branches), weight=25)
+
+        self.add('%dxting' % self.extinguished, 'Extinguished %d monster species' % self.extinguished)
+
+
+    def descend(self, world):
+        if world.dlev >= world.plev+5:
+            self.add('tourist', 'Dived to a very deep dungeon', weight=50, once=True)
+
+        elif world.dlev >= world.plev+2:
+            self.add('small_tourist', 'Dived to a deep dungeon', weight=15, once=True)
+
+        self.branches.add(world.branch)
 
 
     def winner(self):
@@ -2561,6 +2576,9 @@ class Achievements:
         elif mon.level >= world.plev+2:
             self.add('small_stealth', 'Killed a monster out of depth', weight=10)
         self.killed_monsters.append((mon.level, mon.name, world.dlev, world.plev))
+
+        if mon.count is not None and mon.count <= 1:
+            self.extinguished += 1
 
     def pray(self, shrine):
         self.shrines.add(shrine)
@@ -2578,7 +2596,13 @@ class Achievements:
     def __iter__(self):
         return iter(self.achs)
 
-    def add(self, tag, desc, weight=0):
+    def add(self, tag, desc, weight=0, once=False):
+        if once:
+            if tag in self.onlyonce:
+                return
+            else:
+                self.onlyonce.add(tag)
+
         self.achs.append(Achieve(tag=tag, desc=desc, weight=weight))
 
 
@@ -3792,6 +3816,7 @@ class World:
         self.regen(self.w, self.h)
         self.place()
         self.tick()
+        self.achievements.descend(self)
 
 
     def drop(self):
