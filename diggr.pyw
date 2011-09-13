@@ -2498,15 +2498,16 @@ class Achieve:
 class Achievements:
     def __init__(self):
         self.achs = []
+        self.killed_monsters = []
 
     def finish(self, world):
         self.add('plev%d' % world.plev, 'Reached player level %d' % world.plev)
         self.add('dlev%d' % world.dlev, 'Reached dungeon level %d' % world.dlev)
 
-        if len(world.killed_monsters):
+        if len(self.killed_monsters) == 0:
             self.add('loser', 'Scored *no* kills')
         else:
-            killbucket = ((len(world.killed_monsters) / 5) * 5)
+            killbucket = ((len(self.killed_monsters) / 5) * 5)
             if killbucket > 0:
                 self.add('%dkills' % killbucket, 'Killed at least %d monsters' % killbucket, weight=10)
 
@@ -2526,6 +2527,7 @@ class Achievements:
             self.add('stealth', 'Killed a monster massively out of depth', weight=50)
         elif mon.level >= world.plev+2:
             self.add('small_stealth', 'Killed a monster out of depth', weight=10)
+        self.killed_monsters.append((mon.level, mon.name, world.dlev, world.plev))
 
     def __iter__(self):
         return iter(self.achs)
@@ -2589,8 +2591,6 @@ class World:
         self.floorpath = None
 
         self.monsters_in_view = []
-
-        self.killed_monsters = []
 
         self._seed = None
         self._inputs = []
@@ -3855,7 +3855,6 @@ class World:
                     self.itemap[(mon.x, mon.y)] = mon.items
 
         if do_gain:
-            self.killed_monsters.append((mon.level, self.plev, self.dlev, mon.name))
             self.achievements.mondeath(self, mon)
 
         if self.monsterstock.death(mon):
@@ -4753,7 +4752,7 @@ class World:
           'dlev', 'plev', 't', 'oldt', 'sleeping', 'resting', 'cooling', 'digging', 'blind',
           'mapping', 'glued', 's_grace', 'b_grace', 'v_grace', 'forcedsleep',
           'forced2sleep',
-          'killed_monsters', '_seed', '_inputs', 'featstock', 'vaultstock',
+          '_seed', '_inputs', 'featstock', 'vaultstock',
           'achievements'
           ]
         state = {}
@@ -4842,7 +4841,7 @@ class World:
         c.execute('create table if not exists ' + tbl_achievements + \
                   ' (achievement text, game_id int)')
 
-        score = (self.plev * 5) + (self.dlev * 5) + len(self.killed_monsters)
+        score = (self.plev * 5) + (self.dlev * 5) + sum(x[0] for x in self.achievements.killed_monsters)
 
 
         c.execute('insert into ' + tbl_games + '(id, seed, score, bones, inputs) values (NULL, ?, ?, ?, ?)',
