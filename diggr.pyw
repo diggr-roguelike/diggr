@@ -2549,12 +2549,13 @@ class Achievements:
             if firebucket > 0:
                 self.add('%dfires' % firebucket, 'Used a firearm at least %d times' % firebucket, weight=20)
 
-        if len(self.branches) == 1:
+        if len(self.branches) <= 1:
             self.add('onebranch', 'Visited only one dungeon branch', weight=15)
         else:
             self.add('%dbranch' % len(self.branches), 'Visited %d dungeon branches' % len(self.branches), weight=25)
 
-        self.add('%dxting' % self.extinguished, 'Extinguished %d monster species' % self.extinguished)
+        if self.extinguished > 0:
+            self.add('%dxting' % self.extinguished, 'Extinguished %d monster species' % self.extinguished)
 
 
     def descend(self, world):
