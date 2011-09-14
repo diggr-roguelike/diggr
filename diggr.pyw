@@ -11,6 +11,34 @@ import libtcodpy as libtcod
 
 import sqlite3
 
+
+random__ = random
+
+qqq1 = None
+
+class random(object):
+    @staticmethod
+    def randint(*a):
+        print >> qqq1, 'randint', a
+        return random__.randint(*a)
+    @staticmethod
+    def seed(*a):
+        print >> qqq1, 'seed', a
+        return random__.seed(*a)
+    @staticmethod
+    def gauss(*a):
+        print >> qqq1, 'gauss', a
+        return random__.gauss(*a)
+    @staticmethod
+    def uniform(*a):
+        print >> qqq1, 'uniform', a
+        return random__.uniform(*a)
+    @staticmethod
+    def choice(*a):
+        print >> qqq1, 'choice', a
+        return random__.choice(*a)
+
+
 #
 # achievements!
 #
@@ -2666,6 +2694,8 @@ class World:
         self._seed = None
         self._inputs = []
 
+        self.save_disabled = False
+
         self.theme = { 'a': (libtcod.lighter_lime,),
                        'b': (libtcod.lighter_crimson,),
                        'c': (libtcod.lighter_sky,),
@@ -4848,6 +4878,13 @@ class World:
 
 
     def save(self):
+        # HACK! For supporting replays of games that have been saved and then loaded.
+        print 'SAVING!'
+        if self.save_disabled:
+            random.seed(self._seed)
+            return
+
+
         f = None
         atts = [
           'grid', 'walkmap', 'watermap', 'exit', 'itemap', 'monmap', 'visitedmap',
@@ -4857,7 +4894,7 @@ class World:
           'mapping', 'glued', 's_grace', 'b_grace', 'v_grace', 'forcedsleep',
           'forced2sleep',
           '_seed', '_inputs', 'featstock', 'vaultstock',
-          'achievements'
+          'achievements', 'bones'
           ]
         state = {}
 
@@ -4874,6 +4911,7 @@ class World:
 
 
     def load_bones(self):
+        print 'LOADING BONES!'
         self.bones = []
         try:
             bf = open('bones', 'r')
@@ -4883,6 +4921,7 @@ class World:
 
 
     def load(self):
+        print 'LOADING!'
         f = None
         state = None
 
@@ -5002,7 +5041,7 @@ class World:
         s.append('-' * 50)
         s.extend((x[1] for x in self.msg.strings[2:8]))
         s.append('')
-        s.append('Press space to exit.')
+        s.append('Press space to try again.')
 
         while 1:
             if draw_window(s, self.w, self.h) == ' ':
@@ -5012,16 +5051,16 @@ class World:
 
 def start_game(world, w, h, oldseed=None, oldbones=None):
 
-    if oldbones is not None:
-        world.bones = oldbones
-    else:
-        world.load_bones()
-
     if oldseed or not world.load():
         if oldseed:
             world._seed = oldseed
         else:
             world._seed = int(time.time())
+
+        if oldbones is not None:
+            world.bones = oldbones
+        else:
+            world.load_bones()
 
         random.seed(world._seed)
         global _inputs
@@ -5068,6 +5107,10 @@ def check_autoplay(world):
 
 def main(replay=None):
 
+    global qqq1
+    qqq1 = open('qqq1', 'a')
+    print >> qqq1, 'START'
+
     oldseed = None
     oldbones = None
 
@@ -5095,12 +5138,19 @@ def main(replay=None):
     world = World()
     world.make_keymap()
 
+    if replay is not None:
+        world.save_disabled = True
+
     start_game(world, w, h, oldseed=oldseed, oldbones=oldbones)
 
     while 1:
 
         if libtcod.console_is_window_closed():
             if replay is None:
+                # MEGATON-SIZED HACK!
+                # To make replays work.
+                _inputs.append((ord('S'), 0))
+
                 world.save()
             break
 
@@ -5143,11 +5193,16 @@ def main(replay=None):
     if replay is None and world.dead:
         world.form_highscore()
 
-    return True
+    print >> qqq1, 'DONE'
+    qqq1.close()
+
+    return world.done
 
 
 #import cProfile
 #cProfile.run('main()')
 
 if __name__=='__main__':
-    main()
+    while 1:
+        if main():
+            break

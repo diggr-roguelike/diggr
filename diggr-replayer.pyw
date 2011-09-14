@@ -255,10 +255,8 @@ def main():
                 inputs = cPickle.loads(str(inputs))
                 bones = cPickle.loads(str(bones))
 
-                ok = diggr.main(replay=(seed,inputs,bones))
-                if not ok:
-                    diggr.draw_window(['Wrong version of replay file!'],
-                                      w, h)
+                print '!!',inputs
+                diggr.main(replay=(seed,inputs,bones))
 
                 if len(diggr._inputqueue) != 0:
                     raise Exception('Malformed replay file.')
