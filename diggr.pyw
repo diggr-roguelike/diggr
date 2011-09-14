@@ -11,31 +11,31 @@ import libtcodpy as libtcod
 
 import sqlite3
 
-random__ = random
-
-qqq1 = None
-
-class random(object):
-    @staticmethod
-    def randint(*a):
-        print >> qqq1, 'randint', a
-        return random__.randint(*a)
-    @staticmethod
-    def seed(*a):
-        print >> qqq1, 'seed', a
-        return random__.seed(*a)
-    @staticmethod
-    def gauss(*a):
-        print >> qqq1, 'gauss', a
-        return random__.gauss(*a)
-    @staticmethod
-    def uniform(*a):
-        print >> qqq1, 'uniform', a
-        return random__.uniform(*a)
-    @staticmethod
-    def choice(*a):
-        print >> qqq1, 'choice', a
-        return random__.choice(*a)
+##random__ = random
+##
+##qqq1 = None
+##
+##class random(object):
+##    @staticmethod
+##    def randint(*a):
+##        print >> qqq1, 'randint', a
+##        return random__.randint(*a)
+##    @staticmethod
+##    def seed(*a):
+##        print >> qqq1, 'seed', a
+##        return random__.seed(*a)
+##    @staticmethod
+##    def gauss(*a):
+##        print >> qqq1, 'gauss', a
+##        return random__.gauss(*a)
+##    @staticmethod
+##    def uniform(*a):
+##        print >> qqq1, 'uniform', a
+##        return random__.uniform(*a)
+##    @staticmethod
+##    def choice(*a):
+##        print >> qqq1, 'choice', a
+##        return random__.choice(*a)
 
 
 #
@@ -94,15 +94,15 @@ def console_wait_for_keypress():
 
         c, vk = _inputqueue[0]
         _inputqueue = _inputqueue[1:]
-        #libtcod.console_wait_for_keypress(False)
+
         libtcod.console_check_for_keypress()
         libtcod.sys_sleep_milli(100)
-        print >> qqq1, '  key:', c, vk
+        #print >> qqq1, '  key:', c, vk
         return fakekey(c, vk)
 
     k = libtcod.console_wait_for_keypress(False)
     _inputs.append((k.c, k.vk))
-    print >> qqq1, '  key:', k.c, k.vk
+    #print >> qqq1, '  key:', k.c, k.vk
     return k
 
 
@@ -2534,6 +2534,10 @@ class Achievements:
         self.branches = set()
         self.onlyonce = set()
         self.extinguished = 0
+        self.healing = 0
+        self.booze = 0
+        self.food = 0
+        self.dowsing = 0
 
     def finish(self, world):
         self.add('plev%d' % world.plev, 'Reached player level %d' % world.plev)
@@ -2584,6 +2588,33 @@ class Achievements:
         if self.extinguished > 0:
             self.add('%dxting' % self.extinguished, 'Extinguished %d monster species' % self.extinguished)
 
+        if self.dowsing == 0:
+            self.add('norod', 'Never used a dowsing rod', weight=15)
+
+        foodbucket = ((self.food / 5) * 5)
+        boozebucket = ((self.booze / 5) * 5)
+        pillbucket = ((self.healing / 5) * 5)
+
+        if self.food == 0 and self.booze == 0 and self.healing == 0:
+            self.add('teetotal', 'Never ate food, drank alcohol or used medicine', weight=9)
+        else:
+            if self.food == 0:
+                self.add('nofood', 'Never ate a mushroom', weight=7)
+            elif foodbucket > 0:
+                self.add('%dfood' % foodbucket, 'Dined on mushrooms at least %d times' % foodbucket, weight=5)
+
+            if self.booze == 0:
+                self.add('nobooze', 'Never drank alcohol', weight=7)
+            elif boozebucket > 0:
+                self.add('%dbooze' % boozebucket, 'Drank booze at least %d times' % boozebucket, weight=5)
+
+            if self.healing == 0:
+                self.add('nopill', 'Never used medicine', weight=7)
+            elif pillbucket > 0:
+                self.add('%dpill' % pillbucket, 'Swallowed a pill at least %d times' % pillbucket, weight=5)
+
+
+
 
     def descend(self, world):
         if world.dlev >= world.plev+5:
@@ -2617,6 +2648,15 @@ class Achievements:
 
         if item.rangeattack or item.rangeexplode:
             self.rangeattacks += 1
+
+        elif item.food:
+            self.food += 1
+        elif item.booze:
+            self.booze += 1
+        elif item.healing:
+            self.healing += 1
+        elif item.homing:
+            self.dowsing += 1
 
     def wish(self):
         self.wishes += 1
@@ -2991,7 +3031,7 @@ class World:
 
 
     def make_paths(self):
-        print >> qqq1, '  making path'
+        #print >> qqq1, '  making path'
         if self.floorpath:
             libtcod.path_delete(self.floorpath)
 
@@ -4573,7 +4613,7 @@ class World:
                 libtcod.line_init(x, y, mon.known_px, mon.known_py)
                 mdx, mdy = libtcod.line_step()
             else:
-                print >> qqq1, '  computing path'
+                #print >> qqq1, '  computing path'
                 libtcod.path_compute(self.floorpath, x, y, mon.known_px, mon.known_py)
                 mdx, mdy = libtcod.path_walk(self.floorpath, True)
 
@@ -4659,7 +4699,7 @@ class World:
         fired = []
 
         for k,mon in sorted(self.monmap.iteritems()):
-            print >> qqq1, '  tick:', k
+            #print >> qqq1, '  tick:', k
 
             if mon.summon and mon.visible and (self.t % mon.summon[1]) == 0:
                 summons.append((k, mon))
@@ -4881,7 +4921,6 @@ class World:
 
     def save(self):
         # HACK! For supporting replays of games that have been saved and then loaded.
-        print 'SAVING!'
         if self.save_disabled:
             random.seed(self._seed)
             return
@@ -4913,7 +4952,6 @@ class World:
 
 
     def load_bones(self):
-        print 'LOADING BONES!'
         self.bones = []
         try:
             bf = open('bones', 'r')
@@ -4923,7 +4961,6 @@ class World:
 
 
     def load(self):
-        print 'LOADING!'
         f = None
         state = None
 
@@ -5005,7 +5042,7 @@ class World:
 
         # Show placements.
 
-        c.execute(('select sum(score >= %d),count(*) from ' % score) + tbl_games)
+        c.execute('select sum(score >= %d),count(*) from %s' % (score, tbl_games))
         place, total = c.fetchone()
 
         atotals = []
@@ -5109,9 +5146,9 @@ def check_autoplay(world):
 
 def main(replay=None):
 
-    global qqq1
-    qqq1 = open('qqq1', 'a')
-    print >> qqq1, 'START'
+    #global qqq1
+    #qqq1 = open('qqq1', 'a')
+    #print >> qqq1, 'START'
 
     oldseed = None
     oldbones = None
@@ -5195,8 +5232,8 @@ def main(replay=None):
     if replay is None and world.dead:
         world.form_highscore()
 
-    print >> qqq1, 'DONE'
-    qqq1.close()
+    #print >> qqq1, 'DONE'
+    #qqq1.close()
 
     return world.done
 

@@ -13,6 +13,7 @@ import diggr
 Item = diggr.Item
 
 
+
 def ach_tag_to_text(tag):
     whole = {'loser': 'Scored *no* kills',
              'tourist' : 'Dived to a very deep dungeon',
@@ -23,7 +24,12 @@ def ach_tag_to_text(tag):
              'winner': ' =*= Won the game =*= ',
              'stealth': 'Killed a monster massively out of depth',
              'small_stealth': 'Killed a monster out of depth',
-             'onebranch': 'Visited only one dungeon branch'
+             'onebranch': 'Visited only one dungeon branch',
+             'norod': 'Never used a dowsing rod',
+             'teetotal': 'Never ate food, drank alcohol or used medicine',
+             'nofood': 'Never ate a mushroom',
+             'nopill': 'Never used medicine',
+             'nobooze': 'Never drank alcohol',
              }
 
     prefix = {'plev': 'Reached player level %s',
@@ -38,7 +44,10 @@ def ach_tag_to_text(tag):
               'wish': 'Wished for an item %s times',
               'fires': 'Used a firearm at least %s times',
               'branch': 'Visited %s dungeon branches',
-              'xting': 'Extinguished %s monster species'
+              'xting': 'Extinguished %s monster species',
+              'food': 'Dined on mushrooms at least %s times',
+              'booze': 'Drank booze at least %s times',
+              'pill': 'Swallowed a pill at least %s times'
               }
 
     if tag in whole:
@@ -144,12 +153,13 @@ def main():
                      (_c1, chh, _c2, _c1, gameid, _c5,
                       time.ctime(seed), _c1, score, _c5))
             qq += 1
-            choice[chh] = gameid
+            choice[chh] = (gameid, score)
 
         s.append('')
         s.append(":  Left and right keys to scroll entries")
         s.append(":  Type its letter to select an entry")
-        s.append(":  '?' for help; Other keys: s, w, z, q")
+        s.append(":  %c'?'%c for help; Other keys: %cs%c, %cw%c, %cz%c, %cq%c" % \
+                 (_c1, _c5, _c1, _c5, _c1, _c5, _c1, _c5, _c1, _c5))
         s.append('')
         s.append('*WARNING*: Only games from the _same_ version of Diggr will replay correctly!')
 
@@ -229,21 +239,32 @@ def main():
                     break
 
         elif k in choice:
-            gameid = choice[k]
+            gameid, score = choice[k]
 
             s2 = ['',
                   'Do what?',
                   '  a) replay this game',
                   '  b) save this game to a file on disk',
-                  '',
-                  'Achievements of this game:',
                   '']
+
+            c.execute('select sum(score >= %d),count(*) from %s' % (score, tbl_games))
+
+            place,total = c.fetchone()
+
+            s2.extend(['Game score: %d    (#%c%d%c/%d)' % (score, _c1, place, _c5, total),
+                      '',
+                      'Achievements of this game:',
+                      ''])
 
             c.execute('select achievement from %s where game_id = %d' % (tbl_achievements, gameid))
 
             for aach in c.fetchall():
                 aach = aach[0].encode('ascii')
-                s2.append('    %c%s%c' % (_c1, ach_tag_to_text(aach), _c5))
+                c.execute('select sum(score >= %d),count(*) from %s join %s on (game_id = id) where achievement = ?' % \
+                          (score, tbl_games, tbl_achievements), (aach,))
+                place,total = c.fetchone()
+                aach = ach_tag_to_text(aach)
+                s2.append('    %c%s%c: %s%c%d%c/%d' % (_c1, aach, _c5, '.'*max(0,50-len(aach)), _c1, place, _c5, total))
 
             k2 = diggr.draw_window(s2, w, h, True)
 
