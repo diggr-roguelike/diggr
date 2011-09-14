@@ -98,10 +98,12 @@ def console_wait_for_keypress():
         #libtcod.console_wait_for_keypress(False)
         libtcod.console_check_for_keypress()
         libtcod.sys_sleep_milli(100)
+        print >> qqq1, '  key:', c, vk
         return fakekey(c, vk)
 
     k = libtcod.console_wait_for_keypress(False)
     _inputs.append((k.c, k.vk))
+    print >> qqq1, '  key:', k.c, k.vk
     return k
 
 
@@ -258,8 +260,6 @@ def draw_window(msg, w, h, do_mapping=False):
     libtcod.console_set_default_background(None, libtcod.black)
 
     libtcod.console_flush()
-    #k = libtcod.console_wait_for_keypress(False)
-    #_inputs.append((k.c, k.vk))
     k = console_wait_for_keypress()
 
     libtcod.console_rect(None, x0, 0, w - x0, y0, True)
