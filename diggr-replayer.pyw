@@ -276,7 +276,6 @@ def main():
                 inputs = cPickle.loads(str(inputs))
                 bones = cPickle.loads(str(bones))
 
-                print '!!',inputs
                 diggr.main(replay=(seed,inputs,bones))
 
                 if len(diggr._inputqueue) != 0:

@@ -3536,6 +3536,12 @@ class World:
             ss = i.desc[:]
             ss.append('')
             ss.append('Slot: ' + self.slot_to_name(i.slot))
+
+            if i.converts:
+                inew = self.itemstock.get(i.converts)
+                if inew:
+                    ss.append('Slot that needs to be free to use this item: ' + self.slot_to_name(inew.slot))
+
             draw_window(ss, self.w, self.h)
             self.inv.take(i)
             self.tick()
@@ -5080,7 +5086,7 @@ class World:
         s.append('-' * 50)
         s.extend((x[1] for x in self.msg.strings[2:8]))
         s.append('')
-        s.append('Press space to try again.')
+        s.append('Press space to ' + ('exit.' if self.done else 'try again.'))
 
         while 1:
             if draw_window(s, self.w, self.h) == ' ':
