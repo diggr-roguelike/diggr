@@ -11,7 +11,6 @@ import libtcodpy as libtcod
 
 import sqlite3
 
-
 random__ = random
 
 qqq1 = None
@@ -2992,6 +2991,7 @@ class World:
 
 
     def make_paths(self):
+        print >> qqq1, '  making path'
         if self.floorpath:
             libtcod.path_delete(self.floorpath)
 
@@ -4573,6 +4573,7 @@ class World:
                 libtcod.line_init(x, y, mon.known_px, mon.known_py)
                 mdx, mdy = libtcod.line_step()
             else:
+                print >> qqq1, '  computing path'
                 libtcod.path_compute(self.floorpath, x, y, mon.known_px, mon.known_py)
                 mdx, mdy = libtcod.path_walk(self.floorpath, True)
 
@@ -4658,6 +4659,7 @@ class World:
         fired = []
 
         for k,mon in self.monmap.iteritems():
+            print >> qqq1, '  tick:', k
 
             if mon.summon and mon.visible and (self.t % mon.summon[1]) == 0:
                 summons.append((k, mon))
