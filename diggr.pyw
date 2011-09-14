@@ -4631,7 +4631,7 @@ class World:
         delitems = []
         rblasts = []
 
-        for k,v in self.itemap.iteritems():
+        for k,v in sorted(self.itemap.iteritems()):
             for i in v:
                 if i.liveexplode > 0:
                     i.liveexplode -= 1
@@ -4658,7 +4658,7 @@ class World:
         summons = []
         fired = []
 
-        for k,mon in self.monmap.iteritems():
+        for k,mon in sorted(self.monmap.iteritems()):
             print >> qqq1, '  tick:', k
 
             if mon.summon and mon.visible and (self.t % mon.summon[1]) == 0:
