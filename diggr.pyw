@@ -2538,6 +2538,9 @@ class Achievements:
         self.booze = 0
         self.food = 0
         self.dowsing = 0
+        self.radkilled = 0
+        self.explodekilled = 0
+        self.digged = 0
 
     def finish(self, world):
         self.add('plev%d' % world.plev, 'Reached player level %d' % world.plev)
@@ -2588,6 +2591,21 @@ class Achievements:
         if self.extinguished > 0:
             self.add('%dxting' % self.extinguished, 'Extinguished %d monster species' % self.extinguished)
 
+        if self.radkilled > 0:
+            radbucket = ((self.radkilled / 5) * 5)
+            if radbucket > 0:
+                self.add('%dnuked' % radbucket, 'Killed at least %d monsters with radiation' % radbucket, weight=45)
+            else:
+                self.add('nuked', 'Killed a monster with radiation', weight=35)
+
+        if self.explodekilled > 0:
+            explbucket = ((self.explodekilled / 5) * 5)
+            if explbucket > 0:
+                self.add('%dexploded' % explbucket, 'Exploded at least %d monsters' % explbucket, weight=33)
+
+        if self.digged == 0:
+            self.add('nodig', 'Never used a pickaxe', weight=23)
+
         if self.dowsing == 0:
             self.add('norod', 'Never used a dowsing rod', weight=15)
 
@@ -2629,7 +2647,7 @@ class Achievements:
     def winner(self):
         self.add('winner', ' =*= Won the game =*= ', weight=100)
 
-    def mondeath(self, world, mon):
+    def mondeath(self, world, mon, is_rad, is_explode):
         if mon.level >= world.plev+5:
             self.add('stealth', 'Killed a monster massively out of depth', weight=50)
         elif mon.level >= world.plev+2:
@@ -2638,6 +2656,13 @@ class Achievements:
 
         if mon.count is not None and mon.count <= 1:
             self.extinguished += 1
+
+        if is_rad:
+            self.radkilled += 1
+
+        if is_explode:
+            self.explodekilled += 1
+
 
     def pray(self, shrine):
         self.shrines.add(shrine)
@@ -2657,6 +2682,8 @@ class Achievements:
             self.healing += 1
         elif item.homing:
             self.dowsing += 1
+        elif item.digging:
+            self.digged += 1
 
     def wish(self):
         self.wishes += 1
@@ -4020,7 +4047,8 @@ class World:
         self.tick()
 
 
-    def handle_mondeath(self, mon, do_drop=True, do_gain=True):
+    def handle_mondeath(self, mon, do_drop=True, do_gain=True, 
+                        is_rad=False, is_explode=False):
         if do_gain and mon.level > self.plev:
             self.msg.m('You just gained level ' + str(mon.level) + '!', True)
             self.plev = mon.level
@@ -4033,7 +4061,7 @@ class World:
                     self.itemap[(mon.x, mon.y)] = mon.items
 
         if do_gain:
-            self.achievements.mondeath(self, mon)
+            self.achievements.mondeath(self, mon, is_rad, is_explode)
 
         if self.monsterstock.death(mon):
             while 1:
@@ -4064,7 +4092,7 @@ class World:
                 if not mon.radimmune:
                     mon.hp -= self.coef.raddamage
                     if mon.hp <= -3.0:
-                        self.handle_mondeath(mon)
+                        self.handle_mondeath(mon, is_rad=True)
                         del self.monmap[(x, y)]
 
         draw_blast2(x0, y0, self.w, self.h, rad, func1, func2)
@@ -4093,7 +4121,7 @@ class World:
             if (x, y) in self.monmap:
                 mon = self.monmap[(x, y)]
                 if not mon.explodeimmune:
-                    self.handle_mondeath(mon, do_drop=False)
+                    self.handle_mondeath(mon, do_drop=False, is_explode=True)
 
                     for i in mon.items:
                         if i.explodes:

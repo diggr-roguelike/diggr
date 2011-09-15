@@ -30,6 +30,8 @@ def ach_tag_to_text(tag):
              'nofood': 'Never ate a mushroom',
              'nopill': 'Never used medicine',
              'nobooze': 'Never drank alcohol',
+             'nuked': 'Killed a monster with radiation',
+             'nodig': 'Never used a pickaxe'
              }
 
     prefix = {'plev': 'Reached player level %s',
@@ -48,6 +50,8 @@ def ach_tag_to_text(tag):
               'food': 'Dined on mushrooms at least %s times',
               'booze': 'Drank booze at least %s times',
               'pill': 'Swallowed a pill at least %s times'
+              'nuked': 'Killed at least %s monsters with radiation',
+              'exploded': 'Exploded at least %s monsters'
               }
 
     if tag in whole:
