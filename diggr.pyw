@@ -74,7 +74,7 @@ import sqlite3
 
 
 global _version
-_version = '11.09.11'
+_version = '11.09.18'
 
 global _inputs
 global _inputqueue
