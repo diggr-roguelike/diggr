@@ -28,8 +28,9 @@
     </div>
   </form>
 
-  <ul>
-  <div id="entries"/>
+  <h5>Scores:</h5>
+
+  <ul id="entries"/>
   </ul>
 
   <ul id="filters" style="list-style-type:none">
@@ -109,7 +110,7 @@ function get_achievements() {
         var liid = "fli"+window.filtersnum;
 
         $("<li/>").attr("id", liid).html(selc).appendTo("#filters");
-        $("<span>[&#x2718;]</span>").click(function() {
+        $('<span style="cursor:pointer">[&#x2718;]</span>').click(function() {
            $("#"+liid).remove();
            reload();
         }).appendTo("#"+liid);
