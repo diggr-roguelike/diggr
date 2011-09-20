@@ -6,6 +6,14 @@
   <script src="http://code.jquery.com/ui/1.8.16/jquery-ui.min.js"></script>
   <style>
      .ui-widget { font-size: 11px; }
+     .score { list-style-type: none; 
+              margin: 10px; 
+              cursor: pointer; }
+     .entryscore { font-size: 15px;
+                   color: #0F0FF0; 
+                   margin-left: 10px; }
+     .entrydate { font-size: 11px;
+                  color: #0F0F0F; }
   </style>
 </head>
 
@@ -24,46 +32,41 @@
   <div id="entries"/>
   </ul>
 
-  <ul id="filters">
+  <ul id="filters" style="list-style-type:none">
   <li><button id="filteradd">Add filter</button></li>
   </ul>
 
   <button id="reload">Refresh</button>
 
-  <div id="gameinfo" style="display:none">
-    Game ID: <span id="gi_id"></span><br/>
-    Time: <span id="gi_time"></span><br/>
-    Score: <span id="gi_score"></span><br/>
-    Placed #<span id="gi_place"></span> out of <span id="gi_games"></span>.<br/>
-    Achievements:<br/>
-    <ul id="gi_achievements">
-    </ul>
-  </div>
 <script>
 
 function format(item) {
    var date = new Date(item["time"] * 1000);
-   return item["score"] + " " + date.toGMTString();
+   return '&#x276D; <span class="entryscore">' + item["score"] + " points. " +
+          '<span class="entrydate">(' + date.toGMTString() + ")</span>";
 }
 
 function showgame(id) {
   $.getJSON("scripts/global-highscore.py",
             { "gameid" : id },
       function(data) {
-        $("#gi_id").html(id);
         var date = new Date(data["time"] * 1000);
-        $("#gi_time").html(date.toGMTString());
-        $("#gi_score").html(data["score"]);
-        $("#gi_place").html(data["place"]);
-        $("#gi_games").html(data["numgames"]);
-        $("#gi_achievements").html("");
 
+        var text = "Time: " + date.toGMTString() + "<br/>" +
+                   "Score: " + data["score"] + "<br/>" + 
+                   "Placed #" + data["place"] + " out of " + data["numgames"] + "<br/>" +
+                   "<br/>Achievements:<br/><br/>" +
+                   '<table border="0">';
+
+        var lis = [];
         $.each(data["achievements"], function(i,item) {
-           $("<li/>").html(item["text"] + ": #" + item["place"] + " of " + item["numgames"]).
-               appendTo("#gi_achievements");
+           lis.push("<tr><td>" + item["text"] + "</td><td>#" + item["place"] + " of " + item["numgames"] + "</td></tr>");
         });
+
+        text += lis.join("");
+        text += "</table>";
+        $("<div/>").attr("title", "Game ID: " + id).html(text).dialog();
      })
-  $("#gameinfo").show();
 }
 
 function reload() {
@@ -85,12 +88,11 @@ function reload() {
     params,
     function(data) {
       $.each(data, function(i,item){
-        $("<li/>").attr("id", "i" + i).html(format(item)).click(
-           function() { showgame(item["id"]); }).appendTo("#entries");
+        $("<li/>").attr("id", "i" + i).attr("class", "score").
+                   html(format(item)).click(
+            function() { showgame(item["id"]); }).appendTo("#entries");
       });
   });
-
-  $("#gameinfo").hide();
 }
 
 window.filtersnum = 0;
@@ -109,6 +111,7 @@ function get_achievements() {
         $("<li/>").attr("id", liid).html(selc).appendTo("#filters");
         $("<span>[&#x2718;]</span>").click(function() {
            $("#"+liid).remove();
+           reload();
         }).appendTo("#"+liid);
 
         window.filtersnum++;
