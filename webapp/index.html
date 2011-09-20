@@ -5,7 +5,7 @@
   <script src="http://code.jquery.com/jquery-latest.js"></script>
   <script src="http://code.jquery.com/ui/1.8.16/jquery-ui.min.js"></script>
   <style>
-     .ui-widget { font-size: 11px; }
+     .ui-widget { font-size: 13px; }
      .score { list-style-type: none; 
               margin: 10px; 
               cursor: pointer; }
@@ -32,18 +32,25 @@
 
   <ul id="entries"/>
   </ul>
+  <button id="scrollleft">&#x2190;</button> Showing entries <span id="entries-from"></span>-<span id="entries-to"></span>
+  <button id="scrollright">&#x2192;</button>
 
   <ul id="filters" style="list-style-type:none">
-  <li><button id="filteradd">Add filter</button></li>
+  <li><button id="filteradd">Add achievement filter</button>
+  <button id="userfilter">Filter by username</button>
+  </li>
   </ul>
 
   <button id="reload">Refresh</button>
 
 <script>
 
+window.offset = 0
+window.limit = 4
+
 function format(item) {
    var date = new Date(item["time"] * 1000);
-   return '&#x276D; <span class="entryscore">' + item["score"] + " points. " +
+   return '&#x27E9; <span class="entryscore">' + item["score"] + " points. " +
           '<span class="entrydate">(' + date.toGMTString() + ")</span>";
 }
 
@@ -85,6 +92,9 @@ function reload() {
 
   params["ach"] = $.map($("select"), function(i) { return i.value; });
 
+  params["offset"] = window.offset;
+  params["limit"] = window.limit;
+
   $.getJSON("scripts/global-highscore.py",
     params,
     function(data) {
@@ -93,6 +103,21 @@ function reload() {
                    html(format(item)).click(
             function() { showgame(item["id"]); }).appendTo("#entries");
       });
+
+      if (window.offset == 0) {
+         $("#scrollleft").button("option", "disabled", true);
+      } else {
+         $("#scrollleft").button("option", "disabled", false);
+      }
+
+      if (data.length < window.limit) {
+         $("#scrollright").button("option", "disabled", true);
+      } else {
+         $("#scrollright").button("option", "disabled", false);
+      }
+
+      $("#entries-from").html(window.offset);
+      $("#entries-to").html(window.offset + data.length);
   });
 }
 
@@ -103,7 +128,7 @@ function get_achievements() {
             { "get_achievements" : 1 },
       function(data) {
         var selc = $("<select/>").attr("id", "filterselect").change(reload);
-        $.each(data, function(i,item) {
+        $.each(data["achievements"], function(i,item) {
            $("<option/>").attr("value", item["achievement"]).html(item["text"]).appendTo(selc);
         });
 
@@ -116,6 +141,30 @@ function get_achievements() {
         }).appendTo("#"+liid);
 
         window.filtersnum++;
+      }
+  );
+}
+
+
+function filter_user() {
+  $.getJSON("scripts/global-highscore.py",
+            { "get_achievements" : 1 },
+      function(data) {
+        var selc = $("<select/>").attr("id", "userselect").change(reload);
+        $.each(data["usernames"], function(i,item) {
+           $("<option/>").attr("value", item["achievement"]).html(item["text"]).appendTo(selc);
+        });
+
+        var liid = "userfilteroption";
+
+        $("<li/>").attr("id", liid).html(selc).appendTo("#filters");
+        $('<span style="cursor:pointer">[&#x2718;]</span>').click(function() {
+           $("#"+liid).remove();
+           $("#userfilter").show();
+           reload();
+        }).appendTo("#"+liid);
+
+	$("#userfilter").hide();
       }
   );
 }
@@ -134,16 +183,29 @@ $("#sortbyscore").click(function() {
 });
 
 $("#filteradd").click(get_achievements);
+$("#userfilter").click(filter_user);
 
 $("#reload").click(reload);
 
+$("#scrollleft").click(function() {
+  window.offset -= window.limit;
+  reload();
+});
+
+$("#scrollright").click(function() {
+  window.offset += window.limit;
+  reload();
+});
+
+$("#sortby").buttonset();
+$("#reload").button();
+$("#filteradd").button();
+$("#userfilter").button();
+$("#scrollleft").button();
+$("#scrollright").button();
+
 reload();
 
-$(function() {
-  $("#sortby").buttonset();
-  $("#reload").button();
-  $("#filteradd").button();
-})
 
 </script>
 

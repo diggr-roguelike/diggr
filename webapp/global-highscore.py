@@ -82,13 +82,21 @@ def get_achievements(version='11.09.18'):
               'on (game_id = id) group by 1 order by 2 desc' % \
               (tbl_games, tbl_achievements))
 
-    l = []    
+    l1 = []
+    l2 = []
     for ach,count in c.fetchall():              
+        if ach.startswith("user_"):
+            l = l2
+        else:
+            l = l1
+
         l.append({"achievement": ach, "count": count, 
                   "text": ach_tag_to_text(ach)})
 
-    l.sort(cmp=lambda a,b: cmp(a['text'], b['text']))
-    return l
+    l1.sort(cmp=lambda a,b: cmp(a['text'], b['text']))
+    l2.sort(cmp=lambda a,b: cmp(a['text'], b['text']))
+
+    return {"achievements": l1, "usernames": l2}
 
 
 def gameinfo(version='11.09.18', gameid=0):
