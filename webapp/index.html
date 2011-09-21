@@ -163,7 +163,7 @@ function reload() {
          $("#scrollright").button("option", "disabled", false);
       }
 
-      $("#entries-from").html(window.offset);
+      $("#entries-from").html(window.offset+1);
       $("#entries-to").html(window.offset + data.length);
   });
 }
