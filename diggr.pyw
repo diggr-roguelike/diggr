@@ -74,7 +74,7 @@ import sqlite3
 
 
 global _version
-_version = '11.09.18'
+_version = '11.09.25'
 
 global _inputs
 global _inputqueue
@@ -4047,7 +4047,7 @@ class World:
         self.tick()
 
 
-    def handle_mondeath(self, mon, do_drop=True, do_gain=True, 
+    def handle_mondeath(self, mon, do_drop=True, do_gain=True,
                         is_rad=False, is_explode=False):
         if do_gain and mon.level > self.plev:
             self.msg.m('You just gained level ' + str(mon.level) + '!', True)
@@ -5118,7 +5118,7 @@ class World:
         s.append('-' * 50)
         s.extend((x[1] for x in self.msg.strings[2:8]))
         s.append('')
-        s.append('%cUpload your score to diggr.info? (Press Y or N)%c' % (libtcod.COLCTRL_3, libtcod.COLCTRL_1))
+        s.append('%cUpload your score to http://diggr.name? (Press Y or N)%c' % (libtcod.COLCTRL_3, libtcod.COLCTRL_1))
 
         while 1:
             c = draw_window(s, self.w, self.h)
@@ -5141,15 +5141,15 @@ class World:
         import string
         import httplib
         import hashlib
-        
+
         username = ''
 
         while 1:
-            k = draw_window(['', 
+            k = draw_window(['',
                              'Enter username: ' + username,
                              '',
-                             "      If you don't have an account with that username,",
-                             '      it will be created for you automatically.'], 
+                             "      If you don't have an account with that username, it will",
+                             '      be created for you automatically.'],
                             self.w, self.h)
 
             if k in string.letters or k in string.digits or k in '_-':
@@ -5164,11 +5164,11 @@ class World:
         stars = ''
 
         while 1:
-            k = draw_window(['', 
+            k = draw_window(['',
                              'Enter password: ' + stars,
                              '',
                              'NOTE: Your password will never be sent or stored in plaintext.',
-                             '      Only a secure password hash will be used.'], 
+                             '      Only a secure password hash will be used.'],
                             self.w, self.h)
 
             if k in string.letters or k in string.digits or k in '_-':
@@ -5211,7 +5211,7 @@ class World:
         multipart += '--%s--\r\n' % boundary
         multipart += '\r\n'
 
-        hclient = httplib.HTTPConnection('localhost')
+        hclient = httplib.HTTPConnection('diggr.name')
         hclient.putrequest('POST', '/scripts/global-highscore.py')
         hclient.putheader('content-type',
                           'multipart/form-data; boundary=%s' % boundary)
@@ -5221,7 +5221,7 @@ class World:
 
         resp = hclient.getresponse()
 
-        print resp.read()
+        #print resp.read()
         # if resp.status == 200:
         #     draw_window(['Scores submitted!',
         #                  'Thank you.',
