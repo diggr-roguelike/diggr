@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="http://code.jquery.com/jquery-latest.js"></script>
+  <style>
+     p { color: #1F1F1F; 
+         background-color: #F1FFE3; }
+     div { width: 300px;
+           font-size: 12px; 
+           border: 1px solid #AFAFAF; 
+           background-color: #E3FFFF;
+         }
+    i { font-size: 14px; 
+        color: #C4002B;
+        font-style: normal; }
+  </style>
+  <title></title>
+</head>
+
+<body>
+
+<div>
+<a href="/">DGOST</a> entry, id=<span id="gameid"></span>
+<p>
+<b>Played by:</b> <span id="username"></span><br/>
+<b>Time:</b> <span id="time"></span><br/>
+<b>Score:</b> <span id="score"></span><br/>
+<i>Placed #<span id="place"></span> out of <span id="numgames"></span></i><br/>
+</p>
+<p>
+Achievements:<br/><br/>
+<table border="0" id="achievements">
+</table>
+</p>
+<p><a id="dllink" href="">Download this game</a></p>
+</div>
+
+<script>
+
+function getparams() {
+   var a = document.location.search.slice(1).split("&");
+   var ret = {};
+   for (i in a) { 
+     var tmp = a[i].split("=");
+     ret[tmp[0]] = tmp[1];
+   }
+   return ret;
+}
+
+var GET = getparams();
+
+function showgame() {
+  var params = { version: GET.version, gameid: GET.id };
+
+  $.getJSON("scripts/global-highscore.py",
+            params,
+      function(data) {
+        var date = new Date(data["time"] * 1000);
+
+        $("#gameid").html(GET.id);
+        $("#username").html(data["username"]);
+        $("#time").html(date.toGMTString());
+        $("#score").html(data["score"]);
+        $("#place").html(data["place"]);
+        $("#numgames").html(data["numgames"]);
+
+        $("#achievements").html("");
+
+        $.each(data["achievements"], function(i,item) {
+           $("<tr><td>" + item["text"] + "</td><td>#" + item["place"] + " of " + item["numgames"] + "</td></tr>").
+             appendTo("#achievements");
+        });
+
+        var link = "/scripts/global-highscore.py?download=" + GET.id + 
+                   "&version=" + GET.version;
+        $("#dllink").attr("href", link);
+     })
+}
+
+showgame();
+
+</script>
+
+</body>
+</html>

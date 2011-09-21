@@ -8,6 +8,10 @@ cgitb.enable()
 import sqlite3
 import json
 
+import sys
+import os
+import time
+
 
 DEFAULT_VERSION = '11.09.18'
 USERPREF = "user_"
@@ -71,6 +75,72 @@ def ach_tag_to_text(tag):
 def makeversion(v):
     s = set("0123456789")
     return ''.join(x for x in v if x in s)
+
+
+def init(version=DEFAULT_VERSION):
+    tbl_games = 'Games%s' % makeversion(version)
+    tbl_achievements = 'Achievements%s' % makeversion(version)
+
+    conn = sqlite3.connect('highscore.db')
+    c = conn.cursor()
+
+    c.execute('create table if not exists ' + tbl_games + \
+                  ' (id INTEGER PRIMARY KEY, seed INTEGER, score INTEGER, bones BLOB, inputs BLOB)')
+
+    c.execute('create table if not exists ' + tbl_achievements + \
+                  ' (achievement TEXT, game_id INTEGER)')
+
+    c.execute('create table if not exists Users (name TEXT, hash BLOB)')
+
+
+def download(version=DEFAULT_VERSION, gameid=0):
+
+    tbl_games = 'Games%s' % makeversion(version)
+    tbl_achievements = 'Achievements%s' % makeversion(version)
+
+    nm = '/tmp/tmp.db.%d.%g' % (os.getpid(), time.time())
+
+    conn1 = sqlite3.connect(nm)
+    c1 = conn1.cursor()
+
+    c1.execute('create table if not exists ' + tbl_games + \
+                   ' (id INTEGER PRIMARY KEY, seed INTEGER, score INTEGER, bones BLOB, inputs BLOB)')
+
+    c1.execute('create table if not exists ' + tbl_achievements + \
+                   ' (achievement TEXT, game_id INTEGER)')
+
+    conn = sqlite3.connect('highscore.db')
+    c = conn.cursor()
+
+    c.execute('select seed, score, bones, inputs from %s where id = %d' % \
+                  (tbl_games, gameid))
+
+    for seed,score,bones,inputs in c.fetchall():
+        c1.execute('insert into ' + tbl_games + '(id, seed, score, bones, inputs) values (NULL, ?, ?, ?, ?)',
+                   (seed, score, bones, inputs))
+        gameid2 = c1.lastrowid
+
+        c.execute('select achievement from %s where game_id = %d' % (tbl_achievements, gameid))
+
+        for ach in c.fetchall():
+            ach = ach[0]
+
+            if ach.startswith(USERPREF):
+                continue
+
+            c1.execute('insert into ' + tbl_achievements + '(achievement, game_id) values (?, ?)',
+                       (ach, gameid2))
+
+    conn1.commit()
+    c1.close()
+    conn1.close()
+
+    print 'Content-Type: application/octet-stream'
+    print 'Content-Disposition: attachment; filename="game%d.db"' % gameid
+    print 'Content-Length: %d' % os.stat(nm).st_size
+    print
+    sys.stdout.write(open(nm).read())
+    
 
 
 def get_achievements(version=DEFAULT_VERSION):
@@ -204,6 +274,12 @@ def run():
     if 'version' in form:
         f['version'] = form.getfirst('version')
 
+    if 'do_init' in form:
+        init(**f)
+        print "Content-Type: text/html"
+        print
+        return
+
     if 'get_achievements' in form:
         achs = get_achievements(**f)
         print "Content-Type: application/json"
@@ -219,6 +295,12 @@ def run():
         print json.dumps(gamenf)
         return
 
+    if 'download' in form:
+        f['gameid'] = int(form.getfirst('download'))
+        download(**f)
+        return
+
+    ###
 
     if 'sort' in form:
         f['sort'] = int(form.getfirst('sort'))

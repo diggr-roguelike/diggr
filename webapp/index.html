@@ -17,6 +17,7 @@
                   color: #0F0F0F; }
      p { color: gray; }
   </style>
+  <title>The DGOST: Diggr Global Online Score Table</title>
 </head>
 
 <body>
@@ -70,8 +71,9 @@ function getparams() {
 
 var GET = getparams();
 
-window.offset = 0
-window.limit = 50
+window.offset = 0;
+window.limit = 50;
+window.default_version = "11.09.18";
 
 function format(item) {
    var date = new Date(item["time"] * 1000);
@@ -104,6 +106,19 @@ function showgame(id) {
 
         text += lis.join("");
         text += "</table>";
+
+        var ver;
+        if (GET.version) {
+           ver = GET.version;
+        } else {
+           ver = window.default_version;
+        }
+
+        text += '<p><a href="/scripts/global-highscore.py?download=' + id + 
+                "&version=" + ver + '">Download this game</a></p>';
+        text += '<a href="game.html?id=' + id + "&version=" + ver + '">' +
+                '<span style="font-size: 8px">Permalink</span></a>';
+
         $("<div/>").attr("title", "Game ID: " + id).html(text).dialog({width: "auto"});
      })
 }
