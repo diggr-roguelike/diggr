@@ -12,12 +12,23 @@
      .entryscore { font-size: 15px;
                    color: #0F0FF0; 
                    margin-left: 10px; }
+     .entryusername { color: #F00000; }
      .entrydate { font-size: 11px;
                   color: #0F0F0F; }
+     p { color: gray; }
   </style>
 </head>
 
 <body>
+
+  <h4>The <a href="http://code.google.com/p/diggr-roguelike/">Diggr</a> Global Online Score Table</h4>
+
+  <p>Welcome. <a href="http://code.google.com/p/diggr-roguelike/">Diggr</a> is a roguelike game.</p>
+  <p>You can download it from the official site, <a href="http://code.google.com/p/diggr-roguelike/">http://code.google.com/p/diggr-roguelike/</a>. <br/> Play it to place an entry into this scoretable. Anybody can participate!</p>
+
+  <p style="color: black;"><br/>Showing scores for version <span id="versiondisplay">11.09.18</span></p>
+
+  <div style="margin-top: 30px; margin-left: 30px; width: 400px; border: 1px dashed #AFAFAF; padding: 10px;">
 
   <form>
     <div id="sortby">
@@ -42,25 +53,45 @@
   </ul>
 
   <button id="reload">Refresh</button>
+  </div>
 
 <script>
 
+function getparams() {
+   var a = document.location.search.slice(1).split("&");
+   var ret = {};
+   for (i in a) { 
+     var tmp = a[i].split("=");
+     ret[tmp[0]] = tmp[1];
+   }
+   return ret;
+}
+
+
+var GET = getparams();
+
 window.offset = 0
-window.limit = 4
+window.limit = 50
 
 function format(item) {
    var date = new Date(item["time"] * 1000);
-   return '&#x27E9; <span class="entryscore">' + item["score"] + " points. " +
+   return '&#x27E9; <span class="entryscore">' + item["score"] + "</span> points, by " +
+          '<span class="entryusername">' + item["username"] + "</span> " +
           '<span class="entrydate">(' + date.toGMTString() + ")</span>";
 }
 
 function showgame(id) {
+  var params = { "gameid" : id };
+
+  if (GET.version) { params["version"] = GET.version; }
+
   $.getJSON("scripts/global-highscore.py",
-            { "gameid" : id },
+            params,
       function(data) {
         var date = new Date(data["time"] * 1000);
 
-        var text = "Time: " + date.toGMTString() + "<br/>" +
+        var text = "Played by: " + data["username"] + "<br/>" +
+                   "Time: " + date.toGMTString() + "<br/>" +
                    "Score: " + data["score"] + "<br/>" + 
                    "Placed #" + data["place"] + " out of " + data["numgames"] + "<br/>" +
                    "<br/>Achievements:<br/><br/>" +
@@ -73,14 +104,15 @@ function showgame(id) {
 
         text += lis.join("");
         text += "</table>";
-        $("<div/>").attr("title", "Game ID: " + id).html(text).dialog();
+        $("<div/>").attr("title", "Game ID: " + id).html(text).dialog({width: "auto"});
      })
 }
 
 function reload() {
-  //var qs = document.location.search.split("?")[1];
 
   var params = {};
+
+  if (GET.version) { params["version"] = GET.version; }
 
   if (window.sortbytime) {
     params["sort"] = 1;
@@ -124,8 +156,13 @@ function reload() {
 window.filtersnum = 0;
 
 function get_achievements() {
+
+  var params = { "get_achievements" : 1 };
+
+  if (GET.version) { params["version"] = GET.version; }
+
   $.getJSON("scripts/global-highscore.py",
-            { "get_achievements" : 1 },
+            params,
       function(data) {
         var selc = $("<select/>").attr("id", "filterselect").change(reload);
         $.each(data["achievements"], function(i,item) {
@@ -147,8 +184,12 @@ function get_achievements() {
 
 
 function filter_user() {
+  var params = { "get_achievements" : 1 };
+
+  if (GET.version) { params["version"] = GET.version; }
+
   $.getJSON("scripts/global-highscore.py",
-            { "get_achievements" : 1 },
+            params,
       function(data) {
         var selc = $("<select/>").attr("id", "userselect").change(reload);
         $.each(data["usernames"], function(i,item) {
@@ -203,6 +244,10 @@ $("#filteradd").button();
 $("#userfilter").button();
 $("#scrollleft").button();
 $("#scrollright").button();
+
+if (GET.version) {
+  $("#versiondisplay").html(GET.version);
+}
 
 reload();
 

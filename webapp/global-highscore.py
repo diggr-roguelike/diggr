@@ -9,6 +9,8 @@ import sqlite3
 import json
 
 
+DEFAULT_VERSION = '11.09.18'
+USERPREF = "user_"
 
 
 def ach_tag_to_text(tag):
@@ -33,7 +35,8 @@ def ach_tag_to_text(tag):
 
     prefix = {'plev': 'Reached player level %s',
               'dlev': 'Reached dungeon level %s',
-              'dead_': 'Killed by %s'
+              'dead_': 'Killed by %s',
+              'user_': '%s'
               }
 
     suffix = {'kills': 'Killed at least %s monsters',
@@ -70,7 +73,7 @@ def makeversion(v):
     return ''.join(x for x in v if x in s)
 
 
-def get_achievements(version='11.09.18'):
+def get_achievements(version=DEFAULT_VERSION):
 
     tbl_games = 'Games%s' % makeversion(version)
     tbl_achievements = 'Achievements%s' % makeversion(version)
@@ -85,7 +88,7 @@ def get_achievements(version='11.09.18'):
     l1 = []
     l2 = []
     for ach,count in c.fetchall():              
-        if ach.startswith("user_"):
+        if ach.startswith(USERPREF):
             l = l2
         else:
             l = l1
@@ -99,7 +102,7 @@ def get_achievements(version='11.09.18'):
     return {"achievements": l1, "usernames": l2}
 
 
-def gameinfo(version='11.09.18', gameid=0):
+def gameinfo(version=DEFAULT_VERSION, gameid=0):
     tbl_games = 'Games%s' % makeversion(version)
     tbl_achievements = 'Achievements%s' % makeversion(version)
 
@@ -127,6 +130,11 @@ def gameinfo(version='11.09.18', gameid=0):
 
     for aach in c.fetchall():
         aach = aach[0].encode('ascii')
+
+        if aach.startswith(USERPREF):
+            l['username'] = ach_tag_to_text(aach)
+            continue
+
         c.execute('select sum(score >= %d),count(*) from %s join %s on (game_id = id) where achievement = ?' % \
                       (score, tbl_games, tbl_achievements), (aach,))
         place1,total1 = c.fetchone()
@@ -140,7 +148,7 @@ def gameinfo(version='11.09.18', gameid=0):
     return l
 
 
-def scoretable(version='11.09.18', sort=1, achievements=None, 
+def scoretable(version=DEFAULT_VERSION, sort=1, achievements=None, 
                limit=50, offset=0):
 
     tbl_games = 'Games%s' % makeversion(version)
@@ -174,8 +182,16 @@ def scoretable(version='11.09.18', sort=1, achievements=None,
         if achievements and not achs >= achievements:
             continue
 
+        lach = []
+        username = ''
+        for a in achs:
+            if a.startswith(USERPREF):
+                username = ach_tag_to_text(a)
+            else:
+                lach.append(a)
+
         l.append({'id': gameid, 'time':seed, 'score':score,
-                  'achievements': list(achs)})
+                  'username': username, 'achievements': lach})
 
     return l
 
