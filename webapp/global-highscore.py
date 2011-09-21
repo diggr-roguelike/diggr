@@ -266,6 +266,54 @@ def scoretable(version=DEFAULT_VERSION, sort=1, achievements=None,
     return l
 
 
+def upload(version=DEFAULT_VERSION, username='', pwhash='', 
+           seed=0, score=0, bones='', inputs='', 
+           achievements=None):
+
+    tbl_games = 'Games%s' % makeversion(version)
+    tbl_achievements = 'Achievements%s' % makeversion(version)
+
+    conn = sqlite3.connect('highscore.db')
+    c = conn.cursor()
+
+    c.execute('select hash from Users where name = ?', (username,))
+
+    n = 0
+    ok = False
+
+    for h in c.fetchall():
+        h = h[0]
+
+        if h == pwhash:
+            ok = True
+        n += 1
+
+    if not ok:
+        if n == 0:
+            c.execute('insert into Users (name, hash) values (?, ?)',
+                      (username, pwhash))
+        else:
+            raise Exception('Invalid password for username=' + username)
+
+
+    c.execute('insert into ' + tbl_games + '(id, seed, score, bones, inputs) values (NULL, ?, ?, ?, ?)',
+               (seed, score, 
+                sqlite3.Binary(bones), 
+                sqlite3.Binary(inputs)))
+
+    gameid = c.lastrowid
+
+    achievements.append(USERPREF+username)
+
+    for ach in achievements:
+        c.execute('insert into ' + tbl_achievements + '(achievement, game_id) values (?, ?)',
+                  (ach, gameid))
+
+    conn.commit()
+    c.close()
+    conn.close()
+
+
 def run():
     form = cgi.FieldStorage()
 
@@ -300,6 +348,26 @@ def run():
         download(**f)
         return
 
+    if 'ach' in form:
+        f['achievements'] = set(form.getlist('ach'))
+
+    elif 'ach[]' in form:
+        f['achievements'] = set(form.getlist('ach[]'))
+
+    if 'upload' in form:
+        f['username'] = form.getfirst('username')
+        f['pwhash'] = form.getfirst('pwhash')
+        f['seed'] = int(form.getfirst('seed'))
+        f['score'] = int(form.getfirst('score'))
+        f['bones'] = form.getfirst('bones')
+        f['inputs'] = form.getfirst('inputs')
+
+        upload(**f)
+        print "Content-Type: text/plain"
+        print
+        print "OK"
+        return
+
     ###
 
     if 'sort' in form:
@@ -310,12 +378,6 @@ def run():
 
     if 'offset' in form:
         f['offset'] = int(form.getfirst('offset'))
-
-    if 'ach' in form:
-        f['achievements'] = set(form.getlist('ach'))
-
-    elif 'ach[]' in form:
-        f['achievements'] = set(form.getlist('ach[]'))
 
     scores = scoretable(**f)
 

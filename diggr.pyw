@@ -5059,11 +5059,13 @@ class World:
 
         score = (self.plev * 5) + (self.dlev * 5) + sum(x[0] for x in self.achievements.killed_monsters)
 
+        bones = cPickle.dumps(self.bones)
+        inputs = cPickle.dumps(self._inputs)
 
         c.execute('insert into ' + tbl_games + '(id, seed, score, bones, inputs) values (NULL, ?, ?, ?, ?)',
                   (self._seed, score,
-                   sqlite3.Binary(cPickle.dumps(self.bones)),
-                   sqlite3.Binary(cPickle.dumps(self._inputs))))
+                   sqlite3.Binary(bones),
+                   sqlite3.Binary(inputs)))
 
         gameid = c.lastrowid
 
@@ -5114,12 +5116,110 @@ class World:
         s.append('-' * 50)
         s.extend((x[1] for x in self.msg.strings[2:8]))
         s.append('')
-        s.append('Press space to ' + ('exit.' if self.done else 'try again.'))
+        s.append('%cUpload your score to diggr.info? (Press Y or N)%c' % (libtcod.COLCTRL_3, libtcod.COLCTRL_1))
+
+        while 1:
+            c = draw_window(s, self.w, self.h)
+            if c == 'n' or c == 'N':
+                break
+            elif c == 'y' or c == 'Y':
+                self.upload_score(self._seed, score, bones, inputs)
+
+        s[-1] = ('Press space to ' + ('exit.' if self.done else 'try again.'))
 
         while 1:
             if draw_window(s, self.w, self.h) == ' ':
                 break
 
+
+
+    def upload_score(self, seed, score, bones, inputs):
+
+        import string
+        import httplib
+        import hashlib
+        
+        username = ''
+
+        while 1:
+            k = draw_window(['', 
+                             'Enter username: ' + username,
+                             '',
+                             "      If you don't have an account with that username,",
+                             '      it will be created for you automatically.'], 
+                            self.w, self.h)
+
+            if k in string.letters or k in string.digits or k in '_-':
+                username = username + k
+            elif ord(k) == 8 or ord(k) == 127:
+                if len(username) > 0:
+                    username = username[:-1]
+            elif k in '\r\n':
+                break
+
+        password = ''
+        stars = ''
+
+        while 1:
+            k = draw_window(['', 
+                             'Enter password: ' + stars,
+                             '',
+                             'NOTE: Your password will never be sent or stored in plaintext.',
+                             '      Only a secure password hash will be used.'], 
+                            self.w, self.h)
+
+            if k in string.letters or k in string.digits or k in '_-':
+                password = password + k
+                stars = stars + '*'
+            elif ord(k) == 8 or ord(k) == 127:
+                if len(password) > 0:
+                    password = password[:-1]
+                    stars = stars[:-1]
+            elif k in '\r\n':
+                break
+
+        form = {'upload': '1',
+                'version': _version,
+                'username': username,
+                'pwhash': hashlib.sha512(password).hexdigest(),
+                'seed': str(seed),
+                'score': str(score),
+                'bones': bones,
+                'inputs': inputs }
+
+        boundary = '----diggr-multipart-upload'
+        multipart = ''
+
+        for k,v in form.iteritems():
+            multipart += '--%s\r\n' % boundary
+            multipart += 'Content-Disposition: form-data; name="%s"\r\n' % k
+            multipart += '\r\n'
+            multipart += v
+            multipart += '\r\n'
+
+        multipart += '--%s--\r\n' % boundary
+        multipart += '\r\n'
+
+        hclient = httplib.HTTPConnection('localhost')
+        hclient.putrequest('POST', 'scripts/global-highscore.py')
+        hclient.putheader('content-type',
+                          'multipart/form-data; boundary=%s' % boundary)
+        hclient.putheader('content-length', str(len(multipart)))
+        hclient.endheaders()
+        hclient.send(multipart)
+
+        resp = hclient.getresponse()
+
+        if resp.status == '200':
+            draw_window(['Scores submitted!',
+                         'Thank you.',
+                         '',
+                         'Press any key.'], self.w, self.h)
+        else:
+            draw_window(['Failed!',
+                         'Reason: %s %s' % (resp.status, resp.reason),
+                         '',
+                         'Press any key.'], self.w, self.h)
 
 
 def start_game(world, w, h, oldseed=None, oldbones=None):
