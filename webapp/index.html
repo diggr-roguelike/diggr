@@ -129,10 +129,10 @@ function reload() {
 
   if (GET.version) { params["version"] = GET.version; }
 
-  if (window.sortbytime) {
-    params["sort"] = 1;
-  } else if (window.sortbyscore) {
+  if (window.sortbytime == true) {
     params["sort"] = 2;
+  } else if (window.sortbyscore == true) {
+    params["sort"] = 1;
   }
 
   $("#entries").html("");

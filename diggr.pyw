@@ -5082,6 +5082,7 @@ class World:
         place, total = c.fetchone()
 
         atotals = []
+        achievements = []
 
         for a in self.achievements:
             c.execute(('select sum(score >= %d),count(*) from ' % score) + \
@@ -5089,6 +5090,7 @@ class World:
                       ' where achievement = ?', (a.tag,))
             p1,t1 = c.fetchone()
             atotals.append((p1, 100 - a.weight, t1, a.desc))
+            achievements.append(a.tag)
 
         c.close()
         conn.close()
@@ -5123,7 +5125,8 @@ class World:
             if c == 'n' or c == 'N':
                 break
             elif c == 'y' or c == 'Y':
-                self.upload_score(self._seed, score, bones, inputs)
+                self.upload_score(self._seed, score, bones, inputs, achievements)
+                break
 
         s[-1] = ('Press space to ' + ('exit.' if self.done else 'try again.'))
 
@@ -5133,7 +5136,7 @@ class World:
 
 
 
-    def upload_score(self, seed, score, bones, inputs):
+    def upload_score(self, seed, score, bones, inputs, achievements):
 
         import string
         import httplib
@@ -5190,18 +5193,26 @@ class World:
         boundary = '----diggr-multipart-upload'
         multipart = ''
 
+        def mpart(k,v):
+            ret = ''
+            ret += '--%s\r\n' % boundary
+            ret += 'Content-Disposition: form-data; name="%s"\r\n' % k
+            ret += '\r\n'
+            ret += v
+            ret += '\r\n'
+            return ret
+
         for k,v in form.iteritems():
-            multipart += '--%s\r\n' % boundary
-            multipart += 'Content-Disposition: form-data; name="%s"\r\n' % k
-            multipart += '\r\n'
-            multipart += v
-            multipart += '\r\n'
+            multipart += mpart(k, v)
+
+        for a in achievements:
+            multipart += mpart('ach', a)
 
         multipart += '--%s--\r\n' % boundary
         multipart += '\r\n'
 
         hclient = httplib.HTTPConnection('localhost')
-        hclient.putrequest('POST', 'scripts/global-highscore.py')
+        hclient.putrequest('POST', '/scripts/global-highscore.py')
         hclient.putheader('content-type',
                           'multipart/form-data; boundary=%s' % boundary)
         hclient.putheader('content-length', str(len(multipart)))
@@ -5210,16 +5221,17 @@ class World:
 
         resp = hclient.getresponse()
 
-        if resp.status == '200':
-            draw_window(['Scores submitted!',
-                         'Thank you.',
-                         '',
-                         'Press any key.'], self.w, self.h)
-        else:
-            draw_window(['Failed!',
-                         'Reason: %s %s' % (resp.status, resp.reason),
-                         '',
-                         'Press any key.'], self.w, self.h)
+        print resp.read()
+        # if resp.status == 200:
+        #     draw_window(['Scores submitted!',
+        #                  'Thank you.',
+        #                  '',
+        #                  'Press any key.'], self.w, self.h)
+        # else:
+        #     draw_window(['Failed!',
+        #                  'Reason: %s %s' % (resp.status, resp.reason),
+        #                  '',
+        #                  'Press any key.'], self.w, self.h)
 
 
 def start_game(world, w, h, oldseed=None, oldbones=None):

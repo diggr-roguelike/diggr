@@ -233,14 +233,14 @@ def scoretable(version=DEFAULT_VERSION, sort=1, achievements=None,
                   ' limit %d offset %d' % \
                       (tbl_games, tbl_achievements, 
                        ','.join(['?'] * len(achievements)),
-                       'seed' if sort == 1 else 'score',
+                       'score' if sort == 1 else 'seed',
                        limit, offset),
                   tuple(achievements))
     else:
         c.execute('select distinct id, seed, score from %s order by %s desc '
                   'limit %d offset %d' % \
                       (tbl_games, 
-                       'seed' if sort == 1 else 'score',
+                       'score' if sort == 1 else 'seed',
                        limit, offset))
 
     l = []
@@ -260,7 +260,7 @@ def scoretable(version=DEFAULT_VERSION, sort=1, achievements=None,
             else:
                 lach.append(a)
 
-        l.append({'id': gameid, 'time':seed, 'score':score,
+        l.append({'id': gameid, 'time':seed, 'score':score, 
                   'username': username, 'achievements': lach})
 
     return l
@@ -303,7 +303,7 @@ def upload(version=DEFAULT_VERSION, username='', pwhash='',
 
     gameid = c.lastrowid
 
-    achievements.append(USERPREF+username)
+    achievements.add(USERPREF+username)
 
     for ach in achievements:
         c.execute('insert into ' + tbl_achievements + '(achievement, game_id) values (?, ?)',
