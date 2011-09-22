@@ -548,7 +548,7 @@ class Item:
                  stackrange=None, mapper=None, converts=None, jumprange=None,
                  explodeimmune=False, telepathyrange=None, makestrap=False,
                  summon=None, radimmune=False, radexplode=False, fires=None,
-                 camorange=None, sounding=False):
+                 camorange=None, sounding=False, healingsleep=None):
         self.slot = slot
         self.bonus = bonus
         self.name = name
@@ -605,6 +605,7 @@ class Item:
         self.fires = fires
         self.camorange = camorange
         self.sounding = sounding
+        self.healingsleep = healingsleep
 
         self.ammo = None
         self.gencount = 0
@@ -3359,8 +3360,7 @@ class World:
             if not realforced2:
                 self.msg.m('You fall asleep.')
             self.sleeping = int(random.gauss(*self.coef.sleeptime))
-        if self.sleep <= 10:
-            self.sleep = 10
+
         self.digging = None
         self.resting = False
 
