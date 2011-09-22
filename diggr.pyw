@@ -131,6 +131,7 @@ class Coeffs:
         self.colddamage = 0.03
         self.thirstdamage = 0.02
         self.hungerdamage = 0.01
+        self.healingsleep = 0.02
 
         self.unarmedattack = 0.1
         self.unarmeddefence = 0.0
@@ -722,9 +723,14 @@ class ItemStock:
                           desc=["A device that uses sonar for discovering rock thickness."])
 
         self.medpack = Item("magic pill$s", slot='d', skin=('%', libtcod.white),
-                            rarity=20, applies=True, healing=(3, 0.5),
+                            rarity=13, applies=True, healing=(3, 0.5),
                             cursedchance=7, stackrange=5, count=1,
                             desc=['A big white pill with a large red cross drawn on one side.'])
+
+        self.herbalmed = Item("herbal palliative$s", slot='d', skin=('%', libtcod.light_green),
+                              rarity=13, applies=True, healingsleep=(150, 25.0),
+                              cursedchance=7, stackrange=5, count=1,
+                              desc=['A large, green grassy-smelling pill.'])
 
         self.mushrooms = Item("mushroom$s", slot='d', skin=('%', libtcod.light_orange),
                               rarity=20, applies=True, food=(3, 0.5),
@@ -2678,7 +2684,7 @@ class Achievements:
             self.food += 1
         elif item.booze:
             self.booze += 1
-        elif item.healing:
+        elif item.healing or item.healingsleep:
             self.healing += 1
         elif item.homing:
             self.dowsing += 1
@@ -2742,6 +2748,7 @@ class World:
         self.sleeping = 0
         self.forcedsleep = False
         self.forced2sleep = False
+        self.healingsleep = False
         self.resting = False
         self.cooling = 0
         self.digging = None
@@ -3322,7 +3329,13 @@ class World:
             self.stats.warmth.dec(self.coef.watercold)
         else:
             self.stats.warmth.inc(self.inv.get_heatbonus())
+
+        if self.healingsleep:
+            self.stats.health.inc(self.coef.healingsleep)
+
         self.tick_checkstats()
+
+            
 
         if self.sleeping > 0:
             self.sleeping -= 1
@@ -3330,6 +3343,7 @@ class World:
             if self.sleeping == 0:
                 self.forcedsleep = False
                 self.forced2sleep = False
+                self.healingsleep = False
         self.t += 1
 
 
@@ -3667,6 +3681,26 @@ class World:
                 self.stats.health.inc(max(random.gauss(*item.healing), 0))
                 self.stats.hunger.dec(max(random.gauss(*item.healing), 0))
                 self.stats.sleep.dec(max(random.gauss(*item.healing), 0))
+
+            self.achievements.use(item)
+            return None
+
+
+        elif item.healingsleep:
+
+            if self.v_grace:
+                self.msg.m('Your religion prohibits taking medicine.')
+                return item
+
+            if item.bonus < 0:
+                self.msg.m('You drift into a restless sleep!', True)
+                self.sleeping = max(random.gauss(*item.healingsleep), 1)
+                self.forced2sleep = True
+            else:
+                self.msg.m('You drift into a gentle sleep.')
+                self.sleeping = max(random.gauss(*item.healingsleep), 1)
+                self.forced2sleep = True
+                self.healingsleep = True
 
             self.achievements.use(item)
             return None
@@ -4016,11 +4050,14 @@ class World:
 
 
     def ground_apply(self):
-        if (self.px, self.py) not in self.itemap:
+        px = self.px
+        py = self.py
+
+        if (px, py) not in self.itemap:
             self.msg.m('There is no item here to apply.')
             return
 
-        items = self.itemap[(self.px, self.py)]
+        items = self.itemap[(px, py)]
         items = [i for i in items if i.applies]
 
         if len(items) == 0:
@@ -4036,12 +4073,12 @@ class World:
                 i.count -= 1
                 self.tick()
                 return
-            for ix in xrange(len(self.itemap[(self.px, self.py)])):
-                if id(self.itemap[(self.px, self.py)][ix]) == id(i):
-                    del self.itemap[(self.px, self.py)][ix]
+            for ix in xrange(len(self.itemap[(px, py)])):
+                if id(self.itemap[(px, py)][ix]) == id(i):
+                    del self.itemap[(px, py)][ix]
 
-                    if len(self.itemap[(self.px, self.py)]) == 0:
-                        del self.itemap[(self.px, self.py)]
+                    if len(self.itemap[(px, py)]) == 0:
+                        del self.itemap[(px, py)]
                     break
 
         self.tick()
@@ -4293,6 +4330,8 @@ class World:
 
             if self.sleeping and not self.forced2sleep:
                 self.sleeping = 0
+                self.forcedsleep = False
+                self.healingsleep = False
 
             if self.stats.health.x <= -3.0:
                 self.dead = True
@@ -4570,7 +4609,8 @@ class World:
             'P': self.show_messages,
             'Q': self.quit,
             '?': self.show_help,
-            'S': self.save
+            'S': self.save,
+            'w': self.wish
             }
         self.vkeys = {
             libtcod.KEY_KP4: self.move_left,
@@ -4967,7 +5007,7 @@ class World:
           'done', 'dead', 'stats', 'msg', 'coef', 'inv', 'itemstock', 'monsterstock', 'branch',
           'dlev', 'plev', 't', 'oldt', 'sleeping', 'resting', 'cooling', 'digging', 'blind',
           'mapping', 'glued', 's_grace', 'b_grace', 'v_grace', 'forcedsleep',
-          'forced2sleep',
+          'forced2sleep', 'healingsleep',
           '_seed', '_inputs', 'featstock', 'vaultstock',
           'achievements', 'bones'
           ]
@@ -5125,8 +5165,24 @@ class World:
             if c == 'n' or c == 'N':
                 break
             elif c == 'y' or c == 'Y':
-                self.upload_score(self._seed, score, bones, inputs, achievements)
+                
+                done = False
+
+                while not done:
+                    done = self.upload_score(self._seed, score, bones, inputs, achievements)
+
+                    if not done:
+                        c = draw_window(['',
+                                         'Uploading failed!',
+                                         'Most likely, you entered the wrong password.',
+                                         '',
+                                         'Try again? (Press Y or N)'],
+                                        self.w, self.h)
+                        if c == 'n' or c == 'N':
+                            done = True
                 break
+                        
+
 
         s[-1] = ('Press space to ' + ('exit.' if self.done else 'try again.'))
 
@@ -5221,6 +5277,10 @@ class World:
 
         resp = hclient.getresponse()
 
+        if resp.read() == "OK\n":
+            return True
+        return False
+
         #print resp.read()
         # if resp.status == 200:
         #     draw_window(['Scores submitted!',
@@ -5263,6 +5323,7 @@ def check_autoplay(world):
         if world.stats.sleep.x >= 3.0 and not world.forcedsleep and not world.forced2sleep:
             world.msg.m('You wake up.')
             world.sleeping = 0
+            world.healingsleep = False
             return 1
         else:
             world.sleep()
