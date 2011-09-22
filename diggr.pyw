@@ -5208,8 +5208,8 @@ class World:
                              '      be created for you automatically.'],
                             self.w, self.h)
 
-            if k in string.letters or k in string.digits or k in '_-':
-                username = username + k
+            if k in string.letters or k in string.digits or k in '.-_':
+                username = username + k.lower()
             elif ord(k) == 8 or ord(k) == 127:
                 if len(username) > 0:
                     username = username[:-1]
