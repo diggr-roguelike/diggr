@@ -4610,8 +4610,7 @@ class World:
             'P': self.show_messages,
             'Q': self.quit,
             '?': self.show_help,
-            'S': self.save,
-            'w': self.wish
+            'S': self.save
             }
         self.vkeys = {
             libtcod.KEY_KP4: self.move_left,
