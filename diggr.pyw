@@ -1899,17 +1899,20 @@ class MonsterStock:
 
     def death(self, mon):
         if not mon.branch:
-            return
+            return (False, False)
 
         if mon.level not in self.monsters[mon.branch]:
-            return (len(self.monsters[mon.branch]) == 0)
+            return (len(self.monsters[mon.branch]) == 0, False)
 
         m = self.monsters[mon.branch][mon.level]
+
+        ret = False
 
         for x in xrange(len(m)):
             if mon.name == m[x].name:
                 if m[x].count <= 1:
                     del m[x]
+                    ret = True
                 else:
                     m[x].count -= 1
                 break
@@ -1917,7 +1920,7 @@ class MonsterStock:
         if len(m) == 0:
             del self.monsters[mon.branch][mon.level]
 
-        return (len(self.monsters) == 0)
+        return (len(self.monsters[mon.branch]) == 0, ret)
 
 
 
@@ -2655,15 +2658,15 @@ class Achievements:
     def winner(self):
         self.add('winner', ' =*= Won the game =*= ', weight=100)
 
+    def mondone():
+        self.extinguished += 1
+
     def mondeath(self, world, mon, is_rad, is_explode):
         if mon.level >= world.plev+5:
             self.add('stealth', 'Killed a monster massively out of depth', weight=50)
         elif mon.level >= world.plev+2:
             self.add('small_stealth', 'Killed a monster out of depth', weight=10)
         self.killed_monsters.append((mon.level, mon.name, world.dlev, world.plev))
-
-        if mon.count is not None and mon.count <= 1:
-            self.extinguished += 1
 
         if is_rad:
             self.radkilled += 1
@@ -3337,7 +3340,7 @@ class World:
 
         self.tick_checkstats()
 
-            
+
 
         if self.sleeping > 0:
             self.sleeping -= 1
@@ -4098,10 +4101,16 @@ class World:
                 else:
                     self.itemap[(mon.x, mon.y)] = mon.items
 
+
+        winner, exting = self.monsterstock.death(mon)
+
         if do_gain:
             self.achievements.mondeath(self, mon, is_rad, is_explode)
 
-        if self.monsterstock.death(mon):
+        if exting:
+            self.achievements.mondone()
+
+        if winner:
             while 1:
                 c = draw_window(['Congratulations! You have won the game.', '', 'Press space to exit.'], self.w, self.h)
                 if c == ' ': break
@@ -5165,7 +5174,7 @@ class World:
             if c == 'n' or c == 'N':
                 break
             elif c == 'y' or c == 'Y':
-                
+
                 done = False
 
                 while not done:
@@ -5181,7 +5190,7 @@ class World:
                         if c == 'n' or c == 'N':
                             done = True
                 break
-                        
+
 
 
         s[-1] = ('Press space to ' + ('exit.' if self.done else 'try again.'))
