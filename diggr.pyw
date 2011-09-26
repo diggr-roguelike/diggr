@@ -200,7 +200,7 @@ class Stats:
 
         if grace:
             s += "%c%cGrace: %c%s\n" % \
-                (libtcod.COLCTRL_1, grace[0], 
+                (libtcod.COLCTRL_1, grace[0],
                  libtcod.COLCTRL_4 if grace[2] else libtcod.COLCTRL_3,
                  chr(175) * min(grace[1], 6))
 
@@ -1918,6 +1918,7 @@ class MonsterStock:
         return m
 
     def death(self, mon):
+        print '!!',mon.name
         if not mon.branch:
             return (False, False)
 
@@ -1930,6 +1931,7 @@ class MonsterStock:
 
         for x in xrange(len(m)):
             if mon.name == m[x].name:
+                print 'md3',m[x].count
                 if m[x].count <= 1:
                     print '!',m[x].count
                     del m[x]
@@ -2139,7 +2141,13 @@ class VaultStock:
                   '2': ('2', True),
                   '3': ('3', True),
                   '4': ('4', True),
-                  '5': ('5', True) }
+                  '5': ('5', True),
+                  '6': ('1', False),
+                  '7': ('2', False),
+                  '8': ('3', False),
+                  '9': ('4', False),
+                  '0': ('5', False),
+                  '.': (None, False) }
 
 
         #v1 = Vault(chance=3, level=(1,6), count=3,
@@ -2208,6 +2216,8 @@ class VaultStock:
         self.add(Vault(syms=symsb, pic=["3"], chance=3, level=(3,3), count=1, branch='e'))
         self.add(Vault(syms=symsb, pic=["3"], chance=3, level=(6,6), count=1, branch='e'))
         self.add(Vault(syms=symsb, pic=["3"], chance=3, level=(9,9), count=1, branch='e'))
+
+        self.add(Vault(syms=symsb, pic=["6.7.3.9.0"], chance=1, level=(1,1), count=1))
 
         self.add(Vault(syms=syms,
                        pic=["o.o.o.o.o.o.o.o.o.o.o.o.o",
@@ -2518,6 +2528,7 @@ class VaultStock:
 
 
     def get(self, branch, level):
+
         if len(self.vaults) == 0:
             return None
 
@@ -4470,8 +4481,8 @@ class World:
             self.monsters_in_view.append(mon)
             break
 
-        tmsg = ['Pick a target. ' 
-                "HJKL YUBN for directions, " 
+        tmsg = ['Pick a target. '
+                "HJKL YUBN for directions, "
                 "<space> and '.' to target a monster."]
 
         if monx is not None:
@@ -5007,10 +5018,10 @@ class World:
                         did_highlight = True
 
                 libtcod.console_put_char_ex(None, x, y, c, fore, back)
-        
+
         statsgrace = None
         if self.s_grace:
-            statsgrace = (chr(234), 
+            statsgrace = (chr(234),
                           ((self.s_grace * 6) / self.coef.s_graceduration) + 1,
                           (self.s_grace > self.coef.s_graceduration - self.coef.s_praytimeout))
 
