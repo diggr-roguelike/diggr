@@ -148,8 +148,13 @@ class Coeffs:
         self.glueduration = (10,1)
         self.gluedefencepenalty = 3
 
-        self.shivadecstat = 2.0
-        self.graceduration = 1000
+        self.shivadecstat = 3.5
+        self.s_graceduration = 1000
+        self.v_graceduration = 500
+        self.b_graceduration = 1500
+
+        self.s_praytimeout = 300
+        self.v_praytimeout = 150
 
         self.raddamage = 3.0
 
@@ -185,13 +190,19 @@ class Stats:
         libtcod.console_set_color_control(libtcod.COLCTRL_4, libtcod.red, libtcod.black)
         libtcod.console_set_color_control(libtcod.COLCTRL_5, libtcod.gray, libtcod.black)
 
-    def draw(self, x, y):
+    def draw(self, x, y, grace=None):
         s = "%cHealth: %c%s\n" \
             "%cWarmth: %c%s\n" \
             "%c Tired: %c%s\n" \
             "%c Sleep: %c%s\n" \
             "%cThirst: %c%s\n" \
             "%cHunger: %c%s\n"
+
+        if grace:
+            s += "%c%cGrace: %c%s\n" % \
+                (libtcod.COLCTRL_1, grace[0], 
+                 libtcod.COLCTRL_4 if grace[2] else libtcod.COLCTRL_3,
+                 chr(175) * min(grace[1], 6))
 
         def pr(x):
             if x >= 2.0: return    '   +++'
@@ -3410,23 +3421,21 @@ class World:
             if self.b_grace or self.v_grace:
                 self.msg.m("You don't believe in Shiva.")
                 return
-            if self.s_grace > self.coef.graceduration - 300:
+            if self.s_grace > self.coef.s_graceduration - self.coef.s_praytimeout:
                 self.msg.m('Nothing happens.')
                 return
 
-            ss = "sthwp"
+            ss = "hwp"
             decc = self.coef.shivadecstat
             ss = ss[random.randint(0, len(ss)-1)]
 
-            if ss == 's': self.stats.sleep.dec(decc)
-            elif ss == 't': self.stats.tired.dec(decc)
-            elif ss == 'h': self.stats.hunger.dec(decc)
+            if ss == 'h': self.stats.hunger.dec(decc)
             elif ss == 'w': self.stats.warmth.dec(decc)
             elif ss == 'p': self.stats.health.dec(decc, 'the grace of Shiva')
 
             self.msg.m('You pray to Shiva.')
             self.wish('Shiva grants you a wish.')
-            self.s_grace = self.coef.graceduration
+            self.s_grace = self.coef.s_graceduration
             self.tick()
             self.achievements.pray('s')
 
@@ -3434,8 +3443,9 @@ class World:
             if self.s_grace or self.v_grace:
                 self.msg.m("You don't believe in Brahma.")
                 return
+            self.msg.m('As a follower of Brahma, you are now forbidden hand-to-hand combat.')
             self.msg.m('You feel enlightened.')
-            self.b_grace = self.coef.graceduration
+            self.b_grace = self.coef.b_graceduration
             self.tick()
             self.achievements.pray('b')
 
@@ -3444,10 +3454,12 @@ class World:
                 self.msg.m("You don't believe in Vishnu.")
                 return
 
-            if self.v_grace > self.coef.graceduration - 300:
+            if self.v_grace > self.coef.v_graceduration - self.coef.v_praytimeout:
                 self.msg.m('Nothing happens.')
                 return
 
+            self.msg.m('As a follower of Vishnu, you are now forbidden '
+                       'medicine, alcohol and unclean food.')
             self.msg.m('You meditate on the virtues of Vishnu.')
             self.start_sleep(force=True, realforced2=True)
 
@@ -3457,7 +3469,7 @@ class World:
             self.stats.hunger.inc(6.0)
             self.stats.thirst.inc(6.0)
             self.stats.warmth.inc(6.0)
-            self.v_grace = self.coef.graceduration
+            self.v_grace = self.coef.v_graceduration
             self.tick()
             self.achievements.pray('v')
 
@@ -4657,7 +4669,7 @@ class World:
         rang = mon.range
 
         if self.b_grace:
-            rang = 12 - int(9 * (float(self.b_grace) / self.coef.graceduration))
+            rang = 12 - int(9 * (float(self.b_grace) / self.coef.b_graceduration))
             rang = min(rang, mon.range)
 
         if self.inv.trunk and self.inv.trunk.camorange:
@@ -4872,7 +4884,7 @@ class World:
             lightradius /= 2
 
         if self.b_grace:
-            n = int(15 * (float(self.b_grace) / self.coef.graceduration))
+            n = int(15 * (float(self.b_grace) / self.coef.b_graceduration))
             lightradius = max(lightradius, n)
 
         if self.mapping > 0:
@@ -4977,11 +4989,27 @@ class World:
                         did_highlight = True
 
                 libtcod.console_put_char_ex(None, x, y, c, fore, back)
+        
+        statsgrace = None
+        if self.s_grace:
+            statsgrace = (chr(234), 
+                          ((self.s_grace * 6) / self.coef.s_graceduration) + 1,
+                          (self.s_grace > self.coef.s_graceduration - self.coef.s_praytimeout))
+
+        elif self.v_grace:
+            statsgrace = (chr(233),
+                          ((self.v_grace * 6) / self.coef.v_graceduration) + 1,
+                          (self.v_grace > self.coef.v_graceduration - self.coef.v_praytimeout))
+
+        elif self.b_grace:
+            statsgrace = (chr(127),
+                          ((self.b_grace * 6) / self.coef.b_graceduration) + 1,
+                          False)
 
         if self.px > self.w / 2:
-            self.stats.draw(0, 0)
+            self.stats.draw(0, 0, grace=statsgrace)
         else:
-            self.stats.draw(self.w - 14, 0)
+            self.stats.draw(self.w - 14, 0, grace=statsgrace)
 
         if self.py > self.h / 2:
             self.msg.draw(15, 0, self.w - 30)
