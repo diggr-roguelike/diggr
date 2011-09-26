@@ -560,7 +560,8 @@ class Item:
                  stackrange=None, mapper=None, converts=None, jumprange=None,
                  explodeimmune=False, telepathyrange=None, makestrap=False,
                  summon=None, radimmune=False, radexplode=False, fires=None,
-                 camorange=None, sounding=False, healingsleep=None):
+                 camorange=None, sounding=False, healingsleep=None,
+                 applies_in_slot=False):
         self.slot = slot
         self.bonus = bonus
         self.name = name
@@ -618,6 +619,7 @@ class Item:
         self.camorange = camorange
         self.sounding = sounding
         self.healingsleep = healingsleep
+        self.applies_in_slot = applies_in_slot
 
         self.ammo = None
         self.gencount = 0
@@ -767,6 +769,13 @@ class ItemStock:
                            straightline=True, applies=True, rarity=15,
                            desc=['This antique beauty is a powerful handgun, ',
                                  'though a bit rusty for some reason.'])
+
+        self.mmissile = Item("amulet of magic missile", slot='b', skin=('(', libtcod.light_azure),
+                             rangeattack=7.0, range=(0,15), ammochance=(5, 25),
+                             straightline=True, applies=True, rarity=7,
+                             applies_in_slot=True,
+                             desc=['A magical amulet that holds a clip of'
+                                   'magically-induced mini-missiles.'])
 
         self.ak47 = Item('AK-47', slot='e', skin=('(', libtcod.desaturated_blue),
                          rangeattack=3.5, range=(0, 7), ammochance=(0, 30),
@@ -1922,6 +1931,7 @@ class MonsterStock:
         for x in xrange(len(m)):
             if mon.name == m[x].name:
                 if m[x].count <= 1:
+                    print '!',m[x].count
                     del m[x]
                     ret = True
                 else:
@@ -3639,6 +3649,10 @@ class World:
 
     def apply(self, item):
         if not item.applies:
+            return item
+
+        if item.applies_in_slot and self.inv.check(item.slot) is not None:
+            self.msg.m("You can only use this item if it's in the " + self.slot_to_name(item.slot) + ' slot.', True)
             return item
 
         if item.converts:
