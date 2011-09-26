@@ -4456,13 +4456,17 @@ class World:
             self.monsters_in_view.append(mon)
             break
 
+        tmsg = ['Pick a target. ' 
+                "HJKL YUBN for directions, " 
+                "<space> and '.' to target a monster."]
+
         if monx is not None:
             self.draw(monx, mony)
+            if mony <= 2:
+                tmsg = []
 
-        k = draw_window(['Pick a target. '
-                         "HJKL YUBN for directions, "
-                         "<space> and '.' to target a monster."],
-                         self.w, self.h, True)
+        k = draw_window(tmsg,
+                        self.w, self.h, True)
 
         if k == 'h':
             dx = max(self.px - range, 0)
