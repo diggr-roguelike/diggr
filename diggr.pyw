@@ -4612,24 +4612,25 @@ class World:
         s = ['%c' % libtcod.COLCTRL_1,
              "Movement keys: roguelike 'hjkl' 'yubn' or the numpad/arrow keys.",
              "",
-             " . : Stand in place for one turn.",
-             " s : Start sleeping.",
-             " r : Start resting.",
-             " q : Drink from the floor.",
-             " p : Pray at a shrine.",
-             " > : Descend down to the next level.",
+             " .   : Stand in place for one turn.",
+             " s   : Start sleeping.",
+             " r   : Start resting.",
+             " q   : Drink from the floor.",
+             " p   : Pray at a shrine.",
+             " >   : Descend down to the next level.",
              "",
-             " a : Apply (use) an item from your inventory.",
-             " A : Apply (use) an item from the ground.",
-             " i : Manipulate your inventory.",
-             " d : Drop an item from your inventory.",
-             " , : Pick up an item from the floor.",
+             " a   : Apply (use) an item from your inventory.",
+             " A   : Apply (use) an item from the ground.",
+             " i   : Manipulate your inventory.",
+             " d   : Drop an item from your inventory.",
+             " ,   : Pick up an item from the floor.",
              "",
-             " / : Look around at the terrain, items and monsters.",
-             " P : Show a log of previous messages.",
-             " Q : Quit the game by committing suicide.",
-             " S : Save the game and quit.",
-             " ? : Show this help."
+             " /   : Look around at the terrain, items and monsters.",
+             " P   : Show a log of previous messages.",
+             " Q   : Quit the game by committing suicide.",
+             " S   : Save the game and quit.",
+             " F11 : Toggle fullscreen mode.",
+             " ?   : Show this help."
         ]
         draw_window(s, self.w, self.h)
 
@@ -4679,7 +4680,9 @@ class World:
             libtcod.KEY_HOME: self.move_upleft,
             libtcod.KEY_PAGEUP: self.move_upright,
             libtcod.KEY_END: self.move_downleft,
-            libtcod.KEY_PAGEDOWN: self.move_downright
+            libtcod.KEY_PAGEDOWN: self.move_downright,
+
+            libtcod.KEY_F11: (lambda: libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen()))
             }
 
 
@@ -5358,6 +5361,8 @@ class World:
         #                  'Reason: %s %s' % (resp.status, resp.reason),
         #                  '',
         #                  'Press any key.'], self.w, self.h)
+
+    
 
 
 def start_game(world, w, h, oldseed=None, oldbones=None):
