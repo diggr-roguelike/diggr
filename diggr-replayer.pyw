@@ -75,7 +75,7 @@ def main():
 
     diggr._inputs = []
 
-    font = 'terminal10x16_gs_ro.png'
+    font = 'font.png' #'terminal10x16_gs_ro.png'
     libtcod.console_set_custom_font(font, libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_ASCII_INROW)
     libtcod.console_init_root(w, h, 'Diggr game replayer tool', False, libtcod.RENDERER_SDL)
     libtcod.sys_set_fps(30)
