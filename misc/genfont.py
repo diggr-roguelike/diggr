@@ -4,15 +4,24 @@ import Image, ImageFont, ImageDraw, sys
 
 def main():
     #fontpath2 = 'c:\\Windows\\Fonts\\DroidSansMono.ttf'
-    fontpath2 = 'c:\\Windows\\Fonts\\DejaVuSansMono.ttf'
-    fontpath = 'c:\\Windows\\Fonts\\lucon.ttf'
-    fontpoint = 16
+    #fontpath2 = 'c:\\Windows\\Fonts\\DejaVuSansMono.ttf'
+    fontpathl = '../lucon.ttf'
+    fontpath = '../liberation-fonts-ttf-1.07.1/LiberationMono-Bold.ttf'
+    fontpaths = '../liberation-fonts-ttf-1.07.1/LiberationMono-Regular.ttf'
+    fontpointl = 15
+    fontpoint = 15
+    fontpoints = 11
 
     image = Image.new('RGB', (1,1))
     draw = ImageDraw.Draw(image)
+
     font = ImageFont.truetype(fontpath, fontpoint)
-    font2 = ImageFont.truetype(fontpath2, fontpoint)
-    w,h = draw.textsize(str('W'), font=font2)
+    fonts = ImageFont.truetype(fontpaths, fontpoints)
+    fontl = ImageFont.truetype(fontpathl, fontpointl)
+
+    w,h = draw.textsize('W', font=font)
+    # HACK for Liberation Mono
+    h -= 1
     print w,h
 
     image = image.resize((w*16, h*16))
@@ -53,16 +62,38 @@ def main():
     0x00b0, 0x2219, 0x00b7, 0x221a, 0x207f, 0x00b2, 0x25a0, 0x00a0
     ]
 
+    replacers = { 
+       ord('@'): ord(' '),
+       176: ord(' '),
+       250: ord(' ')
+    }
+
+    for k,v in replacers.iteritems():
+        cp437[k] = v
+
     chrs = [''.join(unichr(cp437[x+y*16]) for x in xrange(0,16)) for y in xrange(0,16)]
 
     y = 0
     ii = 0
+
     for c in chrs:
-        draw.text((0,y), c, font=(font if ii >= 2 and ii <= 7 else font))
+        imtmp = Image.new('RGB', (w*16,h+1))
+        drawtmp = ImageDraw.Draw(imtmp)
+        drawtmp.text((0,0), c, font=font)
+        imtmp = imtmp.crop((0,1,w*16-1,h+1))
+        image.paste(imtmp, (0,y))
+        #draw.text((0,y), c, font=(font if ii >= 2 and ii <= 7 else font))
         y += h
         ii += 1
 
-    image.save('tcod.png')
+    # HACK replace '@' with non-broken version.
+    draw.text((1, h*4+1), '@', font=fonts)
+
+    # HACK replace box character with non-ugly version.
+    draw.text((0, h*11+1), unichr(0x2591), font=fontl)
+    draw.text((10*w, h*15), unichr(0xB7), font=fonts)
+
+    image.save('font.png')
 
     print 'OK'
 

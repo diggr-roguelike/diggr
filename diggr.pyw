@@ -5002,7 +5002,7 @@ class World:
 
                     elif (x, y) in self.walkmap:
                         if (x,y) in self.watermap:
-                            c = '-'
+                            c = 197 #'-'
                             fore = libtcod.dark_azure #libtcod.Color(80, 80, 255)
                         else:
                             c = 250
