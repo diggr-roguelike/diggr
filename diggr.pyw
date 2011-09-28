@@ -5009,7 +5009,7 @@ class World:
                     else:
                         if (x,y) in self.watermap:
                             fore = libtcod.desaturated_blue #libtcod.Color(100, 128, 255)
-                        c = '#'
+                        c = 176 #'#'
 
                     if not is_lit:
                         d = math.sqrt(math.pow(abs(y - self.py),2) + math.pow(abs(x - self.px),2))
@@ -5362,7 +5362,7 @@ class World:
         #                  '',
         #                  'Press any key.'], self.w, self.h)
 
-    
+
 
 
 def start_game(world, w, h, oldseed=None, oldbones=None):
@@ -5445,7 +5445,7 @@ def main(replay=None):
 
     #libtcod.sys_set_renderer(libtcod.RENDERER_SDL)
 
-    font = 'terminal10x16_gs_ro.png'
+    font = 'font.png' #'terminal10x16_gs_ro.png'
     libtcod.console_set_custom_font(font, libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_ASCII_INROW)
     libtcod.console_init_root(w, h, 'Diggr', False, libtcod.RENDERER_SDL)
     libtcod.sys_set_fps(30)
