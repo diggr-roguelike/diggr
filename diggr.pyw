@@ -75,7 +75,7 @@ import sqlite3
 
 
 global _version
-_version = '11.09.25'
+_version = '11.10.02'
 
 global _inputs
 global _inputqueue
@@ -393,7 +393,7 @@ class Inventory:
         self.backpack1 = None
         self.backpack2 = None
 
-    def draw(self, w, h, dlev, plev):
+    def draw(self, w, h, dlev, plev, floor=None):
         s = [
             ("a)       Head: %c%s", self.head),
             ("b)       Neck: %c%s", self.neck),
@@ -403,10 +403,14 @@ class Inventory:
             ("f)       Legs: %c%s", self.legs),
             ("g)       Feet: %c%s", self.feet),
             ("h) Backpack 1: %c%s", self.backpack1),
-            ("i) Backpack 2: %c%s", self.backpack2),
-            "",
-            "Character level: %d" % plev,
-            "  Dungeon level: %d" % dlev]
+            ("i) Backpack 2: %c%s", self.backpack2)]
+
+        if floor:
+            s.extend(floor)
+
+        s.extend(["",
+                  "Character level: %d" % plev,
+                  "  Dungeon level: %d" % dlev])
 
         def pr(x):
             if not x:
@@ -2814,7 +2818,7 @@ class World:
 
         self.sparkleinterp = [ math.sin(x/math.pi)**2 for x in xrange(10) ]
 
-        
+
 
 
 
@@ -3525,16 +3529,7 @@ class World:
             self.inv.take(i, slot)
             return
 
-        i2 = self.apply(i)
-        if i2:
-            self.inv.take(i2)
-        else:
-            if i.count > 0:
-                i.count -= 1
-            if i.count > 0:
-                self.inv.take(i)
-
-        self.tick()
+        self.apply_from_inv_aux(i)
 
 
     def slot_to_name(self, slot):
@@ -3548,63 +3543,169 @@ class World:
         else: return 'backpack'
 
 
-    def showinv_interact(self):
-        slot = self.inv.draw(self.w, self.h, self.dlev, self.plev)
-        i = self.inv.drop(slot)
+    def take_aux(self, items, c):
+
+        i = items[c]
+        did_scavenge = False
+
+        for ii in self.inv:
+            if ii and ii.name == i.name:
+                if ii.stackrange and ii.count < ii.stackrange:
+                    n = min(ii.stackrange - ii.count, i.count)
+                    ii.count += n
+                    i.count -= n
+
+                    self.msg.m('You now have ' + str(ii))
+                    did_scavenge = True
+
+                    if i.count == 0:
+                        del items[c]
+                        if len(items) == 0:
+                            del self.itemap[(self.px, self.py)]
+                            break
+
+                elif i.ammo > 0 and ii.ammo and ii.ammo < ii.ammochance[1]:
+                    n = min(ii.ammochance[1] - ii.ammo, i.ammo)
+                    ii.ammo += n
+                    i.ammo -= n
+                    self.msg.m("You find some ammo for your " + ii.name)
+                    did_scavenge = True
+
+        if did_scavenge:
+            self.tick()
+            return
+
+        ok = self.inv.take(i)
+        if ok:
+            self.msg.m('You take ' + str(i) + '.')
+            del items[c]
+            if len(items) == 0:
+                del self.itemap[(self.px, self.py)]
+        else:
+            self.msg.m('You have no free inventory slot for ' + str(i) + '!')
+
+        self.tick()
+
+
+    def apply_from_inv_aux(self, i):
+        i2 = self.apply(i)
+        if i2:
+            self.inv.take(i2)
+        else:
+            if i.count > 0:
+                i.count -= 1
+            if i.count > 0:
+                self.inv.take(i)
+
+        self.tick()
+
+    def take(self):
+        if (self.px, self.py) not in self.itemap:
+            self.msg.m('You see no item here to take.')
+            return
+
+        self.showinv_interact(takestuff=True)
+
+    def showinv_interact(self, takestuff=False):
+
+        floorstuff = None
+        flooritems = {}
+        items = []
+
+        if (self.px, self.py) in self.itemap:
+            floorstuff = ['','Items on the floor:','']
+
+            items = self.itemap[(self.px, self.py)]
+            pad = ' ' * 12
+
+            for i in xrange(len(items)):
+                if i >= 5:
+                    floorstuff.append('(There are other items here; clear away the pile to see more)')
+                    break
+                else:
+                    cc = chr(106 + i)
+                    flooritems[cc] = i
+                    floorstuff.append('%c%c) %s%c%s' % \
+                        (libtcod.COLCTRL_5, cc, pad, libtcod.COLCTRL_1, str(items[i])))
+
+        if takestuff and len(flooritems) == 1:
+            slot = 'j'
+        else:
+            slot = self.inv.draw(self.w, self.h, self.dlev, self.plev, floor=floorstuff)
+
+        i = None
+        if slot in flooritems:
+            i = items[flooritems[slot]]
+        else:
+            i = self.inv.check(slot)
+
         if not i:
             if slot in 'abcdefghi':
                 self.msg.m('You have no item in that slot.')
             return
 
+        if takestuff and slot in flooritems:
+            self.take_aux(items, flooritems[slot])
+            return
+
         si = str(i)
         si = si[0].upper() + si[1:]
         s = [si + ':', '']
-        choices = 'd'
+        choices = ''
 
 
         if i.applies:
             s.append('a) use it')
             choices += 'a'
 
-        if not self.inv.backpack1 or not self.inv.backpack2:
-            s.append('b) move it to a backpack slot')
-            choices += 'b'
-
         if i.desc:
             s.append('c) examine this item')
             choices += 'c'
 
-        s.append('d) drop this item')
         if i.throwable:
             s.append('f) throw this item')
             choices += 'f'
 
-        if i.slot in 'abcdefg' and slot in 'hi':
-            s.append('x) swap this item with item in equipment')
-            choices += 'x'
+        if slot not in flooritems:
 
-        s.append('')
-        s.append('any other key to equip it')
+            if not self.inv.backpack1 or not self.inv.backpack2:
+                s.append('b) move it to a backpack slot')
+                choices += 'b'
+
+            s.append('d) drop this item')
+            choices += 'd'
+
+            if i.slot in 'abcdefg' and slot in 'hi':
+                s.append('x) swap this item with item in equipment')
+                choices += 'x'
+
+        else:
+            s.append('t) take this item')
+            choices += 't'
+
+            if self.inv.check(i.slot):
+                s.append('x) swap this item with item in equipment')
+                choices += 'x'
+
+        self.draw()
         cc = draw_window(s, self.w, self.h)
 
         if cc not in choices:
-            self.inv.take(i)
-            self.tick()
             return
 
         if cc == 'a' and i.applies:
-            i2 = self.apply(i)
-            if i2:
-                self.inv.take(i2)
-            else:
-                if i.count > 0:
-                    i.count -= 1
-                if i.count > 0:
-                    self.inv.take(i)
+            if slot not in flooritems:
+                i = self.inv.drop(slot)
 
-            self.tick()
+            if slot in flooritems:
+                px = self.px
+                py = self.py
+                self.apply_from_ground_aux(i, px, py)
+            else:
+                self.apply_from_inv_aux(i)
 
         elif cc == 'b':
+            i = self.inv.drop(slot)
             if not self.inv.backpack1:
                 self.inv.backpack1 = i
                 self.tick()
@@ -3622,11 +3723,11 @@ class World:
                 if inew:
                     ss.append('Slot that needs to be free to use this item: ' + self.slot_to_name(inew.slot))
 
+            self.draw()
             draw_window(ss, self.w, self.h)
-            self.inv.take(i)
-            self.tick()
 
         elif cc == 'd':
+            i = self.inv.drop(slot)
             if (self.px, self.py) in self.itemap:
                 self.itemap[(self.px, self.py)].append(i)
             else:
@@ -3640,25 +3741,46 @@ class World:
                     break
 
             if nx >= 0:
+                if slot not in flooritems:
+                    i = self.inv.drop(slot)
+
                 self.msg.m('You throw ' + str(i) + '.')
 
                 if (nx, ny) in self.itemap:
                     self.itemap[(nx, ny)].append(i)
                 else:
                     self.itemap[(nx, ny)] = [i]
-            else:
-                self.inv.take(i)
-            self.tick()
+
+                if slot in flooritems:
+                    del items[c]
+                    if len(items) == 0:
+                        del self.itemap[(self.px, self.py)]
+
+                self.tick()
 
         elif cc == 'x':
-            item2 = self.inv.drop(i.slot)
-            self.inv.take(i)
-            if item2:
-                self.inv.take(item2)
+            if slot in flooritems:
+                item2 = self.inv.drop(i.slot)
+                self.take_aux(items, flooritems[slot])
+                if item2:
+                    if (self.px, self.py) in self.itemap:
+                        self.itemap[(self.px, self.py)].append(i)
+                    else:
+                        self.itemap[(self.px, self.py)] = [i]
 
-        else:
-            self.inv.take(i)
+            else:
+                i = self.inv.drop(slot)
+                item2 = self.inv.drop(i.slot)
+                self.inv.take(i)
+                if item2:
+                    self.inv.take(item2)
+
             self.tick()
+
+        elif cc == 't':
+            self.take_aux(items, flooritems[slot])
+
+
 
     def apply(self, item):
         if not item.applies:
@@ -4016,100 +4138,7 @@ class World:
         self.tick()
 
 
-
-    def pick_one_item(self, items):
-        c = 0
-        if len(items) > 1:
-            s = []
-            for i in xrange(len(items)):
-                if i == 0:
-                    s.append('%c' % libtcod.COLCTRL_1)
-                    s[-1] += '%c) %s' % (chr(97 + i), str(items[i]))
-                elif i >= 5:
-                    s.append('(There are other items here; clear away the pile to see more)')
-                    break
-                else:
-                    s.append('%c) %s' % (chr(97 + i), str(items[i])))
-
-            c = draw_window(s, self.w, self.h)
-            c = ord(c) - 97
-
-            if c < 0 or c >= len(items):
-                return None, None
-
-        i = items[c]
-        return i, c
-
-    def take(self):
-        if (self.px, self.py) not in self.itemap:
-            self.msg.m('You see no item here to take.')
-            return
-
-        items = self.itemap[(self.px, self.py)]
-
-        i, c = self.pick_one_item(items)
-        if not i:
-            return
-
-        did_scavenge = False
-
-        for ii in self.inv:
-            if ii and ii.name == i.name:
-                if ii.stackrange and ii.count < ii.stackrange:
-                    n = min(ii.stackrange - ii.count, i.count)
-                    ii.count += n
-                    i.count -= n
-
-                    self.msg.m('You now have ' + str(ii))
-                    did_scavenge = True
-
-                    if i.count == 0:
-                        del items[c]
-                        if len(items) == 0:
-                            del self.itemap[(self.px, self.py)]
-                            break
-
-                elif i.ammo > 0 and ii.ammo and ii.ammo < ii.ammochance[1]:
-                    n = min(ii.ammochance[1] - ii.ammo, i.ammo)
-                    ii.ammo += n
-                    i.ammo -= n
-                    self.msg.m("You find some ammo for your " + ii.name)
-                    did_scavenge = True
-
-        if did_scavenge:
-            self.tick()
-            return
-
-        ok = self.inv.take(i)
-        if ok:
-            self.msg.m('You take ' + str(i) + '.')
-            del items[c]
-            if len(items) == 0:
-                del self.itemap[(self.px, self.py)]
-        else:
-            self.msg.m('You have no free inventory slot for ' + str(i) + '!')
-
-        self.tick()
-
-
-    def ground_apply(self):
-        px = self.px
-        py = self.py
-
-        if (px, py) not in self.itemap:
-            self.msg.m('There is no item here to apply.')
-            return
-
-        items = self.itemap[(px, py)]
-        items = [i for i in items if i.applies]
-
-        if len(items) == 0:
-            self.msg.m('There is no item here to apply.')
-
-        i,c = self.pick_one_item(items)
-        if not i:
-            return
-
+    def apply_from_ground_aux(self, i, px, py):
         i2 = self.apply(i)
         if not i2:
             if i.count > 1:
@@ -4125,6 +4154,53 @@ class World:
                     break
 
         self.tick()
+
+    def pick_one_item(self, items):
+
+        if len(items) == 1:
+            return items[0], 0
+
+        c = 0
+        s = []
+        for i in xrange(len(items)):
+            if i == 0:
+                s.append('%c' % libtcod.COLCTRL_1)
+                s[-1] += '%c) %s' % (chr(97 + i), str(items[i]))
+            elif i >= 5:
+                s.append('(There are other items here; clear away the pile to see more)')
+                break
+            else:
+                s.append('%c) %s' % (chr(97 + i), str(items[i])))
+
+        c = draw_window(s, self.w, self.h)
+        c = ord(c) - 97
+
+        if c < 0 or c >= len(items):
+            return None, None
+
+        i = items[c]
+        return i, c
+
+    def ground_apply(self):
+        px = self.px
+        py = self.py
+
+        if (px, py) not in self.itemap:
+            self.msg.m('There is no item here to apply.')
+            return
+
+        items = self.itemap[(px, py)]
+        items = [i for i in items if i.applies]
+
+        if len(items) == 0:
+            self.msg.m('There is no item here to apply.')
+            return
+
+        i,c = self.pick_one_item(items)
+        if not i:
+            return
+
+        self.apply_from_ground_aux(i, px, py)
 
 
     def handle_mondeath(self, mon, do_drop=True, do_gain=True,
@@ -4908,6 +4984,7 @@ class World:
     def draw(self, _hlx=None, _hly=None):
         withtime = False
         if self.oldt != self.t:
+            print self.t
             withtime = True
 
         default_back = libtcod.black
@@ -5005,7 +5082,7 @@ class World:
 
                     elif (x, y) in self.walkmap:
                         if (x,y) in self.watermap:
-                            c = 251 
+                            c = 251
                             wave = self.sparkleinterp[(x * y + self.t) % 10]
                             fore = libtcod.color_lerp(libtcod.light_azure, libtcod.dark_azure, wave)
                         else:
