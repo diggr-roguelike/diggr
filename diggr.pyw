@@ -2690,7 +2690,7 @@ class Achievements:
     def winner(self):
         self.add('winner', ' =*= Won the game =*= ', weight=100)
 
-    def mondone():
+    def mondone(self):
         self.extinguished += 1
 
     def mondeath(self, world, mon, is_rad, is_explode):
@@ -2806,13 +2806,15 @@ class World:
 
         self.save_disabled = False
 
-        self.theme = { 'a': (libtcod.lighter_lime,),
-                       'b': (libtcod.lighter_crimson,),
-                       'c': (libtcod.lighter_sky,),
-                       'd': (libtcod.dark_grey,),
-                       'e': (libtcod.silver,) }
+        self.theme = { 'a': (libtcod.lime,),
+                       'b': (libtcod.red,),
+                       'c': (libtcod.sky,),
+                       'd': (libtcod.darkest_grey,),
+                       'e': (libtcod.lightest_yellow,) }
 
+        self.sparkleinterp = [ math.sin(x/math.pi)**2 for x in xrange(10) ]
 
+        
 
 
 
@@ -4965,6 +4967,7 @@ class World:
 
 
                 back = default_back
+                is_terrain = False
 
                 if not in_fov:
                     c = ' '
@@ -5002,19 +5005,27 @@ class World:
 
                     elif (x, y) in self.walkmap:
                         if (x,y) in self.watermap:
-                            c = 197 #'-'
-                            fore = libtcod.dark_azure #libtcod.Color(80, 80, 255)
+                            c = 251 
+                            wave = self.sparkleinterp[(x * y + self.t) % 10]
+                            fore = libtcod.color_lerp(libtcod.light_azure, libtcod.dark_azure, wave)
                         else:
                             c = 250
+                            is_terrain = True
+
                     else:
                         if (x,y) in self.watermap:
                             fore = libtcod.desaturated_blue #libtcod.Color(100, 128, 255)
                         c = 176 #'#'
+                        is_terrain = True
 
                     if not is_lit:
                         d = math.sqrt(math.pow(abs(y - self.py),2) + math.pow(abs(x - self.px),2))
+                        d = (d/lightradius)
 
-                        fore = libtcod.color_lerp(fore, back, min(d/lightradius, 1.0))
+                        if is_terrain:
+                            fore = libtcod.color_lerp(libtcod.white, fore, min(d*2, 1.0))
+
+                        fore = libtcod.color_lerp(fore, back, min(d, 1.0))
 
                     if x == _hlx and y == _hly:
                         back = libtcod.white
