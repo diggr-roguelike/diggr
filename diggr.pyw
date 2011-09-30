@@ -826,7 +826,7 @@ class ItemStock:
                                desc=['A metallic hat that protects against attempts of ',
                                      'mind control by various crazies.'])
 
-        self.tinfoilcrystal = Item('crystal of tin', slot='d', skin=('+', libtcod.gray),
+        self.tinfoilcrystal = Item('crystal of tin', slot='d', skin=('{', libtcod.gray),
                                    psyimmune=True, rarity=6,
                                    selfdestruct=(3000,500),
                                    desc=['A magical crystal of tin.',
@@ -971,12 +971,12 @@ class ItemStock:
                                desc=['An ornate helmet made of crystal.',
                                      'It is a powerful artifact of psyonic magic.'])
 
-        self.stickyglue = Item('sticky glue$s', slot='d', skin=('+', libtcod.light_yellow),
+        self.stickyglue = Item('sticky glue$s', slot='d', skin=('{', libtcod.light_yellow),
                                applies=True, makestrap=True, rarity=8, count=1,
                                stackrange=4,
                                desc=['A tube of very sticky glue. It can be used to make traps.'])
 
-        self.gluegun = Item('gluegun', slot='d', skin=('+', libtcod.light_yellow),
+        self.gluegun = Item('gluegun', slot='d', skin=('{', libtcod.light_yellow),
                             applies=True, makestrap=True, rarity=0, count=None,
                             desc=['A device that holds a practically unlimited amount of glue.'])
 
@@ -3752,7 +3752,7 @@ class World:
                     self.itemap[(nx, ny)] = [i]
 
                 if slot in flooritems:
-                    del items[c]
+                    del items[flooritems[slot]]
                     if len(items) == 0:
                         del self.itemap[(self.px, self.py)]
 
@@ -3761,12 +3761,19 @@ class World:
         elif cc == 'x':
             if slot in flooritems:
                 item2 = self.inv.drop(i.slot)
-                self.take_aux(items, flooritems[slot])
-                if item2:
-                    if (self.px, self.py) in self.itemap:
-                        self.itemap[(self.px, self.py)].append(i)
-                    else:
-                        self.itemap[(self.px, self.py)] = [i]
+                ok = self.inv.take(i)
+                if ok:
+                    del items[flooritems[slot]]
+                    if len(items) == 0:
+                        del self.itemap[(self.px, self.py)]
+                
+                    if item2:
+                        if (self.px, self.py) in self.itemap:
+                            self.itemap[(self.px, self.py)].append(item2)
+                        else:
+                            self.itemap[(self.px, self.py)] = [item2]
+                elif item2:
+                    self.inv.take(item2)
 
             else:
                 i = self.inv.drop(slot)
@@ -4699,9 +4706,9 @@ class World:
              "",
              " a   : Apply (use) an item from your inventory.",
              " A   : Apply (use) an item from the ground.",
-             " i   : Manipulate your inventory.",
+             " i   : Manipulate your inventory or items on the ground.",
              " d   : Drop an item from your inventory.",
-             " ,   : Pick up an item from the floor.",
+             " ,   : Pick up an item from the ground.",
              "",
              " /   : Look around at the terrain, items and monsters.",
              " P   : Show a log of previous messages.",
