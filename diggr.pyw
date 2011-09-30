@@ -1955,7 +1955,7 @@ class Feature:
     def __init__(self, walkable=False, visible=False, skin=('=', libtcod.white),
                  name="something strange", stairs=False, sticky=False, water=None,
                  s_shrine=False, b_shrine=False, v_shrine=False, height=-10,
-                 shootable=False, warm=False, branch=None):
+                 shootable=False, warm=False, branch=None, healingfountain=False):
         self.walkable = walkable
         self.visible = visible
         self.water = water
@@ -1970,6 +1970,7 @@ class Feature:
         self.shootable = shootable
         self.warm = warm
         self.branch = branch
+        self.healingfountain = healingfountain
 
 
 class FeatureStock:
@@ -2020,6 +2021,9 @@ class FeatureStock:
 
         self.f['@'] = Feature(walkable=True, visible=True, skin=(15, libtcod.yellow),
                               name='a hearth', warm=True)
+
+        self.f['$'] = Feature(walkable=True, visible=True, skin=(20, libtcod.light_sky),
+                              name='a Fountain of Youth', healingfountain=True)
 
 
         self.f['='] = Feature(walkable=False, visible=True, skin=(196, libtcod.gray),
@@ -2124,6 +2128,7 @@ class VaultStock:
                 'q': ('q', False),
                 'd': ('d', False),
                 '*': ('@', True),
+                '$': ('$', True),
                 '^': ('^', False),
                 '1': (None, 'mushrooms', False),
                 '2': (None, 'medpack', False),
@@ -2367,6 +2372,14 @@ class VaultStock:
                             " ........... ",
                             "   .......   "],
                        chance=3, level=(2,12), count=4))
+
+        self.add(Vault(syms=syms,
+                       pic=["  .......  ",
+                            " ......... ",
+                            ".....$.....",
+                            " ......... ",
+                            "  .......  "],
+                       chance=3, level=(4,14), count=4))
 
         self.add(Vault(syms=syms,
                        pic=[".........@..........",
@@ -3416,6 +3429,19 @@ class World:
         self.resting = True
 
     def drink(self):
+
+        if self.try_feature(self.px, self.py, 'healingfountain'):
+            nn = min(3.0 - self.stats.health.x, self.stats.hunger.x + 3.0)
+            if nn <= 0:
+                self.msg.m('Nothing happens.')
+                return
+
+            self.msg.m('You drink from the eternal fountain.')
+            self.stats.health.inc(nn)
+            self.stats.hunger.dec(nn)
+            return
+
+
         if (self.px,self.py) not in self.watermap:
             self.msg.m('There is no water here you could drink.')
             return
@@ -4991,7 +5017,6 @@ class World:
     def draw(self, _hlx=None, _hly=None):
         withtime = False
         if self.oldt != self.t:
-            print self.t
             withtime = True
 
         default_back = libtcod.black
