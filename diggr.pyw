@@ -1461,7 +1461,7 @@ class MonsterStock:
                                'It looks like it is radiating heat from the inside.']))
 
         self.add(Monster('scavenger drone', skin=('Z', libtcod.silver),
-                         attack=1.0, defence=24.0, explodeimmune=True, range=30,
+                         attack=1.0, defence=24.0, explodeimmune=True, range=10,
                          confimmune=True, slow=True, level=3, count=4, branch='c',
                          fireimmune=True,
                          desc=['A remotely-controlled robot used for exploring the dungeon.']))
@@ -3792,7 +3792,7 @@ class World:
                     del items[flooritems[slot]]
                     if len(items) == 0:
                         del self.itemap[(self.px, self.py)]
-                
+
                     if item2:
                         if (self.px, self.py) in self.itemap:
                             self.itemap[(self.px, self.py)].append(item2)
