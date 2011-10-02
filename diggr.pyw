@@ -85,6 +85,10 @@ class fakekey:
         self.c = c
         self.vk = vk
 
+class Config:
+    def __init__(self):
+        self.fullscreen = False
+
 
 def console_wait_for_keypress():
     global _inputqueue
@@ -2763,7 +2767,7 @@ class Achievements:
 
 class World:
 
-    def __init__(self):
+    def __init__(self, config):
         self.grid = None
 
         self.walkmap = None
@@ -2831,6 +2835,7 @@ class World:
 
         self.sparkleinterp = [ math.sin(x/math.pi)**2 for x in xrange(10) ]
 
+        self.config = config
 
 
 
@@ -4793,7 +4798,7 @@ class World:
             libtcod.KEY_END: self.move_downleft,
             libtcod.KEY_PAGEDOWN: self.move_downright,
 
-            libtcod.KEY_F11: (lambda: libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen()))
+            libtcod.KEY_F11: self.toggle_fullscreen
             }
 
 
@@ -5483,6 +5488,13 @@ class World:
         #                  'Press any key.'], self.w, self.h)
 
 
+    def toggle_fullscreen(self):
+        # HACK
+        if self.save_disabled:
+            return
+
+        self.config.fullscreen = not self.config.fullscreen
+        libtcod.console_set_fullscreen(self.config.fullscreen)
 
 
 def start_game(world, w, h, oldseed=None, oldbones=None):
@@ -5542,7 +5554,7 @@ def check_autoplay(world):
     return 0
 
 
-def main(replay=None):
+def main(config, replay=None):
 
     #global qqq1
     #qqq1 = open('qqq1', 'a')
@@ -5567,12 +5579,12 @@ def main(replay=None):
 
     font = 'font.png' #'terminal10x16_gs_ro.png'
     libtcod.console_set_custom_font(font, libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_ASCII_INROW)
-    libtcod.console_init_root(w, h, 'Diggr', False, libtcod.RENDERER_SDL)
+    libtcod.console_init_root(w, h, 'Diggr', config.fullscreen, libtcod.RENDERER_SDL)
     libtcod.sys_set_fps(30)
     #cons = libtcod.console_new(w, h)
     #cons = None
 
-    world = World()
+    world = World(config)
     world.make_keymap()
 
     if replay is not None:
@@ -5640,6 +5652,7 @@ def main(replay=None):
 #cProfile.run('main()')
 
 if __name__=='__main__':
+    config = Config()
     while 1:
-        if main():
+        if main(config):
             break
