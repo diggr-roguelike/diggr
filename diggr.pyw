@@ -12,31 +12,42 @@ import libtcodpy as libtcod
 
 import sqlite3
 
-##random__ = random
-##
-##qqq1 = None
-##
-##class random(object):
-##    @staticmethod
-##    def randint(*a):
-##        print >> qqq1, 'randint', a
-##        return random__.randint(*a)
-##    @staticmethod
-##    def seed(*a):
-##        print >> qqq1, 'seed', a
-##        return random__.seed(*a)
-##    @staticmethod
-##    def gauss(*a):
-##        print >> qqq1, 'gauss', a
-##        return random__.gauss(*a)
-##    @staticmethod
-##    def uniform(*a):
-##        print >> qqq1, 'uniform', a
-##        return random__.uniform(*a)
-##    @staticmethod
-##    def choice(*a):
-##        print >> qqq1, 'choice', a
-##        return random__.choice(*a)
+
+class Logger:
+    def __init__(self):
+        self.f = None
+
+    def log(self, *x):
+        if self.f:
+            print >> self.f, ' '.join(str(i) for i in x)
+        else:
+            print ' '.join(str(i) for i in x)
+
+log = Logger()
+
+random__ = random
+
+class random(object):
+    @staticmethod
+    def randint(*a):
+        log.log('randint', a)
+        return random__.randint(*a)
+    @staticmethod
+    def seed(*a):
+        log.log('seed', a)
+        return random__.seed(*a)
+    @staticmethod
+    def gauss(*a):
+        log.log('gauss', a)
+        return random__.gauss(*a)
+    @staticmethod
+    def uniform(*a):
+        log.log('uniform', a)
+        return random__.uniform(*a)
+    @staticmethod
+    def choice(*a):
+        log.log('choice', a)
+        return random__.choice(*a)
 
 
 #
@@ -80,6 +91,11 @@ _version = '11.10.02'
 global _inputs
 global _inputqueue
 _inputqueue = None
+
+global _inputdelay
+_inputdelay = 100
+
+
 class fakekey:
     def __init__(self, c, vk):
         self.c = c
@@ -92,6 +108,8 @@ class Config:
 
 def console_wait_for_keypress():
     global _inputqueue
+    global _inputdelay
+
     if _inputqueue is not None:
 
         if len(_inputqueue) == 0:
@@ -100,14 +118,20 @@ def console_wait_for_keypress():
         c, vk = _inputqueue[0]
         _inputqueue = _inputqueue[1:]
 
-        libtcod.console_check_for_keypress()
-        libtcod.sys_sleep_milli(100)
-        #print >> qqq1, '  key:', c, vk
+        tmp = libtcod.console_check_for_keypress()
+
+        if tmp.vk == libtcod.KEY_RIGHT and _inputdelay > 20:
+            _inputdelay -= 20
+        elif tmp.vk == libtcod.KEY_LEFT and _inputdelay < 1000:
+            _inputdelay += 20
+
+        libtcod.sys_sleep_milli(_inputdelay)
+        log.log('  key:', (chr(c) if c > 31 else ''), c, vk)
         return fakekey(c, vk)
 
     k = libtcod.console_wait_for_keypress(False)
     _inputs.append((k.c, k.vk))
-    #print >> qqq1, '  key:', k.c, k.vk
+    log.log('  key:', k.c, k.vk)
     return k
 
 
@@ -1926,7 +1950,7 @@ class MonsterStock:
         return m
 
     def death(self, mon):
-        print '!!',mon.name
+        log.log('!!',mon.name)
         if not mon.branch:
             return (False, False)
 
@@ -1939,9 +1963,9 @@ class MonsterStock:
 
         for x in xrange(len(m)):
             if mon.name == m[x].name:
-                print 'md3',m[x].count
+                log.log('  #',m[x].count)
                 if m[x].count <= 1:
-                    print '!',m[x].count
+                    log.log('!',m[x].count)
                     del m[x]
                     ret = True
                 else:
@@ -3126,7 +3150,7 @@ class World:
 
 
     def make_paths(self):
-        #print >> qqq1, '  making path'
+        log.log('  making path')
         if self.floorpath:
             libtcod.path_delete(self.floorpath)
 
@@ -3215,8 +3239,10 @@ class World:
     def generate_inv(self):
         self.inv.take(self.itemstock.find('lamp'))
         l = [self.itemstock.get('pickaxe')]
-        for x in range(3):
+
+        for x in xrange(3):
             l.append(self.itemstock.generate(1))
+
         if (self.px, self.py) not in self.itemap:
             self.itemap[(self.px, self.py)] = l
         else:
@@ -4299,6 +4325,8 @@ class World:
 
 
     def explode(self, x0, y0, rad):
+        log.log('BAM:',self.t,x0,y0,rad)
+
         chains = set()
         def func(x, y):
             if random.randint(0, 5) == 0:
@@ -4332,7 +4360,7 @@ class World:
 
         draw_blast(x0, y0, self.w, self.h, rad, func)
 
-        for x, y, r in chains:
+        for x, y, r in sorted(chains):
             self.explode(x, y, r)
 
 
@@ -4856,7 +4884,7 @@ class World:
                 libtcod.line_init(x, y, mon.known_px, mon.known_py)
                 mdx, mdy = libtcod.line_step()
             else:
-                #print >> qqq1, '  computing path'
+                log.log('  computing path')
                 libtcod.path_compute(self.floorpath, x, y, mon.known_px, mon.known_py)
                 mdx, mdy = libtcod.path_walk(self.floorpath, True)
 
@@ -4942,7 +4970,7 @@ class World:
         fired = []
 
         for k,mon in sorted(self.monmap.iteritems()):
-            #print >> qqq1, '  tick:', k
+            log.log('  tick:', k)
 
             if mon.summon and mon.visible and (self.t % mon.summon[1]) == 0:
                 summons.append((k, mon))
@@ -5013,7 +5041,7 @@ class World:
                 mon.fireattack = None
                 mon.fireduration = 0
 
-        for x, y, r in explodes:
+        for x, y, r in sorted(explodes):
             del self.itemap[(x, y)]
             self.explode(x, y, r)
 
@@ -5557,8 +5585,8 @@ def check_autoplay(world):
 def main(config, replay=None):
 
     #global qqq1
-    #qqq1 = open('qqq1', 'a')
-    #print >> qqq1, 'START'
+    log.f = open('qqq1', 'a')
+    log.log('START')
 
     oldseed = None
     oldbones = None
@@ -5642,8 +5670,9 @@ def main(config, replay=None):
     if replay is None and world.dead:
         world.form_highscore()
 
-    #print >> qqq1, 'DONE'
-    #qqq1.close()
+    log.log('DONE')
+    log.f.close()
+    log.f = None
 
     return world.done
 
