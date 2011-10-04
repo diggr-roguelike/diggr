@@ -118,14 +118,21 @@ def console_wait_for_keypress():
         c, vk = _inputqueue[0]
         _inputqueue = _inputqueue[1:]
 
-        tmp = libtcod.console_check_for_keypress()
+        if _inputdelay < 1000:
+            tmp = libtcod.console_check_for_keypress()
+        else:
+            tmp = libtcod.console_wait_for_keypress(False)
 
         if tmp.vk == libtcod.KEY_RIGHT and _inputdelay > 20:
-            _inputdelay -= 20
+            _inputdelay -= (20 if _inputdelay <= 200 else 200)
         elif tmp.vk == libtcod.KEY_LEFT and _inputdelay < 1000:
-            _inputdelay += 20
+            _inputdelay += (20 if _inputdelay < 200 else 200)
+        elif tmp.c == 32: # space
+            _inputdelay = 1000
 
-        libtcod.sys_sleep_milli(_inputdelay)
+        if _inputdelay < 1000:
+            libtcod.sys_sleep_milli(_inputdelay)
+
         log.log('  key:', (chr(c) if c > 31 else ''), c, vk)
         return fakekey(c, vk)
 
