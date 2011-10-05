@@ -4383,7 +4383,7 @@ class World:
         if player_move and item:
             plev = min(max(self.plev - d + 1, 1), self.plev)
             attack = item.rangeattack
-            #print '+', d, plev, attack
+            log.log('+', d, plev, attack)
 
         elif player_move and attackstat:
             plev = attackstat[0]
@@ -4620,12 +4620,15 @@ class World:
             mon = self.monsters_in_view[i]
             d = math.sqrt(math.pow(abs(self.px - mon.x), 2) +
                           math.pow(abs(self.py - mon.y), 2))
+
+            log.log(" #", mon.x, mon.y, d, range, minrange)
             if d > range:
                 continue
 
             if minrange and d < minrange:
                 continue
 
+            log.log(" # ok")
             monx = mon.x
             mony = mon.y
             del self.monsters_in_view[i]
