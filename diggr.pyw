@@ -4616,6 +4616,8 @@ class World:
 
         monx = None
         mony = None
+        log.log(" ## ", len(self.monsters_in_view), ' '.join('%s' % ((mon.x, mon.y),) for mon in self.monsters_in_view))
+
         for i in xrange(len(self.monsters_in_view)):
             mon = self.monsters_in_view[i]
             d = math.sqrt(math.pow(abs(self.px - mon.x), 2) +
@@ -5086,8 +5088,14 @@ class World:
         monsters_in_view = []
         did_highlight = False
 
+        log.log(' lr:', lightradius)
         libtcod.map_compute_fov(self.tcodmap, self.px, self.py, lightradius,
-                                True, libtcod.FOV_RESTRICTIVE)
+                                True, 
+                                libtcod.FOV_SHADOW)
+        # FOV_RESTICTIVE works differently for
+        # Windows and Linux builds. (Floating point rounding errors?)
+        # Besides, FOV_SHADOW looks better.
+        # libtcod.FOV_RESTRICTIVE)
 
         for x in xrange(self.w):
             for y in xrange(self.h):
@@ -5215,6 +5223,7 @@ class World:
         # hack
         if withtime:
             self.monsters_in_view = []
+            log.log(' mnmap2:', ' '.join('%s' % ((mon.x,mon.y),) for mon in monsters_in_view))
             for mon in monsters_in_view:
                 if (mon.x, mon.y) in self.monmap:
                     self.monsters_in_view.append(mon)
