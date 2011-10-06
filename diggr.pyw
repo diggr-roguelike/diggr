@@ -25,29 +25,29 @@ class Logger:
 
 log = Logger()
 
-random__ = random
+# random__ = random
 
-class random(object):
-    @staticmethod
-    def randint(*a):
-        log.log('randint', a)
-        return random__.randint(*a)
-    @staticmethod
-    def seed(*a):
-        log.log('seed', a)
-        return random__.seed(*a)
-    @staticmethod
-    def gauss(*a):
-        log.log('gauss', a)
-        return random__.gauss(*a)
-    @staticmethod
-    def uniform(*a):
-        log.log('uniform', a)
-        return random__.uniform(*a)
-    @staticmethod
-    def choice(*a):
-        log.log('choice', a)
-        return random__.choice(*a)
+# class random(object):
+#     @staticmethod
+#     def randint(*a):
+#         log.log('randint', a)
+#         return random__.randint(*a)
+#     @staticmethod
+#     def seed(*a):
+#         log.log('seed', a)
+#         return random__.seed(*a)
+#     @staticmethod
+#     def gauss(*a):
+#         log.log('gauss', a)
+#         return random__.gauss(*a)
+#     @staticmethod
+#     def uniform(*a):
+#         log.log('uniform', a)
+#         return random__.uniform(*a)
+#     @staticmethod
+#     def choice(*a):
+#         log.log('choice', a)
+#         return random__.choice(*a)
 
 
 #
@@ -133,12 +133,12 @@ def console_wait_for_keypress():
         if _inputdelay < 1000:
             libtcod.sys_sleep_milli(_inputdelay)
 
-        log.log('  key:', (chr(c) if c > 31 else ''), c, vk)
+        #log.log('  key:', (chr(c) if c > 31 else ''), c, vk)
         return fakekey(c, vk)
 
     k = libtcod.console_wait_for_keypress(False)
     _inputs.append((k.c, k.vk))
-    log.log('  key:', k.c, k.vk)
+    #log.log('  key:', k.c, k.vk)
     return k
 
 
@@ -675,14 +675,10 @@ class CelAutoStock:
                 que[ki] = ca
 
 
-        print '------'
-
         for k,v in sorted(camap.iteritems()):
 
             x,y = k
             ca,state = v
-
-            print x, y, state
 
             # check if we are dead
             if state > 0:
@@ -704,16 +700,14 @@ class CelAutoStock:
         for k,ca in sorted(que.iteritems()):
             x,y = k
             n = find_n(x, y, ca)
-            print 'new', x, y, n
+
             if n in ca.rule[1]:
                 ret[k] = (ca, 0)
-                print 'on', x, y, ca.featureon
                 funcon(x, y, ca)
 
         # leave remains of dead cells
         for k,ca in sorted(dead.iteritems()):
             x,y = k
-            print 'off', x, y, ca.featureoff
             funcoff(x, y, ca)
 
         return ret
@@ -1276,7 +1270,7 @@ class World:
 
 
     def make_paths(self):
-        log.log('  making path')
+        #log.log('  making path')
         if self.floorpath:
             libtcod.path_delete(self.floorpath)
 
@@ -2451,7 +2445,6 @@ class World:
 
 
     def explode(self, x0, y0, rad):
-        log.log('BAM:',self.t,x0,y0,rad)
 
         chains = set()
         def func(x, y):
@@ -2502,7 +2495,7 @@ class World:
         if player_move and item:
             plev = min(max(self.plev - d + 1, 1), self.plev)
             attack = item.rangeattack
-            log.log('+', d, plev, attack)
+            #log.log('+', d, plev, attack)
 
         elif player_move and attackstat:
             plev = attackstat[0]
@@ -2735,21 +2728,21 @@ class World:
 
         monx = None
         mony = None
-        log.log(" ## ", len(self.monsters_in_view), ' '.join('%s' % ((mon.x, mon.y),) for mon in self.monsters_in_view))
+        #log.log(" ## ", len(self.monsters_in_view), ' '.join('%s' % ((mon.x, mon.y),) for mon in self.monsters_in_view))
 
         for i in xrange(len(self.monsters_in_view)):
             mon = self.monsters_in_view[i]
             d = math.sqrt(math.pow(abs(self.px - mon.x), 2) +
                           math.pow(abs(self.py - mon.y), 2))
 
-            log.log(" #", mon.x, mon.y, d, range, minrange)
+            #log.log(" #", mon.x, mon.y, d, range, minrange)
             if d > range:
                 continue
 
             if minrange and d < minrange:
                 continue
 
-            log.log(" # ok")
+            #log.log(" # ok")
             monx = mon.x
             mony = mon.y
             del self.monsters_in_view[i]
@@ -3017,7 +3010,6 @@ class World:
                 libtcod.line_init(x, y, mon.known_px, mon.known_py)
                 mdx, mdy = libtcod.line_step()
             else:
-                log.log('  computing path')
                 libtcod.path_compute(self.floorpath, x, y, mon.known_px, mon.known_py)
                 mdx, mdy = libtcod.path_walk(self.floorpath, True)
 
@@ -3126,7 +3118,7 @@ class World:
         fired = []
 
         for k,mon in sorted(self.monmap.iteritems()):
-            log.log('  tick:', k)
+            #log.log('  tick:', k)
 
             if mon.summon and mon.visible and (self.t % mon.summon[1]) == 0:
                 summons.append((k, mon))
@@ -3232,7 +3224,6 @@ class World:
         monsters_in_view = []
         did_highlight = False
 
-        log.log(' lr:', lightradius)
         libtcod.map_compute_fov(self.tcodmap, self.px, self.py, lightradius,
                                 True, 
                                 libtcod.FOV_SHADOW)
@@ -3372,7 +3363,6 @@ class World:
         # hack
         if withtime:
             self.monsters_in_view = []
-            log.log(' mnmap2:', ' '.join('%s' % ((mon.x,mon.y),) for mon in monsters_in_view))
             for mon in monsters_in_view:
                 if (mon.x, mon.y) in self.monmap:
                     self.monsters_in_view.append(mon)
@@ -3753,9 +3743,8 @@ def check_autoplay(world):
 
 def main(config, replay=None):
 
-    #global qqq1
-    log.f = open('qqq1', 'a')
-    log.log('START')
+    #log.f = open('qqq1', 'a')
+    #log.log('START')
 
     oldseed = None
     oldbones = None
@@ -3839,7 +3828,7 @@ def main(config, replay=None):
     if replay is None and world.dead:
         world.form_highscore()
 
-    log.log('DONE')
+    #log.log('DONE')
     log.f.close()
     log.f = None
 
