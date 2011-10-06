@@ -5,7 +5,7 @@ class Feature:
                  name="something strange", stairs=False, sticky=False, water=None,
                  s_shrine=False, b_shrine=False, v_shrine=False, height=-10,
                  shootable=False, warm=False, branch=None, healingfountain=False,
-                 nofeature=False):
+                 nofeature=False, poison=None, confuse=False, back=None):
         self.walkable = walkable
         self.visible = visible
         self.water = water
@@ -22,6 +22,9 @@ class Feature:
         self.branch = branch
         self.healingfountain = healingfountain
         self.nofeature = nofeature
+        self.poison = poison
+        self.confuse = confuse
+        self.back = back
 
 
 class FeatureStock:
@@ -127,3 +130,9 @@ class FeatureStock:
 
         self.f['.'] = Feature(walkable=True, visible=True, nofeature=True, 
                               water=False)
+
+        self.f['e'] = Feature(walkable=True, visible=True, skin=None, back=libtcod.darkest_green,
+                              poison=0.5, name='a cloud of Ebola virus')
+
+        self.f['f'] = Feature(walkable=True, visible=True, skin=None, back=libtcod.dark_gray,
+                              confuse=True, name='confusing smoke')

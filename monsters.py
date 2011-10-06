@@ -10,7 +10,7 @@ class Monster:
                  psyrange=0, confimmune=False, slow=False, selfdestruct=False,
                  straightline=False, stoneeating=False, sleepattack=False,
                  hungerattack=False, flying=False, radimmune=False, no_a=False,
-                 summon=False, branch=None, fireimmune=False):
+                 summon=False, branch=None, fireimmune=False, poisimmune=False):
         self.name = name
         self.skin = skin
         self.count = count
@@ -37,6 +37,7 @@ class Monster:
         self.summon = summon
         self.branch = branch
         self.fireimmune = fireimmune
+        self.poisimmune = poisimmune
 
         self.x = 0
         self.y = 0

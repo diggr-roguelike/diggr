@@ -599,12 +599,11 @@ from vaults import *
 
 class CelAuto:
     def __init__(self, color=libtcod.light_blue,
-                 rule="345/26/5", featureon=None, featureoff=None,
+                 rule="345/26/5", featuretoggle=None,
                  watertoggle=None,
                  pic=None, anchor=(0,0)):
         self.color = color
-        self.featureon = featureon
-        self.featureoff = featureoff
+        self.featuretoggle = featuretoggle
         self.watertoggle = watertoggle
         self.pic = pic
         self.anchor = anchor
@@ -616,8 +615,12 @@ class CelAuto:
 class CelAutoStock:
     def __init__(self):
 
-        self.flood = CelAuto(rule="345/26/5", watertoggle=True, color=None,
+        self.ebola = CelAuto(rule="345/26/5", color=None, featuretoggle='e',
                              pic=["..",".."])
+
+        self.smokecloud = CelAuto(rule="345/26/6", color=None,
+                                  featuretoggle='f',
+                                  pic=["..",".."])
 
 
     def paste(self, camap, x, y, w, h, ca):
@@ -1493,6 +1496,11 @@ class World:
             if self.resting: self.resting = False
             if self.digging: self.digging = None
 
+        p = self.try_feature(self.px, self.py, 'poison')
+        if p: 
+            self.msg.m('You feel very sick!', True)
+            self.stats.health.dec(p, 'Ebola infection')
+
         if self.stats.health.x <= -3.0:
             self.dead = True
             return
@@ -1521,6 +1529,7 @@ class World:
             self.stats.warmth.dec(self.coef.watercold)
         else:
             self.stats.warmth.inc(self.inv.get_heatbonus())
+
         self.tick_checkstats()
         self.t += 1
 
@@ -1541,8 +1550,6 @@ class World:
             self.stats.health.inc(self.coef.healingsleep)
 
         self.tick_checkstats()
-
-
 
         if self.sleeping > 0:
             self.sleeping -= 1
@@ -2931,7 +2938,8 @@ class World:
             '?': self.show_help,
             'S': self.save,
 
-            'c': lambda: (self.paste_celauto(self.px, self.py, 'flood'))
+            'c': lambda: (self.paste_celauto(self.px, self.py, 'ebola')),
+            'v': lambda: (self.paste_celauto(self.px, self.py, 'smokecloud'))
             }
         self.vkeys = {
             libtcod.KEY_KP4: self.move_left,
@@ -2976,6 +2984,9 @@ class World:
 
         if self.inv.trunk and self.inv.trunk.camorange:
             rang = min(rang, self.inv.trunk.camorange)
+
+        if self.try_feature(x, y, 'confuse'):
+            rang = 1
 
         if dist > rang or mon.confused or (mon.sleepattack and self.sleeping):
             mdx = x + random.randint(-1, 1)
@@ -3031,6 +3042,18 @@ class World:
                 self.msg.m(mn + ' gets stuck in some glue!')
             mon.glued = max(int(random.gauss(*self.coef.glueduration)), 1)
 
+        p = self.try_feature(mdx, mdy, 'poison')
+        if p and not mon.poisimmune:
+            mon.hp -= p
+            if mon.hp <= -3.0:
+                if mon.visible or mon.visible_old:
+                    mn = str(mon)
+                    mn = mn[0].upper() + mn[1:]
+                    self.msg.m(mn + ' falls over and dies!')
+
+                self.handle_mondeath(mon, do_gain=False)
+                del self.monmap[(mdx, mdy)]
+
 
     def summon(self, x, y, monname, n):
         m = self.monsterstock.find(monname, n, self.itemstock)
@@ -3066,23 +3089,26 @@ class World:
         self.celautostock.paste(self.celautomap, x, y, self.w, self.h, ca)
 
 
+    def celauto_on(self, x, y, ca):
+        if ca.watertoggle is not None:
+            self.watermap.add((x, y))
+        elif ca.featuretoggle:
+            if (x, y) not in self.featmap and (x, y) in self.walkmap:
+                self.set_feature(x, y, ca.featuretoggle)
+
+    def celauto_off(self, x, y, ca):
+        if ca.watertoggle is not None:
+            self.watermap.discard((x, y))
+        elif ca.featuretoggle and (x, y) in self.featmap and \
+             self.featmap[(x, y)] == self.featstock.f[ca.featuretoggle]:
+            del self.featmap[(x,y)]
+
+
     def process_world(self):
-
-        def celauto_on(x, y, ca):
-            if ca.watertoggle is not None:
-                self.watermap.add((x, y))
-            else:
-                self.set_feature(x, y, ca.featureon)
-
-        def celauto_off(x, y, ca):
-            if ca.watertoggle is not None:
-                self.watermap.discard((x, y))
-            else:
-                self.set_feature(x, y, ca.featureoff)
 
         self.celautomap = self.celautostock.celauto_step(
             self.celautomap, self.w, self.h,
-            celauto_on, celauto_off)
+            self.celauto_on, self.celauto_off)
 
 
         explodes = set()
@@ -3221,6 +3247,10 @@ class World:
         if withtime:
             self.process_world()
 
+        # hack, after process_world because confusing features may be created
+        if self.try_feature(self.px, self.py, 'confuse'):
+            lightradius = 1
+
         monsters_in_view = []
         did_highlight = False
 
@@ -3294,7 +3324,7 @@ class World:
                     elif (x, y) in self.itemap:
                         c, fore = self.itemap[(x, y)][0].skin
 
-                    elif (x, y) in self.featmap:
+                    elif (x, y) in self.featmap and self.featmap[(x, y)].skin:
                         f = self.featmap[(x, y)]
                         c, fore = f.skin
 
@@ -3321,6 +3351,10 @@ class World:
                             fore = libtcod.color_lerp(libtcod.white, fore, min(d*2, 1.0))
 
                         fore = libtcod.color_lerp(fore, back, min(d, 1.0))
+
+
+                    if (x, y) in self.featmap and self.featmap[(x, y)].back:
+                        back = self.featmap[(x, y)].back
 
                     if (x, y) in self.celautomap:
                         ca,state = self.celautomap[(x, y)]
@@ -3829,8 +3863,8 @@ def main(config, replay=None):
         world.form_highscore()
 
     #log.log('DONE')
-    log.f.close()
-    log.f = None
+    #log.f.close()
+    #log.f = None
 
     return world.done
 
