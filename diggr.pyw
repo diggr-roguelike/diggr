@@ -597,10 +597,127 @@ from vaults import *
 
 
 
-class CelAutomata:
+class CelAuto:
     def __init__(self, color=libtcod.light_blue,
-                 rule="345/26/5", feature=''):
-        pass
+                 rule="345/26/5", featureon=None, featureoff=None,
+                 watertoggle=None,
+                 pic=None, anchor=(0,0)):
+        self.color = color
+        self.featureon = featureon
+        self.featureoff = featureoff
+        self.watertoggle = watertoggle
+        self.pic = pic
+        self.anchor = anchor
+
+        self.rule = tuple(set(int(x) for x in s) for s in rule.split('/'))
+        self.rule = (self.rule[0], self.rule[1], list(self.rule[2])[0])
+
+
+class CelAutoStock:
+    def __init__(self):
+
+        self.flood = CelAuto(rule="345/26/5", watertoggle=True, color=None,
+                             pic=["..",".."])
+
+
+    def paste(self, camap, x, y, w, h, ca):
+
+        x -= ca.anchor[0]
+        y -= ca.anchor[1]
+
+        for yi in xrange(len(ca.pic)):
+            for xi in xrange(len(ca.pic[yi])):
+                if ca.pic[yi][xi] != '.':
+                    continue
+                
+                x1 = x + xi
+                y1 = y + yi
+
+                if x1 < 0 or x1 >= w or y1 < 0 or y1 >= h:
+                    continue
+
+                camap[(x1, y1)] = (ca, 0)
+
+
+    def celauto_step(self, camap, w, h, funcon, funcoff):
+
+        # See:
+        # http://www.mirekw.com/ca/rullex_gene.html
+
+        ret = {}
+
+        que = {}
+        dead = {}
+
+        def find_n(x, y, ca, f=None):
+            n = 0
+
+            for xi in xrange(-1, 2):
+                for yi in xrange(-1, 2):
+                    if xi == 0 and yi == 0:
+                        continue
+
+                    ki = (x+xi, y+yi)
+
+                    if ki[0] < 0 or ki[0] >= w or ki[1] < 0 or ki[1] >= h:
+                        continue
+
+                    if ki in camap and camap[ki][0] == ca and camap[ki][1] == 0:
+                        n += 1
+
+                    if f:
+                        f(ki, ca)
+
+            return n
+
+        def fque(ki, ca):
+            if ki not in camap:
+                que[ki] = ca
+
+
+        print '------'
+
+        for k,v in sorted(camap.iteritems()):
+
+            x,y = k
+            ca,state = v
+
+            print x, y, state
+
+            # check if we are dead
+            if state > 0:
+                if state < ca.rule[2] - 1:
+                    ret[k] = (ca, state + 1)
+                else:
+                    dead[k] = ca
+
+            else:
+                # check if we survive
+                n = find_n(x, y, ca, f=fque)
+
+                if n not in ca.rule[0]:
+                    ret[k] = (ca, state + 1)
+                else:
+                    ret[k] = v
+
+        # check for newborn cells
+        for k,ca in sorted(que.iteritems()):
+            x,y = k
+            n = find_n(x, y, ca)
+            print 'new', x, y, n
+            if n in ca.rule[1]:
+                ret[k] = (ca, 0)
+                print 'on', x, y, ca.featureon
+                funcon(x, y, ca)
+
+        # leave remains of dead cells
+        for k,ca in sorted(dead.iteritems()):
+            x,y = k
+            print 'off', x, y, ca.featureoff
+            funcoff(x, y, ca)
+
+        return ret
+            
 
 
 
@@ -843,7 +960,8 @@ class World:
         self.b_grace = 0
         self.v_grace = 0
 
-        self.camap = {}
+        self.celautostock = CelAutoStock()
+        self.celautomap = {}
 
         self.floorpath = None
 
@@ -2818,7 +2936,9 @@ class World:
             'P': self.show_messages,
             'Q': self.quit,
             '?': self.show_help,
-            'S': self.save
+            'S': self.save,
+
+            'c': lambda: (self.paste_celauto(self.px, self.py, 'flood'))
             }
         self.vkeys = {
             libtcod.KEY_KP4: self.move_left,
@@ -2948,7 +3068,30 @@ class World:
 
         return ret
 
+
+    def paste_celauto(self, x, y, name):
+        ca = getattr(self.celautostock, name)
+        self.celautostock.paste(self.celautomap, x, y, self.w, self.h, ca)
+
+
     def process_world(self):
+
+        def celauto_on(x, y, ca):
+            if ca.watertoggle is not None:
+                self.watermap.add((x, y))
+            else:
+                self.set_feature(x, y, ca.featureon)
+
+        def celauto_off(x, y, ca):
+            if ca.watertoggle is not None:
+                self.watermap.discard((x, y))
+            else:
+                self.set_feature(x, y, ca.featureoff)
+
+        self.celautomap = self.celautostock.celauto_step(
+            self.celautomap, self.w, self.h,
+            celauto_on, celauto_off)
+
 
         explodes = set()
         mons = []
@@ -3188,6 +3331,11 @@ class World:
 
                         fore = libtcod.color_lerp(fore, back, min(d, 1.0))
 
+                    if (x, y) in self.celautomap:
+                        ca,state = self.celautomap[(x, y)]
+                        if ca.color is not None:
+                            back = libtcod.color_lerp(ca.color, back, float(state) / ca.rule[2])
+
                     if x == _hlx and y == _hly:
                         back = libtcod.white
                         did_highlight = True
@@ -3251,6 +3399,7 @@ class World:
           'mapping', 'glued', 's_grace', 'b_grace', 'v_grace', 'forcedsleep',
           'forced2sleep', 'healingsleep',
           '_seed', '_inputs', 'featstock', 'vaultstock',
+          'celautostock', 'celautomap',
           'achievements', 'bones'
           ]
         state = {}

@@ -124,3 +124,6 @@ class FeatureStock:
 
         self.f['W'] = Feature(walkable=True, visible=True, nofeature=True, 
                               water=True)
+
+        self.f['.'] = Feature(walkable=True, visible=True, nofeature=True, 
+                              water=False)
