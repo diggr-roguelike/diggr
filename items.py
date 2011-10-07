@@ -413,10 +413,10 @@ class ItemStock:
                                  count=2,
                                  desc=['A portable hole. Used as an escape device.'])
 
-        self.portablehole = Item('portable tunnel$s', slot='d', skin=('`', libtcod.dark_sepia),
-                                 rarity=4, applies=True, jumprange=12, stackrange=2,
-                                 count=1,
-                                 desc=['Like a portable hole, but much larger.'])
+        self.portabletunnel = Item('portable tunnel$s', slot='d', skin=('`', libtcod.dark_sepia),
+                                   rarity=4, applies=True, jumprange=12, stackrange=2,
+                                   count=1,
+                                   desc=['Like a portable hole, but much larger.'])
 
         self.bombsuit = Item('bomb suit', slot='c', skin=('[', libtcod.lightest_yellow),
                              explodeimmune=True, rarity=3, defence=0.1,
