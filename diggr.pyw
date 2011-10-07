@@ -86,7 +86,7 @@ log = Logger()
 
 
 global _version
-_version = '11.10.02'
+_version = '11.10.09'
 
 global _inputs
 global _inputqueue
