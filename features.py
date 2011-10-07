@@ -131,8 +131,8 @@ class FeatureStock:
         self.f['.'] = Feature(walkable=True, visible=True, nofeature=True, 
                               water=False)
 
-        self.f['e'] = Feature(walkable=True, visible=True, skin=None, back=libtcod.darkest_green,
+        self.f['e'] = Feature(walkable=True, visible=True, skin=None, back=libtcod.desaturated_green,
                               poison=0.5, name='a cloud of Ebola virus')
 
-        self.f['f'] = Feature(walkable=True, visible=True, skin=None, back=libtcod.dark_gray,
+        self.f['f'] = Feature(walkable=True, visible=True, skin=None, back=libtcod.gray,
                               confuse=True, name='confusing smoke')

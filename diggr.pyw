@@ -593,127 +593,9 @@ from items import *
 from monsters import *
 from features import *
 from vaults import *
+from celauto import *
 
 
-
-
-class CelAuto:
-    def __init__(self, color=libtcod.light_blue,
-                 rule="345/26/5", featuretoggle=None,
-                 watertoggle=None,
-                 pic=None, anchor=(0,0)):
-        self.color = color
-        self.featuretoggle = featuretoggle
-        self.watertoggle = watertoggle
-        self.pic = pic
-        self.anchor = anchor
-
-        self.rule = tuple(set(int(x) for x in s) for s in rule.split('/'))
-        self.rule = (self.rule[0], self.rule[1], list(self.rule[2])[0])
-
-
-class CelAutoStock:
-    def __init__(self):
-
-        self.ebola = CelAuto(rule="345/26/5", color=None, featuretoggle='e',
-                             pic=["..",".."])
-
-        self.smokecloud = CelAuto(rule="345/26/6", color=None,
-                                  featuretoggle='f',
-                                  pic=["..",".."])
-
-
-    def paste(self, camap, x, y, w, h, ca):
-
-        x -= ca.anchor[0]
-        y -= ca.anchor[1]
-
-        for yi in xrange(len(ca.pic)):
-            for xi in xrange(len(ca.pic[yi])):
-                if ca.pic[yi][xi] != '.':
-                    continue
-                
-                x1 = x + xi
-                y1 = y + yi
-
-                if x1 < 0 or x1 >= w or y1 < 0 or y1 >= h:
-                    continue
-
-                camap[(x1, y1)] = (ca, 0)
-
-
-    def celauto_step(self, camap, w, h, funcon, funcoff):
-
-        # See:
-        # http://www.mirekw.com/ca/rullex_gene.html
-
-        ret = {}
-
-        que = {}
-        dead = {}
-
-        def find_n(x, y, ca, f=None):
-            n = 0
-
-            for xi in xrange(-1, 2):
-                for yi in xrange(-1, 2):
-                    if xi == 0 and yi == 0:
-                        continue
-
-                    ki = (x+xi, y+yi)
-
-                    if ki[0] < 0 or ki[0] >= w or ki[1] < 0 or ki[1] >= h:
-                        continue
-
-                    if ki in camap and camap[ki][0] == ca and camap[ki][1] == 0:
-                        n += 1
-
-                    if f:
-                        f(ki, ca)
-
-            return n
-
-        def fque(ki, ca):
-            if ki not in camap:
-                que[ki] = ca
-
-
-        for k,v in sorted(camap.iteritems()):
-
-            x,y = k
-            ca,state = v
-
-            # check if we are dead
-            if state > 0:
-                if state < ca.rule[2] - 1:
-                    ret[k] = (ca, state + 1)
-                else:
-                    dead[k] = ca
-
-            else:
-                # check if we survive
-                n = find_n(x, y, ca, f=fque)
-
-                if n not in ca.rule[0]:
-                    ret[k] = (ca, state + 1)
-                else:
-                    ret[k] = v
-
-        # check for newborn cells
-        for k,ca in sorted(que.iteritems()):
-            x,y = k
-            n = find_n(x, y, ca)
-
-            if n in ca.rule[1]:
-                ret[k] = (ca, 0)
-                funcon(x, y, ca)
-
-        # leave remains of dead cells
-        for k,ca in sorted(dead.iteritems()):
-            x,y = k
-            funcoff(x, y, ca)
-
-        return ret
             
 
 
@@ -1388,7 +1270,9 @@ class World:
             self.glued -= 1
             if self.glued == 0:
                 self.msg.m('You dislodge yourself from the glue.')
-                del self.featmap[(self.px, self.py)]
+                if (self.px, self.py) in self.featmap and \
+                   self.featmap[(self.px, self.py)] == self.featstock.f['^']:
+                    del self.featmap[(self.px, self.py)]
             else:
                 self.msg.m('You are stuck in the glue!')
                 self.tick()
@@ -2939,7 +2823,8 @@ class World:
             'S': self.save,
 
             'c': lambda: (self.paste_celauto(self.px, self.py, 'ebola')),
-            'v': lambda: (self.paste_celauto(self.px, self.py, 'smokecloud'))
+            'v': lambda: (self.paste_celauto(self.px, self.py, 'smokecloud')),
+            'x': lambda: (self.paste_celauto(self.px, self.py, 'trapmaker'))
             }
         self.vkeys = {
             libtcod.KEY_KP4: self.move_left,
@@ -2972,7 +2857,9 @@ class World:
         if mon.glued > 0:
             mon.glued -= 1
             if mon.glued == 0:
-                del self.featmap[(mon.x, mon.y)]
+                if (mon.x, mon.y) in self.featmap and \
+                   self.featmap[(mon.x, mon.y)] == self.featstock.f['^']:
+                    del self.featmap[(mon.x, mon.y)]
             else:
                 return None, None
 
@@ -3041,18 +2928,6 @@ class World:
                 mn = mn[0].upper() + mn[1:]
                 self.msg.m(mn + ' gets stuck in some glue!')
             mon.glued = max(int(random.gauss(*self.coef.glueduration)), 1)
-
-        p = self.try_feature(mdx, mdy, 'poison')
-        if p and not mon.poisimmune:
-            mon.hp -= p
-            if mon.hp <= -3.0:
-                if mon.visible or mon.visible_old:
-                    mn = str(mon)
-                    mn = mn[0].upper() + mn[1:]
-                    self.msg.m(mn + ' falls over and dies!')
-
-                self.handle_mondeath(mon, do_gain=False)
-                del self.monmap[(mdx, mdy)]
 
 
     def summon(self, x, y, monname, n):
@@ -3146,6 +3021,27 @@ class World:
         for k,mon in sorted(self.monmap.iteritems()):
             #log.log('  tick:', k)
 
+            x, y = k
+            dist = math.sqrt(math.pow(abs(self.px - x), 2) + math.pow(abs(self.py - y), 2))
+
+            mon.do_move = None
+            mon.do_die = False
+
+            p = self.try_feature(x, y, 'poison')
+            if p and not mon.poisimmune:
+                mon.hp -= p
+                if mon.hp <= -3.0:
+                    print 'dead',mon.name,mon.visible,mon.visible_old
+                    if mon.visible:
+                        mn = str(mon)
+                        mn = mn[0].upper() + mn[1:]
+                        self.msg.m(mn + ' falls over and dies!')
+
+                    self.handle_mondeath(mon, do_gain=False)
+                    mon.do_die = True
+                    mons.append(mon)
+                    continue
+
             if mon.summon and mon.visible and (self.t % mon.summon[1]) == 0:
                 summons.append((k, mon))
                 continue
@@ -3156,27 +3052,22 @@ class World:
             if mon.onfire > 0:
                 fired.append(mon)
 
-            if not mon.did_move:
-                x, y = k
-                dist = math.sqrt(math.pow(abs(self.px - x), 2) + math.pow(abs(self.py - y), 2))
+            mdx, mdy = self.walk_monster(mon, dist, x, y)
 
-                mdx, mdy = self.walk_monster(mon, dist, x, y)
-
-                if mdx is not None:
-                    if mdx == self.px and mdy == self.py:
-                        if mon.selfdestruct:
-                            smu = str(mon)
-                            smu = smu[0].upper() + smu[1:]
-                            self.msg.m(smu + ' suddenly self-destructs!')
-                            self.handle_mondeath(mon, do_gain=False)
-                            mon.do_die = True
-                        else:
-                            self.fight(mon, False)
+            if mdx is not None:
+                if mdx == self.px and mdy == self.py:
+                    if mon.selfdestruct:
+                        smu = str(mon)
+                        smu = smu[0].upper() + smu[1:]
+                        self.msg.m(smu + ' suddenly self-destructs!')
+                        self.handle_mondeath(mon, do_gain=False)
+                        mon.do_die = True
                     else:
-                        mon.do_move = (mdx, mdy)
+                        self.fight(mon, False)
+                else:
+                    mon.do_move = (mdx, mdy)
 
-                    mon.did_move = True
-                    mons.append(mon)
+                mons.append(mon)
 
         for k,mon in summons:
             smu = str(mon)
@@ -3206,7 +3097,6 @@ class World:
 
                 self.process_monstep(mon)
 
-            mon.did_move = False
 
         for mon in fired:
             self.fight(mon, True, attackstat=mon.fireattack)
@@ -3343,6 +3233,15 @@ class World:
                         c = 176 #'#'
                         is_terrain = True
 
+
+                    if (x, y) in self.featmap and self.featmap[(x, y)].back:
+                        back = self.featmap[(x, y)].back
+                        
+                        # hackity hack
+                        if (x, y) in self.celautomap:
+                            ca,state = self.celautomap[(x, y)]
+                            back = libtcod.color_lerp(back, default_back, float(state) / (ca.rule[2]*2))
+
                     if not is_lit:
                         d = math.sqrt(math.pow(abs(y - self.py),2) + math.pow(abs(x - self.px),2))
                         d = (d/lightradius)
@@ -3350,16 +3249,11 @@ class World:
                         if is_terrain:
                             fore = libtcod.color_lerp(libtcod.white, fore, min(d*2, 1.0))
 
-                        fore = libtcod.color_lerp(fore, back, min(d, 1.0))
+                        fore = libtcod.color_lerp(fore, default_back, min(d, 1.0))
 
+                        if back != default_back:
+                            back = libtcod.color_lerp(back, default_back, min(d, 1.0))
 
-                    if (x, y) in self.featmap and self.featmap[(x, y)].back:
-                        back = self.featmap[(x, y)].back
-
-                    if (x, y) in self.celautomap:
-                        ca,state = self.celautomap[(x, y)]
-                        if ca.color is not None:
-                            back = libtcod.color_lerp(ca.color, back, float(state) / ca.rule[2])
 
                     if x == _hlx and y == _hly:
                         back = libtcod.white
