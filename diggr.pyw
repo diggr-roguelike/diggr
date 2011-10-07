@@ -2147,6 +2147,20 @@ class World:
                 return item
             return None
 
+        elif item.ebola:
+            self.msg.m('The Ebola virus is unleashed!')
+            self.paste_celauto(self.px, self.py, 'ebola')
+            return None
+
+        elif item.smoke:
+            self.paste_celauto(self.px, self.py, 'smokecloud')
+            return item
+
+        elif item.trapcloud:
+            self.msg.m('You set the nanobots to work.')
+            self.paste_celauto(self.px, self.py, 'trapmaker')
+            return None
+
         elif item.rangeattack or item.rangeexplode:
             if item.ammo <= 0:
                 self.msg.m("It's out of ammo!")
@@ -2820,11 +2834,7 @@ class World:
             'P': self.show_messages,
             'Q': self.quit,
             '?': self.show_help,
-            'S': self.save,
-
-            'c': lambda: (self.paste_celauto(self.px, self.py, 'ebola')),
-            'v': lambda: (self.paste_celauto(self.px, self.py, 'smokecloud')),
-            'x': lambda: (self.paste_celauto(self.px, self.py, 'trapmaker'))
+            'S': self.save
             }
         self.vkeys = {
             libtcod.KEY_KP4: self.move_left,

@@ -18,7 +18,8 @@ class Item:
                  explodeimmune=False, telepathyrange=None, makestrap=False,
                  summon=None, radimmune=False, radexplode=False, fires=None,
                  camorange=None, sounding=False, healingsleep=None,
-                 applies_in_slot=False):
+                 applies_in_slot=False, ebola=False, smoke=False,
+                 trapcloud=False):
         self.slot = slot
         self.bonus = bonus
         self.name = name
@@ -77,6 +78,9 @@ class Item:
         self.sounding = sounding
         self.healingsleep = healingsleep
         self.applies_in_slot = applies_in_slot
+        self.ebola = ebola
+        self.smoke = smoke
+        self.trapcloud = trapcloud
 
         self.ammo = None
         self.gencount = 0
@@ -456,6 +460,25 @@ class ItemStock:
                                  rarity=0, summon=('alzabo', 1),
                                  throwable=True, liveexplode=4, count=0,
                                  desc=["Bits and pieces of the alzabo's brain."])
+
+        self.ebolastrain = Item('Ebola strain', slot='e',
+                                skin=('{', libtcod.red), applies=True, ebola=True,
+                                rarity=8, 
+                                desc=['A container with biohazard signs pasted all over it.',
+                                      'It contains genetically-modified strains of the'
+                                      'Ebola virus. Releasing the virus into the environment',
+                                      'could have potentially disastrous consequences!'])
+
+        self.smokemachine = Item('smoke machine', slot='',
+                                 skin=('{', libtcod.silver), applies=True, smoke=True,
+                                 rarity=3, 
+                                 desc=['A machine that produces very confusing',
+                                       'shape-shifting clouds of smoke.'])
+
+        self.trapcloud = Item('glue nanobots', slot='d', skin=('{', libtcod.dark_yellow),
+                              applies=True, trapcloud=True, rarity=4,
+                              desc=['Microscopic nanobots that are used in construction work.'
+                                    'They are good at quickly covering large areas in glue.'])
 
         self.regenpool()
 
