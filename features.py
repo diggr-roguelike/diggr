@@ -52,7 +52,7 @@ class FeatureStock:
         self.f['*'] = Feature(walkable=True, visible=False, skin=('*', libtcod.lightest_green),
                               name='rubble')
 
-        self.f['^'] = Feature(walkable=True, visible=True, skin=(250, libtcod.red),
+        self.f['^'] = Feature(walkable=True, visible=True, skin=(248, libtcod.red),
                               sticky=True, name='a cave floor covered with glue')
 
         self.f['s'] = Feature(walkable=True, visible=True, skin=(234,  libtcod.darker_grey),

@@ -476,7 +476,7 @@ class ItemStock:
                                        'shape-shifting clouds of smoke.'])
 
         self.trapcloud = Item('glue nanobots', slot='d', skin=('{', libtcod.dark_yellow),
-                              applies=True, trapcloud=True, rarity=4,
+                              applies=True, trapcloud=True, rarity=4, count=0,
                               desc=['Microscopic nanobots that are used in construction work.'
                                     'They are good at quickly covering large areas in glue.'])
 
