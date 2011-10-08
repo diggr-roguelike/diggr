@@ -465,7 +465,7 @@ class ItemStock:
                                 skin=('{', libtcod.red), applies=True, ebola=True,
                                 rarity=8, 
                                 desc=['A container with biohazard signs pasted all over it.',
-                                      'It contains genetically-modified strains of the'
+                                      'It contains genetically-modified strains of the',
                                       'Ebola virus. Releasing the virus into the environment',
                                       'could have potentially disastrous consequences!'])
 

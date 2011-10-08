@@ -1125,6 +1125,7 @@ class World:
         d = m[random.randint(0, len(m)-1)]
 
         self.featmap = {}
+        self.celautomap = {}
         self.featmap[d] = self.featstock.f['>']
         self.exit = d
 
@@ -3168,15 +3169,6 @@ class World:
 
                 fore = self.theme[self.branch][0] #libtcod.lightest_green
 
-                if self.inv.neck and self.inv.neck.tracker:
-                    if (x, y) in self.visitedmap:
-                        if self.visitedmap[(x, y)]:
-                            back = libtcod.red
-                        else:
-                            back = libtcod.darkest_gray
-                    else:
-                        back = libtcod.black
-
                 if self.mapping:
                     in_fov = True
                 else:
@@ -3194,6 +3186,13 @@ class World:
 
                 back = default_back
                 is_terrain = False
+
+                if self.inv.neck and self.inv.neck.tracker:
+                    if (x, y) in self.visitedmap:
+                        if self.visitedmap[(x, y)]:
+                            back = libtcod.red
+                        else:
+                            back = libtcod.darkest_gray
 
                 if not in_fov:
                     c = ' '

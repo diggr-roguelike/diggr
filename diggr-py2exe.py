@@ -11,5 +11,7 @@ setup(
                      'libtcod-gui-mingw.dll', 'libtcod-mingw.dll',
                      'GUIDE.txt'])],
   zipfile=None,
-  options={"py2exe": {"includes": ['libtcodpy'], "optimize": 2, "bundle_files":2 } }
+  options={"py2exe": {"includes": ['libtcodpy'], 
+                      "optimize": 2, 
+                      "bundle_files":2 } }
 )
