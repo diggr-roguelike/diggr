@@ -3043,7 +3043,7 @@ class World:
             if p and not mon.poisimmune:
                 mon.hp -= p
                 if mon.hp <= -3.0:
-                    print 'dead',mon.name,mon.visible,mon.visible_old
+                    #print 'dead',mon.name,mon.visible,mon.visible_old
                     if mon.visible:
                         mn = str(mon)
                         mn = mn[0].upper() + mn[1:]
