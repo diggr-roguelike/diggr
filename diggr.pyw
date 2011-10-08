@@ -2138,7 +2138,8 @@ class World:
                 self.msg.m("That won't work while you're standing on water.")
                 return item
 
-            self.featmap[(self.px, self.py)] = self.featmap.f['^']
+            #self.featmap[(self.px, self.py)] = self.featstock.f['^']
+            self.set_feature(self.px, self.py, '^')
             self.msg.m('You spread the glue liberally on the floor.')
 
             self.achievements.use(item)
