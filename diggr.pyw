@@ -740,7 +740,7 @@ class Achievements:
             self.add('stealth', 'Killed a monster massively out of depth', weight=50)
         elif mon.level >= world.plev+2:
             self.add('small_stealth', 'Killed a monster out of depth', weight=10)
-        self.killed_monsters.append((mon.level, mon.name, world.dlev, world.plev))
+        self.killed_monsters.append((mon.level, mon.branch, mon.name, world.dlev, world.plev))
 
         if is_rad:
             self.radkilled += 1
@@ -3416,7 +3416,20 @@ class World:
         c.execute('create table if not exists ' + tbl_achievements + \
                   ' (achievement TEXT, game_id INTEGER)')
 
-        score = (self.plev * 5) + (self.dlev * 5) + sum(x[0] for x in self.achievements.killed_monsters)
+        # Scores are normalized to about 1000 max points,
+        # regardless of which branch you play. (Provided you
+        # only play one branch; playing several branches can 
+        # land you a score above the max.
+
+        score = self.plev * 5
+        score += min(self.dlev, 21) * 5
+
+        for x in self.achievements.killed_monsters:
+            if x[1] in self.monsterstock.norms:
+                score += x[0] * self.monsterstock.norms[x[1]]
+
+        score = int(round(score))
+
 
         bones = cPickle.dumps(self.bones)
         inputs = cPickle.dumps(self._inputs)
@@ -3595,22 +3608,13 @@ class World:
         hclient.send(multipart)
 
         resp = hclient.getresponse()
+        r = resp.read()
 
-        if resp.read() == "OK\n":
+        if r == "OK\n":
             return True
+        #print r
         return False
 
-        #print resp.read()
-        # if resp.status == 200:
-        #     draw_window(['Scores submitted!',
-        #                  'Thank you.',
-        #                  '',
-        #                  'Press any key.'], self.w, self.h)
-        # else:
-        #     draw_window(['Failed!',
-        #                  'Reason: %s %s' % (resp.status, resp.reason),
-        #                  '',
-        #                  'Press any key.'], self.w, self.h)
 
 
     def toggle_fullscreen(self):

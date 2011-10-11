@@ -358,7 +358,7 @@ class MonsterStock:
                                'and slaves.']))
 
         self.add(Monster('Yog-Sothoth', skin=('X', libtcod.pink),
-                         attack=2.0, defence=7.0, range=20, level=10, count=1,
+                         attack=2.0, defence=7.0, range=20, level=11, count=1,
                          explodeimmune=True, flying=True, confimmune=True,
                          psyrange=20, psyattack=2.0, branch='b', fireimmune=True,
                          summon=('Prospero', 2), no_a=True, poisimmune=True,
@@ -782,14 +782,30 @@ class MonsterStock:
                                "He hates competition."]))
 
         self.add(Monster('Crom', skin=('K', libtcod.peach),
-                         attack=7.5, defence=7.5, range=10, level=10, count=1,
+                         attack=7.5, defence=7.5, range=10, level=11, count=1,
                          explodeimmune=True, fireimmune=True, branch='e',
                          confimmune=True, summon=('Conan', 1), no_a=True, poisimmune=True,
                          desc=['The most high god of all Cimmerians, Crom is the god',
                                'of valor and battle. He is a dark, vengeful and',
                                'judgemental god.']))
 
+        self.renormalize()
 
+
+    def renormalize(self):
+        #for k,v in self.monsters.iteritems():
+        #    n = sum(sum(m.count for m in v2) for v2 in v.itervalues())
+        #    at = sum(sum(m.attack for m in v2) for v2 in v.itervalues())
+        #    de = sum(sum(m.defence for m in v2) for v2 in v.itervalues())
+        #    atw = sum(sum(m.attack*m.level for m in v2) for v2 in v.itervalues())
+        #    dew = sum(sum(m.defence*m.level for m in v2) for v2 in v.itervalues())
+        #    print '//', k, n, at/n, de/n, '|', atw/n, dew/n
+
+        self.norms = {}
+        for k,v in self.monsters.iteritems():
+            n = sum(k2 * len(v2) for (k2,v2) in v.iteritems())
+            n = 840.0 / n
+            self.norms[k] = n
 
 
     def add(self, mon):
@@ -841,13 +857,6 @@ class MonsterStock:
         return []
 
     def generate(self, branch, level, itemstock):
-        #for k,v in self.monsters.iteritems():
-        #    n = sum(sum(m.count for m in v2) for v2 in v.itervalues())
-        #    at = sum(sum(m.attack for m in v2) for v2 in v.itervalues())
-        #    de = sum(sum(m.defence for m in v2) for v2 in v.itervalues())
-        #    atw = sum(sum(m.attack*m.level for m in v2) for v2 in v.itervalues())
-        #    dew = sum(sum(m.defence*m.level for m in v2) for v2 in v.itervalues())
-        #    print '//', k, n, at/n, de/n, '|', atw/n, dew/n
 
         while level > 0 and level not in self.monsters[branch]:
             level -= 1
