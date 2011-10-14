@@ -2971,6 +2971,50 @@ class World:
         return ret
 
 
+    def monster_flavor_message(self, mon):
+        def msg(flavor):
+            if flavor == 'air':
+                self.msg.m('You hear the hissing of air.')
+            elif flavor == 'animal':
+                self.msg.m('You hear the sounds of a restless animal.')
+            elif flavor == 'carnivore':
+                self.msg.m('You hear the roar of an animal.')
+            elif flavor == 'digital':
+                self.msg.m('You hear the sounds of 8-bit music.')
+            elif flavor == 'earthshake':
+                self.msg.m('You feel the earth shake.')
+            elif flavor == 'faerie':
+                self.msg.m('You hear the tinkling of bells.')
+            elif flavor == 'flying':
+                self.msg.m('You hear the flapping of wings.')
+            elif flavor == 'giant':
+                self.msg.m('You hear a loud rumble.')
+            elif flavor == 'humanwarrior':
+                self.msg.m('You hear the angry sounds of a foreign language.')
+            elif flavor == 'humanweird':
+                self.msg.m('You hear somebody wildly gibber.')
+            elif flavor == 'robot':
+                self.msg.m('You hear the clanking of metal.')
+            elif flavor == 'snake':
+                self.msg.m('You hear something slither.')
+            elif flavor == 'weird':
+                self.msg.m('You faintly sense eldritch chanting.')
+            elif flavor == 'wizard':
+                self.msg.m('You hear incantations of arcana.')
+            
+
+        d = (mon.level - self.plev)
+        if d >= 2:
+            print d, mon.flavor
+            if d == 2 and random.randint(0, 50) == 1:
+                msg(mon.flavor)
+            elif d == 3 and random.randint(0, 20) == 1:
+                msg(mon.flavor)
+            elif random.randint(0, 10) == 1:
+                msg(mon.flavor)
+            
+
+
     def paste_celauto(self, x, y, name):
         ca = getattr(self.celautostock, name)
         self.celautostock.paste(self.celautomap, x, y, self.w, self.h, ca)
@@ -2989,7 +3033,6 @@ class World:
         elif ca.featuretoggle and (x, y) in self.featmap and \
              self.featmap[(x, y)] == self.featstock.f[ca.featuretoggle]:
             del self.featmap[(x,y)]
-
 
     def process_world(self):
 
@@ -3039,15 +3082,23 @@ class World:
             mon.do_move = None
             mon.do_die = False
 
+            if (mon.visible or mon.visible_old) and not (mon.was_seen):
+                mon.was_seen = True
+                self.msg.m('You see ' + str(mon) + '.')
+
+            elif not mon.visible:
+                self.monster_flavor_message(mon)
+                
+
             p = self.try_feature(x, y, 'poison')
             if p and not mon.poisimmune:
                 mon.hp -= p
                 if mon.hp <= -3.0:
                     #print 'dead',mon.name,mon.visible,mon.visible_old
                     if mon.visible:
-                        mn = str(mon)
-                        mn = mn[0].upper() + mn[1:]
-                        self.msg.m(mn + ' falls over and dies!')
+                        smu = str(mon)
+                        smu = smu[0].upper() + smu[1:]
+                        self.msg.m(smu + ' falls over and dies!')
 
                     self.handle_mondeath(mon, do_gain=False)
                     mon.do_die = True
