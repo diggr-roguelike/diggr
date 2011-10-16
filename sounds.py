@@ -18,8 +18,12 @@ def start_server():
     env['SC_SYNTHDEF_PATH'] = synthdir
     env['LD_LIBRARY_PATH'] = wd
 
+    nm = 'scsynth'
+    if os.name == 'nt':
+        nm += '.exe'
+
     try:
-        p = subprocess.Popen([os.path.join(wd, 'scsynth.exe'),
+        p = subprocess.Popen([os.path.join(wd, nm),
                              '-u', '55500', '-U', plugindir],
                              stdout=open('qq','w'),
                              env=env,
@@ -66,17 +70,24 @@ class Player:
     def free(self, n):
         self.s.send(OSC.OSCMessage("/n_free", [n]))
 
+    def quit(self):
+        self.s.send(OSC.OSCMessage("/quit"))
 
 class Engine:
-    def __init__(self):
+    def __init__(self, enabled=True):
         self.mute = False
-        self.process = start_server()
+
+        if enabled:
+            self.process = start_server()
+        else:
+            self.process = None
 
         if self.process:
             self.p = Player()
 
     def __del__(self):
         if self.process:
+            self.p.quit()
             self.process.kill()
 
     def play(self, name, **args):
