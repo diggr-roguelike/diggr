@@ -75,10 +75,10 @@ Synth("nintendo", [\mul, 0.5]);
 
 SynthDef("bells", 
   { | mul |
-    var r = Ringz.ar(Dust2.ar(3), 1800, 3) * Line.ar(0.5 * mul, 0, 3, doneAction: 2);
+    var r = Ringz.ar(Dust2.ar(3), 1800, 3) * Line.ar(0.5 * mul, 0, 3, doneAction: 2) * 0.25;
     Out.ar(0, [r, r]); }).store();
 
-Synth("bells", [\mul, 0.5]);
+Synth("bells", [\mul, 0.3]);
 
 SynthDef("wizard", { | dur = 3.5, freq = 25.9565, n = 0.5, mul = 1 | 
   var formants = [
@@ -100,7 +100,7 @@ SynthDef("wizard", { | dur = 3.5, freq = 25.9565, n = 0.5, mul = 1 |
   Out.ar(0, bpf!2);
 }).store
 
-Synth("wizard", [\mul, 1]);
+Synth("wizard", [\mul, 0.3]);
 
 SynthDef("cthulhu", 
    { | mul = 1 |
@@ -111,7 +111,7 @@ SynthDef("cthulhu",
      Out.ar(0, [ noiz.value(), noiz.value() ] * mul * EnvGen.ar(Env.sine, timeScale: 4, doneAction: 2));
  }).store
 
-Synth("cthulhu", [\mul, 1.0]);
+Synth("cthulhu", [\mul, 0.3]);
 
 
 SynthDef("hooves", 
@@ -124,7 +124,7 @@ SynthDef("hooves",
     Out.ar(0, [FreeVerb.ar(clk, 0.2, 0.5, 0.1), FreeVerb.ar(clk, 0.2, 0.5, 0.1)]);
  }).store
 
-Synth("hooves");
+Synth("hooves", [\mul, 0.3]);
 
 
 SynthDef("slither",
@@ -355,4 +355,4 @@ t={|u,d,a|u.ar(Duty.ar(d/5,0,Dseq(a++0))*300)};play{t.(Saw,1,x=[6,5,9,8];flat(y=
 play{GVerb.ar(VarSaw.ar(Duty.ar(1/5,0,Dseq(x=[[4,4.5],[2,3,5,6]];flat(x*.x allTuples(x*.x x)*4).clump(2)++0)),0,0.9)*LFPulse.ar(5),99,5)/5}
 
 f=0;{inf.do{|i|f=f+log2(2*i%6+1+floor(f)/(i%5+1))%2;play{SyncSaw.ar(2**f*99+[0,1],i%8+2*52)*Line.kr(0.1,0,1,1,0,2)};0.3.wait}}.r.play
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
