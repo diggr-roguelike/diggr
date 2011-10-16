@@ -79,7 +79,7 @@ class MonsterStock:
 
         self.add(Monster('Australopithecus afarensis', skin=('h', libtcod.sepia),
                          branch='a', attack=0.1, defence=0.3, range=4, level=1,
-                         itemdrop='booze', count=9, no_a=True, 
+                         itemdrop='booze', count=9, no_a=True,
                          desc=['An early hominid, this creature walked upright',
                                'but lacked the intelligence of the modern human.']))
 
@@ -840,7 +840,7 @@ class MonsterStock:
 
         self.norms = {}
         for k,v in self.monsters.iteritems():
-            n = sum(k2 * len(v2) for (k2,v2) in v.iteritems())
+            n = sum(k2 * sum(v3.count for v3 in v2) for (k2,v2) in v.iteritems())
             n = 840.0 / n
             self.norms[k] = n
 

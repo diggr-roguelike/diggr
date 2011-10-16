@@ -12,6 +12,8 @@ import libtcodpy as libtcod
 
 import sqlite3
 
+import sounds
+
 
 class Logger:
     def __init__(self):
@@ -104,6 +106,7 @@ class fakekey:
 class Config:
     def __init__(self):
         self.fullscreen = False
+        self.sound = sounds.Engine()
 
 
 def console_wait_for_keypress():
@@ -199,12 +202,14 @@ class Stat:
         self.x = 3.0
         self.reason = None
 
-    def dec(self, dx, reason=None):
+    def dec(self, dx, reason=None, sound=None):
         if reason and self.x > -3.0:
             self.reason = reason
         self.x -= dx
         if self.x <= -3.0: self.x = -3.0
 
+        if sound:
+            sound.play("windnoise", dur=max(dx, 0.1))
 
     def inc(self, dx):
         self.x += dx
@@ -596,7 +601,7 @@ from vaults import *
 from celauto import *
 
 
-            
+
 
 
 
@@ -860,8 +865,6 @@ class World:
         self.sparkleinterp = [ math.sin(x/math.pi)**2 for x in xrange(10) ]
 
         self.config = config
-
-
 
 
     def makegrid(self, w_, h_):
@@ -1365,26 +1368,26 @@ class World:
 
         if self.stats.warmth.x <= -3.0:
             self.msg.m("Being so cold makes you sick!", True)
-            self.stats.health.dec(self.coef.colddamage, "cold")
+            self.stats.health.dec(self.coef.colddamage, "cold", self.config.sound)
             if self.resting: self.resting = False
             if self.digging: self.digging = None
 
         if self.stats.thirst.x <= -3.0:
             self.msg.m('You desperately need something to drink!', True)
-            self.stats.health.dec(self.coef.thirstdamage, "thirst")
+            self.stats.health.dec(self.coef.thirstdamage, "thirst", self.config.sound)
             if self.resting: self.resting = False
             if self.digging: self.digging = None
 
         if self.stats.hunger.x <= -3.0:
             self.msg.m('You desperately need something to eat!', True)
-            self.stats.health.dec(self.coef.hungerdamage, "hunger")
+            self.stats.health.dec(self.coef.hungerdamage, "hunger", self.config.sound)
             if self.resting: self.resting = False
             if self.digging: self.digging = None
 
         p = self.try_feature(self.px, self.py, 'poison')
-        if p: 
+        if p:
             self.msg.m('You feel very sick!', True)
-            self.stats.health.dec(p, 'Ebola infection')
+            self.stats.health.dec(p, 'Ebola infection', self.config.sound)
 
         if self.stats.health.x <= -3.0:
             self.dead = True
@@ -1498,7 +1501,7 @@ class World:
         x = abs(random.gauss(0, 0.7))
         tmp = x - self.coef.waterpois
         if tmp > 0:
-            self.stats.health.dec(tmp, "unclean water")
+            self.stats.health.dec(tmp, "unclean water", self.config.sound)
             if tmp > 0.2:
                 self.msg.m('This water has a bad smell.')
         else:
@@ -1527,7 +1530,7 @@ class World:
 
             if ss == 'h': self.stats.hunger.dec(decc)
             elif ss == 'w': self.stats.warmth.dec(decc)
-            elif ss == 'p': self.stats.health.dec(decc, 'the grace of Shiva')
+            elif ss == 'p': self.stats.health.dec(decc, 'the grace of Shiva', self.config.sound)
 
             self.msg.m('You pray to Shiva.')
             self.wish('Shiva grants you a wish.')
@@ -2338,7 +2341,7 @@ class World:
         def func2(x, y):
             if x == self.px and y == self.py and \
                 not (self.inv.trunk and self.inv.trunk.radimmune):
-                self.stats.health.dec(self.coef.raddamage, "radiation")
+                self.stats.health.dec(self.coef.raddamage, "radiation", self.config.sound)
 
             if (x, y) in self.monmap:
                 mon = self.monmap[(x, y)]
@@ -2362,7 +2365,7 @@ class World:
 
             if x == self.px and y == self.py and \
                 not (self.inv.trunk and self.inv.trunk.explodeimmune):
-                self.stats.health.dec(6.0, "explosion")
+                self.stats.health.dec(6.0, "explosion", self.config.sound)
                 self.dead = True
 
             if (x, y) in self.itemap:
@@ -2438,6 +2441,10 @@ class World:
             dmg = roll(attack, plev, defence, mon.level)
 
             mon.hp -= dmg
+
+            if dmg > 0:
+                m = max(0.1, min(1.0, dmg/3))
+                self.config.sound.play("klang1", mul=m)
 
             if mon.hp <= -3.0:
                 if mon.visible or mon.visible_old:
@@ -2535,7 +2542,7 @@ class World:
             if mon.hungerattack:
                 self.stats.hunger.dec(dmg)
             else:
-                self.stats.health.dec(dmg, sm)
+                self.stats.health.dec(dmg, sm, self.config.sound)
 
             if self.resting:
                 self.msg.m('You stop resting.')
@@ -2971,20 +2978,26 @@ class World:
         return ret
 
 
-    def monster_flavor_message(self, mon):
-        def msg(flavor):
+    def monster_flavor_message(self, mon, dist):
+        def msg(flavor, dist):
+            m = max(0.1, min(1.0, 1.0 - (dist/50)))
             if flavor == 'air':
                 self.msg.m('You hear the hissing of air.')
+                self.config.sound.play("air", mul=m)
             elif flavor == 'animal':
                 self.msg.m('You hear the sounds of a restless animal.')
+                self.config.sound.play("hooves", mul=m)
             elif flavor == 'carnivore':
                 self.msg.m('You hear the roar of an animal.')
             elif flavor == 'digital':
                 self.msg.m('You hear the sounds of 8-bit music.')
+                self.config.sound.play("nintendo", mul=m)
             elif flavor == 'earthshake':
                 self.msg.m('You feel the earth shake.')
+                self.config.sound.play("quake", mul=m)
             elif flavor == 'faerie':
                 self.msg.m('You hear the tinkling of bells.')
+                self.config.sound.play("bells", mul=m)
             elif flavor == 'flying':
                 self.msg.m('You hear the flapping of wings.')
             elif flavor == 'giant':
@@ -2999,20 +3012,25 @@ class World:
                 self.msg.m('You hear something slither.')
             elif flavor == 'weird':
                 self.msg.m('You faintly sense eldritch chanting.')
+                self.config.sound.play("cthulhu", mul=m)
             elif flavor == 'wizard':
                 self.msg.m('You hear incantations of arcana.')
-            
+                self.config.sound.play("wizard", mul=m)
+
 
         d = (mon.level - self.plev)
         if d >= 2:
             print d, mon.flavor
+            ok = False
             if d == 2 and random.randint(0, 50) == 1:
-                msg(mon.flavor)
+                ok = True
             elif d == 3 and random.randint(0, 20) == 1:
-                msg(mon.flavor)
+                ok = True
             elif random.randint(0, 10) == 1:
-                msg(mon.flavor)
-            
+                ok = True
+
+            if ok:
+                msg(mon.flavor, dist)
 
 
     def paste_celauto(self, x, y, name):
@@ -3085,10 +3103,12 @@ class World:
             if (mon.visible or mon.visible_old) and not (mon.was_seen):
                 mon.was_seen = True
                 self.msg.m('You see ' + str(mon) + '.')
+                m = max(0.25, min(3, 0.5 * (mon.level - self.plev)))
+                self.config.sound.play("wobble", dur=m)
 
             elif not mon.visible:
-                self.monster_flavor_message(mon)
-                
+                self.monster_flavor_message(mon, dist)
+
 
             p = self.try_feature(x, y, 'poison')
             if p and not mon.poisimmune:
@@ -3208,7 +3228,7 @@ class World:
         did_highlight = False
 
         libtcod.map_compute_fov(self.tcodmap, self.px, self.py, lightradius,
-                                True, 
+                                True,
                                 libtcod.FOV_SHADOW)
         # FOV_RESTICTIVE works differently for
         # Windows and Linux builds. (Floating point rounding errors?)
@@ -3297,7 +3317,7 @@ class World:
 
                     if (x, y) in self.featmap and self.featmap[(x, y)].back:
                         back = self.featmap[(x, y)].back
-                        
+
                         # hackity hack
                         if (x, y) in self.celautomap:
                             ca,state = self.celautomap[(x, y)]
@@ -3469,7 +3489,7 @@ class World:
 
         # Scores are normalized to about 1000 max points,
         # regardless of which branch you play. (Provided you
-        # only play one branch; playing several branches can 
+        # only play one branch; playing several branches can
         # land you a score above the max.
 
         score = self.plev * 5
