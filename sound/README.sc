@@ -96,11 +96,11 @@ SynthDef("wizard", { | dur = 3.5, freq = 25.9565, n = 0.5, mul = 1 |
   var vowl = TIRand.ar(0, 4, Impulse.ar(1));
   #f, a, w = Select.kr(vowl, formants);
   bpf = [f, (w).reciprocal, a].flop.collect{ | args | BPF.ar(in, *args); }.sum;
-  bpf = bpf * EnvGen.ar(Env.perc(dur*(1-n), dur*n), doneAction: 2) * 2 * mul;
+  bpf = bpf * EnvGen.ar(Env.perc(dur*(1-n), dur*n), doneAction: 2) * 4 * mul;
   Out.ar(0, bpf!2);
 }).store
 
-Synth("wizard", [\mul, 0.5]);
+Synth("wizard", [\mul, 1]);
 
 SynthDef("cthulhu", 
    { | mul = 1 |
@@ -130,7 +130,7 @@ Synth("hooves");
 SynthDef("slither",
   { | mul = 1 |
     var v = BPF.ar(WhiteNoise.ar(1), [2800, 2000, 160], [0.1, 0.1, 0.2], [SinOsc.ar(0.1), 0.3, SinOsc.ar(0.1, pi/2)]).sum;
-    Out.ar(0, v * mul * EnvGen.ar(Env.sine, doneAction: 2, timeScale: 4)) }).store;
+    Out.ar(0, v!2 * mul * EnvGen.ar(Env.sine, doneAction: 2, timeScale: 4)) }).store;
 
 Synth("slither", [\mul, 0.6])
 
@@ -138,7 +138,7 @@ SynthDef("robot",
 { | mul = 1 |
   var klank = Klank.ar(`[[800, 1071, 1153, 2723], [1, 1, 1, 0.1], [2, 1, 0.7, 0.5]], Impulse.ar(1.5));
   var grind = BPF.ar(BrownNoise.ar(1), 110, 0.1);
-  var beep = SinOsc.ar(1440) * EnvGen.ar(Env.sine, Impulse.ar(2.5), timeScale: 0.1) * 0.6;
+  var beep = SinOsc.ar(1440) * EnvGen.ar(Env.sine, Impulse.ar(2.5), timeScale: 0.1) * 0.1;
   klank = grind * klank;
   Out.ar(0, Mix([grind*3, klank, beep])!2 * EnvGen.ar(Env.sine, doneAction: 2, timeScale: 5));
  }).store
@@ -355,4 +355,4 @@ t={|u,d,a|u.ar(Duty.ar(d/5,0,Dseq(a++0))*300)};play{t.(Saw,1,x=[6,5,9,8];flat(y=
 play{GVerb.ar(VarSaw.ar(Duty.ar(1/5,0,Dseq(x=[[4,4.5],[2,3,5,6]];flat(x*.x allTuples(x*.x x)*4).clump(2)++0)),0,0.9)*LFPulse.ar(5),99,5)/5}
 
 f=0;{inf.do{|i|f=f+log2(2*i%6+1+floor(f)/(i%5+1))%2;play{SyncSaw.ar(2**f*99+[0,1],i%8+2*52)*Line.kr(0.1,0,1,1,0,2)};0.3.wait}}.r.play
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
