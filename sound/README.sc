@@ -27,11 +27,11 @@ Synth("plang", [\freq, 100], ~ss);
 
 SynthDef("wobble", {
  | freq = 200, freqrange = 200, dur = 0.5 |
- var w = SinOsc.ar(freq + (freqrange * SinOsc.ar(5, 0, 0.5)), 0, 1.0) * EnvGen.kr(Env.perc, timeScale: dur);
+ var w = SinOsc.ar(freq + (freqrange * SinOsc.ar(5, 0, 0.5)), 0, 1.0) * EnvGen.kr(Env.perc, timeScale: dur, doneAction: 2);
  Out.ar(0, [w, w]); 
 }).store();
 
-Synth("wobble");
+Synth("wobble", [\dur, 0.5]);
 
 /* "Player damaged" */
 
@@ -41,7 +41,7 @@ SynthDef("windnoise",
    var muln = TRand.kr(0.1, 0.9, Dust2.kr(1));
    var freqn = TRand.kr(-1, 1, Dust2.kr(1));
    var noise = LPF.ar(BrownNoise.ar(muln), 440 + (220 * freqn));
-   Lag.ar(noise, 0.01) * EnvGen.ar(Env.perc(0.05, dur)); //Line.ar(1, 0, dur, doneAction: 2)
+   Lag.ar(noise, 0.01) * EnvGen.ar(Env.perc(0.05, dur), doneAction: 2);
    };
    Out.ar(0, f);
    Out.ar(1, f);
@@ -107,7 +107,7 @@ SynthDef("cthulhu",
      var basefreq = (WhiteNoise.ar(1)*10) + 30;
      var noiz = { 
          var ph = TIRand.ar(0, pi, Impulse.ar(1));
-         BPF.ar(Saw.ar(basefreq), (SinOsc.ar(0.5, ph)*50)+440, 0.1) * 0.5; };
+         BPF.ar(Saw.ar(basefreq), (SinOsc.ar(0.5, ph)*50)+440, 0.1); };
      Out.ar(0, [ noiz.value(), noiz.value() ] * mul * EnvGen.ar(Env.sine, timeScale: 4, doneAction: 2));
  }).store
 
@@ -124,23 +124,51 @@ SynthDef("hooves",
     Out.ar(0, [FreeVerb.ar(clk, 0.2, 0.5, 0.1), FreeVerb.ar(clk, 0.2, 0.5, 0.1)]);
  }).store
 
+Synth("hooves");
+
+
+SynthDef("slither",
+  { | mul = 1 |
+    var v = BPF.ar(WhiteNoise.ar(1), [2800, 2000, 160], [0.1, 0.1, 0.2], [SinOsc.ar(0.1), 0.3, SinOsc.ar(0.1, pi/2)]).sum;
+    Out.ar(0, v * mul * EnvGen.ar(Env.sine, doneAction: 2, timeScale: 4)) }).store;
+
+Synth("slither", [\mul, 0.6])
+
+SynthDef("robot",
+{ | mul = 1 |
+  var klank = Klank.ar(`[[800, 1071, 1153, 2723], [1, 1, 1, 0.1], [2, 1, 0.7, 0.5]], Impulse.ar(1.5));
+  var grind = BPF.ar(BrownNoise.ar(1), 110, 0.1);
+  var beep = SinOsc.ar(1440) * EnvGen.ar(Env.sine, Impulse.ar(2.5), timeScale: 0.1) * 0.6;
+  klank = grind * klank;
+  Out.ar(0, Mix([grind*3, klank, beep])!2 * EnvGen.ar(Env.sine, doneAction: 2, timeScale: 5));
+ }).store
+
+Synth("robot", [\mul, 1])
+
+{ Klank.ar(`[[800, 1071, 1353, 1723], nil, [1, 1, 1, 1]], Dust.ar(8, 0.1)) }.play; 
+{ Klank.ar(`[[200, 671, 1153, 1723], nil, [1, 1, 1, 1]], Impulse.ar(1), 0.15) }.play; 
 
 /* Credits go to: http://sccode.org/1-V */
 
 /* "Air" */
 
-{ var a = PinkNoise.ar([1, 1]);
+SynthDef("air",
+ { | mul = 1 |
+  var a = PinkNoise.ar([1, 1]);
   27.do { a = BBandStop.ar(a, LFNoise1.kr(0.05.rand).exprange(40,15000), exprand(0.1,2)) };
-  LPF.ar(a,1e5) * EnvGen.ar(Env.sine, timeScale: 3, doneAction: 2) }.play
+  Out.ar(0, LPF.ar(a,1e5) * EnvGen.ar(Env.sine, timeScale: 3, doneAction: 2) * mul) }).store;
 
+Synth("air");
 
 /* "Earthquake" */
 
-{ 
-  var p = PinkNoise.ar([1, 1]);
-  var f = FreeVerb2.ar(*LPF.ar(p + 0.01*Dust.ar(6), 60) ++ [1,1,0.2,1e4]).tanh;
-  Line.ar(1, 0, 3, doneAction: 2) * f;
-}.play()
+SynthDef("quake", 
+ { | mul = 1| 
+   var ff = { var p = PinkNoise.ar([1, 1]);
+     var f = FreeVerb2.ar(*LPF.ar(p + 0.01*Dust.ar(6), 60) ++ [1,1,0.2,1e4]).tanh;
+     Line.ar(mul, 0, 3, doneAction: 2) * f; };
+   Out.ar(0, [ff.value, ff.value]);
+}).store
 
 
 
@@ -327,4 +355,4 @@ t={|u,d,a|u.ar(Duty.ar(d/5,0,Dseq(a++0))*300)};play{t.(Saw,1,x=[6,5,9,8];flat(y=
 play{GVerb.ar(VarSaw.ar(Duty.ar(1/5,0,Dseq(x=[[4,4.5],[2,3,5,6]];flat(x*.x allTuples(x*.x x)*4).clump(2)++0)),0,0.9)*LFPulse.ar(5),99,5)/5}
 
 f=0;{inf.do{|i|f=f+log2(2*i%6+1+floor(f)/(i%5+1))%2;play{SyncSaw.ar(2**f*99+[0,1],i%8+2*52)*Line.kr(0.1,0,1,1,0,2)};0.3.wait}}.r.play
-                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         

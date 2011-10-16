@@ -2981,38 +2981,54 @@ class World:
     def monster_flavor_message(self, mon, dist):
         def msg(flavor, dist):
             m = max(0.1, min(1.0, 1.0 - (dist/50)))
+
             if flavor == 'air':
                 self.msg.m('You hear the hissing of air.')
                 self.config.sound.play("air", mul=m)
+
             elif flavor == 'animal':
                 self.msg.m('You hear the sounds of a restless animal.')
                 self.config.sound.play("hooves", mul=m)
+
             elif flavor == 'carnivore':
                 self.msg.m('You hear the roar of an animal.')
+
             elif flavor == 'digital':
                 self.msg.m('You hear the sounds of 8-bit music.')
                 self.config.sound.play("nintendo", mul=m)
+
             elif flavor == 'earthshake':
                 self.msg.m('You feel the earth shake.')
                 self.config.sound.play("quake", mul=m)
+
             elif flavor == 'faerie':
                 self.msg.m('You hear the tinkling of bells.')
                 self.config.sound.play("bells", mul=m)
+
             elif flavor == 'flying':
                 self.msg.m('You hear the flapping of wings.')
+
             elif flavor == 'giant':
                 self.msg.m('You hear a loud rumble.')
+
             elif flavor == 'humanwarrior':
                 self.msg.m('You hear the angry sounds of a foreign language.')
+
             elif flavor == 'humanweird':
                 self.msg.m('You hear somebody wildly gibber.')
+
             elif flavor == 'robot':
                 self.msg.m('You hear the clanking of metal.')
+                self.config.sound.play("robot", mul=m)
+
             elif flavor == 'snake':
                 self.msg.m('You hear something slither.')
+                self.config.sound.play("slither", mul=m)
+
             elif flavor == 'weird':
                 self.msg.m('You faintly sense eldritch chanting.')
                 self.config.sound.play("cthulhu", mul=m)
+
             elif flavor == 'wizard':
                 self.msg.m('You hear incantations of arcana.')
                 self.config.sound.play("wizard", mul=m)
