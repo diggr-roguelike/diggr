@@ -1627,7 +1627,7 @@ class World:
                     ii.count += n
                     i.count -= n
 
-                    self.msg.m('You now have ' + str(ii))
+                    self.msg.m('You now have ' + str(ii) + '.')
                     did_scavenge = True
 
                     if i.count == 0:
@@ -1640,7 +1640,7 @@ class World:
                     n = min(ii.ammochance[1] - ii.ammo, i.ammo)
                     ii.ammo += n
                     i.ammo -= n
-                    self.msg.m("You find some ammo for your " + ii.name)
+                    self.msg.m("You find some ammo for your " + ii.name + '.')
                     did_scavenge = True
 
         if did_scavenge:
@@ -3116,7 +3116,7 @@ class World:
             mon.do_move = None
             mon.do_die = False
 
-            if (mon.visible or mon.visible_old) and not (mon.was_seen):
+            if (mon.visible or mon.visible_old) and not (mon.was_seen) and not self.mapping:
                 mon.was_seen = True
                 self.msg.m('You see ' + str(mon) + '.')
                 m = max(0.25, min(3, 0.5 * (mon.level - self.plev)))
