@@ -172,6 +172,82 @@ SynthDef("quake",
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+{ 
+ var bjorklund = { |k, n|
+   var run = { |arr|
+      var index = arr.indexOfEqual(arr[arr.size-1]);
+
+      var a = arr.copyRange(0, index-1);
+      var b = arr.copyRange(index, arr.size-1);
+
+      if (b.size > 1 and: {a.size > 0}, {
+         run.value(a.collect{|x, i| x++b[i]}++b.copyRange(a.size, b.size-1));
+      }, {
+         (a++b).flat;
+      });
+   };
+
+   var arr = [1].dup(k)++[0].dup(n-k);
+   arr = arr.collect{|x| x.asCollection};
+   run.value(arr);
+ };
+
+  var rhythms = [bjorklund.value(3, 8),
+	          bjorklund.value(2, 5),
+	          bjorklund.value(7, 15),
+	          bjorklund.value(1, 4),
+	          bjorklund.value(5, 7)];
+
+  var scales = [[0, 2, 4, 7, 9],
+                [0, 3, 5, 7, 10]];
+                //[0, 2, 4, 5, 7, 9, 11],
+                //[0, 2, 3, 5, 7, 8, 10]];
+ 
+  var rate = 2;
+
+  var seq = Dxrand((scales.choose.scramble + (4.rand * 12) + 48).midicps, inf);
+  var rhythm1 = Dseq(rhythms.choose, inf);
+  var rhythm2 = Dseq(rhythms.choose, inf);
+  var rhythm3 = Dseq(rhythms.choose, inf);
+  var trig1, trig2, trig3, note;
+  var r1, r2, g;
+
+  trig1 = Demand.kr(Impulse.kr(rate), 0, rhythm1);
+  trig2 = Demand.kr(Impulse.kr(rate, 0.5), 0, rhythm2);
+  #trig3, note = Demand.kr(Impulse.kr(rate, 0), 0, [rhythm3, seq]);
+
+  r1 = Ringz.ar(K2A.ar(trig1), ((3.rand2 * 12) + 24).midicps, 0.05) * 0.05;
+  //r1 = Pulse.ar(((3.rand2 * 12) + 36).midicps, 0.5) * EnvGen.kr(Env.perc(0.05), trig1) * 0.05;
+  r2 = Ringz.ar(K2A.ar(trig2), ((3.rand2 * 12) + 36).midicps, 0.07) * 0.05;
+  g = Pluck.ar(WhiteNoise.ar(0.5), trig3, 0.1, note.reciprocal, 5) * 0.7;
+
+  Mix([r1, r2, g]);
+  }.play
+
+
+//{ Pluck.ar(WhiteNoise.ar(0.1), Impulse.kr(2), 0.1, 110.reciprocal, 5); }.play
+
+{
+ var q = [[220, 200, 240], [440, 480, 400], [110, 100, 120]];
+ var ix = Demand.kr(Impulse.kr(0.25), 0, Diwhite(0, 2, inf));
+ var f = Dxrand(Select.kr(ix, q), inf);
+ var ff = Demand.kr(Impulse.kr(2), 0, f);
+ SinOsc.ar(ff); }.play
+
+
+
 (
 ~formants = {
 		var table = IdentityDictionary.new;
@@ -355,4 +431,96 @@ t={|u,d,a|u.ar(Duty.ar(d/5,0,Dseq(a++0))*300)};play{t.(Saw,1,x=[6,5,9,8];flat(y=
 play{GVerb.ar(VarSaw.ar(Duty.ar(1/5,0,Dseq(x=[[4,4.5],[2,3,5,6]];flat(x*.x allTuples(x*.x x)*4).clump(2)++0)),0,0.9)*LFPulse.ar(5),99,5)/5}
 
 f=0;{inf.do{|i|f=f+log2(2*i%6+1+floor(f)/(i%5+1))%2;play{SyncSaw.ar(2**f*99+[0,1],i%8+2*52)*Line.kr(0.1,0,1,1,0,2)};0.3.wait}}.r.play
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+
+/////
+
+f={|t|Pbind(\note,Pseq([-1,1,6,8,9,1,-1,8,6,1,9,8]+5,319),\dur,t)};Ptpar([0,f.(1/6),12,f.(0.1672)],1).play//#supercollider reich RT @earslap
+
+play{VarSaw.ar((Hasher.ar(Latch.ar(SinOsc.ar((1..4)!2),Impulse.ar([5/2,5])))*300+300).round(60),0,LFNoise2.ar(2,1/3,1/2))/5}//#supercollider
+
+Ptpar(({|i|[i*8,Pbind(\scale,[0,2,4,7,9],\degree,Pseq(32.fib.fold(0,10),4)+(2*i+i)-10,\dur,1+2**i%2/6)]}!4).flat).play // #supercollider
+
+//////
+
+f ={ |t|
+  Pbind(
+  \note, Pseq([-1,1,6,8,9,1,-1,8,6,1,9,8] + 5, 319),
+  \dur,  t)
+};
+
+Ptpar([0,f.(1/6),4,f.(10.1672)],1).play
+{ SinOsc(
+
+
+play{p=LFPulse;tanh(p.ar([50,52])*p.kr([2,1]/4)+mean({|n|(p.ar(n*3e2+99*p.kr(2-n/[1,5,7],(0..2)/10).sum+2e2)*p.kr(n+1*6,0,0.8).lag)}!2)/2)}
+
+/* Markov Chain Experiment II
+   Jacob Joaquin
+
+   Get a visual representation of the Markov Chain here:
+   http://codehop.com/supercollider-markov-chain/
+*/
+
+(
+// Synthesizer
+SynthDef(\my_synth, {|dur = 1.0, amp = 1.0, freq = 440|
+	var env = EnvGen.ar(Env.new([1, 0.1, 0], [0.06, dur - 0.06]), doneAction: 2);
+	Out.ar([0, 1], SinOsc.ar([freq * 0.995, freq * 1.005], 0, env * amp))
+}).add;		
+
+// Create task
+t = Task({
+	// Set attributes of each node
+	// [freq, dur, [[next_state, weighted_random],…]]
+	var node_list = [
+		[60, 1, [[1, 2]]],
+		[62, 0.5, [[0, 1], [2, 1]]],
+		[63, 1, [[0, 1], [3, 1]]],
+		[65, 0.5, [[0, 1], [3, 4], [4, 1]]],
+		[67, 1, [[5, 1]]],
+		[70, 1.5, [[4, 1], [6, 2]]],
+		[69, 1, [[4, 1], [7, 2]]],
+		[72, 0.5, [[4, 1], [7, 4], [0, 2]]]
+	];
+
+	var node_index = 0;
+	var bps = 133.0 / 60.0;  // Beats per second
+	
+	inf.do({
+		var weight = 0;
+		var random;
+		var accumulator;
+		var node = node_list[node_index];		
+		var freq = node[0].midicps;
+		var dur = node[1] / bps;
+		var paths = node[2];
+		
+		// Get total statistical weight of connected nodes
+		(0 .. paths.size - 1).do {|i| weight = weight + paths[i][1]};
+		
+		// Generate random value for choosing next node
+		random = weight.rand;
+
+		// Choose next node based on statistical weights
+		accumulator = paths[0][1];
+				
+		node_index = block {|break|
+			paths.size.do {|i|
+				if ((random < accumulator), {
+					break.value(paths[i][0])
+				}, {
+					accumulator = accumulator + paths[i + 1][1]					
+				})
+			}
+		};
+		
+		// Play
+		Synth(\my_synth, [\dur, dur, \amp, -3.dbamp, \freq, freq]);					
+		dur.wait;
+	})
+});
+
+t.start;
+)
+
+                                                                                                                                                                      
