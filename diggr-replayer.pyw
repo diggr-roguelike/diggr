@@ -281,7 +281,8 @@ def main():
                 inputs = cPickle.loads(str(inputs))
                 bones = cPickle.loads(str(bones))
 
-                diggr.main(diggr.Config(), replay=(seed,inputs,bones))
+                diggr.main(diggr.Config(False), 
+                           replay=(seed,inputs,bones))
 
                 if len(diggr._inputqueue) != 0:
                     raise Exception('Malformed replay file.')

@@ -98,7 +98,7 @@ class Engine:
                 self.process.kill()
                 self.process = None
 
-    def mute(self):
+    def toggle_mute(self):
         self.mute = not self.mute
 
 def main():

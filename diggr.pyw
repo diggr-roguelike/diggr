@@ -104,9 +104,9 @@ class fakekey:
         self.vk = vk
 
 class Config:
-    def __init__(self):
+    def __init__(self, sound_enabled=True):
         self.fullscreen = False
-        self.sound = sounds.Engine()
+        self.sound = sounds.Engine(sound_enabled)
 
 
 def console_wait_for_keypress():
@@ -865,6 +865,7 @@ class World:
         self.sparkleinterp = [ math.sin(x/math.pi)**2 for x in xrange(10) ]
 
         self.config = config
+        self.last_played_themesound = 0
 
 
     def makegrid(self, w_, h_):
@@ -2791,7 +2792,7 @@ class World:
 
 
     def show_help(self):
-        s = ['%c' % libtcod.COLCTRL_1,
+        s = [('%c' % libtcod.COLCTRL_1) + \
              "Movement keys: roguelike 'hjkl' 'yubn' or the numpad/arrow keys.",
              "",
              " .   : Stand in place for one turn.",
@@ -2812,6 +2813,9 @@ class World:
              " Q   : Quit the game by committing suicide.",
              " S   : Save the game and quit.",
              " F11 : Toggle fullscreen mode.",
+             " F10 : Toggle sound.",
+             " F9  : Toggle music.",
+             
              " ?   : Show this help."
         ]
         draw_window(s, self.w, self.h)
@@ -2864,7 +2868,9 @@ class World:
             libtcod.KEY_END: self.move_downleft,
             libtcod.KEY_PAGEDOWN: self.move_downright,
 
-            libtcod.KEY_F11: self.toggle_fullscreen
+            libtcod.KEY_F11: self.toggle_fullscreen,
+            libtcod.KEY_F10: self.toggle_sound,
+            libtcod.KEY_F9: self.toggle_music
             }
 
 
@@ -3046,7 +3052,12 @@ class World:
                 ok = True
 
             if ok:
+                t = int(time.time())
+                if t - self.last_played_themesound < 5:
+                    return
+
                 msg(mon.flavor, dist)
+                self.last_played_themesound = t
 
 
     def paste_celauto(self, x, y, name):
@@ -3711,6 +3722,19 @@ class World:
 
         self.config.fullscreen = not self.config.fullscreen
         libtcod.console_set_fullscreen(self.config.fullscreen)
+
+
+    def toggle_sound(self):
+        # HACK
+        if self.save_disabled:
+            return
+        self.config.sound.toggle_mute()
+
+    def toggle_music(self):
+        # HACK
+        if self.save_disabled:
+            return
+
 
 
 def start_game(world, w, h, oldseed=None, oldbones=None):
