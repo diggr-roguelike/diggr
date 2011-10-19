@@ -145,8 +145,29 @@ SynthDef("robot",
 
 Synth("robot", [\mul, 1])
 
-{ Klank.ar(`[[800, 1071, 1353, 1723], nil, [1, 1, 1, 1]], Dust.ar(8, 0.1)) }.play; 
-{ Klank.ar(`[[200, 671, 1153, 1723], nil, [1, 1, 1, 1]], Impulse.ar(1), 0.15) }.play; 
+
+/* Roar. */
+
+SynthDef("roar", 
+ { | mul = 1 | 
+   var e = EnvGen.ar(Env.perc(0.25, 1.5), doneAction:2);
+   var r = LFNoise1.ar(600+(e*400))*e; 
+   Out.ar(0, (mul * FreeVerb.ar(r, 0.5, 0.7, 0.1, 2))!2); }).store;
+
+Synth("roar", [\mul, 0.3]);
+
+
+/* Wings flapping. */
+
+SynthDef("wings", 
+ { | mul = 1 | 
+   var e = EnvGen.ar(Env.perc(0.1, 0.6), Impulse.ar(2));
+   var n = Lag.ar(PinkNoise.ar(1), 1/1000);
+   var w = LPF.ar(n, 110 + (e * 900)) * e * Line.ar(2, 0, 2, doneAction:2); 
+   Out.ar(0, (mul * w)!2); }).store
+
+Synth("wings", [\mul, 0.8])
+
 
 /* Credits go to: http://sccode.org/1-V */
 
@@ -215,9 +236,9 @@ SynthDef("quake",
                 //[0, 2, 4, 5, 7, 9, 11],
                 //[0, 2, 3, 5, 7, 8, 10]];
  
-  var rate = 2;
+  var rate = 1.5;
 
-  var seq = Dxrand((scales.choose.scramble + (4.rand * 12) + 48).midicps, inf);
+  var seq = Dxrand((scales.choose + (4.rand * 12) + 48).midicps, inf);
   var rhythm1 = Dseq(rhythms.choose, inf);
   var rhythm2 = Dseq(rhythms.choose, inf);
   var rhythm3 = Dseq(rhythms.choose, inf);
@@ -226,14 +247,14 @@ SynthDef("quake",
 
   trig1 = Demand.kr(Impulse.kr(rate), 0, rhythm1);
   trig2 = Demand.kr(Impulse.kr(rate, 0.5), 0, rhythm2);
-  #trig3, note = Demand.kr(Impulse.kr(rate, 0), 0, [rhythm3, seq]);
+  #trig3, note = Demand.kr(Impulse.kr(rate*2, 0), 0, [rhythm3, seq]);
 
-  r1 = Ringz.ar(K2A.ar(trig1), ((3.rand2 * 12) + 24).midicps, 0.05) * 0.05;
+  r1 = Ringz.ar(K2A.ar(trig1), ((3.rand * 12) + 24).midicps, 0.05) * 0.05;
   //r1 = Pulse.ar(((3.rand2 * 12) + 36).midicps, 0.5) * EnvGen.kr(Env.perc(0.05), trig1) * 0.05;
-  r2 = Ringz.ar(K2A.ar(trig2), ((3.rand2 * 12) + 36).midicps, 0.07) * 0.05;
+  r2 = Ringz.ar(K2A.ar(trig2), ((3.rand * 12) + 36).midicps, 0.07) * 0.05;
   g = Pluck.ar(WhiteNoise.ar(0.5), trig3, 0.1, note.reciprocal, 5) * 0.7;
 
-  Mix([r1, r2, g]);
+  Mix([r1, r2, g])!2;
   }.play
 
 
@@ -523,4 +544,4 @@ t = Task({
 t.start;
 )
 
-                                                                                                                                                                      
+                                                                                                                                                                                                                                                             

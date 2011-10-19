@@ -2815,7 +2815,7 @@ class World:
              " F11 : Toggle fullscreen mode.",
              " F10 : Toggle sound.",
              " F9  : Toggle music.",
-             
+
              " ?   : Show this help."
         ]
         draw_window(s, self.w, self.h)
@@ -2998,6 +2998,7 @@ class World:
 
             elif flavor == 'carnivore':
                 self.msg.m('You hear the roar of an animal.')
+                self.config.sound.play("roar", mul=m)
 
             elif flavor == 'digital':
                 self.msg.m('You hear the sounds of 8-bit music.')
@@ -3013,6 +3014,7 @@ class World:
 
             elif flavor == 'flying':
                 self.msg.m('You hear the flapping of wings.')
+                self.config.sound.play("wings", mul=m)
 
             elif flavor == 'giant':
                 self.msg.m('You hear a loud rumble.')

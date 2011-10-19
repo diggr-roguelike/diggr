@@ -529,7 +529,7 @@ class MonsterStock:
                          attack=0.5, defence=4.0, range=30, sleepattack=True,
                          confimmune=True, explodeimmune=True, radimmune=True, flying=True,
                          no_a=True, count=2, level=9, branch='c', fireimmune=True,
-                         poisimmune=True, flavor='air',
+                         poisimmune=True, flavor='digital',
                          desc=["A manifestation of the powerful AI construct named 'Wintermute'."]))
 
         self.add(Monster('Voltron', skin=('Z', libtcod.white),
