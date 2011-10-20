@@ -3018,12 +3018,14 @@ class World:
 
             elif flavor == 'giant':
                 self.msg.m('You hear a loud rumble.')
+                self.config.sound.play("boom", mul=m)
 
             elif flavor == 'humanwarrior':
                 self.msg.m('You hear the angry sounds of a foreign language.')
 
             elif flavor == 'humanweird':
                 self.msg.m('You hear somebody wildly gibber.')
+                self.config.sound.play("laugh", mul=m)
 
             elif flavor == 'robot':
                 self.msg.m('You hear the clanking of metal.')
