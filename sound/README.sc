@@ -225,7 +225,8 @@ SynthDef("quake",
 
 
 
-{ 
+SynthDef("music", {
+ | rate = 2.5 | 
  var bjorklund = { |k, n|
    var run = { |arr|
       var index = arr.indexOfEqual(arr[arr.size-1]);
@@ -252,8 +253,6 @@ SynthDef("quake",
   var scales = [[0, 2, 4, 7, 9],
                 [0, 3, 5, 7, 10]];
  
-  var rate = 2.5;
-
   var driver = Impulse.kr(1/(rate*20));
   var musicswitch = Demand.kr(driver, 0, 
                  [ Diwhite(0, rhythms.size-1, inf), 
@@ -283,9 +282,11 @@ SynthDef("quake",
   //r2 = PinkNoise.ar(1) * EnvGen.kr(Env.perc, trig2);
   g = Pluck.ar(WhiteNoise.ar(0.5), trig3, 0.1, note.reciprocal, 5) * 0.7;
 
-  ((Mix([r1, r2, g])*fader)!2).clip(0, 0.2);
-  }.play
+  Out.ar(0, ((Mix([r1, r2, g])*fader)!2).clip(0, 0.2));
+  }).store;
 
 
+s = Synth("music");
+s.set("rate", 2.5);
 
-                                                                                                                          
+                                                                                                                              
