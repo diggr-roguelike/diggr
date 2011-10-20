@@ -93,8 +93,19 @@ class Engine:
     def play(self, name, **args):
         if not self.mute and self.process:
             try:
-                self.p.play(name, **args)
+                return self.p.play(name, **args)
             except:
+                self.p.quit()
+                self.process.kill()
+                self.process = None
+        return -1
+
+    def stop(self, n):
+        if self.process:
+            try:
+                self.p.free(n)
+            except:
+                self.p.quit()
                 self.process.kill()
                 self.process = None
 

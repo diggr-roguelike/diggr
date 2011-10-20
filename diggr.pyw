@@ -3733,11 +3733,23 @@ class World:
         if self.save_disabled:
             return
         self.config.sound.toggle_mute()
+        if self.config.sound.mute:
+            self.config.sound.stop(self.config.music_n)
+            self.config.music_n = -1
+        else:
+            self.config.music_n = self.config.sound.play("music")
 
     def toggle_music(self):
         # HACK
         if self.save_disabled:
             return
+
+        if self.config.music_n >= 0:
+            self.config.sound.stop(self.config.music_n)
+            self.config.music_n = -1
+        else:
+            self.config.music_n = self.config.sound.play("music")
+
 
 
 
@@ -3835,6 +3847,8 @@ def main(config, replay=None):
 
     start_game(world, w, h, oldseed=oldseed, oldbones=oldbones)
 
+    config.music_n = config.sound.play("music")
+
     while 1:
 
         if libtcod.console_is_window_closed():
@@ -3875,6 +3889,8 @@ def main(config, replay=None):
 
     if world.dead and not world.done:
         world.msg.m('You die.', True)
+
+    config.sound.stop(config.music_n)
 
     world.oldt = world.t
     world.msg.m('*** Press any key ***', True)
