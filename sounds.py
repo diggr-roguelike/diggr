@@ -60,7 +60,7 @@ class Player:
         m = OSC.OSCMessage("/s_new", [name, self.n, 0, 0])
         for k,v in args.iteritems():
             m.extend([k, v])
-        print m
+        #print m
 
         self.s.send(m)
         ret = self.n

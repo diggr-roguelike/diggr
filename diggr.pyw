@@ -3022,6 +3022,7 @@ class World:
 
             elif flavor == 'humanwarrior':
                 self.msg.m('You hear the angry sounds of a foreign language.')
+                self.config.sound.play("mutter", mul=m)
 
             elif flavor == 'humanweird':
                 self.msg.m('You hear somebody wildly gibber.')

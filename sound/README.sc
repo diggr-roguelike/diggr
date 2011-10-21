@@ -190,6 +190,22 @@ SynthDef("boom",
 Synth("boom", [\mul, 0.4]);
 
 
+SynthDef("mutter", 
+{ | mul = 1|
+  var f = [Dwhite(100, 400, inf), Dwhite(40, 180, inf)];
+  var q = [Dwhite(1/2, 1/300, inf), Dwhite(1/30, 1/150, inf)];
+  var a = [Dwhite(1, 1, inf), Dwhite(1, 1, inf)];
+  var b;
+  var trig = Dust.kr(15);
+  #f, q, a = [f, q, a].collect{|i| Demand.kr(trig, 0, i)};
+  b = Lag.ar(BrownNoise.ar(0.75), 0.02) * EnvGen.ar(Env.perc(0.05), Dust.kr(5));
+  b = BPF.ar(b, f, q, a).sum * 15;
+  b = Limiter.ar(b, 1, 0.1) * EnvGen.ar(Env.perc(0.05, 0.2), Dust2.ar(25)); 
+  Out.ar(0, (b!2) * mul * Line.kr(1, 0, 4.5, doneAction:2)); }).store;
+
+Synth("mutter", [\mul, 0.2]);
+
+
 /* Credits go to: http://sccode.org/1-V */
 
 /* "Air" */
@@ -200,7 +216,7 @@ SynthDef("air",
   27.do { a = BBandStop.ar(a, LFNoise1.kr(0.05.rand).exprange(40,15000), exprand(0.1,2)) };
   Out.ar(0, LPF.ar(a,1e5) * EnvGen.ar(Env.sine, timeScale: 3, doneAction: 2) * mul) }).store;
 
-Synth("air");
+Synth("air", [\mul, 0.2]);
 
 /* "Earthquake" */
 
@@ -282,11 +298,13 @@ SynthDef("music", {
   //r2 = PinkNoise.ar(1) * EnvGen.kr(Env.perc, trig2);
   g = Pluck.ar(WhiteNoise.ar(0.5), trig3, 0.1, note.reciprocal, 5) * 0.7;
 
-  Out.ar(0, ((Mix([r1, r2, g])*fader)!2).clip(0, 0.2));
+  //Out.ar(0, ((Mix([r1, r2, g])*fader)!2).clip(0, 0.2));
+  g = ((Mix([r1, r2, g])*fader)!2);
+  Out.ar(0, Limiter.ar(g, 0.5, 1));
   }).store;
 
 
 s = Synth("music");
 s.set("rate", 2.5);
 
-                                                                                                                              
+                                                                  
