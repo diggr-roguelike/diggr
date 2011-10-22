@@ -19,15 +19,19 @@ def start_server():
     env['LD_LIBRARY_PATH'] = wd
 
     nm = 'scsynth'
+    sui = None
+
     if os.name == 'nt':
         nm += '.exe'
+        sui = subprocess.STARTUPINFO()
+        sui.dwFlags |= subprocess.STARTF_USESHOWWINDOW
 
     try:
         p = subprocess.Popen([os.path.join(wd, nm),
                              '-u', '55500', '-U', plugindir],
-                             stdout=open('qq','w'),
+                             #stdout=open('qq','w'),
                              env=env,
-                             cwd=wd)
+                             cwd=wd, startupinfo=sui)
         print 'OK'
         return p
     except:
@@ -37,7 +41,6 @@ def start_server():
 
 class Player:
     def __init__(self):
-        #time.sleep(1)
 
         #self.repl = OSC.OSCServer(("127.0.0.1", 55501))
         #self.repl.addMsgHandler("/done", self._ok)
@@ -45,6 +48,10 @@ class Player:
         self.s = OSC.OSCClient() #server=self.repl)
         self.s.connect(("127.0.0.1", 55500))
         self.n = 1000
+
+        # HACK
+        # This should be unnecessary if we started scsynth properly.
+        time.sleep(1)
 
         #self.cmd_ok = False
         #self.s.send(OSC.OSCMessage("/d_loadDir", [synthdir]))

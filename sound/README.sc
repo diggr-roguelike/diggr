@@ -305,6 +305,6 @@ SynthDef("music", {
 
 
 s = Synth("music");
-s.set("rate", 2.5);
+s.set("rate", 10);
 
-                                                                  
+                                                                    
