@@ -88,7 +88,7 @@ log = Logger()
 
 
 global _version
-_version = '11.10.09'
+_version = '11.10.23'
 
 global _inputs
 global _inputqueue
@@ -2216,6 +2216,9 @@ class World:
         self.tick()
         self.achievements.descend(self)
 
+        if self.config.music_n >= 0:
+            self.config.sound.set(self.config.music_n, rate=min(10, 2.0+(0.5*self.dlev)))
+
 
     def drop(self):
         slot = self.showinv()
@@ -3736,8 +3739,10 @@ class World:
         if self.config.sound.mute:
             self.config.sound.stop(self.config.music_n)
             self.config.music_n = -1
+            self.msg.m('Sound OFF.')
         else:
-            self.config.music_n = self.config.sound.play("music")
+            self.config.music_n = self.config.sound.play("music", rate=min(10, 2.0+(0.5*self.dlev)))
+            self.msg.m('Sound ON.')
 
     def toggle_music(self):
         # HACK
@@ -3747,8 +3752,10 @@ class World:
         if self.config.music_n >= 0:
             self.config.sound.stop(self.config.music_n)
             self.config.music_n = -1
+            self.msg.m('Music OFF.')
         else:
-            self.config.music_n = self.config.sound.play("music")
+            self.config.music_n = self.config.sound.play("music", rate=min(10, 2.0+(0.5*self.dlev)))
+            self.msg.m('Music ON.')
 
 
 
@@ -3847,7 +3854,7 @@ def main(config, replay=None):
 
     start_game(world, w, h, oldseed=oldseed, oldbones=oldbones)
 
-    config.music_n = config.sound.play("music")
+    config.music_n = config.sound.play("music", rate=2.5)
 
     while 1:
 

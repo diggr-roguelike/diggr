@@ -67,6 +67,13 @@ class Player:
         self.n += 1
         return ret
 
+    def set(self, n, **args):
+        m = OSC.OSCMessage("/n_set", [n])
+        for k,v in args.iteritems():
+            m.extend([k, v])
+
+        self.s.send(m)
+
     def free(self, n):
         self.s.send(OSC.OSCMessage("/n_free", [n]))
 
@@ -99,6 +106,15 @@ class Engine:
                 self.process.kill()
                 self.process = None
         return -1
+
+    def set(self, n, **args):
+        if not self.mute and self.process:
+            try:
+                self.p.set(n, **args)
+            except:
+                self.p.quit()
+                self.process.kill()
+                self.process = None
 
     def stop(self, n):
         if self.process:
