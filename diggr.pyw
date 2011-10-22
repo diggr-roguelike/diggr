@@ -3047,7 +3047,6 @@ class World:
 
         d = (mon.level - self.plev)
         if d >= 2:
-            print d, mon.flavor
             ok = False
             if d == 2 and random.randint(0, 50) == 1:
                 ok = True
