@@ -649,7 +649,7 @@ class Achievements:
         if len(self.shrines) >= 3:
             self.add('3gods', 'Worshipped 3 gods', weight=60)
         elif len(self.shrines) >= 2:
-            self.add('2gods', 'Worshipped 2 gods.', weight=50)
+            self.add('2gods', 'Worshipped 2 gods', weight=50)
         elif len(self.shrines) >= 1:
             self.add('religion', 'Worshipped a god')
 
@@ -1126,12 +1126,14 @@ class World:
 
         if len(m) == 0: return
 
-        d = m[random.randint(0, len(m)-1)]
+        stairsi = random.randint(0, len(m)-1)
+        d = m[stairsi]
 
         self.featmap = {}
         self.celautomap = {}
         self.featmap[d] = self.featstock.f['>']
         self.exit = d
+        del m[stairsi]
 
         a = random.randint(-1, 1)
         d = m[random.randint(0, len(m)-1)]
