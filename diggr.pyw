@@ -2644,7 +2644,7 @@ class World:
 
     def target(self, range, minrange=None, monstop=False):
 
-        self.draw()
+        self.draw(range=(minrange or 0, range))
 
         monx = None
         mony = None
@@ -2674,7 +2674,7 @@ class World:
                 "<space> and '.' to target a monster."]
 
         if monx is not None:
-            self.draw(monx, mony)
+            self.draw(monx, mony, range=(minrange or 0, range))
             if mony <= 2:
                 tmsg = []
 
@@ -3230,7 +3230,7 @@ class World:
 
 
 
-    def draw(self, _hlx=None, _hly=None):
+    def draw(self, _hlx=None, _hly=None, range=None):
         withtime = False
         if self.oldt != self.t:
             withtime = True
@@ -3359,17 +3359,22 @@ class World:
                             ca,state = self.celautomap[(x, y)]
                             back = libtcod.color_lerp(back, default_back, float(state) / (ca.rule[2]*2))
 
-                    if not is_lit:
-                        d = math.sqrt(math.pow(abs(y - self.py),2) + math.pow(abs(x - self.px),2))
-                        d = (d/lightradius)
+                    if not is_lit or range:
+                        d0 = math.sqrt(math.pow(abs(y - self.py),2) + math.pow(abs(x - self.px),2))
+                        d = (d0/lightradius)
 
-                        if is_terrain:
-                            fore = libtcod.color_lerp(libtcod.white, fore, min(d*2, 1.0))
+                        if range and (d0 < range[0] or d0 > range[1]):
+                            fore = libtcod.darkest_gray
+                            back = libtcod.black
 
-                        fore = libtcod.color_lerp(fore, default_back, min(d, 1.0))
+                        else:
+                            if is_terrain:
+                                fore = libtcod.color_lerp(libtcod.white, fore, min(d*2, 1.0))
 
-                        if back != default_back:
-                            back = libtcod.color_lerp(back, default_back, min(d, 1.0))
+                            fore = libtcod.color_lerp(fore, default_back, min(d, 1.0))
+
+                            if back != default_back:
+                                back = libtcod.color_lerp(back, default_back, min(d, 1.0))
 
 
                     if x == _hlx and y == _hly:
