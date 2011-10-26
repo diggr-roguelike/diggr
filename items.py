@@ -84,6 +84,7 @@ class Item:
 
         self.ammo = None
         self.gencount = 0
+        self.tag = None
 
 
     def __str__(self):
@@ -106,6 +107,9 @@ class Item:
                 s = 'a ' + s
         if self.ammo:
             s = s + ' [%d]' % self.ammo
+
+        if self.tag:
+            s = s + ' {tagged}'
         return s
 
     def postprocess(self):

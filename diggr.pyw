@@ -481,6 +481,28 @@ class Inventory:
         else: return False
         return True
 
+    def drop_tagged(self):
+        i = [None, None]
+
+        def chk(j, slot):
+            if j and j.tag and (not i[0] or j.tag > i[0].tag):
+                i[0] = j
+                i[1] = slot
+
+        chk(self.headitem, 'a')
+        chk(self.neck, 'b')
+        chk(self.trunk, 'c')
+        chk(self.left, 'd')
+        chk(self.right, 'e')
+        chk(self.legs, 'f')
+        chk(self.feet, 'g')
+        chk(self.backpack1, 'h')
+        chk(self.backpack2, 'i')
+        
+        if i[1]:
+            return self.drop(i[1])
+
+
     def drop(self, i):
         if i == 'a':
             i, self.head = self.head, None
@@ -1607,6 +1629,21 @@ class World:
         self.apply_from_inv_aux(i)
 
 
+    def tagged_apply(self):
+
+        i = self.inv.drop_tagged()
+
+        if not i:
+            self.msg.m("Tag an item from your 'i'nventory to use this command.")
+            return
+
+        if not i.applies:
+            self.msg.m('The tagged item cannot be applied.')
+            return
+        
+        self.apply_from_inv_aux(i)
+
+
     def slot_to_name(self, slot):
         if slot == 'a': return 'head'
         elif slot == 'b': return 'neck'
@@ -1733,6 +1770,11 @@ class World:
             s.append('a) use it')
             choices += 'a'
 
+            if not i.tag:
+                s.append('z) tag this item for quick access')
+            else:
+                s.append('z) remove tag from this item')
+
         if i.desc:
             s.append('c) examine this item')
             choices += 'c'
@@ -1778,6 +1820,9 @@ class World:
                 self.apply_from_ground_aux(i, px, py)
             else:
                 self.apply_from_inv_aux(i)
+
+        elif cc == 'z' and i.applies:
+            i.tag = self.t
 
         elif cc == 'b':
             i = self.inv.drop(slot)
@@ -2811,6 +2856,7 @@ class World:
              "",
              " a   : Apply (use) an item from your inventory.",
              " A   : Apply (use) an item from the ground.",
+             " z   : Apply (use) an item tagged for quick access.",
              " i   : Manipulate your inventory or items on the ground.",
              " d   : Drop an item from your inventory.",
              " ,   : Pick up an item from the ground.",
@@ -2822,7 +2868,6 @@ class World:
              " F11 : Toggle fullscreen mode.",
              " F10 : Toggle sound.",
              " F9  : Toggle music.",
-
              " ?   : Show this help."
         ]
         draw_window(s, self.w, self.h)
@@ -2846,6 +2891,7 @@ class World:
             'p': self.pray,
             'a': self.showinv_apply,
             'A': self.ground_apply,
+            'z': self.tagged_apply,
             'i': self.showinv_interact,
             '>': self.descend,
             'd': self.drop,
@@ -3506,6 +3552,10 @@ class World:
             pass
 
         bones.append((self.plev, self.dlev, [i for i in self.inv if i is not None and i.liveexplode is None]))
+
+        for i in bones[-1]:
+            i.tag = None
+
         bones = bones[-3:]
 
         try:
