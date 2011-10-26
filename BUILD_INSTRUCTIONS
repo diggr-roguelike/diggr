@@ -1,0 +1,52 @@
+
+1. Download and build SuperCollider sources:
+
+1.1. Check out SC sources from the repo:
+
+  git clone --recursive git://supercollider.git.sourceforge.net/gitroot/supercollider/supercollider
+
+1.2. Build SC with a minimal required set of dependencies: (Replace '/prefix' with a real directory.)
+
+  cd supercollider
+  mkdir build
+  cd build
+  AUDIOAPI=portaudio cmake -DFFT_GREEN:BOOL=ON -DNO_LIBSNDFILE:BOOL=ON -DSC_QT:BOOL=OFF -DSUPERNOVA:BOOL=OFF -DNO_AVAHI=ON -DCMAKE_INSTALL_PREFIX:PATH=/prefix/SuperCollider/ ..
+
+1.3. Install any dependencies cmake complains about, until cmake completes without errors.
+
+1.4. Build and install:
+
+  make 
+  make install
+
+1.5. Copy SC binaries to 'diggr-roguelike/sound/':
+
+  cd .../diggr-roguelike/
+  cd sound
+  cp /prefix/SuperCollider/bin/scsynth .
+  cp /prefix/SuperCollider/lib/libscsynth.so.1 .  
+  cp -rf /prefix/SuperColliderlib/SuperCollider/plugins/ .
+
+
+
+
+2. Download and build libtcod sources:
+
+2.1. Check out libtcod sources from the repo:
+
+  hg clone https://bitbucket.org/jice/libtcod
+
+2.2. Build libtcod:
+
+  cd libtcod
+  mkdir build
+  cd build
+  cmake ..
+  make
+
+2.3. Copy libtcod binaries to 'diggr-roguelike/':
+
+  cp src/libtcod.so .../diggr-roguelike/
+  cp ../libtcodpy.py .../diggr-roguelike/
+
+
