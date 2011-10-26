@@ -2183,13 +2183,15 @@ class World:
             if nx < 0:
                 return item
 
+            if not item.rangeexplode and (nx, ny) not in self.monmap:
+                return item
+
             item.ammo -= 1
 
             if item.rangeexplode:
                 self.explode(nx, ny, item.radius)
             else:
-                if (nx, ny) in self.monmap:
-                    self.fight(self.monmap[(nx, ny)], True, item=item)
+                self.fight(self.monmap[(nx, ny)], True, item=item)
 
             if item.ammo <= 0:
                 return None
