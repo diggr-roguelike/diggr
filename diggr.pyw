@@ -481,15 +481,14 @@ class Inventory:
         else: return False
         return True
 
-    def drop_tagged(self):
-        i = [None, None]
+    def get_tagged(self):
+        i = []
 
         def chk(j, slot):
-            if j and j.tag and (not i[0] or j.tag > i[0].tag):
-                i[0] = j
-                i[1] = slot
+            if j and j.tag:
+                i.append((j.tag, slot, j))
 
-        chk(self.headitem, 'a')
+        chk(self.head, 'a')
         chk(self.neck, 'b')
         chk(self.trunk, 'c')
         chk(self.left, 'd')
@@ -498,10 +497,9 @@ class Inventory:
         chk(self.feet, 'g')
         chk(self.backpack1, 'h')
         chk(self.backpack2, 'i')
-        
-        if i[1]:
-            return self.drop(i[1])
 
+        i.sort()
+        return i
 
     def drop(self, i):
         if i == 'a':
@@ -851,6 +849,7 @@ class World:
         self.branch = None
         self.t = 0
         self.oldt = -1
+        self.tagorder = 1
         self.sleeping = 0
         self.forcedsleep = False
         self.forced2sleep = False
@@ -1631,16 +1630,20 @@ class World:
 
     def tagged_apply(self):
 
-        i = self.inv.drop_tagged()
+        iss = self.inv.get_tagged()
 
+        if len(iss) == 0:
+            self.msg.m("Tag an item from your inventory to use this command.")
+            return
+
+        items = [i[2] for i in iss]
+
+        i,c = self.pick_one_item(items)
         if not i:
-            self.msg.m("Tag an item from your 'i'nventory to use this command.")
             return
 
-        if not i.applies:
-            self.msg.m('The tagged item cannot be applied.')
-            return
-        
+        i = self.inv.drop(iss[c][1])
+
         self.apply_from_inv_aux(i)
 
 
@@ -1774,6 +1777,7 @@ class World:
                 s.append('z) tag this item for quick access')
             else:
                 s.append('z) remove tag from this item')
+            choices += 'z'
 
         if i.desc:
             s.append('c) examine this item')
@@ -1821,8 +1825,13 @@ class World:
             else:
                 self.apply_from_inv_aux(i)
 
-        elif cc == 'z' and i.applies:
-            i.tag = self.t
+        elif cc == 'z':
+            if not i.tag and i.applies:
+                i.tag = self.tagorder
+                self.tagorder += 1
+
+            elif i.tag:
+                i.tag = None
 
         elif cc == 'b':
             i = self.inv.drop(slot)
@@ -3483,7 +3492,7 @@ class World:
           'grid', 'walkmap', 'watermap', 'exit', 'itemap', 'monmap', 'visitedmap',
           'featmap', 'px', 'py', 'w', 'h',
           'done', 'dead', 'stats', 'msg', 'coef', 'inv', 'itemstock', 'monsterstock', 'branch',
-          'dlev', 'plev', 't', 'oldt', 'sleeping', 'resting', 'cooling', 'digging', 'blind',
+          'dlev', 'plev', 't', 'oldt', 'tagorder', 'sleeping', 'resting', 'cooling', 'digging', 'blind',
           'mapping', 'glued', 's_grace', 'b_grace', 'v_grace', 'forcedsleep',
           'forced2sleep', 'healingsleep',
           '_seed', '_inputs', 'featstock', 'vaultstock',
@@ -3553,7 +3562,7 @@ class World:
 
         bones.append((self.plev, self.dlev, [i for i in self.inv if i is not None and i.liveexplode is None]))
 
-        for i in bones[-1]:
+        for i in bones[-1][2]:
             i.tag = None
 
         bones = bones[-3:]
@@ -3913,7 +3922,7 @@ def main(config, replay=None):
 
     start_game(world, w, h, oldseed=oldseed, oldbones=oldbones)
 
-    config.music_n = config.sound.play("music", rate=2.5)
+    config.music_n = config.sound.play("music", rate=min(10, 2.0+(0.5*world.dlev)))
 
     while 1:
 
