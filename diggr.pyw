@@ -581,6 +581,7 @@ class Inventory:
         return getattr(self.head,  'lightradius', 0) + \
                getattr(self.neck,  'lightradius', 0) + \
                getattr(self.legs,  'lightradius', 0) + \
+               getattr(self.right, 'lightradius', 0) + \
                getattr(self.trunk, 'lightradius', 0)
 
     def get_attack(self):
@@ -608,6 +609,19 @@ class Inventory:
                getattr(self.right, 'psyimmune', None) or \
                getattr(self.left, 'psyimmune', None)
 
+    def get_camorange(self):
+        l = (getattr(self.trunk, 'camorange', None),
+             getattr(self.feet, 'camorange', None),
+             getattr(self.neck, 'camorange', None))
+        l = [q for q in l if q]
+        if len(l) == 0: return None
+        return min(l)
+
+    def get_fires(self):
+        return getattr(self.right, 'fires', None)
+
+    def get_glueimmune(self):
+        return getattr(self.right, 'glueimmune', None)
 
 
 
@@ -1327,7 +1341,7 @@ class World:
                     else:
                         self.msg.m("You see " + str(self.itemap[(self.px, self.py)][0]) + '.')
 
-                if self.try_feature(self.px, self.py, 'sticky'):
+                if self.try_feature(self.px, self.py, 'sticky') and not self.inv.get_glueimmune():
                     self.msg.m('You just stepped in some glue!', True)
                     self.glued = max(int(random.gauss(*self.coef.glueduration)), 1)
 
@@ -2004,6 +2018,9 @@ class World:
                 self.healingsleep = True
 
             self.achievements.use(item)
+
+            if item.count == 0:
+                return item
             return None
 
         elif item.food:
@@ -2188,6 +2205,9 @@ class World:
             self.py = l[1]
 
             self.achievements.use(item)
+
+            if item.count is None:
+                return item
             return None
 
         elif item.makestrap:
@@ -2221,10 +2241,13 @@ class World:
         elif item.trapcloud:
             self.msg.m('You set the nanobots to work.')
             self.paste_celauto(self.px, self.py, 'trapmaker')
+
+            if item.count is None:
+                return item
             return None
 
         elif item.rangeattack or item.rangeexplode:
-            if item.ammo <= 0:
+            if item.ammo == 0:
                 self.msg.m("It's out of ammo!")
                 return item
 
@@ -2240,14 +2263,15 @@ class World:
             if not item.rangeexplode and (nx, ny) not in self.monmap:
                 return item
 
-            item.ammo -= 1
+            if item.ammo > 0:
+                item.ammo -= 1
 
             if item.rangeexplode:
                 self.explode(nx, ny, item.radius)
             else:
                 self.fight(self.monmap[(nx, ny)], True, item=item)
 
-            if item.ammo <= 0:
+            if item.ammo == 0:
                 return None
 
             self.achievements.use(item)
@@ -2523,6 +2547,7 @@ class World:
                     fires = item.fires
                 elif not attackstat:
                     ca = self.inv.get_confattack()
+                    fires = self.inv.get_fires()
 
                 if ca and dmg > 0 and not mon.confimmune:
                     if mon.visible or mon.visible_old:
@@ -2956,8 +2981,9 @@ class World:
             rang = 12 - int(9 * (float(self.b_grace) / self.coef.b_graceduration))
             rang = min(rang, mon.range)
 
-        if self.inv.trunk and self.inv.trunk.camorange:
-            rang = min(rang, self.inv.trunk.camorange)
+        camorange = self.inv.get_camorange()
+        if camorange:
+            rang = min(rang, camorange)
 
         if self.try_feature(x, y, 'confuse'):
             rang = 1

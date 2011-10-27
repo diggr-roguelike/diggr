@@ -19,7 +19,7 @@ class Item:
                  summon=None, radimmune=False, radexplode=False, fires=None,
                  camorange=None, sounding=False, healingsleep=None,
                  applies_in_slot=False, ebola=False, smoke=False,
-                 trapcloud=False):
+                 trapcloud=False, glueimmune=False):
         self.slot = slot
         self.bonus = bonus
         self.name = name
@@ -81,6 +81,7 @@ class Item:
         self.ebola = ebola
         self.smoke = smoke
         self.trapcloud = trapcloud
+        self.glueimmune = glueimmune
 
         self.ammo = None
         self.gencount = 0
@@ -105,7 +106,7 @@ class Item:
                 s = 'an ' + s
             else:
                 s = 'a ' + s
-        if self.ammo:
+        if self.ammo and self.ammo > 0:
             s = s + ' [%d]' % self.ammo
 
         if self.tag:
@@ -118,7 +119,10 @@ class Item:
                 self.bonus = -1
 
         if self.ammochance:
-            self.ammo = random.randint(self.ammochance[0], self.ammochance[1])
+            if self.ammochance[0] < 0:
+                self.ammo = -1
+            else:
+                self.ammo = random.randint(self.ammochance[0], self.ammochance[1])
 
         if self.selfdestruct:
             self.selfdestruct = int(max(random.gauss(*self.selfdestruct), 1))
@@ -467,7 +471,7 @@ class ItemStock:
 
         self.ebolastrain = Item('Ebola strain', slot='e',
                                 skin=('{', libtcod.red), applies=True, ebola=True,
-                                rarity=8, 
+                                rarity=8,
                                 desc=['A container with biohazard signs pasted all over it.',
                                       'It contains genetically-modified strains of the',
                                       'Ebola virus. Releasing the virus into the environment',
@@ -475,7 +479,7 @@ class ItemStock:
 
         self.smokemachine = Item('smoke machine', slot='',
                                  skin=('{', libtcod.silver), applies=True, smoke=True,
-                                 rarity=3, 
+                                 rarity=3,
                                  desc=['A machine that produces very confusing',
                                        'shape-shifting clouds of smoke.'])
 
@@ -489,146 +493,154 @@ class ItemStock:
         ###
 
         self.craft_s1 = Item('titanium rod', slot='', skin=('$', libtcod.green),
-                             rarity=4, 
-                             desc=['This special item needs to be combined with another',
+                             rarity=4,
+                             desc=['This special item needs to be combined with',
+                                   'buckshot, anointing oil, a flaming phial, gunpowder'
                                    'special item to make something very interesting.'])
 
         self.craft_s2 = Item('gunpowder', slot='', skin=('$', libtcod.green),
                              rarity=4, count=0,
-                             desc=['This special item needs to be combined with another',
-                                   'special item to make something very interesting.'])
+                             desc=['This special item needs to be combined with',
+                                   'nanite compound, bootsoles, a flaming phial, buckshot or a titanium rod'
+                                   'to make something very interesting.'])
 
         self.craft_s3 = Item('buckshot', slot='', skin=('$', libtcod.green),
                              rarity=4, count=0,
-                             desc=['This special item needs to be combined with another',
-                                   'special item to make something very interesting.'])
+                             desc=['This special item needs to be combined with',
+                                   "a titanium rod, dragon's blood, gunpowder, bootsoles or nanite compound"
+                                   'to make something very interesting.'])
 
         self.craft_s4 = Item('bootsoles', slot='', skin=('$', libtcod.green),
                              rarity=4, count=0,
-                             desc=['This special item needs to be combined with another',
-                                   'special item to make something very interesting.'])
+                             desc=['This special item needs to be combined with',
+                                   "nanite compound, dragon's blood, gunpowder or buckshot",
+                                   'to make something very interesting.'])
 
         self.craft_s5 = Item('nanite compound', slot='', skin=('$', libtcod.green),
-                             rarity=4, 
-                             desc=['This special item needs to be combined with another',
-                                   'special item to make something very interesting.'])
+                             rarity=4,
+                             desc=['This special item needs to be combined with',
+                                   "bootsoles, gunpowder, anointing oil, dragon's blood or buckshot"
+                                   'to make something very interesting.'])
 
         self.craft_s6 = Item('flaming phial', slot='', skin=('$', libtcod.green),
-                             rarity=4, 
-                             desc=['This special item needs to be combined with another',
-                                   'special item to make something very interesting.'])
+                             rarity=4,
+                             desc=['This special item needs to be combined with',
+                                   "anointing oil, gunpowder, dragon's blood or a titanium rod"
+                                   'to make something very interesting.'])
 
         self.craft_s7 = Item("dragon's blood", slot='', skin=('$', libtcod.green),
                              rarity=4, count=0,
-                             desc=['This special item needs to be combined with another',
-                                   'special item to make something very interesting.'])
+                             desc=['This special item needs to be combined with',
+                                   'anointing oil, a flaming phial, buckshot or nanite compound'
+                                   'to make something very interesting.'])
 
         self.craft_s8 = Item('anointing oil', slot='', skin=('$', libtcod.green),
                              rarity=4, count=0,
-                             desc=['This special item needs to be combined with another',
-                                   'special item to make something very interesting.'])
+                             desc=['This special item needs to be combined with',
+                                   "dragon's blood, bootsoles, a flaming phial, nanite compound or a titanium rod"
+                                   'to make something very interesting.'])
 
         self.craft_s9 = Item('magic spark', slot='', skin=('$', libtcod.light_blue),
-                             rarity=4, 
-                             desc=['This special item needs to be combined with another',
+                             rarity=4,
+                             desc=['This special item needs to be combined with another very',
                                    'special item to make something very interesting.'])
 
-        ### 
+        ###
 
-        self.craft_1 = Item('nanite boots', slot='', skin=('$', libtcod.dark_yellow), 
+        self.craft_1 = Item('nanite boots', slot='', skin=('$', libtcod.dark_yellow),
                             rarity=0, count=0,
                             desc=['A useless contraption. It needs to be combined with',
-                                  'another special item to become something very interesting.'])
+                                  'buckshot or gunpowder to become something very interesting.'])
 
-        self.craft_2 = Item("dragon's oil", slot='', skin=('$', libtcod.dark_yellow), 
+        self.craft_2 = Item("dragon's oil", slot='', skin=('$', libtcod.dark_yellow),
                             rarity=0, count=0,
                             desc=['A useless contraption. It needs to be combined with',
-                                  'another special item to become something very interesting.'])
+                                  'a flaming phial or nanite compound to become something very interesting.'])
 
-        self.craft_3 = Item('dragon boots', slot='', skin=('$', libtcod.dark_yellow), 
+        self.craft_3 = Item('dragon boots', slot='', skin=('$', libtcod.dark_yellow),
                             rarity=0, count=0,
                             desc=['A useless contraption. It needs to be combined with',
-                                  'another special item to become something very interesting.'])
+                                  'buckshot to become something very interesting.'])
 
-        self.craft_4 = Item('nanite powder', slot='', skin=('$', libtcod.dark_yellow), 
+        self.craft_4 = Item('nanite powder', slot='', skin=('$', libtcod.dark_yellow),
                             rarity=0, count=0,
                             desc=['A useless contraption. It needs to be combined with',
-                                  'another special item to become something very interesting.'])
+                                  'bootsoles to become something very interesting.'])
 
-        self.craft_5 = Item('titanium shot', slot='', skin=('$', libtcod.dark_yellow), 
+        self.craft_5 = Item('titanium shot', slot='', skin=('$', libtcod.dark_yellow),
                             rarity=0, count=0,
                             desc=['A useless contraption. It needs to be combined with',
-                                  'another special item to become something very interesting.'])
+                                  'gunpowder to become something very interesting.'])
 
-        self.craft_6 = Item('torch phial', slot='', skin=('$', libtcod.dark_yellow), 
-                            rarity=0, 
-                            desc=['A useless contraption. It needs to be combined with',
-                                  'another special item to become something very interesting.'])
-
-        self.craft_7 = Item('powderboots', slot='', skin=('$', libtcod.dark_yellow), 
-                            rarity=0, count=0,
-                            desc=['A useless contraption. It needs to be combined with',
-                                  'another special item to become something very interesting.'])
-
-        self.craft_8 = Item('powderphial', slot='', skin=('$', libtcod.dark_yellow), 
-                            rarity=0, 
-                            desc=['A useless contraption. It needs to be combined with',
-                                  'another special item to become something very interesting.'])
-
-        self.craft_9 = Item("dragon's phial", slot='', skin=('$', libtcod.dark_yellow), 
+        self.craft_6 = Item('torch phial', slot='', skin=('$', libtcod.dark_yellow),
                             rarity=0,
                             desc=['A useless contraption. It needs to be combined with',
-                                  'another special item to become something very interesting.'])
+                                  "a titanium rod or dragon's blood to become something very interesting."])
 
-        self.craft_10 = Item('dragonshot', slot='', skin=('$', libtcod.dark_yellow), 
+        self.craft_7 = Item('powderboots', slot='', skin=('$', libtcod.dark_yellow),
+                            rarity=0, count=0,
+                            desc=['A useless contraption. It needs to be combined with',
+                                  'nanite compound to become something very interesting.'])
+
+        self.craft_8 = Item('powderphial', slot='', skin=('$', libtcod.dark_yellow),
+                            rarity=0,
+                            desc=['A useless contraption. It needs to be combined with',
+                                  'a titanium rod to become something very interesting.'])
+
+        self.craft_9 = Item("dragon's phial", slot='', skin=('$', libtcod.dark_yellow),
+                            rarity=0,
+                            desc=['A useless contraption. It needs to be combined with',
+                                  'anointing oil to become something very interesting.'])
+
+        self.craft_10 = Item('dragonshot', slot='', skin=('$', libtcod.dark_yellow),
                              rarity=0, count=0,
                              desc=['A useless contraption. It needs to be combined with',
-                                  'another special item to become something very interesting.'])
+                                  'bootsoles to become something very interesting.'])
 
-        self.craft_11 = Item('nanite oil', slot='', skin=('$', libtcod.dark_yellow), 
+        self.craft_11 = Item('nanite oil', slot='', skin=('$', libtcod.dark_yellow),
                              rarity=0, count=0,
                              desc=['A useless contraption. It needs to be combined with',
-                                  'another special item to become something very interesting.'])
+                                  "dragon's blood to become something very interesting."])
 
-        self.craft_12 = Item('titanium oil', slot='', skin=('$', libtcod.dark_yellow), 
+        self.craft_12 = Item('titanium oil', slot='', skin=('$', libtcod.dark_yellow),
                              rarity=0, count=0,
                              desc=['A useless contraption. It needs to be combined with',
-                                  'another special item to become something very interesting.'])
+                                  'flaming phial to become something very interesting.'])
 
-        self.craft_13 = Item('dragon nanites', slot='', skin=('$', libtcod.dark_yellow), 
+        self.craft_13 = Item('dragon nanites', slot='', skin=('$', libtcod.dark_yellow),
                              rarity=0, count=0,
                              desc=['A useless contraption. It needs to be combined with',
-                                  'another special item to become something very interesting.'])
+                                  'anointing oil to become something very interesting.'])
 
-        self.craft_14 = Item('gunpowder buckshot', slot='', skin=('$', libtcod.dark_yellow), 
+        self.craft_14 = Item('gunpowder buckshot', slot='', skin=('$', libtcod.dark_yellow),
                              rarity=0, count=0,
                              desc=['A useless contraption. It needs to be combined with',
-                                  'another special item to become something very interesting.'])
+                                  'a titanium rod to become something very interesting.'])
 
-        self.craft_15 = Item('buckshot bootsoles', slot='', skin=('$', libtcod.dark_yellow), 
+        self.craft_15 = Item('buckshot bootsoles', slot='', skin=('$', libtcod.dark_yellow),
                              rarity=0, count=0,
                              desc=['A useless contraption. It needs to be combined with',
-                                  'another special item to become something very interesting.'])
+                                  "nanite compound or dragon's blood to become something very interesting."])
 
-        self.craft_16 = Item('titanium phial', slot='', skin=('$', libtcod.dark_yellow), 
+        self.craft_16 = Item('titanium phial', slot='', skin=('$', libtcod.dark_yellow),
                              rarity=0,
                              desc=['A useless contraption. It needs to be combined with',
-                                  'another special item to become something very interesting.'])
+                                  'anointing oil or gunpowder to become something very interesting.'])
 
-        self.craft_17 = Item('gunpowder titanium', slot='', skin=('$', libtcod.dark_yellow), 
+        self.craft_17 = Item('gunpowder titanium', slot='', skin=('$', libtcod.dark_yellow),
                              rarity=0, count=0,
                              desc=['A useless contraption. It needs to be combined with',
-                                  'another special item to become something very interesting.'])
+                                  'buckshot or anointing oil to become something very interesting.'])
 
-        self.craft_18 = Item('nanite buckshot', slot='', skin=('$', libtcod.dark_yellow), 
+        self.craft_18 = Item('nanite buckshot', slot='', skin=('$', libtcod.dark_yellow),
                              rarity=0, count=0,
                              desc=['A useless contraption. It needs to be combined with',
-                                  'another special item to become something very interesting.'])
+                                  'bootsoles to become something very interesting.'])
 
         ##
 
         self.craft_n1 = Item('broken everlasting shotgun', slot='', skin=('$', libtcod.yellow),
-                             rarity=0, 
+                             rarity=0,
                              desc=["This item won't work until you apply a magic spark."])
 
         self.craft_n2 = Item('broken camouflage nanoboots', slot='', skin=('$', libtcod.yellow),
@@ -659,39 +671,48 @@ class ItemStock:
                              rarity=0,
                              desc=["This item won't work until you apply a magic spark."])
 
-        ### ### ### 
+        ### ### ###
 
-        self.craft_e1 = Item('everlasting shotgun', slot='', skin=('(', libtcod.yellow),
-                             rarity=0, 
-                             desc=["This item won't work until you apply a magic spark."])
+        self.craft_e1 = Item('everlasting shotgun', slot='e', skin=('(', libtcod.yellow),
+                             rarity=0, rangeattack=14.0, range=(2,6), ammochance=(-1,-1),
+                             straightline=True, applies=True,
+                             desc=["A magical shotgun than never runs out of bullets."])
 
-        self.craft_e2 = Item('camouflage nanoboots', slot='', skin=('[', libtcod.pink),
-                             rarity=0, count=0,
-                             desc=["This item won't work until you apply a magic spark."])
+        self.craft_e2 = Item('camouflage nanoboots', slot='g', skin=('[', libtcod.pink),
+                             rarity=0, count=0, defence=0.1, springy=True, camorange=3,
+                             desc=["Nanotechnological wonderfootwear that provides exceptional",
+                                   "speed *and* stealth."])
 
-        self.craft_e3 = Item('flaming sword ', slot='', skin=('(', libtcod.yellow),
-                             rarity=0,
-                             desc=["This item won't work until you apply a magic spark."])
+        self.craft_e3 = Item('flaming sword ', slot='e', skin=('(', libtcod.yellow),
+                             rarity=0, attack=6.0, fires=10, lightradius=6,
+                             desc=["A giant sword of flame."])
 
-        self.craft_e4 = Item('Brahmic medallion', slot='', skin=('"', libtcod.yellow),
-                             rarity=0,
-                             desc=["This item won't work until you apply a magic spark."])
+        self.craft_e4 = Item('Brahmic medallion', slot='b', skin=('"', libtcod.yellow),
+                             rarity=0, lightradius=8, camorange=4, rangeattack=7.0,
+                             range=(0,15), ammochance=(-1,-1),
+                             straightline=True, applies=True, applies_in_slot=True,
+                             desc=["An amulet of neverending magical missiles that also",
+                                   "provides godlike stealth."])
 
-        self.craft_e5 = Item('gluebot machine', slot='', skin=('{', libtcod.pink),
-                             rarity=0,
-                             desc=["This item won't work until you apply a magic spark."])
+        self.craft_e5 = Item('gluebot machine', slot='d', skin=('{', libtcod.pink),
+                             rarity=0, applies=True, trapcloud=True, count=None,
+                             glueimmune=True,
+                             desc=["A high-tech machine that can produce a neverending",
+                                   "of glue nanobots. It also provides protection from the",
+                                   "glue for the user."])
 
-        self.craft_e6 = Item('medi-nanites', slot='', skin=('%', libtcod.pink),
-                             rarity=0, count=0,
-                             desc=["This item won't work until you apply a magic spark."])
+        self.craft_e6 = Item('medi-nanites', slot='d', skin=('%', libtcod.pink),
+                             rarity=0, count=0, applies=True, healingsleep=(50, 1),
+                             desc=["An endless supply of advanced healing ointments."])
 
-        self.craft_e7 = Item('everlasting portable hole', slot='', skin=('`', libtcod.yellow),
-                             rarity=0,
-                             desc=["This item won't work until you apply a magic spark."])
+        self.craft_e7 = Item('everlasting portable hole', slot='d', skin=('`', libtcod.yellow),
+                             rarity=0, applies=True, jumprange=4, count=None,
+                             desc=["A portable hole that never runs out."])
 
-        self.craft_e8 = Item('everlasting rocket launcher', slot='', skin=('(', libtcod.pink),
-                             rarity=0,
-                             desc=["This item won't work until you apply a magic spark."])
+        self.craft_e8 = Item('everlasting rocket launcher', slot='e', skin=('(', libtcod.pink),
+                             rarity=0, applies=True, rangeexplode=True, range=(4, 15),
+                             attack=0, ammochance=(-1,-1),
+                             desc=["A magic RPG launcher that never runs out of ammo."])
 
 
         self.regenpool()
@@ -758,16 +779,16 @@ class ItemStock:
 # 7. everlasting portable hole
 # 8. everlasting rocket launcher
 # ---
-# 1. titanium rod + gunpowder + buckshot + magic spark
-# 2. buckshot + bootsoles + nanite compound + magic spark
-# 3. titanium rod + flaming phial + anointing oil + magic spark
-# 4. flaming phial + dragon's blood + anointing oil + magic spark
-# 5. gunpowder + bootsoles + nanite compound + magic spark
-# 6. nanite compound + dragon's blood + anointing oil + magic spark
-# 7. buckshot + bootsoles + dragon's blood + magic spark
-# 8. titanium rod + gunpowder + flaming phial + magic spark
+# 1. titanium rod       gunpowder       buckshot + magic spark
+# 2. buckshot           bootsoles       nanite compound + magic spark
+# 3. titanium rod       flaming phial   anointing oil + magic spark
+# 4. flaming phial      dragon's blood  anointing oil + magic spark
+# 5. gunpowder          bootsoles       nanite compound + magic spark
+# 6. nanite compound    dragon's blood  anointing oil + magic spark
+# 7. buckshot           bootsoles       dragon's blood + magic spark
+# 8. titanium rod       gunpowder       flaming phial + magic spark
 
-# 
+#
 
 # bootsoles, nanite compound       -> nanite boots
 # dragon's blood, anointing oil    -> dragon's oil
