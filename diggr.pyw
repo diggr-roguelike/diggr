@@ -621,7 +621,7 @@ class Inventory:
         return getattr(self.right, 'fires', None)
 
     def get_glueimmune(self):
-        return getattr(self.right, 'glueimmune', None)
+        return getattr(self.left, 'glueimmune', None)
 
 
 
@@ -1718,6 +1718,11 @@ class World:
 
     def apply_from_inv_aux(self, i):
         i2 = self.apply(i)
+
+        if i2 == -1:
+            self.inv.take(i)
+            return
+
         if i2:
             self.inv.take(i2)
         else:
@@ -1960,7 +1965,7 @@ class World:
             newi = None
 
             for i2 in self.inv:
-                if i2.craft:
+                if i2 and i2.craft:
                     if item.craft[0] in i2.craft[1]:
                         newi = self.itemstock.get(i2.craft[1][item.craft[0]])
                         break
@@ -1987,7 +1992,7 @@ class World:
             elif k == 'k': self.digging = (self.px, self.py - 1)
             elif k == 'l': self.digging = (self.px + 1, self.py)
             else:
-                return item
+                return -1 #item
 
             if self.digging[0] < 0 or self.digging[0] >= self.w:
                 self.digging = None
@@ -2108,7 +2113,7 @@ class World:
             elif k == 'k': s = (0, -1)
             elif k == 'l': s = (1, 0)
             else:
-                return item
+                return -1 #item
 
             n = 0
             x = self.px
@@ -2215,12 +2220,12 @@ class World:
             l = []
             for x in xrange(self.px - item.jumprange, self.px + item.jumprange + 1):
                 for y in [self.py - item.jumprange, self.px + item.jumprange]:
-                    if (x,y) in self.walkmap:
+                    if x >= 0 and y >= 0 and (x,y) in self.walkmap:
                         l.append((x,y))
 
             for y in xrange(self.py - item.jumprange - 1, self.py + item.jumprange):
                 for x in [self.px - item.jumprange, self.px + item.jumprange]:
-                    if (x,y) in self.walkmap:
+                    if x >= 0 and y >= 0 and (x,y) in self.walkmap:
                         l.append((x,y))
 
             l = l[random.randint(0, len(l)-1)]
@@ -2277,14 +2282,15 @@ class World:
             while 1:
                 nx, ny = self.target(item.range[1],
                                      minrange=item.range[0],
-                                     monstop=item.straightline)
+                                     monstop=item.straightline,
+                                     lightradius=item.lightradius)
                 if nx is not None:
                     break
             if nx < 0:
-                return item
+                return -1 #item
 
             if not item.rangeexplode and (nx, ny) not in self.monmap:
-                return item
+                return -1 #item
 
             if item.ammo > 0:
                 item.ammo -= 1
@@ -2353,6 +2359,10 @@ class World:
                     break
 
         i2 = self.apply(i)
+
+        if i2 == -1:
+            return
+
         if not i2:
             if i.count > 1:
                 i.count -= 1
@@ -2757,9 +2767,9 @@ class World:
             elif ty >= self.h: ty = self.h - 1
 
 
-    def target(self, range, minrange=None, monstop=False):
+    def target(self, range, minrange=None, monstop=False, lightradius=None):
 
-        self.draw(range=(minrange or 0, range))
+        self.draw(range=(minrange or 0, range), lightradius=lightradius)
 
         monx = None
         mony = None
@@ -2789,7 +2799,7 @@ class World:
                 "<space> and '.' to target a monster."]
 
         if monx is not None:
-            self.draw(monx, mony, range=(minrange or 0, range))
+            self.draw(monx, mony, range=(minrange or 0, range), lightradius=lightradius)
             if mony <= 2:
                 tmsg = []
 
@@ -2903,6 +2913,15 @@ class World:
     def move_downleft(self): self.move(-1, 1)
     def move_downright(self): self.move(1, 1)
 
+    def make_test(self):
+        l = [self.itemstock.get(random.choice(['craft_a', 'craft_b', 'craft_u', 'craft_d',
+                                               'craft_f', 'craft_g', 'craft_n', 'craft_t', 'craft_z']))]
+        if (self.px, self.py) not in self.itemap:
+            self.itemap[(self.px, self.py)] = l
+        else:
+            self.itemap[(self.px, self.py)].extend(l)
+
+
     def quit(self):
         k = draw_window(["Really quit? Press 'y' if you are truly sure."], self.w, self.h)
         if k == 'y':
@@ -2968,7 +2987,8 @@ class World:
             'P': self.show_messages,
             'Q': self.quit,
             '?': self.show_help,
-            'S': self.save
+            'S': self.save,
+            'w': self.make_test
             }
         self.vkeys = {
             libtcod.KEY_KP4: self.move_left,
@@ -3347,14 +3367,14 @@ class World:
 
 
 
-    def draw(self, _hlx=None, _hly=None, range=None):
+    def draw(self, _hlx=None, _hly=None, range=None, lightradius=None):
         withtime = False
         if self.oldt != self.t:
             withtime = True
 
         default_back = libtcod.black
 
-        lightradius = min(max(self.inv.get_lightradius(), 2), 15)
+        lightradius = min(max(self.inv.get_lightradius() + (lightradius or 0), 2), 15)
 
         if self.blind:
             lightradius /= 2
