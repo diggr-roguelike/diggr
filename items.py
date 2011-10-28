@@ -497,7 +497,7 @@ class ItemStock:
                             rarity=4, count=0, applies=True,
                             craft=('a', {'d':'craft_ad',
                                          'f':'craft_af',
-                                         'n':'craft_an'
+                                         'n':'craft_an',
                                          't':'craft_at'}),
                             desc=['This special item needs to be combined with',
                                   "dragon's blood, a flaming phial, nanite compound or a titanium rod"
@@ -562,7 +562,7 @@ class ItemStock:
                                         'b':'craft_bn',
                                         'u':'craft_nu',
                                         'd':'craft_dn',
-                                        'g':'craft_gn')},
+                                        'g':'craft_gn'}),
                             desc=['This special item needs to be combined with',
                                   "anointing oil, bootsoles, buckshot, dragon's blood or gunpowder"
                                   'to make something very interesting.'])
@@ -579,7 +579,7 @@ class ItemStock:
 
         self.craft_z = Item('magic spark', slot='', skin=('$', libtcod.light_blue),
                             rarity=4, applies=True,
-                            craft=('z':{'n1':'craft_a1',
+                            craft=('z',{'n1':'craft_a1',
                                         'n2':'craft_a2',
                                         'n3':'craft_a3',
                                         'n4':'craft_a4',
