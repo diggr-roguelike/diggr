@@ -1955,6 +1955,29 @@ class World:
             self.achievements.use(item)
             return None
 
+        elif item.craft:
+
+            newi = None
+
+            for i2 in self.inv:
+                if i2.craft:
+                    if item.craft[0] in i2.craft[1]:
+                        newi = self.itemstock.get(i2.craft[1][item.craft[0]])
+                        break
+
+                    elif i2.craft[0] in item.craft[1]:
+                        newi = self.itemstock.get(item.craft[1][i2.craft[0]])
+                        break
+
+            if not newi:
+                self.msg.m('You have nothing you can combine with this item.')
+                return item
+
+            self.inv.purge(i2)
+            self.achievements.use(item)
+            self.msg.m('Using %s and %s you have crafted %s!' % (item, i2, newi))
+            return newi
+
         elif item.digging:
             k = draw_window(['Dig in which direction?'], self.w, self.h, True)
 
@@ -2319,12 +2342,8 @@ class World:
 
 
     def apply_from_ground_aux(self, i, px, py):
-        i2 = self.apply(i)
-        if not i2:
-            if i.count > 1:
-                i.count -= 1
-                self.tick()
-                return
+
+        def _purge():
             for ix in xrange(len(self.itemap[(px, py)])):
                 if id(self.itemap[(px, py)][ix]) == id(i):
                     del self.itemap[(px, py)][ix]
@@ -2332,6 +2351,21 @@ class World:
                     if len(self.itemap[(px, py)]) == 0:
                         del self.itemap[(px, py)]
                     break
+
+        i2 = self.apply(i)
+        if not i2:
+            if i.count > 1:
+                i.count -= 1
+                self.tick()
+                return
+            _purge()
+
+        elif id(i2) != id(i):
+            _purge()
+            if (px,py) not in self.itemap:
+                self.itemap[(px,py)] = [i2]
+            else:
+                self.itemap[(px,py)].append(i2)
 
         self.tick()
 
