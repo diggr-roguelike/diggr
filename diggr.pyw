@@ -386,13 +386,14 @@ class Messages:
     def __init__(self):
         self.strings = []
 
-    def draw(self, x, y, w):
+    def draw(self, x, y, w, turn):
         l = []
-        for v,m in self.strings[:3]:
+        for v,m,z in self.strings[:3]:
             if v:
                 l.append('%c%s' % (v,m))
-            elif len(l) == 0:
+            elif z[0] is None or z[0] >= turn:
                 l.append('%c%s' % (libtcod.COLCTRL_1, m))
+                z[0] = turn
             else:
                 l.append('%c%s' % (libtcod.COLCTRL_5, m))
 
@@ -400,18 +401,19 @@ class Messages:
 
     def m(self, s, bold = None):
         if len(self.strings) > 0 and s == self.strings[0][1]:
+            self.strings[0][2][0] = None
             return
 
         if bold:
-            self.strings.insert(0, (libtcod.COLCTRL_3, s))
+            self.strings.insert(0, (libtcod.COLCTRL_3, s, [None]))
         else:
-            self.strings.insert(0, (None, s))
+            self.strings.insert(0, (None, s, [None]))
         if len(self.strings) > 25:
             self.strings.pop()
 
     def show_all(self, w, h):
         l = []
-        for v,m in self.strings[:24]:
+        for v,m,z in self.strings[:24]:
             if v:
                 l.append('%c%s' % (v,m))
             elif len(l) == 0:
@@ -3572,9 +3574,9 @@ class World:
             self.stats.draw(self.w - 14, 0, grace=statsgrace)
 
         if self.py > self.h / 2:
-            self.msg.draw(15, 0, self.w - 30)
+            self.msg.draw(15, 0, self.w - 30, self.t)
         else:
-            self.msg.draw(15, self.h - 3, self.w - 30)
+            self.msg.draw(15, self.h - 3, self.w - 30, self.t)
 
 
         # hack
