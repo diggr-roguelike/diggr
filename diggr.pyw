@@ -665,6 +665,9 @@ class Achievements:
         self.radkilled = 0
         self.explodekilled = 0
         self.digged = 0
+        self.crafted = 0
+        self.a_craft = 0
+        self.ebola = 0
 
     def finish(self, world):
         self.add('plev%d' % world.plev, 'Reached player level %d' % world.plev)
@@ -727,6 +730,13 @@ class Achievements:
             if explbucket > 0:
                 self.add('%dexploded' % explbucket, 'Exploded at least %d monsters' % explbucket, weight=33)
 
+        if self.ebola > 0:
+            ebolabucket = ((self.ebola / 5) * 5)
+            if ebolabucket > 0:
+                self.add('%debola' % ebolabucket, 'Killed at least %d monsters via Ebolavirus' % ebolabucket, weight=77)
+            else:
+                self.add('ebola', 'Killed a monster via Ebolavirus', weight=77)
+
         if self.digged == 0:
             self.add('nodig', 'Never used a pickaxe', weight=23)
 
@@ -755,7 +765,14 @@ class Achievements:
             elif pillbucket > 0:
                 self.add('%dpill' % pillbucket, 'Swallowed a pill at least %d times' % pillbucket, weight=5)
 
+        if self.crafted > 0:
+            self.add('%dcraft' % self.crafted, 'Tried crafting %d times' % self.crafted, weight=15)
 
+        if self.a_craft > 0:
+            if self.a_craft == 1:
+                self.add('artifact', 'Crafted a powerful artifact', weight=88)
+            else:
+                self.add('%dafacts', 'Crafted %d powerful artifacts', weight=89)
 
 
     def descend(self, world):
@@ -774,12 +791,16 @@ class Achievements:
     def mondone(self):
         self.extinguished += 1
 
-    def mondeath(self, world, mon, is_rad, is_explode):
+    def mondeath(self, world, mon, is_rad=False, is_explode=False, is_poison=False):
         if mon.level >= world.plev+5:
             self.add('stealth', 'Killed a monster massively out of depth', weight=50)
         elif mon.level >= world.plev+2:
             self.add('small_stealth', 'Killed a monster out of depth', weight=10)
-        self.killed_monsters.append((mon.level, mon.branch, mon.name, world.dlev, world.plev))
+
+        if is_poison:
+            self.ebola += 1
+        else:
+            self.killed_monsters.append((mon.level, mon.branch, mon.name, world.dlev, world.plev))
 
         if is_rad:
             self.radkilled += 1
@@ -788,9 +809,16 @@ class Achievements:
             self.explodekilled += 1
 
 
+
+
     def pray(self, shrine):
         self.shrines.add(shrine)
         self.prayed += 1
+
+    def craft_use(self, item):
+        self.crafted += 1
+        if not item.craft:
+            self.a_craft += 1
 
     def use(self, item):
         self.used += 1
@@ -1979,7 +2007,7 @@ class World:
                 return item
 
             self.inv.purge(i2)
-            self.achievements.use(item)
+            self.achievements.craft_use(newi)
             self.msg.m('Using %s and %s you have crafted %s!' % (item, i2, newi))
             return newi
 
@@ -2428,7 +2456,7 @@ class World:
 
 
     def handle_mondeath(self, mon, do_drop=True, do_gain=True,
-                        is_rad=False, is_explode=False):
+                        is_rad=False, is_explode=False, is_poison=False):
         if do_gain and mon.level > self.plev:
             self.msg.m('You just gained level ' + str(mon.level) + '!', True)
             self.plev = mon.level
@@ -2444,7 +2472,9 @@ class World:
         winner, exting = self.monsterstock.death(mon)
 
         if do_gain:
-            self.achievements.mondeath(self, mon, is_rad, is_explode)
+            self.achievements.mondeath(self, mon, is_rad=is_rad, is_explode=is_explode)
+        elif is_poison:
+            self.achievements.mondeath(self, mon, is_poison=True)
 
         if exting:
             self.achievements.mondone()
@@ -3293,7 +3323,7 @@ class World:
                         smu = smu[0].upper() + smu[1:]
                         self.msg.m(smu + ' falls over and dies!')
 
-                    self.handle_mondeath(mon, do_gain=False)
+                    self.handle_mondeath(mon, do_gain=False, is_poison=True)
                     mon.do_die = True
                     mons.append(mon)
                     continue
