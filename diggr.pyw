@@ -619,6 +619,13 @@ class Inventory:
         if len(l) == 0: return None
         return min(l)
 
+    def get_repelrange(self):
+        l = (getattr(self.trunk, 'repelrange', None),
+             getattr(self.left, 'repelrange', None))
+        l = [q for q in l if q]
+        if len(l) == 0: return None
+        return max(l)
+
     def get_fires(self):
         return getattr(self.right, 'fires', None)
 
@@ -3088,13 +3095,14 @@ class World:
             if mon.psyrange > 0 and dist <= mon.psyrange:
                 self.fight(mon, False)
 
+            repelrange = self.inv.get_repelrange()
+
+            if repelrange and dist <= repelrange and dist > 1:
+                 return None, None
+
             if mon.known_px is None or mon.known_py is None:
                 mon.known_px = self.px
                 mon.known_py = self.py
-
-            elif self.inv.trunk and self.inv.trunk.repelrange and \
-                 dist <= self.inv.trunk.repelrange and dist > 1:
-                 return None, None
 
             elif mon.heatseeking and \
                  ((self.px, self.py) in self.watermap or self.cooling):

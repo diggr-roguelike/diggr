@@ -779,7 +779,7 @@ class ItemStock:
                                    "glue for the user."])
 
         self.craft_a6 = Item('medi-nanites', slot='d', skin=('%', libtcod.pink),
-                             rarity=0, count=0, applies=True, healingsleep=(50, 1),
+                             rarity=0, count=0, applies=True, healingsleep=(50, 1), repelrange=2,
                              desc=["An endless supply of advanced healing ointments."])
 
         self.craft_a7 = Item('everlasting portable hole', slot='d', skin=('`', libtcod.yellow),
