@@ -3,6 +3,18 @@ import random
 import copy
 
 
+# 6 Harry Potter
+# 6 Ron Weasley 
+# 6 Robert Langdon
+# 7 Bella Swan
+# 7 Edward Cullen
+# 8 Dumbledore
+# 8 Shredder
+# 9 Darth Vader
+# 10 Hagbard Celine
+# 11 Iucounu
+
+
 class Monster:
     def __init__(self, name, skin=('x', libtcod.cyan), count=10, level=1,
                  attack=0.5, defence=0.5, explodeimmune=False, range=11,
@@ -826,6 +838,80 @@ class MonsterStock:
                                'of valor and battle. He is a dark, vengeful and',
                                'judgemental god.']))
 
+
+        ## Secret branch
+
+        self.add(Monster('Harry Potter', skin=(164, libtcod.blue),
+                         attack=5.0, defence=5.0, range=20, level=6,
+                         count=1, no_a=True, branch='s',
+                         desc=['A rich, spoiled, snooty kid who attends a prestigious school.',
+                               "Not much of a student, but at least he's good at athletics."]))
+
+        self.add(Monster('Ron Weasley', skin=(164, libtcod.light_blue),
+                         attack=7.0, defence=4.0, range=15, level=6,
+                         count=1, no_a=True, branch='s',
+                         desc=['A brawnier, dumber and much more low-class hanger-on ',
+                               'friend to Harry Potter.']))
+
+        self.add(Monster('Robert Langdon', skin=(134, libtcod.light_green),
+                         attack=7.0, defence=3.0, range=18, level=6,
+                         count=1, no_a=True, branch='s', confimmune=True,
+                         desc=['A self-styled "symbolologist".',
+                               "He's probably looking for clues of the Illuminati",
+                               'in these dungeons.']))
+
+        self.add(Monster('Bella Swan', skin=(152, libtcod.gray),
+                         attack=3.0, defence=3.0, range=20, level=7,
+                         count=1, no_a=True, branch='s', summon=('Edward Cullen', 1),
+                         desc=['A clumsy and very forgettable teenage girl.',
+                               'The only notable thing about her is that she hates',
+                               'herself enough to want to become an undead vampire.']))
+
+        self.add(Monster('Edward Cullen', skin=(152, libtcod.silver),
+                         attack=8.0, defence=6.0, range=20, level=7,
+                         count=1, no_a=True, branch='s', confimmune=True,
+                         poisimmune=True, radimmune=True,
+                         desc=["No, he's not really a vegetarian!"]))
+
+        self.add(Monster('Dumbledore', skin=(146, libtcod.lightest_lime),
+                         attack=2.0, defence=7.0, psyattack=5.0, psyrange=6,
+                         range=15, level=8, count=1, no_a=True, branch='s',
+                         confimmune=True, fireimmune=True, poisimmune=True,
+                         sleepattack=True,
+                         desc=['The head of Hogwarts School of Magic.',
+                               'Purportedly a white wizard and a paragod of Good,',
+                               "though you'd never guess it by looking at him."]))
+
+        self.add(Monster('Shredder', skin=(153, libtcod.gray),
+                         attack=8.0, defence=7.0, 
+                         range=25, level=8, count=1, no_a=True, branch='s',
+                         confimmune=True, fireimmune=True, poisimmune=True,
+                         explodeimmune=True,
+                         desc=['He hates turtles.']))
+
+        self.add(Monster('Darth Vader', skin=(154, libtcod.dark_gray),
+                         attack=6.0, defence=9.0, psyattack=6.0, psyrange=8,
+                         range=30, level=9, count=1, no_a=True, branch='s',
+                         confimmune=True, fireimmune=True, poisimmune=True,
+                         flying=True,
+                         desc=['A dark Sith Lord and a formidable enemy.']))
+
+        self.add(Monster('Hagbard Celine', skin=(144, libtcod.gold),
+                         attack=6.0, defence=9.0, psyattack=1.0, psyrange=2,
+                         range=30, level=10, count=1, no_a=True, branch='s',
+                         confimmune=True, poisimmune=True, radimmune=True,
+                         explodeimmune=True, sleepattack=True,
+                         hungerattack=True,
+                         desc=['Hail Eris!']))
+
+        self.add(Monster('Iucounu', skin=(142, libtcod.purple),
+                         attack=3.0, defence=11.0, 
+                         range=30, level=11, count=1, no_a=True, branch='s',
+                         confimmune=True, poisimmune=True, radimmune=True,
+                         explodeimmune=True, fireimmune=True, flying=True,
+                         desc=['The Laughing Magician.']))
+
+    
         self.renormalize()
 
 
@@ -897,6 +983,9 @@ class MonsterStock:
 
         while level > 0 and level not in self.monsters[branch]:
             level -= 1
+
+        if level == 0:
+            return None
 
         m = self.monsters[branch][level]
         tmp = None

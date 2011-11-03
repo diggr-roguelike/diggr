@@ -81,6 +81,7 @@ class VaultStock:
                   '3': ('3', True),
                   '4': ('4', True),
                   '5': ('5', True),
+                  '9': ('6', True),
                   '6': ('1', False),
                   '7': ('2', False),
                   '8': ('3', False),
@@ -89,7 +90,33 @@ class VaultStock:
                   '.': (None, False) }
 
 
-        #v1 = Vault(chance=3, level=(1,6), count=3,
+        #
+
+        self.add(Vault(syms=symsb, pic=["...",
+                                        ".9.",
+                                        "..."], 
+                       chance=2, level=(5,6), count=1, branch='a'))
+
+        self.add(Vault(syms=symsb, pic=["...",
+                                        ".9.",
+                                        "..."], 
+                       chance=2, level=(5,6), count=1, branch='b'))
+
+        self.add(Vault(syms=symsb, pic=["...",
+                                        ".9.",
+                                        "..."], 
+                       chance=2, level=(5,6), count=1, branch='c'))
+
+        self.add(Vault(syms=symsb, pic=["...",
+                                        ".9.",
+                                        "..."], 
+                       chance=2, level=(5,6), count=1, branch='d'))
+
+        self.add(Vault(syms=symsb, pic=["...",
+                                        ".9.",
+                                        "..."], 
+                       chance=2, level=(5,6), count=1, branch='e'))
+
 
         self.add(Vault(syms=symsb, pic=["5"], chance=3, level=(3,3), count=1, branch='a'))
         self.add(Vault(syms=symsb, pic=["5"], chance=3, level=(6,6), count=1, branch='a'))

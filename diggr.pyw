@@ -725,7 +725,7 @@ class Achievements:
             self.add('%dbranch' % len(self.branches), 'Visited %d dungeon branches' % len(self.branches), weight=25)
 
         if self.extinguished > 0:
-            self.add('%dxting' % self.extinguished, 'Extinguished %d monster species' % self.extinguished)
+            self.add('%dxting' % self.extinguished, 'Extinguished %d monster species' % self.extinguished, weight=97)
 
         if self.radkilled > 0:
             radbucket = ((self.radkilled / 5) * 5)
@@ -895,8 +895,8 @@ class World:
         self.vaultstock = VaultStock()
         self.achievements = Achievements()
 
-        self.dlev = 1
-        self.plev = 1
+        self.dlev = 6 #1
+        self.plev = 6 #1
         self.branch = None
         self.t = 0
         self.oldt = -1
@@ -932,7 +932,8 @@ class World:
                        'b': (libtcod.red,),
                        'c': (libtcod.sky,),
                        'd': (libtcod.darkest_grey,),
-                       'e': (libtcod.lightest_yellow,) }
+                       'e': (libtcod.lightest_yellow,),
+                       's': (libtcod.darkest_blue,) }
 
         self.sparkleinterp = [ math.sin(x/math.pi)**2 for x in xrange(10) ]
 
@@ -1298,7 +1299,7 @@ class World:
 
     def regen(self, w_, h_):
         if self.branch is None:
-            self.branch = random.choice(['a', 'b', 'c', 'd', 'e'])
+            self.branch = 's' #random.choice(['a', 'b', 'c', 'd', 'e'])
 
         self.makegrid(w_, h_)
         self.terra()
@@ -2952,14 +2953,6 @@ class World:
     def move_downleft(self): self.move(-1, 1)
     def move_downright(self): self.move(1, 1)
 
-    def make_test(self):
-        l = [self.itemstock.get(random.choice(['craft_a', 'craft_b', 'craft_u', 'craft_d',
-                                               'craft_f', 'craft_g', 'craft_n', 'craft_t', 'craft_z']))]
-        if (self.px, self.py) not in self.itemap:
-            self.itemap[(self.px, self.py)] = l
-        else:
-            self.itemap[(self.px, self.py)].extend(l)
-
 
     def quit(self):
         k = draw_window(["Really quit? Press 'y' if you are truly sure."], self.w, self.h)
@@ -3026,8 +3019,7 @@ class World:
             'P': self.show_messages,
             'Q': self.quit,
             '?': self.show_help,
-            'S': self.save,
-            'w': self.make_test
+            'S': self.save
             }
         self.vkeys = {
             libtcod.KEY_KP4: self.move_left,
@@ -3925,7 +3917,8 @@ class World:
             return
         self.config.sound.toggle_mute()
         if self.config.sound.mute:
-            self.config.sound.stop(self.config.music_n)
+            if self.config.music_n >= 0:
+                self.config.sound.stop(self.config.music_n)
             self.config.music_n = -1
             self.msg.m('Sound OFF.')
         else:
@@ -4085,7 +4078,8 @@ def main(config, replay=None):
     if world.dead and not world.done:
         world.msg.m('You die.', True)
 
-    config.sound.stop(config.music_n)
+    if config.music_n >= 0:
+        config.sound.stop(config.music_n)
 
     world.oldt = world.t
     world.msg.m('*** Press any key ***', True)
