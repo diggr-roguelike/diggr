@@ -107,6 +107,7 @@ class Config:
     def __init__(self, sound_enabled=True):
         self.fullscreen = False
         self.sound = sounds.Engine(sound_enabled)
+        self.music_n = None
 
 
 def console_wait_for_keypress():
@@ -895,8 +896,8 @@ class World:
         self.vaultstock = VaultStock()
         self.achievements = Achievements()
 
-        self.dlev = 6 #1
-        self.plev = 6 #1
+        self.dlev = 1
+        self.plev = 1
         self.branch = None
         self.t = 0
         self.oldt = -1
@@ -1299,7 +1300,7 @@ class World:
 
     def regen(self, w_, h_):
         if self.branch is None:
-            self.branch = 's' #random.choice(['a', 'b', 'c', 'd', 'e'])
+            self.branch = random.choice(['a', 'b', 'c', 'd', 'e'])
 
         self.makegrid(w_, h_)
         self.terra()
@@ -4035,7 +4036,8 @@ def main(config, replay=None):
 
     start_game(world, w, h, oldseed=oldseed, oldbones=oldbones)
 
-    config.music_n = config.sound.play("music", rate=min(10, 2.0+(0.5*world.dlev)))
+    if config.music_n != -1:
+        config.music_n = config.sound.play("music", rate=min(10, 2.0+(0.5*world.dlev)))
 
     while 1:
 

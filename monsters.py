@@ -853,7 +853,7 @@ class MonsterStock:
                          desc=['A brawnier, dumber and much more low-class hanger-on ',
                                'friend to Harry Potter.']))
 
-        self.add(Monster('Robert Langdon', skin=(134, libtcod.light_green),
+        self.add(Monster('Robert Langdon', skin=(131, libtcod.light_green),
                          attack=7.0, defence=3.0, range=18, level=6,
                          count=1, no_a=True, branch='s', confimmune=True,
                          desc=['A self-styled "symbolologist".',
