@@ -5,7 +5,7 @@ class Feature:
                  name="something strange", stairs=False, sticky=False, water=None,
                  s_shrine=False, b_shrine=False, v_shrine=False, height=-10,
                  shootable=False, warm=False, branch=None, healingfountain=False,
-                 nofeature=False, poison=None, confuse=False, back=None):
+                 nofeature=False, poison=None, confuse=False, back=None, resource=None):
         self.walkable = walkable
         self.visible = visible
         self.water = water
@@ -25,6 +25,7 @@ class Feature:
         self.poison = poison
         self.confuse = confuse
         self.back = back
+        self.resource = resource
 
 
 class FeatureStock:
@@ -139,3 +140,27 @@ class FeatureStock:
 
         self.f['f'] = Feature(walkable=True, visible=True, skin=None, back=libtcod.gray,
                               confuse=True, name='confusing smoke')
+
+
+        self.f['C'] = Feature(walkable=True, visible=True, skin=(159, libtcod.dark_green),
+                              resource='g', name='a Green Fountain')
+
+        self.f['V'] = Feature(walkable=True, visible=True, skin=(159, libtcod.red), 
+                              resource='r', name='a Red Fountain')
+
+        self.f['B'] = Feature(walkable=True, visible=True, skin=(159, libtcod.yellow),
+                              resource='y', name='a Yellow Fountain')
+
+        self.f['N'] = Feature(walkable=True, visible=True, skin=(159, libtcod.blue),
+                              resource='b', name='a Blue Fountain')
+
+        self.f['M'] = Feature(walkable=True, visible=True, skin=(159, libtcod.purple), 
+                              resource='p', name='a Purple Fountain')
+
+        # green: high damage bonus
+        # red: health, warmth, hunger regeneration
+        # yellow: speed and light
+        # blue: explosion and rad immunity
+        # purple: telepathy and stealth
+
+

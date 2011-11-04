@@ -197,6 +197,18 @@ class Coeffs:
 
         self.raddamage = 3.0
 
+        self.regeneration = 0.01
+        self.green_attack = 12.0
+        self.yellow_lightradius = 18
+        self.purple_telerange = 12
+        self.purple_camorange = 3
+
+        self.resource_timeouts = {'r': 300,
+                                  'g': 500,
+                                  'y': 400,
+                                  'b': 200,
+                                  'p': 600}
+
 
 class Stat:
     def __init__(self):
@@ -231,7 +243,7 @@ class Stats:
         libtcod.console_set_color_control(libtcod.COLCTRL_4, libtcod.red, libtcod.black)
         libtcod.console_set_color_control(libtcod.COLCTRL_5, libtcod.gray, libtcod.black)
 
-    def draw(self, x, y, grace=None):
+    def draw(self, x, y, grace=None, resource=None):
         s = "%cHealth: %c%s\n" \
             "%cWarmth: %c%s\n" \
             "%c Tired: %c%s\n" \
@@ -244,6 +256,22 @@ class Stats:
                 (libtcod.COLCTRL_1, grace[0],
                  libtcod.COLCTRL_4 if grace[2] else libtcod.COLCTRL_3,
                  chr(175) * min(grace[1], 6))
+
+        if resource:
+            rdefs = {'r': ("   Red", libtcod.red),
+                     'g': (" Green", libtcod.dark_green),
+                     'y': ("Yellow", libtcod.yellow),
+                     'b': ("  Blue", libtcod.blue),
+                     'p': ("Purple", libtcod.purple) }
+
+            ss, col = rdefs[resource[0]]
+            col2 = (col if resource[2] else libtcod.white) 
+            col = (max(col.r,1),max(col.g,1),max(col.b,1))
+            col2 = (max(col2.r,1),max(col2.g,1),max(col2.b,1))
+            s += "%c%c%c%c%s: %c%c%c%c%s\n" % \
+                (libtcod.COLCTRL_FORE_RGB, col[0], col[1], col[2], ss,
+                 libtcod.COLCTRL_FORE_RGB, col2[0], col2[1], col2[2],
+                 chr(175) * min(resource[1], 6))
 
         def pr(x):
             if x >= 2.0: return    '   +++'
@@ -922,6 +950,10 @@ class World:
 
         self.floorpath = None
 
+        self.resource = None
+        self.resource_buildup = 0
+        self.resource_timeout = 0
+
         self.monsters_in_view = []
 
         self._seed = None
@@ -1218,6 +1250,13 @@ class World:
         elif a == 1:
             self.featmap[d] = self.featstock.f['v']
 
+        nfounts = int(round(random.gauss(3, 1)))
+        ww = list(self.walkmap & self.watermap)
+        for tmp in xrange(nfounts):
+            d = ww[random.randint(0, len(ww)-1)]
+            self.featmap[d] = self.featstock.f[random.choice(['C','V','B','N','M'])]
+
+
         # HACK!
         # This is done here, and not in make_items(),
         # so that vaults could generate items.
@@ -1388,7 +1427,14 @@ class World:
         else:
             return
 
-        if do_spring and self.inv.feet and self.inv.feet.springy:
+        is_springy = False
+
+        if self.inv.feet and self.inv.feet.springy:
+            is_springy = True
+        elif self.resource_timeout and self.resource == 'y':
+            is_springy = True
+
+        if do_spring and is_springy:
             self.move(_dx, _dy, do_spring=False)
             return
 
@@ -1410,6 +1456,17 @@ class World:
         if self.b_grace > 0: self.b_grace -= 1
         if self.v_grace > 0: self.v_grace -= 1
         if self.s_grace > 0: self.s_grace -= 1
+
+        if self.resource_timeout > 0: 
+            if self.resource == 'r':
+                self.stats.health.inc(self.coef.regeneration)
+                self.stats.warmth.inc(self.coef.regeneration)
+                self.stats.hunger.inc(self.coef.regeneration)
+
+            self.resource_timeout -= 1
+            if self.resource_timeout == 0: self.resource = None
+
+        
 
         self.tick_checkstats()
         self.t += 1
@@ -1495,6 +1552,15 @@ class World:
         else:
             self.stats.warmth.inc(self.inv.get_heatbonus())
 
+        if self.resource_timeout > 0: 
+            if self.resource == 'r':
+                self.stats.health.inc(self.coef.regeneration)
+                self.stats.warmth.inc(self.coef.regeneration)
+                self.stats.hunger.inc(self.coef.regeneration)
+
+            self.resource_timeout -= 1
+            if self.resource_timeout == 0: self.resource = None
+
         self.tick_checkstats()
         self.t += 1
 
@@ -1513,6 +1579,15 @@ class World:
 
         if self.healingsleep:
             self.stats.health.inc(self.coef.healingsleep)
+
+        if self.resource_timeout > 0: 
+            if self.resource == 'r':
+                self.stats.health.inc(self.coef.regeneration)
+                self.stats.warmth.inc(self.coef.regeneration)
+                self.stats.hunger.inc(self.coef.regeneration)
+
+            self.resource_timeout -= 1
+            if self.resource_timeout == 0: self.resource = None
 
         self.tick_checkstats()
 
@@ -1564,6 +1639,46 @@ class World:
             self.stats.hunger.dec(nn)
             return
 
+        fount = self.try_feature(self.px, self.py, 'resource')
+        if fount:
+
+            if self.resource and (self.resource != fount):
+                self.msg.m('You feel confused.')
+                self.resource = None
+                self.resource_timeout = 0
+                self.resource_buildup = 0
+                del self.featmap[(self.px, self.py)]
+                return
+
+            if fount == 'r': self.msg.m('You drink something red.')
+            elif fount == 'g': self.msg.m('You drink something green.')
+            elif fount == 'y': self.msg.m('You drink something yellow.')
+            elif fount == 'b': self.msg.m('You drink something blue.')
+            elif fount == 'p': self.msg.m('You drink something purple.')
+            self.resource = fount
+
+            if self.resource_timeout:
+                self.resource_timeout += (self.coef.resource_timeouts[fount]/6)
+            else:
+                self.resource_buildup += 1
+
+                if self.resource_buildup >= 6:
+                    if self.resource == 'r':
+                        self.msg.m('You gain superhuman regeneration power!', True)
+                    elif self.resource == 'g':
+                        self.msg.m('Hulk Smash! You gain superhuman strength.', True)
+                    elif self.resource == 'y':
+                        self.msg.m('You gain superhuman speed and vision!', True)
+                    elif self.resource == 'b':
+                        self.msg.m('You are now immune to explosions and radiation!', True)
+                    elif self.resource == 'p':
+                        self.msg.m('You gain telepathy and superhuman stealth!', True)
+
+                    self.resource_buildup = 0
+                    self.resource_timeout = self.coef.resource_timeouts[fount]
+
+            del self.featmap[(self.px, self.py)]
+            return
 
         if (self.px,self.py) not in self.watermap:
             self.msg.m('There is no water here you could drink.')
@@ -2510,9 +2625,15 @@ class World:
             return libtcod.map_is_in_fov(self.tcodmap, x, y)
 
         def func2(x, y):
-            if x == self.px and y == self.py and \
-                not (self.inv.trunk and self.inv.trunk.radimmune):
-                self.stats.health.dec(self.coef.raddamage, "radiation", self.config.sound)
+            if x == self.px and y == self.py:
+                radimmune = False
+                if self.inv.trunk and self.inv.trunk.radimmune:
+                    radimmune = True
+                elif self.resource_timeout and self.resource == 'b':
+                    radimmune = True
+
+                if not radimmune:
+                    self.stats.health.dec(self.coef.raddamage, "radiation", self.config.sound)
 
             if (x, y) in self.monmap:
                 mon = self.monmap[(x, y)]
@@ -2534,10 +2655,18 @@ class World:
             else:
                 self.set_feature(x, y, None)
 
-            if x == self.px and y == self.py and \
-                not (self.inv.trunk and self.inv.trunk.explodeimmune):
-                self.stats.health.dec(6.0, "explosion", self.config.sound)
-                self.dead = True
+
+            if x == self.px and y == self.py:
+
+                explimmune = False
+                if self.inv.trunk and self.inv.trunk.explodeimmune:
+                    explimmune = True
+                elif self.resource_timeout and self.resource == 'b':
+                    explimmune = True
+
+                if not explimmune:
+                    self.stats.health.dec(6.0, "explosion", self.config.sound)
+                    self.dead = True
 
             if (x, y) in self.itemap:
                 for i in self.itemap[(x, y)]:
@@ -2589,6 +2718,9 @@ class World:
 
             plev = self.plev
             attack = max(self.inv.get_attack(), self.coef.unarmedattack)
+
+            if self.resource_timeout and self.resource == 'g':
+                attack = max(self.coef.green_attack, attack)
 
 
         def roll(attack, leva, defence, levd):
@@ -2993,6 +3125,8 @@ class World:
         draw_window(s, self.w, self.h)
 
 
+    def test(self):
+        self.featmap[(self.px,self.py)] = self.featstock.f[random.choice(['C','V','B','N','M'])]
 
     def make_keymap(self):
         self.ckeys = {
@@ -3020,7 +3154,8 @@ class World:
             'P': self.show_messages,
             'Q': self.quit,
             '?': self.show_help,
-            'S': self.save
+            'S': self.save,
+            'w': self.test
             }
         self.vkeys = {
             libtcod.KEY_KP4: self.move_left,
@@ -3068,6 +3203,10 @@ class World:
             rang = min(rang, mon.range)
 
         camorange = self.inv.get_camorange()
+
+        if self.resource_timeout and self.resource == 'p':
+            camorange = min(self.coef.purple_camorange, camorange)
+
         if camorange:
             rang = min(rang, camorange)
 
@@ -3407,7 +3546,10 @@ class World:
 
         default_back = libtcod.black
 
-        lightradius = min(max(self.inv.get_lightradius() + (lightradius or 0), 2), 15)
+        if self.resource_timeout and self.resource == 'y':
+            lightradius = self.coef.yellow_lightradius
+        else:
+            lightradius = min(max(self.inv.get_lightradius() + (lightradius or 0), 2), 15)
 
         if self.blind:
             lightradius /= 2
@@ -3453,10 +3595,16 @@ class World:
 
                 is_lit = False
 
-                if self.inv.head and self.inv.head.telepathyrange:
+                telerange = 0
+                if self.resource_timeout and self.resource == 'p':
+                    telerange = self.coef.purple_telerange
+                elif self.inv.head and self.inv.head.telepathyrange:
+                    telerange = self.inv.head.telepathyrange
+
+                if telerange:
                     if (x, y) in self.monmap:
                         d = math.sqrt(math.pow(abs(y - self.py),2) + math.pow(abs(x - self.px),2))
-                        if d <= self.inv.head.telepathyrange:
+                        if d <= telerange:
                             in_fov = True
                             is_lit = True
 
@@ -3569,10 +3717,20 @@ class World:
                           ((self.b_grace * 6) / self.coef.b_graceduration) + 1,
                           False)
 
+        statsresource = None
+        if self.resource:
+            if self.resource_timeout:
+                n = ((self.resource_timeout * 6) / self.coef.resource_timeouts[self.resource] + 1)
+            else:
+                n = self.resource_buildup
+
+            statsresource = (self.resource, n,
+                             True if self.resource_timeout else False)
+
         if self.px > self.w / 2:
-            self.stats.draw(0, 0, grace=statsgrace)
+            self.stats.draw(0, 0, grace=statsgrace, resource=statsresource)
         else:
-            self.stats.draw(self.w - 14, 0, grace=statsgrace)
+            self.stats.draw(self.w - 14, 0, grace=statsgrace, resource=statsresource)
 
         if self.py > self.h / 2:
             self.msg.draw(15, 0, self.w - 30, self.t)
@@ -3610,7 +3768,7 @@ class World:
           'forced2sleep', 'healingsleep',
           '_seed', '_inputs', 'featstock', 'vaultstock',
           'celautostock', 'celautomap',
-          'achievements', 'bones'
+          'achievements', 'bones', 'resource', 'resource_buildup', 'resource_timeout'
           ]
         state = {}
 
