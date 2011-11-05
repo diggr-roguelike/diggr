@@ -3125,9 +3125,6 @@ class World:
         draw_window(s, self.w, self.h)
 
 
-    def test(self):
-        self.featmap[(self.px,self.py)] = self.featstock.f[random.choice(['C','V','B','N','M'])]
-
     def make_keymap(self):
         self.ckeys = {
             'h': self.move_left,
@@ -3154,8 +3151,7 @@ class World:
             'P': self.show_messages,
             'Q': self.quit,
             '?': self.show_help,
-            'S': self.save,
-            'w': self.test
+            'S': self.save
             }
         self.vkeys = {
             libtcod.KEY_KP4: self.move_left,
