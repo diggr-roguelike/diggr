@@ -204,10 +204,10 @@ class Coeffs:
         self.purple_camorange = 3
 
         self.resource_timeouts = {'r': 300,
-                                  'g': 500,
-                                  'y': 400,
-                                  'b': 200,
-                                  'p': 600}
+                                  'g': 400,
+                                  'y': 600,
+                                  'b': 400,
+                                  'p': 500}
 
 
 class Stat:

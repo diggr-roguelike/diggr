@@ -142,19 +142,19 @@ class FeatureStock:
                               confuse=True, name='confusing smoke')
 
 
-        self.f['C'] = Feature(walkable=True, visible=True, skin=(159, libtcod.dark_green),
+        self.f['C'] = Feature(walkable=True, visible=True, skin=(20, libtcod.darkest_green),
                               resource='g', name='a Green Fountain')
 
-        self.f['V'] = Feature(walkable=True, visible=True, skin=(159, libtcod.red), 
+        self.f['V'] = Feature(walkable=True, visible=True, skin=(20, libtcod.dark_red), 
                               resource='r', name='a Red Fountain')
 
-        self.f['B'] = Feature(walkable=True, visible=True, skin=(159, libtcod.yellow),
+        self.f['B'] = Feature(walkable=True, visible=True, skin=(20, libtcod.dark_yellow),
                               resource='y', name='a Yellow Fountain')
 
-        self.f['N'] = Feature(walkable=True, visible=True, skin=(159, libtcod.blue),
+        self.f['N'] = Feature(walkable=True, visible=True, skin=(20, libtcod.dark_blue),
                               resource='b', name='a Blue Fountain')
 
-        self.f['M'] = Feature(walkable=True, visible=True, skin=(159, libtcod.purple), 
+        self.f['M'] = Feature(walkable=True, visible=True, skin=(20, libtcod.dark_purple), 
                               resource='p', name='a Purple Fountain')
 
         # green: high damage bonus
