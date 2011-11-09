@@ -33,34 +33,44 @@ def start_server():
                              env=env,
                              cwd=wd, startupinfo=sui)
         print 'OK'
-        return p
+        return p, synthdir
     except:
         print 'ERR'
-        return None
+        return None, synthdir
 
 
 class Player:
-    def __init__(self):
+    def __init__(self, synthdir):
 
-        #self.repl = OSC.OSCServer(("127.0.0.1", 55501))
-        #self.repl.addMsgHandler("/done", self._ok)
+        self.repl = OSC.OSCServer(("127.0.0.1", 55501))
+        self.repl.addMsgHandler('default', self._ok)
 
-        self.s = OSC.OSCClient() #server=self.repl)
+        self.s = OSC.OSCClient(server=self.repl)
         self.s.connect(("127.0.0.1", 55500))
         self.n = 1000
 
         # HACK
-        # This should be unnecessary if we started scsynth properly.
-        time.sleep(1)
+        # Ugly Python code follows, eyebleach danger ahead!
 
-        #self.cmd_ok = False
-        #self.s.send(OSC.OSCMessage("/d_loadDir", [synthdir]))
-        #
-        #while not self.cmd_ok:
-        #    self.repl.handle_request()
+        self.cmd_ok = False
+        self.timeout_n = 1
 
-    #def _ok(self, *f):
-    #    self.cmd_ok = True
+        self.repl.handle_timeout = self.handle_timeout
+
+        while not self.cmd_ok:
+            self.s.send(OSC.OSCMessage("/d_loadDir", [synthdir]))
+            self.repl.handle_request()
+            if self.timeout_n > 3:
+                raise Exception('No reply from OSC server')
+
+    def handle_timeout(self):
+        self.timeout_n += 1
+        #print 'timeout!',self.timeout_n
+
+    def _ok(self, *f):
+        #print f
+        if f[0] == '/done':
+            self.cmd_ok = True
 
     def play(self, name, **args):
 
@@ -90,22 +100,27 @@ class Player:
 class Engine:
     def __init__(self, enabled=True):
         self.mute = False
+        self.process = None
 
+        synthdir = None
         if enabled:
-            self.process = start_server()
-        else:
-            self.process = None
+            self.process, synthdir = start_server()
 
         if self.process:
-            self.p = Player()
+            try:
+                self.p = Player(synthdir)
+            except Exception as e:
+                print e
+                self.p = None
 
     def __del__(self):
         if self.process:
-            self.p.quit()
+            if self.p:
+                self.p.quit()
             self.process.kill()
 
     def play(self, name, **args):
-        if not self.mute and self.process:
+        if not self.mute and self.process and self.p:
             try:
                 return self.p.play(name, **args)
             except:
@@ -115,7 +130,7 @@ class Engine:
         return -1
 
     def set(self, n, **args):
-        if not self.mute and self.process:
+        if not self.mute and self.process and self.p:
             try:
                 self.p.set(n, **args)
             except:
@@ -124,7 +139,7 @@ class Engine:
                 self.process = None
 
     def stop(self, n):
-        if self.process:
+        if self.process and self.p:
             try:
                 self.p.free(n)
             except:
