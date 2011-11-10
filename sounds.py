@@ -55,17 +55,36 @@ class Player:
         self.cmd_ok = False
         self.timeout_n = 1
 
-        self.repl.handle_timeout = self.handle_timeout
+        #self.repl.handle_timeout = self.handle_timeout
+
+        tim0 = time.time()
+        timold = 0
 
         while not self.cmd_ok:
             self.s.send(OSC.OSCMessage("/d_loadDir", [synthdir]))
             self.repl.handle_request()
-            if self.timeout_n > 3:
+
+            if self.cmd_ok:
+                break
+
+            # Not using SocketServer's timeout here because
+            # handle_request() might end in timeout, request or 
+            # error, and there is no way to find out if an error
+            # really happened.
+            t = time.time()
+
+            #print t, '/', t-timold, t-tim0
+
+            if t - timold < 0.1:
+                print 'sleep!'
+                time.sleep(0.1)
+            timold = t
+
+            if t - tim0 > 3.1:
                 raise Exception('No reply from OSC server')
 
-    def handle_timeout(self):
-        self.timeout_n += 1
-        #print 'timeout!',self.timeout_n
+    #def handle_timeout(self):
+    #    self.timeout_n += 1
 
     def _ok(self, *f):
         #print f
