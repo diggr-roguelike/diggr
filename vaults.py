@@ -96,7 +96,11 @@ class VaultStock:
 
 
         #
-        self.add(Vault(syms=symsb, pic=["z"], chance=2, level=(2,3), count=2, free=True))
+        self.add(Vault(syms=symsb, pic=["z"], chance=1, level=(1,3), count=2, free=True, branch='a'))
+        self.add(Vault(syms=symsb, pic=["z"], chance=1, level=(1,3), count=2, free=True, branch='b'))
+        self.add(Vault(syms=symsb, pic=["z"], chance=1, level=(1,3), count=2, free=True, branch='c'))
+        self.add(Vault(syms=symsb, pic=["z"], chance=1, level=(1,3), count=2, free=True, branch='d'))
+        self.add(Vault(syms=symsb, pic=["z"], chance=1, level=(1,3), count=2, free=True, branch='e'))
 
         self.add(Vault(syms=symsb, pic=["...",
                                         ".9.",
@@ -470,35 +474,35 @@ class VaultStock:
 
         ## The Rehabilitation Thunderdome
 
-        syms = {' ': None,
-                '.': (None, False),
-                ':': (None, True, False),
-                'o': (':', False),
-                'w': ('W', False),
-                '#': (0, False),
-                '=': ('=', False),
-                'l': ('l', False),
-                'p': ('p', False),
-                'r': ('r', False),
-                'q': ('q', False),
-                'd': ('d', False),
-                'R': ('R.', False),
-                'L': ('L.', False),
-                'T': ('T.', False),
-                'F': ('F.', False),
-                'J': ('J.', False),
-                'Z': ('Z.', False),
-                '7': ('7.', False),
-                '/': ('/.', False),
-                '-': ('-.', False),
-                '|': ('|.', False),
-                '+': ('+.', False),
-                '1': ('1', True),
-                '2': ('2', True),
-                '3': ('3', True),
-                '4': ('4', True),
-                '5': ('5', True),
-                '@': (None, True)}
+        symsq = {' ': None,
+                 '.': (None, False),
+                 ':': (None, True, False),
+                 'o': (':', False),
+                 'w': ('W', False),
+                 '#': (0, False),
+                 '=': ('=', False),
+                 'l': ('l', False),
+                 'p': ('p', False),
+                 'r': ('r', False),
+                 'q': ('q', False),
+                 'd': ('d', False),
+                 'R': ('R.', False),
+                 'L': ('L.', False),
+                 'T': ('T.', False),
+                 'F': ('F.', False),
+                 'J': ('J.', False),
+                 'Z': ('Z.', False),
+                 '7': ('7.', False),
+                 '/': ('/.', False),
+                 '-': ('-.', False),
+                 '|': ('|.', False),
+                 '+': ('+.', False),
+                 '1': ('1', True),
+                 '2': ('2', True),
+                 '3': ('3', True),
+                 '4': ('4', True),
+                 '5': ('5', True),
+                 '@': (None, True)}
 
 
         self.add(Vault(syms=symsq,
@@ -649,6 +653,8 @@ class VaultStock:
 
         for x in xrange(len(self.vaults[branch][level])):
             v = self.vaults[branch][level][x]
+
+            print v.chance, v.pic
 
             if random.randint(1, v.chance) != 1:
                 continue

@@ -1209,12 +1209,14 @@ class World:
                 y = y0
                 break
 
+        print x, y, v.pic
+
         if x is None or y is None:
             return
 
         if v.message:
-            for m in v.message:
-                self.msg.m(m, True)
+            for msg in v.message:
+                self.msg.m(msg, True)
 
         for yi in xrange(v.h):
             for xi in xrange(v.w):
@@ -1243,15 +1245,40 @@ class World:
 
 
     def make_feats(self, nogens):
+
+        self.featmap = {}
+        self.celautomap = {}
+
+        # HACK!
+        # This is done here, and not in make_items(),
+        # so that vaults could generate items.
+        self.itemap = {}
+
         m = list(self.walkmap - self.watermap)
 
+        while 1:
+
+            vault = self.vaultstock.get(self.branch, self.dlev)
+
+            if vault:
+                self.paste_vault(vault, m, nogens)
+
+            if not vault or not vault.free:
+                break
+
+        m = list(self.walkmap - self.watermap)
+
+        print len(m)
+
         if len(m) == 0: return
+
+        # Thunderdome HACK
+        if self.branch == 'q':
+            return
 
         stairsi = random.randint(0, len(m)-1)
         d = m[stairsi]
 
-        self.featmap = {}
-        self.celautomap = {}
         self.featmap[d] = self.featstock.f['>']
         self.exit = d
         del m[stairsi]
@@ -1271,21 +1298,6 @@ class World:
             d = ww[random.randint(0, len(ww)-1)]
             self.featmap[d] = self.featstock.f[random.choice(['C','V','B','N','M'])]
 
-
-        # HACK!
-        # This is done here, and not in make_items(),
-        # so that vaults could generate items.
-        self.itemap = {}
-
-        while 1:
-
-            vault = self.vaultstock.get(self.branch, self.dlev)
-
-            if vault:
-                self.paste_vault(vault, m, nogens)
-
-            if not vault or not vault.free:
-                break
 
 
     def try_feature(self, x, y, att):
@@ -2528,6 +2540,10 @@ class World:
         b = self.try_feature(self.px, self.py, 'branch')
         if b:
             self.branch = b
+
+        # XXX removeme
+        if b == 'q':
+            self.dlev = 3
 
         self.regen(self.w, self.h)
         self.place()
