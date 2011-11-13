@@ -966,7 +966,8 @@ class World:
                        'c': (libtcod.sky,),
                        'd': (libtcod.darkest_grey,),
                        'e': (libtcod.lightest_yellow,),
-                       's': (libtcod.darkest_blue,) }
+                       's': (libtcod.darkest_blue,),
+                       'q': (libtcod.white) }
 
         self.sparkleinterp = [ math.sin(x/math.pi)**2 for x in xrange(10) ]
 
@@ -978,6 +979,12 @@ class World:
         self.w = w_
         self.h = h_
         self.grid = [[10 for x in xrange(self.w)] for y in xrange(self.h)]
+
+        self.walkmap = set()
+        self.watermap = set()
+        self.visitedmap = {}
+        self.featmap = {}
+
 
     def randgen(self, a, b, c, d, mid):
         x = ((c - a) / 2) + a
@@ -1099,7 +1106,6 @@ class World:
         for x in xrange(50):
             self.makeflow(gout, watr, 100.0, 1)
 
-        self.walkmap = set()
         for x,y in gout:
             if self.grid[y][x] <= 0:
                 self.walkmap.add((x,y))
@@ -1112,12 +1118,9 @@ class World:
         if pctwater <= 1: pctwater = 1
         watr = watr[:int(len(watr)/pctwater)]
 
-        self.watermap = set()
         for n,v in watr:
             self.watermap.add(v)
 
-        self.visitedmap = {}
-        self.featmap = {}
 
 
     def make_map(self):
@@ -1184,25 +1187,34 @@ class World:
 
 
 
-    def paste_vault(self, v, m):
+    def paste_vault(self, v, m, nogens):
         x = None
         y = None
 
-        for x in xrange(10):
-            d = m[random.randint(0, len(m)-1)]
+        if v.anywhere:
+            x = random.randint(0, self.w - v.w - 1)
+            y = random.randint(0, self.h - v.h - 1)
 
-            x0 = d[0] - v.anchor[0]
-            y0 = d[1] - v.anchor[1]
+        else:
+            for x in xrange(10):
+                d = m[random.randint(0, len(m)-1)]
 
-            if x0 < 0 or y0 < 0 or x0 + v.w >= self.w or y0 + v.h >= self.h:
-                continue
+                x0 = d[0] - v.anchor[0]
+                y0 = d[1] - v.anchor[1]
 
-            x = x0
-            y = y0
-            break
+                if x0 < 0 or y0 < 0 or x0 + v.w >= self.w or y0 + v.h >= self.h:
+                    continue
+
+                x = x0
+                y = y0
+                break
 
         if x is None or y is None:
             return
+
+        if v.message:
+            for m in v.message:
+                self.msg.m(m, True)
 
         for yi in xrange(v.h):
             for xi in xrange(v.w):
@@ -1219,15 +1231,18 @@ class World:
                 self.set_feature(xx, yy, z[0])
 
                 if len(z) >= 3:
-                    itm = self.itemstock.get(z[1])
-                    if itm:
-                        if (xx, yy) not in self.itemap:
-                            self.itemap[(xx, yy)] = [itm]
-                        else:
-                            self.itemap[(xx, yy)].append(itm)
+                    if z[1] is True:
+                        nogens.add((xx,yy))
+                    else:
+                        itm = self.itemstock.get(z[1])
+                        if itm:
+                            if (xx, yy) not in self.itemap:
+                                self.itemap[(xx, yy)] = [itm]
+                            else:
+                                self.itemap[(xx, yy)].append(itm)
 
 
-    def make_feats(self):
+    def make_feats(self, nogens):
         m = list(self.walkmap - self.watermap)
 
         if len(m) == 0: return
@@ -1262,10 +1277,15 @@ class World:
         # so that vaults could generate items.
         self.itemap = {}
 
-        vault = self.vaultstock.get(self.branch, self.dlev)
+        while 1:
 
-        if vault:
-            self.paste_vault(vault, m)
+            vault = self.vaultstock.get(self.branch, self.dlev)
+
+            if vault:
+                self.paste_vault(vault, m, nogens)
+
+            if not vault or not vault.free:
+                break
 
 
     def try_feature(self, x, y, att):
@@ -1288,12 +1308,24 @@ class World:
 
         self.floorpath = libtcod.path_new_using_function(self.w, self.h, floor_callback, self, 1.0)
 
-    def make_monsters(self):
+    def make_monsters(self, nogens):
 
         self.monsterstock.clear_gencount()
         self.monmap = {}
-        n = int(max(random.gauss(*self.coef.nummonsters), 1))
-        ll = list(self.walkmap)
+
+        # Thunderdome HACK
+        if self.branch == 'q':
+            if self.dlev in (3,4):
+                n = 1
+            elif self.dlev in (5,6):
+                n = 2
+            else:
+                n = 3
+
+        else:
+            n = int(max(random.gauss(*self.coef.nummonsters), 1))
+
+        ll = list(self.walkmap - nogens)
 
         for i in xrange(n):
             lev = self.dlev + random.gauss(0, self.coef.monlevel)
@@ -1309,10 +1341,15 @@ class World:
                 m.y = y
                 self.monmap[(x, y)] = m
 
-    def make_items(self):
+    def make_items(self, nogens):
 
-        n = int(max(random.gauss(self.coef.numitems[0] + self.dlev, self.coef.numitems[1]), 1))
-        ll = list(self.walkmap)
+        ## Thunderdome HACK
+        if self.branch == 'q':
+            n = 1
+        else:
+            n = int(max(random.gauss(self.coef.numitems[0] + self.dlev, self.coef.numitems[1]), 1))
+
+        ll = list(self.walkmap - nogens)
 
         for i in xrange(n):
             lev = self.dlev + random.gauss(0, self.coef.itemlevel)
@@ -1324,6 +1361,10 @@ class World:
                     self.itemap[(x, y)] = [item]
                 else:
                     self.itemap[(x, y)].append(item)
+
+        ## Thunderdome HACK
+        if self.branch == 'q':
+            return
 
         for pl,dl,itm in self.bones:
             if dl == self.dlev and len(itm) > 0:
@@ -1341,14 +1382,20 @@ class World:
         if self.branch is None:
             self.branch = random.choice(['a', 'b', 'c', 'd', 'e'])
 
+        nogens = set()
+
         self.makegrid(w_, h_)
-        self.terra()
-        self.makerivers()
+
+        # Thunderdome HACK
+        if self.branch != 'q':
+            self.terra()
+            self.makerivers()
+
         self.make_map()
-        self.make_feats()
+        self.make_feats(nogens)
         self.make_paths()
-        self.make_monsters()
-        self.make_items()
+        self.make_monsters(nogens)
+        self.make_items(nogens)
 
     def place(self):
         while 1:
@@ -1626,6 +1673,43 @@ class World:
         self.msg.m('You start resting.')
         self.resting = True
 
+        
+    def colordrink(self, fount):
+        if self.resource and (self.resource != fount):
+            self.msg.m('You feel confused.')
+            self.resource = None
+            self.resource_timeout = 0
+            self.resource_buildup = 0
+            return
+
+        if fount == 'r': self.msg.m('You drink something red.')
+        elif fount == 'g': self.msg.m('You drink something green.')
+        elif fount == 'y': self.msg.m('You drink something yellow.')
+        elif fount == 'b': self.msg.m('You drink something blue.')
+        elif fount == 'p': self.msg.m('You drink something purple.')
+        self.resource = fount
+        
+        if self.resource_timeout:
+            self.resource_timeout += (self.coef.resource_timeouts[fount]/6)
+        else:
+            self.resource_buildup += 1
+
+            if self.resource_buildup >= 6:
+                if self.resource == 'r':
+                    self.msg.m('You gain superhuman regeneration power!', True)
+                elif self.resource == 'g':
+                    self.msg.m('Hulk Smash! You gain superhuman strength.', True)
+                elif self.resource == 'y':
+                    self.msg.m('You gain superhuman speed and vision!', True)
+                elif self.resource == 'b':
+                    self.msg.m('You are now immune to explosions and radiation!', True)
+                elif self.resource == 'p':
+                    self.msg.m('You gain telepathy and superhuman stealth!', True)
+
+                self.resource_buildup = 0
+                self.resource_timeout = self.coef.resource_timeouts[fount]
+
+
     def drink(self):
 
         if self.try_feature(self.px, self.py, 'healingfountain'):
@@ -1641,45 +1725,10 @@ class World:
 
         fount = self.try_feature(self.px, self.py, 'resource')
         if fount:
-
-            if self.resource and (self.resource != fount):
-                self.msg.m('You feel confused.')
-                self.resource = None
-                self.resource_timeout = 0
-                self.resource_buildup = 0
-                del self.featmap[(self.px, self.py)]
-                return
-
-            if fount == 'r': self.msg.m('You drink something red.')
-            elif fount == 'g': self.msg.m('You drink something green.')
-            elif fount == 'y': self.msg.m('You drink something yellow.')
-            elif fount == 'b': self.msg.m('You drink something blue.')
-            elif fount == 'p': self.msg.m('You drink something purple.')
-            self.resource = fount
-
-            if self.resource_timeout:
-                self.resource_timeout += (self.coef.resource_timeouts[fount]/6)
-            else:
-                self.resource_buildup += 1
-
-                if self.resource_buildup >= 6:
-                    if self.resource == 'r':
-                        self.msg.m('You gain superhuman regeneration power!', True)
-                    elif self.resource == 'g':
-                        self.msg.m('Hulk Smash! You gain superhuman strength.', True)
-                    elif self.resource == 'y':
-                        self.msg.m('You gain superhuman speed and vision!', True)
-                    elif self.resource == 'b':
-                        self.msg.m('You are now immune to explosions and radiation!', True)
-                    elif self.resource == 'p':
-                        self.msg.m('You gain telepathy and superhuman stealth!', True)
-
-                    self.resource_buildup = 0
-                    self.resource_timeout = self.coef.resource_timeouts[fount]
-
+            self.colordrink(fount)
             del self.featmap[(self.px, self.py)]
             return
-
+            
         if (self.px,self.py) not in self.watermap:
             self.msg.m('There is no water here you could drink.')
             return
@@ -2428,6 +2477,10 @@ class World:
                 return item
             return None
 
+        elif item.resource:
+            self.colordrink(item.resource)
+            return None
+
         elif item.rangeattack or item.rangeexplode:
             if item.ammo == 0:
                 self.msg.m("It's out of ammo!")
@@ -2604,6 +2657,36 @@ class World:
 
         if exting:
             self.achievements.mondone()
+
+        # Thunderdome HACK
+        if self.branch == 'q':
+            if self.dlev == 7:
+                self.msg.m('Total victory!', True)
+                self.msg.m('The Thunderdome grants you godlike powers!', True)
+
+                i = self.itemstock.get('Deus ex machina')
+                if i:
+                    if (mon.x, mon.y) not in self.itemap:
+                        self.itemap[(mon.x, mon.y)] = [i]
+                    else:
+                        self.itemap[(mon.x, mon.y)].append(i)
+
+            else:
+                if len(self.monmap) == 0:
+                    self.msg.m('Victory! The Thunderdome grants you a gift!', True)
+                    self.msg.m('An exit appears.', True)
+
+                self.set_feature(mon.x, mon.y, '>')
+                for x in xrange(3):
+                    i = self.itemstock.generate(self.dlev)
+                    if i:
+                        if (mon.x, mon.y) not in self.itemap:
+                            self.itemap[(mon.x, mon.y)] = [i]
+                        else:
+                            self.itemap[(mon.x, mon.y)].append(i)
+
+            return
+
 
         if winner:
             while 1:

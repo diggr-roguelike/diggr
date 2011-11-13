@@ -51,7 +51,10 @@ class FeatureStock:
                               stairs=1, name='a hole in the floor', branch='e')
 
         self.f['6'] = Feature(walkable=True, visible=True, skin=(175, libtcod.white),
-                              stairs=1, name='a hole in the floor')
+                              stairs=1, name='a hole in the floor', branch='s')
+
+        self.f['8'] = Feature(walkable=True, visible=True, skin=(175, libtcod.red),
+                              stairs=1, name='an entrace to the Rehabilitation Thunderdome', branch='q')
 
         self.f['*'] = Feature(walkable=True, visible=False, skin=('*', libtcod.lightest_green),
                               name='rubble')
@@ -121,6 +124,32 @@ class FeatureStock:
         self.f['Z'] = Feature(walkable=False, visible=False, skin=(185, libtcod.white),
                               name='a smooth stone wall', height=0)
 
+
+        self.f['|.'] = Feature(walkable=False, visible=True, skin=(186, libtcod.gray),
+                               name='bulletproof glass', height=0)
+        self.f['-.'] = Feature(walkable=False, visible=True, skin=(205, libtcod.gray),
+                               name='bulletproof glass', height=0)
+        self.f['+.'] = Feature(walkable=False, visible=True, skin=(206, libtcod.gray),
+                               name='bulletproof glass', height=0)
+        self.f['R.'] = Feature(walkable=False, visible=True, skin=(201, libtcod.gray),
+                               name='bulletproof glass', height=0)
+        self.f['L.'] = Feature(walkable=False, visible=True, skin=(200, libtcod.gray),
+                               name='bulletproof glass', height=0)
+        self.f['T.'] = Feature(walkable=False, visible=True, skin=(203, libtcod.gray),
+                               name='bulletproof glass', height=0)
+        self.f['F.'] = Feature(walkable=False, visible=True, skin=(204, libtcod.gray),
+                               name='bulletproof glass', height=0)
+        self.f['J.'] = Feature(walkable=False, visible=True, skin=(202, libtcod.gray),
+                               name='bulletproof glass', height=0)
+        self.f['7.'] = Feature(walkable=False, visible=True, skin=(187, libtcod.gray),
+                               name='bulletproof glass', height=0)
+        self.f['/.'] = Feature(walkable=False, visible=True, skin=(188, libtcod.gray),
+                               name='bulletproof glass', height=0)
+        self.f['Z.'] = Feature(walkable=False, visible=True, skin=(185, libtcod.gray),
+                               name='bulletproof glass', height=0)
+
+
+
         self.f['Y'] = Feature(walkable=False, visible=False, skin=(157, libtcod.green),
                               name='a tree', height=5)
         self.f['!'] = Feature(walkable=True, visible=False, skin=(173, libtcod.dark_green),
@@ -156,6 +185,7 @@ class FeatureStock:
 
         self.f['M'] = Feature(walkable=True, visible=True, skin=(20, libtcod.dark_purple), 
                               resource='p', name='a Purple Fountain')
+
 
         # green: high damage bonus
         # red: health, warmth, hunger regeneration

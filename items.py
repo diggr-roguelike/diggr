@@ -19,7 +19,8 @@ class Item:
                  summon=None, radimmune=False, radexplode=False, fires=None,
                  camorange=None, sounding=False, healingsleep=None,
                  applies_in_slot=False, ebola=False, smoke=False,
-                 trapcloud=False, glueimmune=False, craft=None):
+                 trapcloud=False, glueimmune=False, craft=None, resource=None,
+                 hide_count=False):
         self.slot = slot
         self.bonus = bonus
         self.name = name
@@ -83,6 +84,8 @@ class Item:
         self.trapcloud = trapcloud
         self.glueimmune = glueimmune
         self.craft = craft
+        self.resource = resource
+        self.hide_count = hide_count
 
         self.ammo = None
         self.gencount = 0
@@ -97,7 +100,12 @@ class Item:
             elif self.bonus < 0:
                 s += 'cursed '
         s += self.name
-        if self.count > 1:
+
+        if self.hide_count:
+            if self.count > 0:
+                s = s + ' [%d]' % self.count
+
+        elif self.count > 1:
             s = str(self.count) + " " + s.replace('$s', 's')
         elif self.count != 0 and len(s) > 0:
             if self.count == 1:
@@ -107,6 +115,7 @@ class Item:
                 s = 'an ' + s
             else:
                 s = 'a ' + s
+
         if self.ammo and self.ammo > 0:
             s = s + ' [%d]' % self.ammo
 
@@ -790,6 +799,36 @@ class ItemStock:
                              rarity=0, applies=True, rangeexplode=True, range=(4, 15),
                              attack=0, ammochance=(-1,-1), radius=3,
                              desc=["A magic RPG launcher that never runs out of ammo."])
+
+        ### Color potions to complement color fountains
+
+        self.green = Item('green potion', slot='', skin=(':', libtcod.darkest_green),
+                          rarity=3, applies=True, resource='g',
+                          desc=["A flask containing a green liquid."])
+
+        self.red = Item('red potion', slot='', skin=(':', libtcod.dark_red),
+                        rarity=3, applies=True, resource='r',
+                        desc=["A flask containing a red liquid."])
+
+        self.yellow = Item('yellow potion', slot='', skin=(':', libtcod.dark_yellow),
+                           rarity=3, applies=True, resource='y',
+                           desc=["A flask containing a yellow liquid."])
+
+        self.blue = Item('blue potion', slot='', skin=(':', libtcod.dark_blue),
+                         rarity=3, applies=True, resource='b',
+                         desc=["A flask containing a blue liquid."])
+
+        self.purple = Item('purple potion', slot='', skin=(':', libtcod.dark_purple),
+                           rarity=3, applies=True, resource='p',
+                           desc=["A flask containing a purple liquid."])
+
+        ## !
+
+        self.deusex = Item('Deus ex machina', slot='', skin=(236, libtcod.yellow),
+                           rarity=0, applies=True, wishing=True, count=7, hide_count=True,
+                           desc=['Translated from the Latin, literally:',
+                                 '"the god from the machine".'])
+
 
 
         self.regenpool()
