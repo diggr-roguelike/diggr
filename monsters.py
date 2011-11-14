@@ -911,6 +911,29 @@ class MonsterStock:
                          explodeimmune=True, fireimmune=True, flying=True,
                          desc=['The Laughing Magician.']))
 
+
+        ## Thunderdome
+
+        
+        # a mutant turtle
+        # a gremlin
+        # a kobold
+        # an orc
+        # an ogre
+        # a dark elf
+        # Beef Supreme
+        # Tylenol Jones
+        # Frito Pendejo
+        # Formica Davis
+        # Hormel Chavez
+        # Brawndo Mutilator
+        # Meatcleaver
+        # Captain Electric
+        # Buzzsaw
+        # Dynamo
+        # Master Blaster
+        # President Dwayne Elizondo Mountain Dew Herbert Camacho
+
     
         self.renormalize()
 

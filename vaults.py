@@ -522,7 +522,7 @@ class VaultStock:
                             "      ::::::::::::::::::::::::::::::::::::::::::::::      "],
                        chance=1, level=(3,3), count=1, branch='q', anywhere=True,
                        message=["This is Thunderdome!",
-                                "Two go in, one comes out!"]))
+                                "Two men enter, one man leaves!"]))
 
         self.add(Vault(syms=symsq,
                        pic=["      ::::::::::::::::::::::::::::::::::::::::::::::      ",
@@ -541,7 +541,7 @@ class VaultStock:
                             "      ::::::::::::::::::::::::::::::::::::::::::::::      "],
                        chance=1, level=(4,4), count=1, branch='q', anywhere=True,
                        message=["This is Thunderdome!",
-                                "Two go in, one comes out!"]))
+                                "Two men enter, one man leaves!"]))
 
         self.add(Vault(syms=symsq,
                        pic=["      ::::::::::::::::::::::::::::::::::::::::::::::      ",
@@ -560,7 +560,7 @@ class VaultStock:
                             "      ::::::::::::::::::::::::::::::::::::::::::::::      "],
                        chance=1, level=(5,5), count=1, branch='q', anywhere=True,
                        message=["This is Thunderdome!",
-                                "Three go in, one comes out!"]))
+                                "Three men enter, one man leaves!"]))
                             
         self.add(Vault(syms=symsq,
                        pic=["      ::::::::::::::::::::::::::::::::::::::::::::::      ",
@@ -579,7 +579,7 @@ class VaultStock:
                             "      ::::::::::::::::::::::::::::::::::::::::::::::      "],
                        chance=1, level=(6,6), count=1, branch='q', anywhere=True,
                        message=["This is Thunderdome!",
-                                "Three go in, one comes out!"]))
+                                "Three men enter, one man leaves!"]))
 
 
         self.add(Vault(syms=symsq,
@@ -599,7 +599,7 @@ class VaultStock:
                             "      ..............................................      "],
                        chance=1, level=(7,7), count=1, branch='q', anywhere=True,
                        message=["This is Thunderdome!",
-                                "Four go in, one comes out!"]))
+                                "Four men enter, one man leaves!"]))
 
 
     def add(self, v):
