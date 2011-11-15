@@ -96,11 +96,11 @@ class VaultStock:
 
 
         #
-        self.add(Vault(syms=symsb, pic=["z"], chance=1, level=(1,3), count=2, free=True, branch='a'))
-        self.add(Vault(syms=symsb, pic=["z"], chance=1, level=(1,3), count=2, free=True, branch='b'))
-        self.add(Vault(syms=symsb, pic=["z"], chance=1, level=(1,3), count=2, free=True, branch='c'))
-        self.add(Vault(syms=symsb, pic=["z"], chance=1, level=(1,3), count=2, free=True, branch='d'))
-        self.add(Vault(syms=symsb, pic=["z"], chance=1, level=(1,3), count=2, free=True, branch='e'))
+        self.add(Vault(syms=symsb, pic=["z"], chance=2, level=(1,3), count=3, free=True, branch='a'))
+        self.add(Vault(syms=symsb, pic=["z"], chance=2, level=(1,3), count=3, free=True, branch='b'))
+        self.add(Vault(syms=symsb, pic=["z"], chance=2, level=(1,3), count=3, free=True, branch='c'))
+        self.add(Vault(syms=symsb, pic=["z"], chance=2, level=(1,3), count=3, free=True, branch='d'))
+        self.add(Vault(syms=symsb, pic=["z"], chance=2, level=(1,3), count=3, free=True, branch='e'))
 
         self.add(Vault(syms=symsb, pic=["...",
                                         ".9.",
@@ -567,9 +567,9 @@ class VaultStock:
                             "    ::::::::::::::::::::::::::::::::::::::::::::::::::    ",
                             "   :::R--------------------------------------------7:::   ",
                             "  :::R/.......r====q..........r==========q...r===q.L7:::  ",
-                            " :::R/...rd===d....pq..p===q..l..........p===d...l..L7::: ",
+                            " :::R/...r====d....pq..r===q..l..........p===d...l..L7::: ",
                             ":::R/...rd..........l..l...l..p=======q..........l...L7:::",
-                            ":::|...rd..r====q...l..l...l..........l...r====r.pq...|:::",
+                            ":::|...rd..r====q...l..l...l..........l...r====q.pq...|:::",
                             ":::|......rd....p===d..l...l...r===q..p===d....l..pq..|:::",
                             ":::L7.....l............l...l...l...l...........l.....R/:::",
                             " :::L7....pq...r===q...l...p===d...l...r===q...l....R/::: ",
@@ -637,7 +637,7 @@ class VaultStock:
                 del self.vaults[branch]
 
 
-    def get(self, branch, level):
+    def get(self, branch, level, vaultstoskip):
 
         if len(self.vaults) == 0:
             return None
@@ -654,7 +654,10 @@ class VaultStock:
         for x in xrange(len(self.vaults[branch][level])):
             v = self.vaults[branch][level][x]
 
-            print v.chance, v.pic
+            print '?', v.chance, v.pic
+
+            if v in vaultstoskip:
+                continue
 
             if random.randint(1, v.chance) != 1:
                 continue

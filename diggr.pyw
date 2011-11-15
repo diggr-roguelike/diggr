@@ -967,7 +967,7 @@ class World:
                        'd': (libtcod.darkest_grey,),
                        'e': (libtcod.lightest_yellow,),
                        's': (libtcod.darkest_blue,),
-                       'q': (libtcod.white) }
+                       'q': (libtcod.white,) }
 
         self.sparkleinterp = [ math.sin(x/math.pi)**2 for x in xrange(10) ]
 
@@ -1215,7 +1215,7 @@ class World:
             return
 
         if v.message:
-            for msg in v.message:
+            for msg in reversed(v.message):
                 self.msg.m(msg, True)
 
         for yi in xrange(v.h):
@@ -1256,19 +1256,18 @@ class World:
 
         m = list(self.walkmap - self.watermap)
 
+        oldvaults = set()
         while 1:
-
-            vault = self.vaultstock.get(self.branch, self.dlev)
+            vault = self.vaultstock.get(self.branch, self.dlev, oldvaults)
 
             if vault:
                 self.paste_vault(vault, m, nogens)
+                oldvaults.add(vault)
 
             if not vault or not vault.free:
                 break
 
         m = list(self.walkmap - self.watermap)
-
-        print len(m)
 
         if len(m) == 0: return
 
@@ -1342,6 +1341,10 @@ class World:
         for i in xrange(n):
             lev = self.dlev + random.gauss(0, self.coef.monlevel)
             lev = max(int(round(lev)), 1)
+
+            # Thunderdome HACK
+            if self.branch == 'q':
+                lev = min(max(lev, 3), 8)
 
             while 1:
                 x, y = ll[random.randint(0, len(ll)-1)]
@@ -2679,7 +2682,7 @@ class World:
                 self.msg.m('Total victory!', True)
                 self.msg.m('The Thunderdome grants you godlike powers!', True)
 
-                i = self.itemstock.get('Deus ex machina')
+                i = self.itemstock.get('deusex')
                 if i:
                     if (mon.x, mon.y) not in self.itemap:
                         self.itemap[(mon.x, mon.y)] = [i]

@@ -1078,18 +1078,27 @@ class MonsterStock:
         if level == 0:
             return None
 
-        m = self.monsters[branch][level]
         tmp = None
 
-        for x in xrange(6):
-            if x >= 5:
-                return None
-            tmp = m[random.randint(0, len(m)-1)]
-            if tmp.gencount >= tmp.count:
+        while 1:
+            m = self.monsters[branch][level]
+
+            okix = []
+            for x in xrange(len(m)):
+                if m[x].gencount < m[x].count:
+                    okix.append(x)
+
+            if len(okix) == 0:
+                level += 1
+                if level not in self.monsters[branch]:
+                    return None
                 continue
+
+            tmp = okix[random.randint(0, len(okix)-1)]
+            tmp = m[tmp]
             tmp.gencount += 1
             break
-
+            
         m = copy.copy(tmp)
 
         if m.itemdrop:
