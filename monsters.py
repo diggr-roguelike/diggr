@@ -914,25 +914,93 @@ class MonsterStock:
 
         ## Thunderdome
 
+        self.add(Monster('mutant turtle', skin=('o', libtcod.green),
+                         attack=1.5, defence=0.2, range=8, level=3, count=10, branch='q',
+                         desc=['Your adversary in the Thunderdome.']))
+
+        self.add(Monster('gremlin', skin=('f', libtcod.green),
+                         attack=2.0, defence=0.5, range=6, level=3, count=10, branch='q',
+                         desc=['Your adversary in the Thunderdome.']))
+
+        self.add(Monster('kobold', skin=('h', libtcod.lightest_green),
+                         attack=1.4, defence=0.9, range=9, level=3, count=10, branch='q',
+                         desc=['Your adversary in the Thunderdome.']))
+
+        self.add(Monster('orc', skin=('h', libtcod.gray),
+                         attack=1.7, defence=0.7, range=7, level=4, count=10, branch='q',
+                         desc=['Your adversary in the Thunderdome.']))
+
+        self.add(Monster('orge', skin=('H', libtcod.light_gray),
+                         attack=2.1, defence=1.9, range=5, level=4, count=10, branch='q',
+                         desc=['Your adversary in the Thunderdome.']))
+
+        self.add(Monster('dark elf', skin=('f', libtcod.darkest_gray),
+                         psyattack=0.5, psyrange=4,
+                         attack=1.0, defence=0.9, range=9, level=4, count=10, branch='q',
+                         desc=['Your adversary in the Thunderdome.']))
+
+        self.add(Monster('Beef Supreme', skin=('h', libtcod.pink),
+                         attack=2.7, defence=0.5, range=7, level=5, branch='q',
+                         no_a=True, count=1,
+                         desc=['Your adversary in the Thunderdome.']))
+
+        self.add(Monster('Tylenol Jones', skin=('h', libtcod.light_blue),
+                         psyattach=0.25, psyrange=3, no_a=True, count=1,
+                         attack=1.5, defence=1.0, range=8, level=5, branch='q',
+                         desc=['Your adversary in the Thunderdome.']))
+
+        self.add(Monster('Frito Pendejo', skin=('h', libtcod.dark_sky),
+                         attack=2.0, defence=0.4, range=9, level=5, count=1, branch='q',
+                         no_a=True,
+                         desc=['Your adversary in the Thunderdome.']))
         
-        # a mutant turtle
-        # a gremlin
-        # a kobold
-        # an orc
-        # an ogre
-        # a dark elf
-        # Beef Supreme
-        # Tylenol Jones
-        # Frito Pendejo
-        # Formica Davis
-        # Hormel Chavez
-        # Brawndo Mutilator
-        # Meatcleaver
-        # Captain Electric
-        # Buzzsaw
-        # Dynamo
-        # Master Blaster
-        # President Dwayne Elizondo Mountain Dew Herbert Camacho
+        self.add(Monster('Formica Davis', skin=('h', libtcod.light_crimson),
+                         attack=2.0, defence=1.5, range=10, level=6, count=1, branch='q',
+                         no_a=True,
+                         desc=['Your adversary in the Thunderdome.']))
+
+        self.add(Monster('Hormel Chavez', skin=('h', libtcod.light_blue),
+                         attack=1.4, defence=1.9, range=12, level=6, count=1, branch='q',
+                         no_a=True,
+                         desc=['Your adversary in the Thunderdome.']))
+
+        self.add(Monster('Brawndo Mutilator', skin=('z', libtcod.silver),
+                         attack=3.0, defence=0.8, range=6, level=6, count=1, branch='q',
+                         no_a=True,
+                         desc=['Your adversary in the Thunderdome.']))
+
+
+        self.add(Monster('Meatcleaver', skin=('h', libtcod.dark_crimson),
+                         attack=3.0, defence=0.5, range=10, level=7, count=1, branch='q',
+                         no_a=True,
+                         desc=['Your adversary in the Thunderdome.']))
+
+        self.add(Monster('Captain Electric', skin=('h', libtcod.lightest_blue),
+                         attack=3.0, defence=1.0, range=5, level=7, count=1, branch='q',
+                         no_a=True,
+                         desc=['Your adversary in the Thunderdome.']))
+
+        self.add(Monster('Buzzsaw', skin=('z', libtcod.lightest_yellow),
+                         attack=6.0, defence=2.0, range=6, level=7, count=1, branch='q',
+                         no_a=True, slow=True,
+                         desc=['Your adversary in the Thunderdome.']))
+
+
+        self.add(Monster('Dynamo', skin=('h', libtcod.dark_crimson),
+                         attack=3.0, defence=0.5, range=10, level=8, count=1, branch='q',
+                         no_a=True,
+                         desc=['Your adversary in the Thunderdome.']))
+
+        self.add(Monster('Master Blaster', skin=('h', libtcod.lightest_blue),
+                         attack=3.0, defence=1.0, range=5, level=8, count=1, branch='q',
+                         no_a=True,
+                         desc=['Your adversary in the Thunderdome.']))
+
+        self.add(Monster('President Dwayne Elizondo Mountain Dew Herbert Camacho', 
+                         skin=('H', libtcod.light_sky),
+                         attack=3.0, defence=3.0, range=7, level=8, count=1, branch='q',
+                         no_a=True, 
+                         desc=['Your adversary in the Thunderdome.']))
 
     
         self.renormalize()
