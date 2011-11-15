@@ -1390,6 +1390,15 @@ class World:
                     self.itemap[(x,y)].extend(itm2)
 
 
+    def place(self, nogens):
+        s = self.walkmap - nogens - set(self.monmap.iterkeys())
+        s = list(s)
+
+        x, y = s[random.randint(0, len(s)-1)]
+        self.px = x
+        self.py = y
+
+        
     def regen(self, w_, h_):
         if self.branch is None:
             self.branch = random.choice(['a', 'b', 'c', 'd', 'e'])
@@ -1408,17 +1417,8 @@ class World:
         self.make_paths()
         self.make_monsters(nogens)
         self.make_items(nogens)
+        self.place(nogens)
 
-    def place(self):
-        while 1:
-            x = random.randint(0, self.w-1)
-            y = random.randint(0, self.h-1)
-            if (x,y) in self.walkmap and (x,y) not in self.monmap:
-                self.px = x
-                self.py = y
-                return
-
-        self.stats = Stats()
 
     def generate_inv(self):
         self.inv.take(self.itemstock.find('lamp'))
@@ -2546,7 +2546,6 @@ class World:
             self.dlev = 3
 
         self.regen(self.w, self.h)
-        self.place()
         self.tick()
         self.achievements.descend(self)
 
@@ -2675,7 +2674,7 @@ class World:
             self.achievements.mondone()
 
         # Thunderdome HACK
-        if self.branch == 'q':
+        if self.branch == 'q' and len(self.monmap) == 1:
             if self.dlev == 7:
                 self.msg.m('Total victory!', True)
                 self.msg.m('The Thunderdome grants you godlike powers!', True)
@@ -2688,9 +2687,8 @@ class World:
                         self.itemap[(mon.x, mon.y)].append(i)
 
             else:
-                if len(self.monmap) == 0:
-                    self.msg.m('Victory! The Thunderdome grants you a gift!', True)
-                    self.msg.m('An exit appears.', True)
+                self.msg.m('Victory! The Thunderdome grants you a gift!', True)
+                self.msg.m('An exit appears.', True)
 
                 self.set_feature(mon.x, mon.y, '>')
                 for x in xrange(3):
@@ -4213,7 +4211,6 @@ def start_game(world, w, h, oldseed=None, oldbones=None):
         _inputs = world._inputs
 
         world.regen(w, h)
-        world.place()
         world.generate_inv()
         world.msg.m("Kill all the monsters in the dungeon to win the game.")
         world.msg.m("Please press '?' to see help.")

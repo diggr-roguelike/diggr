@@ -915,28 +915,28 @@ class MonsterStock:
         ## Thunderdome
 
         self.add(Monster('mutant turtle', skin=('o', libtcod.green),
-                         attack=1.5, defence=0.2, range=8, level=3, count=10, branch='q',
+                         attack=1.5, defence=0.2, range=8, level=3, count=200, branch='q',
                          desc=['Your adversary in the Thunderdome.']))
 
         self.add(Monster('gremlin', skin=('f', libtcod.green),
-                         attack=2.0, defence=0.5, range=6, level=3, count=10, branch='q',
+                         attack=2.0, defence=0.5, range=6, level=3, count=200, branch='q',
                          desc=['Your adversary in the Thunderdome.']))
 
         self.add(Monster('kobold', skin=('h', libtcod.lightest_green),
-                         attack=1.4, defence=0.9, range=9, level=3, count=10, branch='q',
+                         attack=1.4, defence=0.9, range=9, level=3, count=200, branch='q',
                          desc=['Your adversary in the Thunderdome.']))
 
         self.add(Monster('orc', skin=('h', libtcod.gray),
-                         attack=1.7, defence=0.7, range=7, level=4, count=10, branch='q',
+                         attack=1.7, defence=0.7, range=7, level=4, count=200, branch='q',
                          desc=['Your adversary in the Thunderdome.']))
 
         self.add(Monster('orge', skin=('H', libtcod.light_gray),
-                         attack=2.1, defence=1.9, range=5, level=4, count=10, branch='q',
+                         attack=2.1, defence=1.9, range=5, level=4, count=200, branch='q',
                          desc=['Your adversary in the Thunderdome.']))
 
         self.add(Monster('dark elf', skin=('f', libtcod.darkest_gray),
                          psyattack=0.5, psyrange=4,
-                         attack=1.0, defence=0.9, range=9, level=4, count=10, branch='q',
+                         attack=1.0, defence=0.9, range=9, level=4, count=200, branch='q',
                          desc=['Your adversary in the Thunderdome.']))
 
         self.add(Monster('Beef Supreme', skin=('h', libtcod.pink),
@@ -945,7 +945,7 @@ class MonsterStock:
                          desc=['Your adversary in the Thunderdome.']))
 
         self.add(Monster('Tylenol Jones', skin=('h', libtcod.light_blue),
-                         psyattach=0.25, psyrange=3, no_a=True, count=1,
+                         psyattack=0.25, psyrange=3, no_a=True, count=1,
                          attack=1.5, defence=1.0, range=8, level=5, branch='q',
                          desc=['Your adversary in the Thunderdome.']))
 
