@@ -965,7 +965,7 @@ class MonsterStock:
                          desc=['Your adversary in the Thunderdome.']))
 
         self.add(Monster('Brawndo Mutilator', skin=('z', libtcod.silver),
-                         psyattack=0.5, psyrange=3, no_a=True, count=1,
+                         psyattack=0.5, psyrange=3, 
                          attack=3.0, defence=0.8, range=6, level=6, count=1, branch='q',
                          no_a=True,
                          desc=['Your adversary in the Thunderdome.']))
@@ -977,7 +977,7 @@ class MonsterStock:
                          desc=['Your adversary in the Thunderdome.']))
 
         self.add(Monster('Captain Electric', skin=('h', libtcod.lightest_blue),
-                         psyattack=0.15, psyrange=7, no_a=True, count=1,
+                         psyattack=0.15, psyrange=7, 
                          attack=3.0, defence=1.0, range=5, level=7, count=1, branch='q',
                          no_a=True,
                          desc=['Your adversary in the Thunderdome.']))
@@ -989,7 +989,7 @@ class MonsterStock:
 
 
         self.add(Monster('Dynamo', skin=('h', libtcod.dark_crimson),
-                         psyattack=0.4, psyrange=5, no_a=True, count=1,                         
+                         psyattack=0.4, psyrange=5, 
                          attack=3.0, defence=0.5, range=10, level=8, count=1, branch='q',
                          no_a=True,
                          desc=['Your adversary in the Thunderdome.']))
