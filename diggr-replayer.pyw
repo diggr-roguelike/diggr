@@ -34,7 +34,9 @@ def ach_tag_to_text(tag):
              'nuked': 'Killed a monster with radiation',
              'nodig': 'Never used a pickaxe',
              'artifact': 'Crafted a powerful artifact',
-             'ebola': 'Killed a monster via Ebolavirus'
+             'ebola': 'Killed a monster via Ebolavirus',
+             'thunderdome': 'Visited the Rehabilitation Thunderdome',
+             'thunderdome_win': 'Became a Thunderdome champion'
              }
 
     prefix = {'plev': 'Reached player level %s',

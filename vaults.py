@@ -654,12 +654,13 @@ class VaultStock:
         for x in xrange(len(self.vaults[branch][level])):
             v = self.vaults[branch][level][x]
 
-            print '?', v.chance, v.pic
+            chance = random.randint(1, v.chance)
+            print '?', v.chance, chance, v.pic, vaultstoskip
 
             if v in vaultstoskip:
                 continue
 
-            if random.randint(1, v.chance) != 1:
+            if chance != 1:
                 continue
 
             if v.count == 1:

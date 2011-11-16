@@ -88,7 +88,7 @@ log = Logger()
 
 
 global _version
-_version = '11.11.06'
+_version = '11.11.20'
 
 global _inputs
 global _inputqueue
@@ -748,10 +748,15 @@ class Achievements:
             if firebucket > 0:
                 self.add('%dfires' % firebucket, 'Used a firearm at least %d times' % firebucket, weight=20)
 
-        if len(self.branches) <= 1:
+        nbranches = len(self.branches)
+        if 'q' in self.branches:
+            self.add('thunderdome', 'Visited the Rehabilitation Thunderdome', weight=26)
+            nbranches -= 1
+
+        if nbranches <= 1:
             self.add('onebranch', 'Visited only one dungeon branch', weight=15)
         else:
-            self.add('%dbranch' % len(self.branches), 'Visited %d dungeon branches' % len(self.branches), weight=25)
+            self.add('%dbranch' % nbranches, 'Visited %d dungeon branches' % nbranches, weight=25)
 
         if self.extinguished > 0:
             self.add('%dxting' % self.extinguished, 'Extinguished %d monster species' % self.extinguished, weight=97)
@@ -822,6 +827,9 @@ class Achievements:
 
         self.branches.add(world.branch)
 
+    def questdone(self, branch):
+        if branch == 'q':
+            self.add('thunderdome_win', 'Became a Thunderdome champion', weight=78)
 
     def winner(self):
         self.add('winner', ' =*= Won the game =*= ', weight=100)
@@ -889,6 +897,19 @@ class Achievements:
                 self.onlyonce.add(tag)
 
         self.achs.append(Achieve(tag=tag, desc=desc, weight=weight))
+
+
+class QuestInfo:
+    def __init__(self, moncounts={}, monlevels=(1,12),
+                 itemcounts={}, dlevels=(1,12),
+                 messages={}, gifts=None):
+        self.moncounts = moncounts
+        self.monlevels = monlevels
+        self.itemcounts = itemcounts
+        self.dlevels = dlevels
+        self.messages = messages
+        self.gifts = gifts
+
 
 
 class World:
@@ -961,6 +982,13 @@ class World:
 
         self.save_disabled = False
 
+        self.sparkleinterp = [ math.sin(x/math.pi)**2 for x in xrange(10) ]
+
+        self.config = config
+        self.last_played_themesound = 0
+
+        ### 
+
         self.theme = { 'a': (libtcod.lime,),
                        'b': (libtcod.red,),
                        'c': (libtcod.sky,),
@@ -969,10 +997,23 @@ class World:
                        's': (libtcod.darkest_blue,),
                        'q': (libtcod.white,) }
 
-        self.sparkleinterp = [ math.sin(x/math.pi)**2 for x in xrange(10) ]
+        quest1 = QuestInfo(moncounts={3:1, 4:1, 5:2, 6:2, 7:3}, 
+                           monlevels=(3,8),
+                           itemcounts={3:1, 4:1, 5:1, 6:1, 7:1}, 
+                           dlevels=(3,7),
+                           messages={3: ['Victory! The Thunderdome grants you a gift!', 'An exit appears.'],
+                                     4: ['Victory! The Thunderdome grants you a gift!', 'An exit appears.'],
+                                     5: ['Victory! The Thunderdome grants you a gift!', 'An exit appears.'],
+                                     6: ['Victory! The Thunderdome grants you a gift!', 'An exit appears.'],
+                                     7: ['Total victory!', 'The Thunderdome grants you godlike powers!']}, 
+                           gifts={3: [None, None, None],
+                                  4: [None, None, None],
+                                  5: [None, None, None],
+                                  6: [None, None, None],
+                                  7: ['deusex']})
+        
+        self.quests = {'q': quest1}
 
-        self.config = config
-        self.last_played_themesound = 0
 
 
     def makegrid(self, w_, h_):
@@ -1271,8 +1312,8 @@ class World:
 
         if len(m) == 0: return
 
-        # Thunderdome HACK
-        if self.branch == 'q':
+        # Quests
+        if self.branch in self.quests:
             return
 
         stairsi = random.randint(0, len(m)-1)
@@ -1324,14 +1365,9 @@ class World:
         self.monsterstock.clear_gencount()
         self.monmap = {}
 
-        # Thunderdome HACK
-        if self.branch == 'q':
-            if self.dlev in (3,4):
-                n = 1
-            elif self.dlev in (5,6):
-                n = 2
-            else:
-                n = 3
+        # Quests
+        if self.branch in self.quests:
+            n = self.quests[self.branch].moncounts.get(self.dlev, 0)
 
         else:
             n = int(max(random.gauss(*self.coef.nummonsters), 1))
@@ -1342,9 +1378,10 @@ class World:
             lev = self.dlev + random.gauss(0, self.coef.monlevel)
             lev = max(int(round(lev)), 1)
 
-            # Thunderdome HACK
-            if self.branch == 'q':
-                lev = min(max(lev, 3), 8)
+            # Quests
+            if self.branch in self.quests:
+                lev = min(max(lev, self.quests[self.branch].monlevels[0]), 
+                          self.quests[self.branch].monlevels[1])
 
             while 1:
                 x, y = ll[random.randint(0, len(ll)-1)]
@@ -1358,9 +1395,9 @@ class World:
 
     def make_items(self, nogens):
 
-        ## Thunderdome HACK
-        if self.branch == 'q':
-            n = 1
+        ## Quests
+        if self.branch in self.quests:
+            n = self.quests[self.branch].itemcounts.get(self.dlev, 0)
         else:
             n = int(max(random.gauss(self.coef.numitems[0] + self.dlev, self.coef.numitems[1]), 1))
 
@@ -1377,8 +1414,8 @@ class World:
                 else:
                     self.itemap[(x, y)].append(item)
 
-        ## Thunderdome HACK
-        if self.branch == 'q':
+        ## Quests
+        if self.branch in self.quests:
             return
 
         for pl,dl,itm in self.bones:
@@ -1410,8 +1447,8 @@ class World:
 
         self.makegrid(w_, h_)
 
-        # Thunderdome HACK
-        if self.branch != 'q':
+        # Quests
+        if self.branch not in self.quests:
             self.terra()
             self.makerivers()
 
@@ -2544,9 +2581,9 @@ class World:
         if b:
             self.branch = b
 
-        # XXX removeme
-        if b == 'q':
-            self.dlev = 3
+        # Quests
+        if b in self.quests:
+            self.dlev = self.quests[b].dlevels[0]
 
         self.regen(self.w, self.h)
         self.tick()
@@ -2676,31 +2713,33 @@ class World:
         if exting:
             self.achievements.mondone()
 
-        # Thunderdome HACK
-        if self.branch == 'q' and len(self.monmap) == 1:
-            if self.dlev == 7:
-                self.msg.m('Total victory!', True)
-                self.msg.m('The Thunderdome grants you godlike powers!', True)
+        # Quests
+        if self.branch in self.quests and len(self.monmap) == 1:
+            quest = self.quests[self.branch]
 
-                i = self.itemstock.get('deusex')
-                if i:
-                    if (mon.x, mon.y) not in self.itemap:
-                        self.itemap[(mon.x, mon.y)] = [i]
-                    else:
-                        self.itemap[(mon.x, mon.y)].append(i)
+            questdone = (quest.dlevels[1] == self.dlev)
 
-            else:
-                self.msg.m('Victory! The Thunderdome grants you a gift!', True)
-                self.msg.m('An exit appears.', True)
+            for msg in quest.messages[self.dlev]:
+                self.msg.m(msg, True)
 
-                self.set_feature(mon.x, mon.y, '>')
-                for x in xrange(3):
+            qis = []
+            for g in quest.gifts[self.dlev]:
+                if g:
+                    i = self.itemstock.get(g)
+                else:
                     i = self.itemstock.generate(self.dlev)
-                    if i:
-                        if (mon.x, mon.y) not in self.itemap:
-                            self.itemap[(mon.x, mon.y)] = [i]
-                        else:
-                            self.itemap[(mon.x, mon.y)].append(i)
+                if i:
+                    qis.append(i)
+
+            if (mon.x, mon.y) not in self.itemap:
+                self.itemap[(mon.x, mon.y)] = qis
+            else:
+                self.itemap[(mon.x, mon.y)].extend(qis)
+
+            if questdone:
+                self.achievements.questdone(self.branch)
+            else:
+                self.set_feature(mon.x, mon.y, '>')
 
             return
 
