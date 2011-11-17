@@ -410,6 +410,48 @@ def draw_blast2(x, y, w, h, r, func1, func2):
         func2(c0[0], c0[1])
 
 
+def draw_floodfill(x, y, w, h, func):
+
+    procd = set()
+
+    toproc = set()
+    toproc.add((x,y))
+
+    while 1:
+        x_, y_ = toproc.pop()
+
+        for xi in xrange(x_-1, x_+2):
+            for yi in xrange(y_-1, y_+2):
+
+                if xi < 0 or yi < 0 or xi >= w or yi >= h:
+                    continue
+
+                if (xi, yi) in procd:
+                    continue
+
+                procd.add((xi, yi))
+
+                if func(xi, yi):
+                    toproc.add((xi, yi))
+
+        if len(toproc) == 0:
+            break
+
+    def dr():
+        for c0 in procd:
+            libtcod.console_put_char_ex(None, c0[0], c0[1], '*', fore, back)
+        libtcod.console_flush()
+        libtcod.sys_sleep_milli(100)
+
+    back = libtcod.darkest_red
+    fore = libtcod.yellow
+    dr()
+    fore = libtcod.color_lerp(fore, back, 0.5)
+    dr()
+    fore = libtcod.color_lerp(fore, back, 0.5)
+    dr()
+
+
 
 class Messages:
     def __init__(self):
@@ -1599,6 +1641,12 @@ class World:
 
         if self.dead: return
 
+        p = self.try_feature(self.px, self.py, 'queasy')
+        if p:
+            self.msg.m('You feel queasy.', True)
+            self.stats.thirst.dec(p)
+            self.stats.hunger.dec(p)
+
         if self.stats.warmth.x <= -3.0:
             self.msg.m("Being so cold makes you sick!", True)
             self.stats.health.dec(self.coef.colddamage, "cold", self.config.sound)
@@ -2612,6 +2660,10 @@ class World:
     def apply_from_ground_aux(self, i, px, py):
 
         def _purge():
+            # The item might be deleted already by the time we get here.
+            if (px,py) not in self.itemap:
+                return
+
             for ix in xrange(len(self.itemap[(px, py)])):
                 if id(self.itemap[(px, py)][ix]) == id(i):
                     del self.itemap[(px, py)][ix]
@@ -2788,13 +2840,8 @@ class World:
     def explode(self, x0, y0, rad):
 
         chains = set()
-        def func(x, y):
-            if random.randint(0, 5) == 0:
-                self.set_feature(x, y, '*')
-            else:
-                self.set_feature(x, y, None)
 
-
+        def f_explod(x, y):
             if x == self.px and y == self.py:
 
                 explimmune = False
@@ -2810,7 +2857,7 @@ class World:
             if (x, y) in self.itemap:
                 for i in self.itemap[(x, y)]:
                     if i.explodes:
-                        chains.add((x, y, i.radius))
+                        chains.add((x, y, i.radius, True))
                         break
                 del self.itemap[(x, y)]
 
@@ -2821,14 +2868,39 @@ class World:
 
                     for i in mon.items:
                         if i.explodes:
-                            chains.add((x, y, i.radius))
+                            chains.add((x, y, i.radius, True))
                             break
 
                     del self.monmap[(x, y)]
 
-        draw_blast(x0, y0, self.w, self.h, rad, func)
 
-        for x, y, r in sorted(chains):
+        def func_ff(x, y):
+            f_explod(x, y)
+
+            is_gas = False
+            if (x,y) in self.featmap and self.featmap[(x,y)].explode:
+                is_gas = True
+
+            self.set_feature(x, y, None)
+            return is_gas
+
+
+        def func_r(x, y):
+
+            f_explod(x, y)
+
+            if (x,y) in self.featmap and self.featmap[(x,y)].explode:
+                draw_floodfill(x, y, self.w, self.h, func_ff)
+
+            if random.randint(0, 5) == 0:
+                self.set_feature(x, y, '*')
+            else:
+                self.set_feature(x, y, None)
+
+
+        draw_blast(x0, y0, self.w, self.h, rad, func_r)
+
+        for x, y, r, d in sorted(chains):
             self.explode(x, y, r)
 
 
@@ -3225,6 +3297,16 @@ class World:
     def move_downleft(self): self.move(-1, 1)
     def move_downright(self): self.move(1, 1)
 
+    def testing(self):
+        self.paste_celauto(self.px, self.py, 'swampgas')
+        i = self.itemstock.find('rpg')
+
+        if i:
+            if (self.px, self.py) in self.itemap:
+                self.itemap[(self.px, self.py)].append(i)
+            else:
+                self.itemap[(self.px, self.py)] = [i]
+
 
     def quit(self):
         k = draw_window(["Really quit? Press 'y' if you are truly sure."], self.w, self.h)
@@ -3290,7 +3372,8 @@ class World:
             'P': self.show_messages,
             'Q': self.quit,
             '?': self.show_help,
-            'S': self.save
+            'S': self.save,
+            'w': self.testing
             }
         self.vkeys = {
             libtcod.KEY_KP4: self.move_left,
@@ -3743,6 +3826,9 @@ class World:
                             in_fov = True
                             is_lit = True
 
+                if (x,y) in self.featmap and self.featmap[(x,y)].lit:
+                    in_fov = True
+                    is_lit = True
 
                 back = default_back
                 is_terrain = False

@@ -25,8 +25,10 @@ class CelAuto:
         self.pic = pic
         self.anchor = anchor
 
-        self.rule = tuple(set(int(x) for x in s) for s in rule.split('/'))
-        self.rule = (self.rule[0], self.rule[1], list(self.rule[2])[0])
+        rule = rule.split('/')
+        self.rule = (set(int(x) for x in rule[0]), 
+                     set(int(x) for x in rule[1]),
+                     int(rule[2]))
 
 
 class CelAutoStock:
@@ -44,6 +46,10 @@ class CelAutoStock:
                                  pic=[" . ",
                                       "...",
                                       " . "])
+
+        self.swampgas = CelAuto(rule="23/24/32", color=None,
+                                featuretoggle='&',
+                                pic=["..",".."])
 
 
     def paste(self, camap, x, y, w, h, ca):
