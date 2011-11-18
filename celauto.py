@@ -73,6 +73,8 @@ class CelAutoStock:
 
                 camap[(x1, y1)] = (ca, 0)
 
+    def toggle(self, camap, x, y, ca):
+        camap[(x,y)] = (ca, 0)
 
     def celauto_step(self, camap, w, h, funcon, funcoff):
 

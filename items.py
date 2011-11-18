@@ -500,7 +500,7 @@ class ItemStock:
                                     'They are good at quickly covering large areas in glue.'])
 
         self.gasspore = Item('swamp gas spore', slot='', skin=(',', libtcod.dark_blue),
-                             rarity=3, swampgas=True, throwable=True, liveexplode=3, 
+                             rarity=5, swampgas=True, throwable=True, liveexplode=3, 
                              desc=['A concentrated globe of pent-up swamp gas.'])
 
         ###

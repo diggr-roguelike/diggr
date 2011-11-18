@@ -23,7 +23,7 @@ class Monster:
                  straightline=False, stoneeating=False, sleepattack=False,
                  hungerattack=False, flying=False, radimmune=False, no_a=False,
                  summon=False, branch=None, fireimmune=False, poisimmune=False,
-                 flavor=None):
+                 flavor=None, idtag=None, static=False, moldspew=None):
         self.name = name
         self.skin = skin
         self.count = count
@@ -52,6 +52,13 @@ class Monster:
         self.fireimmune = fireimmune
         self.poisimmune = poisimmune
         self.flavor = flavor
+        self.static = static
+        self.moldspew = moldspew
+
+        if not idtag:
+            self.idtag = name
+        else:
+            self.idtag = idtag
 
         self.x = 0
         self.y = 0
@@ -1005,6 +1012,38 @@ class MonsterStock:
                          no_a=True, 
                          desc=['Your adversary in the Thunderdome.']))
 
+        ## Mold
+
+        self.add(Monster('black mold', no_a=True, attack=0, defence=5.0, range=0, branch='x',
+                         level=1, count=5, static=True, summon=('bmold1', 10), idtag='bmold1',
+                         moldspew=('bmold',3,3), poisimmune=True,
+                         desc=['Stachybotrys chartarum, a toxic and sometimes deadly',
+                               'species of mold.']))
+
+        self.add(Monster('black mold', no_a=True, attack=0, defence=5.0, range=0, branch='x',
+                         level=2, count=15, static=True, summon=('bmold1', 10), idtag='bmold1',
+                         moldspew=('bmold',3,3), poisimmune=True,
+                         desc=['Stachybotrys chartarum, a toxic and sometimes deadly',
+                               'species of mold.']))
+
+        self.add(Monster('black mold', no_a=True, attack=0, defence=5.0, range=0, branch='x',
+                         level=4, count=15, static=True, summon=('bmold2', 10), idtag='bmold2',
+                         moldspew=('bmold',3,3), poisimmune=True,
+                         desc=['Stachybotrys chartarum, a toxic and sometimes deadly',
+                               'species of mold.']))
+
+        self.add(Monster('black mold', no_a=True, attack=0, defence=5.0, range=0, branch='x',
+                         level=6, count=15, static=True, summon=('bmold3', 10), idtag='bmold3',
+                         moldspew=('bmold',3,3), poisimmune=True,
+                         desc=['Stachybotrys chartarum, a toxic and sometimes deadly',
+                               'species of mold.']))
+
+        self.add(Monster('black mold', no_a=True, attack=0, defence=5.0, range=0, branch='x',
+                         level=8, count=15, static=True, summon=('mold4', 10), idtag='bmold4',
+                         moldspew=('bmold',3,3), poisimmune=True,
+                         desc=['Stachybotrys chartarum, a toxic and sometimes deadly',
+                               'species of mold.']))
+
     
         self.renormalize()
 
@@ -1044,11 +1083,11 @@ class MonsterStock:
                     m.gencount = 0
 
 
-    def find(self, name, n, itemstock):
+    def find(self, idtag, n, itemstock):
         for v2 in self.monsters.itervalues():
             for v in v2.itervalues():
                 for m in v:
-                    if m.name == name:
+                    if m.idtag == idtag:
                         l = []
 
                         if m.gencount >= m.count:
@@ -1128,7 +1167,7 @@ class MonsterStock:
         ret = False
 
         for x in xrange(len(m)):
-            if mon.name == m[x].name:
+            if mon.idtag == m[x].idtag:
 
                 if m[x].count <= 1:
                     del m[x]

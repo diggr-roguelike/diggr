@@ -6,7 +6,7 @@ class Feature:
                  s_shrine=False, b_shrine=False, v_shrine=False, height=-10,
                  shootable=False, warm=False, branch=None, healingfountain=False,
                  nofeature=False, poison=None, confuse=False, back=None, resource=None,
-                 lit=False, queasy=None, explode=None):
+                 lit=False, queasy=None, explode=None, pois2=False):
         self.walkable = walkable
         self.visible = visible
         self.water = water
@@ -30,6 +30,7 @@ class Feature:
         self.lit = lit
         self.queasy = queasy
         self.explode = explode
+        self.pois2 = pois2
 
 
 class FeatureStock:
@@ -175,7 +176,7 @@ class FeatureStock:
                               confuse=True, name='confusing smoke')
 
         self.f['g'] = Feature(walkable=True, visible=True, skin=None, back=libtcod.dark_green,
-                              poison=0.5, pois2=True, name='spores of black mold')
+                              poison=0.25, pois2=True, name='spores of black mold')
 
         self.f['&'] = Feature(walkable=True, visible=True, skin=None, back=libtcod.darkest_blue,
                               lit=True, queasy=0.1, name='swamp gas', explode=3)

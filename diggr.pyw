@@ -203,6 +203,8 @@ class Coeffs:
         self.purple_telerange = 12
         self.purple_camorange = 3
 
+        self.moldchance = 3
+
         self.resource_timeouts = {'r': 300,
                                   'g': 400,
                                   'y': 600,
@@ -1435,6 +1437,21 @@ class World:
                 m.y = y
                 self.monmap[(x, y)] = m
 
+
+        # Generate some mold.
+        if self.branch in self.quests:
+            return
+
+        if random.randint(1, self.coef.moldchance) == 1:
+            ll = list(self.walkmap - self.watermap - set(self.monmap.iterkeys()))
+            x, y = ll[random.randint(0, len(ll)-1)]
+            m = self.monsterstock.generate('x', self.dlev, self.itemstock)
+            if m:
+                m.x = x
+                m.y = y
+                self.monmap[(x, y)] = m
+
+
     def make_items(self, nogens):
 
         ## Quests
@@ -1670,7 +1687,9 @@ class World:
         p = self.try_feature(self.px, self.py, 'poison')
         if p:
             self.msg.m('You feel very sick!', True)
-            self.stats.health.dec(p, 'Ebola infection', self.config.sound)
+            self.stats.health.dec(p, 
+                                  'black mold' if self.featmap[(self.px,self.py)].pois2 else 'Ebola infection', 
+                                  self.config.sound)
 
         if self.stats.health.x <= -3.0:
             self.dead = True
@@ -3300,7 +3319,6 @@ class World:
     def move_downright(self): self.move(1, 1)
 
     def testing(self):
-        self.paste_celauto(self.px, self.py, 'swampgas')
         i = self.itemstock.find('rpg')
 
         if i:
@@ -3403,6 +3421,17 @@ class World:
 
 
     def walk_monster(self, mon, dist, x, y):
+
+        if mon.moldspew and (self.t % mon.moldspew[2]) == 0:
+            for xi in xrange(x-1,x+2):
+                for yi in xrange(y-1,y+2):
+                    if x < 0 or y < 0 or x >= self.w or y >= self.h:
+                        continue
+                    if random.randint(1, mon.moldspew[1]) == 1:
+                        self.toggle_celauto(xi, yi, mon.moldspew[0])
+
+        if mon.static:
+            return None, None
 
         if mon.slow and (self.t & 1) == 0:
             return None, None
@@ -3602,6 +3631,10 @@ class World:
         ca = getattr(self.celautostock, name)
         self.celautostock.paste(self.celautomap, x, y, self.w, self.h, ca)
 
+    def toggle_celauto(self, x, y, name):
+        ca = getattr(self.celautostock, name)
+        self.celautostock.toggle(self.celautomap, x, y, ca)
+
 
     def celauto_on(self, x, y, ca):
         if ca.watertoggle is not None:
@@ -3667,7 +3700,7 @@ class World:
             mon.do_move = None
             mon.do_die = False
 
-            if (mon.visible or mon.visible_old) and not (mon.was_seen) and not self.mapping:
+            if (mon.visible or mon.visible_old) and not (mon.was_seen) and not self.mapping and not mon.static:
                 mon.was_seen = True
                 self.msg.m('You see ' + str(mon) + '.')
                 m = max(0.25, min(3, 0.5 * (mon.level - self.plev)))
@@ -3687,12 +3720,13 @@ class World:
                         smu = smu[0].upper() + smu[1:]
                         self.msg.m(smu + ' falls over and dies!')
 
-                    self.handle_mondeath(mon, do_gain=False, is_poison=True)
+                    self.handle_mondeath(mon, do_gain=False, 
+                                         is_poison=(False if self.featmap[(x,y)].pois2 else True))
                     mon.do_die = True
                     mons.append(mon)
                     continue
 
-            if mon.summon and mon.visible and (self.t % mon.summon[1]) == 0:
+            if mon.summon and (mon.visible or mon.static) and (self.t % mon.summon[1]) == 0:
                 summons.append((k, mon))
                 continue
 
@@ -3724,7 +3758,8 @@ class World:
             smu = smu[0].upper() + smu[1:]
             q = self.summon(k[0], k[1], mon.summon[0], 1)
             if len(q) > 0:
-                self.msg.m(smu + ' summons ' + str(q[0]) + '!')
+                if not mon.static:
+                    self.msg.m(smu + ' summons ' + str(q[0]) + '!')
             else:
                 mon.summon = None
 
