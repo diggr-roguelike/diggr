@@ -1294,8 +1294,6 @@ class World:
                 y = y0
                 break
 
-        print x, y, v.pic
-
         if x is None or y is None:
             return
 
@@ -3714,7 +3712,6 @@ class World:
             if p and not mon.poisimmune:
                 mon.hp -= p
                 if mon.hp <= -3.0:
-                    #print 'dead',mon.name,mon.visible,mon.visible_old
                     if mon.visible:
                         smu = str(mon)
                         smu = smu[0].upper() + smu[1:]

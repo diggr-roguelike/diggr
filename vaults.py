@@ -655,7 +655,6 @@ class VaultStock:
             v = self.vaults[branch][level][x]
 
             chance = random.randint(1, v.chance)
-            print '?', v.chance, chance, v.pic, vaultstoskip
 
             if v in vaultstoskip:
                 continue

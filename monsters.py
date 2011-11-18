@@ -1049,19 +1049,15 @@ class MonsterStock:
 
 
     def renormalize(self):
-        #for k,v in self.monsters.iteritems():
-        #    n = sum(sum(m.count for m in v2) for v2 in v.itervalues())
-        #    at = sum(sum(m.attack for m in v2) for v2 in v.itervalues())
-        #    de = sum(sum(m.defence for m in v2) for v2 in v.itervalues())
-        #    atw = sum(sum(m.attack*m.level for m in v2) for v2 in v.itervalues())
-        #    dew = sum(sum(m.defence*m.level for m in v2) for v2 in v.itervalues())
-        #    print '//', k, n, at/n, de/n, '|', atw/n, dew/n
 
         self.norms = {}
         for k,v in self.monsters.iteritems():
             n = sum(k2 * sum(v3.count for v3 in v2) for (k2,v2) in v.iteritems())
             n = 840.0 / n
             self.norms[k] = n
+
+        # HACK don't give too many points for cleaning up mold.
+        self.norms['x'] /= 2
 
 
     def add(self, mon):
