@@ -1622,6 +1622,8 @@ class World:
                         self.summon(self.px, self.py, i.summon[0], i.summon[1])
                     elif i.radexplode:
                         self.rayblast(self.px, self.py, i.radius)
+                    elif i.swampgas:
+                        self.paste_celauto(self.px, self.py, 'swampgas')
                     else:
                         self.explode(self.px, self.py, i.radius)
                     self.inv.purge(i)
@@ -3638,6 +3640,8 @@ class World:
                         elif i.radexplode:
                             rblasts.append((k[0], k[1], i.radius))
                             delitems.append(k)
+                        elif i.swampgas:
+                            self.paste_celauto(self.px, self.py, 'swampgas')
                         else:
                             explodes.add((k[0], k[1], i.radius))
 

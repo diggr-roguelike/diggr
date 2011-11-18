@@ -20,7 +20,7 @@ class Item:
                  camorange=None, sounding=False, healingsleep=None,
                  applies_in_slot=False, ebola=False, smoke=False,
                  trapcloud=False, glueimmune=False, craft=None, resource=None,
-                 hide_count=False):
+                 hide_count=False, swampgas=False):
         self.slot = slot
         self.bonus = bonus
         self.name = name
@@ -86,6 +86,7 @@ class Item:
         self.craft = craft
         self.resource = resource
         self.hide_count = hide_count
+        self.swampgas = swampgas
 
         self.ammo = None
         self.gencount = 0
@@ -497,6 +498,10 @@ class ItemStock:
                               applies=True, trapcloud=True, rarity=4, count=0,
                               desc=['Microscopic nanobots that are used in construction work.'
                                     'They are good at quickly covering large areas in glue.'])
+
+        self.gasspore = Item('swamp gas spore', slot='', skin=(',', libtcod.dark_blue),
+                             rarity=3, swampgas=True, throwable=True, liveexplode=3, 
+                             desc=['A concentrated globe of pent-up swamp gas.'])
 
         ###
         ### Special item crafting.

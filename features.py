@@ -174,7 +174,7 @@ class FeatureStock:
         self.f['f'] = Feature(walkable=True, visible=True, skin=None, back=libtcod.gray,
                               confuse=True, name='confusing smoke')
 
-        self.f['&'] = Feature(walkable=True, visible=True, skin=None, back=libtcod.darkest_gray,
+        self.f['&'] = Feature(walkable=True, visible=True, skin=None, back=libtcod.darkest_blue,
                               lit=True, queasy=0.1, name='swamp gas', explode=3)
 
 
