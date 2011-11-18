@@ -51,6 +51,9 @@ class CelAutoStock:
                                 featuretoggle='&',
                                 pic=["..",".."])
 
+        self.bmold = CelAuto(rule="3456/2/6", color=None,
+                             featuretoggle='g', pic=["."])
+
 
     def paste(self, camap, x, y, w, h, ca):
 
