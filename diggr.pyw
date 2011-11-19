@@ -2789,7 +2789,7 @@ class World:
         elif is_poison:
             self.achievements.mondeath(self, mon, is_poison=True)
 
-        if exting:
+        if exting and mon.branch != 'x':
             self.achievements.mondone()
 
         # Quests
