@@ -1,17 +1,6 @@
 import libtcodpy as libtcod
 
 #
-# Swamp gas: 
-#  lose small amount of thirst/hunger
-#  lights all squares, even not in LOS
-#  explodes via chain reaction
-#
-# the black rot:
-#  like Ebola, but less permanent
-#
-# black mold:
-#  monster that doesn't move, but spawns and occasionally releases black rot
-#
 
 
 class CelAuto:

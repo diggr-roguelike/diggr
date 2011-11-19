@@ -1175,5 +1175,7 @@ class MonsterStock:
         if len(m) == 0:
             del self.monsters[mon.branch][mon.level]
 
+        # HACK you can win by cleaning up mold.
+
         return (len(self.monsters[mon.branch]) == 0, ret)
 

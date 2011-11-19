@@ -52,10 +52,6 @@ log = Logger()
 #         return random__.choice(*a)
 
 
-#
-# achievements!
-#
-
 # B: large bird
 # d: small dinosaur
 # D: dinosaur
@@ -750,6 +746,7 @@ class Achievements:
         self.crafted = 0
         self.a_craft = 0
         self.ebola = 0
+        self.killed_molds = 0
 
     def finish(self, world):
         self.add('plev%d' % world.plev, 'Reached player level %d' % world.plev)
@@ -824,6 +821,13 @@ class Achievements:
             else:
                 self.add('ebola', 'Killed a monster via Ebolavirus', weight=77)
 
+        if self.killed_molds > 0:
+            moldbucket = ((self.killed_molds / 10) * 10)
+            if moldbucket > 0:
+                self.add('%dmolds' % moldbucket, 'Cleaned up black mold over %d times' % moldbucket, weight=34)
+            else:
+                self.add('molds', 'Cleaned up black mold', weight=32)
+
         if self.digged == 0:
             self.add('nodig', 'Never used a pickaxe', weight=23)
 
@@ -882,6 +886,10 @@ class Achievements:
         self.extinguished += 1
 
     def mondeath(self, world, mon, is_rad=False, is_explode=False, is_poison=False):
+        if mon.branch == 'x':
+            self.killed_molds += 1
+            return
+
         if mon.level >= world.plev+5:
             self.add('stealth', 'Killed a monster massively out of depth', weight=50)
         elif mon.level >= world.plev+2:
@@ -3673,6 +3681,7 @@ class World:
                             delitems.append(k)
                         elif i.swampgas:
                             self.paste_celauto(self.px, self.py, 'swampgas')
+                            delitems.append(k)
                         else:
                             explodes.add((k[0], k[1], i.radius))
 
@@ -3693,12 +3702,18 @@ class World:
             #log.log('  tick:', k)
 
             x, y = k
-            dist = math.sqrt(math.pow(abs(self.px - x), 2) + math.pow(abs(self.py - y), 2))
+            if mon.static:
+                dist = 0
+            else:
+                dist = math.sqrt(math.pow(abs(self.px - x), 2) + math.pow(abs(self.py - y), 2))
 
             mon.do_move = None
             mon.do_die = False
 
-            if (mon.visible or mon.visible_old) and not (mon.was_seen) and not self.mapping and not mon.static:
+            if mon.static:
+                pass
+
+            elif (mon.visible or mon.visible_old) and not (mon.was_seen) and not self.mapping:
                 mon.was_seen = True
                 self.msg.m('You see ' + str(mon) + '.')
                 m = max(0.25, min(3, 0.5 * (mon.level - self.plev)))
