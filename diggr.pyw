@@ -3324,14 +3324,6 @@ class World:
     def move_downleft(self): self.move(-1, 1)
     def move_downright(self): self.move(1, 1)
 
-    def testing(self):
-        i = self.itemstock.find('rpg')
-
-        if i:
-            if (self.px, self.py) in self.itemap:
-                self.itemap[(self.px, self.py)].append(i)
-            else:
-                self.itemap[(self.px, self.py)] = [i]
 
 
     def quit(self):
@@ -3398,8 +3390,7 @@ class World:
             'P': self.show_messages,
             'Q': self.quit,
             '?': self.show_help,
-            'S': self.save,
-            'w': self.testing
+            'S': self.save
             }
         self.vkeys = {
             libtcod.KEY_KP4: self.move_left,
