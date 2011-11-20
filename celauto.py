@@ -44,6 +44,10 @@ class CelAutoStock:
                              featuretoggle='g', pic=["."])
 
 
+        self.nbors = None
+
+
+
     def paste(self, camap, x, y, w, h, ca):
 
         x -= ca.anchor[0]
@@ -67,6 +71,24 @@ class CelAutoStock:
 
     def celauto_step(self, camap, w, h, funcon, funcoff):
 
+        if self.nbors is None:
+            self.nbors = {}
+            for x in xrange(0, w):
+                for y in xrange(0, h):
+                    self.nbors[(x,y)] = []
+                    for xi in xrange(-1, 2):
+                        for yi in xrange(-1, 2):
+                            if xi == 0 and yi == 0:
+                                continue
+
+                            ki = (x+xi, y+yi)
+
+                            if ki[0] < 0 or ki[0] >= w or ki[1] < 0 or ki[1] >= h:
+                                continue
+
+                            self.nbors[(x,y)].append(ki)
+
+
         # See:
         # http://www.mirekw.com/ca/rullex_gene.html
 
@@ -75,30 +97,19 @@ class CelAutoStock:
         que = {}
         dead = {}
 
-        def find_n(x, y, ca, f=None):
+        def find_n(x, y, ca, fque=None):
             n = 0
 
-            for xi in xrange(-1, 2):
-                for yi in xrange(-1, 2):
-                    if xi == 0 and yi == 0:
-                        continue
+            for ki in self.nbors[(x,y)]:
 
-                    ki = (x+xi, y+yi)
-
-                    if ki[0] < 0 or ki[0] >= w or ki[1] < 0 or ki[1] >= h:
-                        continue
-
-                    if ki in camap and camap[ki][0] == ca and camap[ki][1] == 0:
+                if ki in camap:
+                    if camap[ki][0] == ca and camap[ki][1] == 0:
                         n += 1
 
-                    if f:
-                        f(ki, ca)
+                elif fque is not None:
+                    fque[ki] = ca
 
             return n
-
-        def fque(ki, ca):
-            if ki not in camap:
-                que[ki] = ca
 
 
         for k,v in sorted(camap.iteritems()):
@@ -115,7 +126,7 @@ class CelAutoStock:
 
             else:
                 # check if we survive
-                n = find_n(x, y, ca, f=fque)
+                n = find_n(x, y, ca, fque=que)
 
                 if n not in ca.rule[0]:
                     ret[k] = (ca, state + 1)

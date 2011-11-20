@@ -3800,6 +3800,7 @@ class World:
 
 
     def draw(self, _hlx=None, _hly=None, range=None, lightradius=None):
+
         withtime = False
         if self.oldt != self.t:
             withtime = True
@@ -3843,10 +3844,32 @@ class World:
         # Besides, FOV_SHADOW looks better.
         # libtcod.FOV_RESTRICTIVE)
 
+        ###
+
+        default_fore = self.theme[self.branch][0]
+
+        telerange = 0
+        if self.resource_timeout and self.resource == 'p':
+            telerange = self.coef.purple_telerange
+        elif self.inv.head and self.inv.head.telepathyrange:
+            telerange = self.inv.head.telepathyrange
+
+        tracker = False
+        if self.inv.neck and self.inv.neck.tracker:
+            tracker = True
+
+        ###
+
         for x in xrange(self.w):
             for y in xrange(self.h):
 
-                fore = self.theme[self.branch][0] #libtcod.lightest_green
+                fore = default_fore
+                back = default_back
+                is_terrain = False
+
+                feat = None
+                if (x,y) in self.featmap:
+                    feat = self.featmap[(x,y)]
 
                 if self.mapping:
                     in_fov = True
@@ -3855,12 +3878,6 @@ class World:
 
                 is_lit = False
 
-                telerange = 0
-                if self.resource_timeout and self.resource == 'p':
-                    telerange = self.coef.purple_telerange
-                elif self.inv.head and self.inv.head.telepathyrange:
-                    telerange = self.inv.head.telepathyrange
-
                 if telerange:
                     if (x, y) in self.monmap:
                         d = math.sqrt(math.pow(abs(y - self.py),2) + math.pow(abs(x - self.px),2))
@@ -3868,14 +3885,12 @@ class World:
                             in_fov = True
                             is_lit = True
 
-                if (x,y) in self.featmap and self.featmap[(x,y)].lit:
+                if feat and feat.lit:
                     in_fov = True
                     is_lit = True
 
-                back = default_back
-                is_terrain = False
 
-                if self.inv.neck and self.inv.neck.tracker:
+                if tracker:
                     if (x, y) in self.visitedmap:
                         if self.visitedmap[(x, y)]:
                             back = libtcod.red
@@ -3912,9 +3927,8 @@ class World:
                     elif (x, y) in self.itemap:
                         c, fore = self.itemap[(x, y)][0].skin
 
-                    elif (x, y) in self.featmap and self.featmap[(x, y)].skin:
-                        f = self.featmap[(x, y)]
-                        c, fore = f.skin
+                    elif feat and feat.skin:
+                        c, fore = feat.skin
 
                     elif (x, y) in self.walkmap:
                         if (x,y) in self.watermap:
@@ -3927,13 +3941,13 @@ class World:
 
                     else:
                         if (x,y) in self.watermap:
-                            fore = libtcod.desaturated_blue #libtcod.Color(100, 128, 255)
-                        c = 176 #'#'
+                            fore = libtcod.desaturated_blue
+                        c = 176   # '#'
                         is_terrain = True
 
 
-                    if (x, y) in self.featmap and self.featmap[(x, y)].back:
-                        back = self.featmap[(x, y)].back
+                    if feat and feat.back:
+                        back = feat.back
 
                         # hackity hack
                         if (x, y) in self.celautomap:
@@ -3963,6 +3977,7 @@ class World:
                         did_highlight = True
 
                 libtcod.console_put_char_ex(None, x, y, c, fore, back)
+
 
         statsgrace = None
         if self.s_grace:
