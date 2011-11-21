@@ -69,25 +69,7 @@ class CelAutoStock:
     def toggle(self, camap, x, y, ca):
         camap[(x,y)] = (ca, 0)
 
-    def celauto_step(self, camap, w, h, funcon, funcoff):
-
-        if self.nbors is None:
-            self.nbors = {}
-            for x in xrange(0, w):
-                for y in xrange(0, h):
-                    self.nbors[(x,y)] = []
-                    for xi in xrange(-1, 2):
-                        for yi in xrange(-1, 2):
-                            if xi == 0 and yi == 0:
-                                continue
-
-                            ki = (x+xi, y+yi)
-
-                            if ki[0] < 0 or ki[0] >= w or ki[1] < 0 or ki[1] >= h:
-                                continue
-
-                            self.nbors[(x,y)].append(ki)
-
+    def celauto_step(self, camap, heighbors, w, h, funcon, funcoff):
 
         # See:
         # http://www.mirekw.com/ca/rullex_gene.html
@@ -100,7 +82,7 @@ class CelAutoStock:
         def find_n(x, y, ca, fque=None):
             n = 0
 
-            for ki in self.nbors[(x,y)]:
+            for ki in neighbors[(x,y)]:
 
                 if ki in camap:
                     if camap[ki][0] == ca and camap[ki][1] == 0:

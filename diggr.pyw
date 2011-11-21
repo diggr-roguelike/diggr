@@ -1066,6 +1066,8 @@ class World:
         
         self.quests = {'q': quest1}
 
+        self.neighbors = None
+
 
 
     def makegrid(self, w_, h_):
@@ -1077,6 +1079,8 @@ class World:
         self.watermap = set()
         self.visitedmap = {}
         self.featmap = {}
+
+
 
 
     def randgen(self, a, b, c, d, mid):
@@ -1151,16 +1155,12 @@ class World:
         if (x,y) in out: return
         out.add((x, y))
 
-        for ix in xrange(-1, 2):
-            for iy in xrange(-1, 2):
-                zx = x + ix
-                zy = y + iy
-                if zx < 0 or zy < 0 or zx >= self.w or zy >= self.h:
-                    continue
-                v = self.grid[zy][zx]
+        for ki in self.neighbors[(x,y)]:
+            zx, zy = ki
+            v = self.grid[zy][zx]
 
-                if (zx,zy) not in out and v <= v0:
-                    l.append((v, zx, zy))
+            if (zx,zy) not in out and v <= v0:
+                l.append((v, zx, zy))
 
         if len(l) == 0: return
 
@@ -1497,8 +1497,15 @@ class World:
 
     def place(self, nogens):
         s = self.walkmap - nogens - set(self.monmap.iterkeys())
-        s = list(s)
 
+        # Do not place a player in an unfair position.
+        # Otherwise, the monster will get a free move and might
+        # kill the player.
+        for k in self.monmap.iterkeys():
+            for ki in self.neighbors[k]:
+                s.add(ki)
+
+        s = list(s)
         x, y = s[random.randint(0, len(s)-1)]
         self.px = x
         self.py = y
@@ -1523,6 +1530,23 @@ class World:
         self.make_monsters(nogens)
         self.make_items(nogens)
         self.place(nogens)
+
+        self.neighbors = {}
+        for x in xrange(0, w_):
+            for y in xrange(0, h_):
+                self.neighbors[(x,y)] = []
+                for xi in xrange(-1, 2):
+                    for yi in xrange(-1, 2):
+                        if xi == 0 and yi == 0:
+                            continue
+
+                        ki = (x+xi, y+yi)
+
+                        if ki[0] < 0 or ki[0] >= w_ or ki[1] < 0 or ki[1] >= h_:
+                            continue
+
+                        self.neighbors[(x,y)].append(ki)
+
 
 
     def generate_inv(self):
@@ -2506,12 +2530,9 @@ class World:
 
         elif item.jinni:
             l = []
-            for x in xrange(-1, 2):
-                for y in xrange(-1, 2):
-                    if x != 0 or y != 0:
-                        q = (self.px + x, self.py + y)
-                        if q in self.walkmap and q not in self.monmap:
-                            l.append(q)
+            for ki in self.neighbors[(self.px,self.py)]:
+                if ki in self.walkmap and ki not in self.monmap:
+                    l.append(ki)
 
             if len(l) == 0:
                 self.msg.m('Nothing happened.')
@@ -3420,12 +3441,9 @@ class World:
     def walk_monster(self, mon, dist, x, y):
 
         if mon.moldspew and (self.t % mon.moldspew[2]) == 0:
-            for xi in xrange(x-1,x+2):
-                for yi in xrange(y-1,y+2):
-                    if x < 0 or y < 0 or x >= self.w or y >= self.h:
-                        continue
-                    if random.randint(1, mon.moldspew[1]) == 1:
-                        self.toggle_celauto(xi, yi, mon.moldspew[0])
+            for ki in self.neighbors[(x,y)]:
+                if random.randint(1, mon.moldspew[1]) == 1:
+                    self.toggle_celauto(ki[0], ki[1], mon.moldspew[0])
 
         if mon.static:
             return None, None
@@ -3521,12 +3539,11 @@ class World:
             return []
 
         l = []
-        for xx in xrange(x-1,x+2):
-            for yy in xrange(y-1,y+2):
-                if (xx,yy) in self.walkmap and \
-                   (xx,yy) not in self.monmap and \
-                   (xx != self.px or yy != self.py):
-                    l.append((xx,yy))
+        for ki in self.neighbors[(x,y)]:
+            if ki in self.walkmap and \
+               ki not in self.monmap and \
+               (ki[0] != self.px or ki[1] != self.py):
+                l.append(ki)
 
         ret = []
         for i in xrange(len(m)):
@@ -3650,7 +3667,7 @@ class World:
     def process_world(self):
 
         self.celautomap = self.celautostock.celauto_step(
-            self.celautomap, self.w, self.h,
+            self.celautomap, self.neighbors, self.w, self.h,
             self.celauto_on, self.celauto_off)
 
 

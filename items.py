@@ -148,9 +148,13 @@ class ItemStock:
                            skin=('[', libtcod.sepia), defence=0.25,
                            desc=['A simple plastic item of protective headgear.'])
 
-        self.boots = Item('boots', slot='g', count=0, rarity=8,
-                          skin=('[', libtcod.sepia), defence=0.1,
-                          desc=['Steel-toed boots made of genuine leather.'])
+        self.minirockets = Item('minirocket launcher', slot='e', rarity=8,
+                                skin=('(', libtcod.light_red), applies=True,
+                                rangeexplode=True, range=(4,15),
+                                explodes=True, radius=2, attack=0, 
+                                ammochance=(3,3),
+                                desc=['A shoulder-mounted rocket launcher that holds',
+                                      'three tiny rockets.'])
 
         self.dynamite = Item('stick$s of dynamite', count=3, stackrange=3,
                              skin=('!', libtcod.red), applies=True, explodes=True,
