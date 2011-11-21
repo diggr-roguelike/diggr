@@ -1081,6 +1081,21 @@ class World:
         self.featmap = {}
 
 
+        self.neighbors = {}
+        for x in xrange(0, w_):
+            for y in xrange(0, h_):
+                self.neighbors[(x,y)] = []
+                for xi in xrange(-1, 2):
+                    for yi in xrange(-1, 2):
+                        if xi == 0 and yi == 0:
+                            continue
+
+                        ki = (x+xi, y+yi)
+
+                        if ki[0] < 0 or ki[0] >= w_ or ki[1] < 0 or ki[1] >= h_:
+                            continue
+
+                        self.neighbors[(x,y)].append(ki)
 
 
     def randgen(self, a, b, c, d, mid):
@@ -1530,23 +1545,6 @@ class World:
         self.make_monsters(nogens)
         self.make_items(nogens)
         self.place(nogens)
-
-        self.neighbors = {}
-        for x in xrange(0, w_):
-            for y in xrange(0, h_):
-                self.neighbors[(x,y)] = []
-                for xi in xrange(-1, 2):
-                    for yi in xrange(-1, 2):
-                        if xi == 0 and yi == 0:
-                            continue
-
-                        ki = (x+xi, y+yi)
-
-                        if ki[0] < 0 or ki[0] >= w_ or ki[1] < 0 or ki[1] >= h_:
-                            continue
-
-                        self.neighbors[(x,y)].append(ki)
-
 
 
     def generate_inv(self):
@@ -3697,11 +3695,17 @@ class World:
             self.rayblast(x, y, r)
 
         for ix,iy in delitems:
-            for i in xrange(len(self.itemap[(ix,iy)])):
-                if self.itemap[(ix,iy)][i].liveexplode == 0:
-                    del self.itemap[(ix,iy)][i]
-                    if len(self.itemap[(ix,iy)]) == 0:
-                        del self.itemap[(ix,iy)]
+            if (ix,iy) in self.itemap:
+                l2 = []
+                for i in self.itemap[(ix,iy)]:
+                    if i.liveexplode != 0:
+                        l2.append(i)
+
+                if len(l2) > 0:
+                    self.itemap[(ix,iy)] = l2
+                else:
+                    del self.itemap[(ix,iy)]
+
 
         summons = []
         fired = []

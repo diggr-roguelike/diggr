@@ -69,7 +69,7 @@ class CelAutoStock:
     def toggle(self, camap, x, y, ca):
         camap[(x,y)] = (ca, 0)
 
-    def celauto_step(self, camap, heighbors, w, h, funcon, funcoff):
+    def celauto_step(self, camap, neighbors, w, h, funcon, funcoff):
 
         # See:
         # http://www.mirekw.com/ca/rullex_gene.html
