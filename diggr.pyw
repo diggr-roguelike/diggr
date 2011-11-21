@@ -4063,7 +4063,8 @@ class World:
           'forced2sleep', 'healingsleep',
           '_seed', '_inputs', 'featstock', 'vaultstock',
           'celautostock', 'celautomap',
-          'achievements', 'bones', 'resource', 'resource_buildup', 'resource_timeout'
+          'achievements', 'bones', 'resource', 'resource_buildup', 'resource_timeout',
+          'neighbors'
           ]
         state = {}
 
