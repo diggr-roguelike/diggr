@@ -20,7 +20,7 @@ class Item:
                  camorange=None, sounding=False, healingsleep=None,
                  applies_in_slot=False, ebola=False, smoke=False,
                  trapcloud=False, glueimmune=False, craft=None, resource=None,
-                 hide_count=False, swampgas=False, digbonus=None):
+                 hide_count=False, swampgas=False, digbonus=0):
         self.slot = slot
         self.bonus = bonus
         self.name = name
