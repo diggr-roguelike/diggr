@@ -20,7 +20,7 @@ class Item:
                  camorange=None, sounding=False, healingsleep=None,
                  applies_in_slot=False, ebola=False, smoke=False,
                  trapcloud=False, glueimmune=False, craft=None, resource=None,
-                 hide_count=False, swampgas=False):
+                 hide_count=False, swampgas=False, digbonus=None):
         self.slot = slot
         self.bonus = bonus
         self.name = name
@@ -87,6 +87,7 @@ class Item:
         self.resource = resource
         self.hide_count = hide_count
         self.swampgas = swampgas
+        self.digbonus = digbonus
 
         self.ammo = None
         self.gencount = 0
@@ -146,7 +147,10 @@ class ItemStock:
 
         self.helmet = Item("miner's hardhat", slot='a', rarity=8,
                            skin=('[', libtcod.sepia), defence=0.25,
-                           desc=['A simple plastic item of protective headgear.'])
+                           digbonus=0.05,
+                           desc=['A simple plastic item of protective headgear.',
+                                 'Miners claim that it helps them dig faster,',
+                                 'for some inexplicable reason.'])
 
         self.minirockets = Item('minirocket launcher', slot='e', rarity=8,
                                 skin=('(', libtcod.light_red), applies=True,

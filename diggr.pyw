@@ -701,6 +701,8 @@ class Inventory:
     def get_glueimmune(self):
         return getattr(self.left, 'glueimmune', None)
 
+    def get_digspeed(self):
+        return getattr(self.head, 'digbonus', 0)
 
 
 ##################################################
@@ -2338,11 +2340,13 @@ class World:
         elif item.digging:
             k = draw_window(['Dig in which direction?'], self.w, self.h, True)
 
+            digspeed = self.inv.get_digspeed() + 0.1
+
             self.digging = None
-            if k == 'h': self.digging = (self.px - 1, self.py)
-            elif k == 'j': self.digging = (self.px, self.py + 1)
-            elif k == 'k': self.digging = (self.px, self.py - 1)
-            elif k == 'l': self.digging = (self.px + 1, self.py)
+            if k == 'h': self.digging = (self.px - 1, self.py, digspeed)
+            elif k == 'j': self.digging = (self.px, self.py + 1, digspeed)
+            elif k == 'k': self.digging = (self.px, self.py - 1, digspeed)
+            elif k == 'l': self.digging = (self.px + 1, self.py, digspeed)
             else:
                 return -1 #item
 
@@ -2354,7 +2358,7 @@ class World:
             if not self.digging:
                 return item
 
-            if self.digging in self.walkmap:
+            if self.digging[:2] in self.walkmap:
                 self.msg.m('There is nothing to dig there.')
                 self.digging = None
             else:
@@ -4449,7 +4453,7 @@ def check_autoplay(world):
             world.digging = None
             return 1
         else:
-            world.grid[world.digging[1]][world.digging[0]] -= 0.1
+            world.grid[world.digging[1]][world.digging[0]] -= world.digging[2]
             world.tick()
             return -1
 
