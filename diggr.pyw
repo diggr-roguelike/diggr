@@ -1518,7 +1518,7 @@ class World:
         # kill the player.
         for k in self.monmap.iterkeys():
             for ki in self.neighbors[k]:
-                s.add(ki)
+                s.remove(ki)
 
         s = list(s)
         x, y = s[random.randint(0, len(s)-1)]
