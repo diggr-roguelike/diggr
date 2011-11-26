@@ -873,10 +873,10 @@ class Achievements:
             if self.bonus_colors == 1:
                 self.add('colorwow', 'Used colored liquid for great success', weight=88)
             else:
-                self.add('%dcolorwow', 'Used colored liquid for great success %d times', weight=89)
+                self.add('%dcolorwow' % self.bonus_colors, 'Used colored liquid for great success %d times' % self.bonus_colors, weight=89)
 
         if self.colors < 6:
-            self.add('%dcolor', 'Drank colored liquid %d times', weight=4)
+            self.add('%dcolor' % self.colors, 'Drank colored liquid %d times' % self.colors, weight=4)
         else:
             self.add('6color', 'Drank colored liquid 6 times or more', weight=44)
 
@@ -1570,7 +1570,7 @@ class World:
 
     def generate_inv(self):
         self.inv.take(self.itemstock.find('lamp'))
-        l = [self.itemstock.get('pickaxe'), self.itemstock.get('airfresh'), self.itemstock.get('gbomb')]
+        l = [self.itemstock.get('pickaxe')]
 
         for x in xrange(3):
             l.append(self.itemstock.generate(1))

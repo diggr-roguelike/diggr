@@ -68,7 +68,7 @@ def ach_tag_to_text(tag):
 	      'ebola': 'Killed at least %s monsters via Ebolavirus',
               'molds': 'Cleaned up black mold over %s times',
               'colorwow': 'Used colored liquid for great success %s times',
-              'color', 'Drank colored liquid %s times'
+              'color': 'Drank colored liquid %s times'
               }
 
     if tag in whole:
