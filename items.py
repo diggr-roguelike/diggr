@@ -20,7 +20,7 @@ class Item:
                  camorange=None, sounding=False, healingsleep=None,
                  applies_in_slot=False, ebola=False, smoke=False,
                  trapcloud=False, glueimmune=False, craft=None, resource=None,
-                 hide_count=False, swampgas=False, digbonus=0):
+                 hide_count=False, swampgas=False, digbonus=0, airfreshener=None):
         self.slot = slot
         self.bonus = bonus
         self.name = name
@@ -88,6 +88,7 @@ class Item:
         self.hide_count = hide_count
         self.swampgas = swampgas
         self.digbonus = digbonus
+        self.airfreshener = airfreshener
 
         self.ammo = None
         self.gencount = 0
@@ -266,7 +267,7 @@ class ItemStock:
                                    'magically-induced mini-missiles.'])
 
         self.ak47 = Item('AK-47', slot='e', skin=('(', libtcod.desaturated_blue),
-                         rangeattack=3.5, range=(0, 7), ammochance=(0, 30),
+                         rangeattack=3.5, range=(0, 7), ammochance=(9, 30),
                          straightline=True, applies=True, rarity=15,
                          desc=['A semi-automatic rifle.'])
 
@@ -510,6 +511,11 @@ class ItemStock:
         self.gasspore = Item('swamp gas spore', slot='', skin=(',', libtcod.dark_blue),
                              rarity=5, swampgas=True, throwable=True, liveexplode=3, 
                              desc=['A concentrated globe of pent-up swamp gas.'])
+
+
+        self.airfresh = Item('air freshener', skin=(')', libtcod.blue), airfreshener=4,
+                             slot='d', rarity=8, ammochance=(20,45), applies=True,
+                             desc=['Used for cleaning up noxious fumes, gases and spores.'])
 
         ###
         ### Special item crafting.

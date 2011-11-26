@@ -66,8 +66,13 @@ class CelAutoStock:
 
                 camap[(x1, y1)] = (ca, 0)
 
-    def toggle(self, camap, x, y, ca):
+    def seed(self, camap, x, y, ca):
         camap[(x,y)] = (ca, 0)
+
+    def clear(self, camap, x, y, funcoff):
+        if (x,y) in camap:
+            funcoff(x, y, camap[(x,y)][0])
+            del camap[(x,y)]
 
     def celauto_step(self, camap, neighbors, w, h, funcon, funcoff):
 

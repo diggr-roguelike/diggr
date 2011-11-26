@@ -84,7 +84,7 @@ log = Logger()
 
 
 global _version
-_version = '11.11.20'
+_version = '11.12.04'
 
 global _inputs
 global _inputqueue
@@ -378,7 +378,7 @@ def draw_blast(x, y, w, h, r, func):
         func(c0[0], c0[1])
 
 
-def draw_blast2(x, y, w, h, r, func1, func2):
+def draw_blast2(x, y, w, h, r, func1, func2, color=libtcod.light_azure):
     x0 = min(x - r, 0)
     y0 = min(y - r, 0)
     x1 = max(x + r + 1, w)
@@ -398,7 +398,7 @@ def draw_blast2(x, y, w, h, r, func1, func2):
         libtcod.sys_sleep_milli(100)
 
     back = libtcod.darkest_blue
-    fore = libtcod.light_azure
+    fore = color
     dr()
     fore = libtcod.color_lerp(fore, back, 0.5)
     dr()
@@ -749,6 +749,8 @@ class Achievements:
         self.a_craft = 0
         self.ebola = 0
         self.killed_molds = 0
+        self.colors = 0
+        self.bonus_colors = 0
 
     def finish(self, world):
         self.add('plev%d' % world.plev, 'Reached player level %d' % world.plev)
@@ -867,6 +869,17 @@ class Achievements:
             else:
                 self.add('%dafacts', 'Crafted %d powerful artifacts', weight=89)
 
+        if self.bonus_colors > 0:
+            if self.bonus_colors == 1:
+                self.add('colorwow', 'Used colored liquid for great success', weight=88)
+            else:
+                self.add('%dcolorwow', 'Used colored liquid for great success %d times', weight=89)
+
+        if self.colors < 6:
+            self.add('%dcolor', 'Drank colored liquid %d times', weight=4)
+        else:
+            self.add('6color', 'Drank colored liquid 6 times or more', weight=44)
+
 
     def descend(self, world):
         if world.dlev >= world.plev+5:
@@ -919,6 +932,11 @@ class Achievements:
         self.crafted += 1
         if not item.craft:
             self.a_craft += 1
+
+    def resource_use(self, resource, bonus):
+        self.colors += 1
+        if bonus:
+            self.bonus_colors += 1
 
     def use(self, item):
         self.used += 1
@@ -1552,7 +1570,7 @@ class World:
 
     def generate_inv(self):
         self.inv.take(self.itemstock.find('lamp'))
-        l = [self.itemstock.get('pickaxe')]
+        l = [self.itemstock.get('pickaxe'), self.itemstock.get('airfresh'), self.itemstock.get('gbomb')]
 
         for x in xrange(3):
             l.append(self.itemstock.generate(1))
@@ -1840,6 +1858,8 @@ class World:
         elif fount == 'b': self.msg.m('You drink something blue.')
         elif fount == 'p': self.msg.m('You drink something purple.')
         self.resource = fount
+
+        bonus = False
         
         if self.resource_timeout:
             self.resource_timeout += (self.coef.resource_timeouts[fount]/6)
@@ -1858,8 +1878,11 @@ class World:
                 elif self.resource == 'p':
                     self.msg.m('You gain telepathy and superhuman stealth!', True)
 
+                bonus = True
                 self.resource_buildup = 0
                 self.resource_timeout = self.coef.resource_timeouts[fount]
+
+        self.achievements.resource_use(fount, bonus)
 
 
     def drink(self):
@@ -2628,6 +2651,20 @@ class World:
                 return item
             return None
 
+        elif item.airfreshener:
+            if item.ammo == 0:
+                self.msg.m("It's out of ammo!")
+                return item
+
+            self.airfreshen(self.px, self.py, item.airfreshener)
+
+            if item.ammo > 0:
+                item.ammo -= 1
+
+            if item.ammo == 0:
+                return None
+            return item
+
         elif item.resource:
             self.colordrink(item.resource)
             return None
@@ -2953,6 +2990,22 @@ class World:
 
         for x, y, r, d in sorted(chains):
             self.explode(x, y, r)
+
+
+
+    def airfreshen(self, x0, y0, rad):
+
+        libtcod.map_compute_fov(self.tcodmap, x0, y0, rad,
+                                False, libtcod.FOV_SHADOW)
+
+        def func1(x, y):
+            return libtcod.map_is_in_fov(self.tcodmap, x, y)
+
+        def func2(x, y):
+            self.clear_celauto(x, y)
+
+        draw_blast2(x0, y0, self.w, self.h, rad, func1, func2, color=libtcod.yellow)
+
 
 
     def fight(self, mon, player_move, item=None, attackstat=None):
@@ -3446,7 +3499,7 @@ class World:
         if mon.moldspew and (self.t % mon.moldspew[2]) == 0:
             for ki in self.neighbors[(x,y)]:
                 if random.randint(1, mon.moldspew[1]) == 1:
-                    self.toggle_celauto(ki[0], ki[1], mon.moldspew[0])
+                    self.seed_celauto(ki[0], ki[1], mon.moldspew[0])
 
         if mon.static:
             return None, None
@@ -3648,9 +3701,13 @@ class World:
         ca = getattr(self.celautostock, name)
         self.celautostock.paste(self.celautomap, x, y, self.w, self.h, ca)
 
-    def toggle_celauto(self, x, y, name):
+    def seed_celauto(self, x, y, name):
         ca = getattr(self.celautostock, name)
-        self.celautostock.toggle(self.celautomap, x, y, ca)
+        self.celautostock.seed(self.celautomap, x, y, ca)
+
+    def clear_celauto(self, x, y):
+         self.celautostock.clear(self.celautomap, x, y, self.celauto_off)
+        
 
 
     def celauto_on(self, x, y, ca):

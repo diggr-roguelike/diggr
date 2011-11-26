@@ -37,7 +37,9 @@ def ach_tag_to_text(tag):
              'ebola': 'Killed a monster via Ebolavirus',
              'thunderdome': 'Visited the Rehabilitation Thunderdome',
              'thunderdome_win': 'Became a Thunderdome champion',
-             'molds': 'Cleaned up black mold'
+             'molds': 'Cleaned up black mold',
+             'colorwow': 'Used colored liquid for great success',
+             '6color': 'Drank colored liquid 6 times or more'
              }
 
     prefix = {'plev': 'Reached player level %s',
@@ -61,7 +63,9 @@ def ach_tag_to_text(tag):
               'craft': 'Tried crafting %s times',
               'afacts': 'Crafted %s powerful artifacts',
               'ebola': 'Killed at least %s monsters via Ebolavirus',
-              'molds': 'Cleaned up black mold over %s times'
+              'molds': 'Cleaned up black mold over %s times',
+              'colorwow': 'Used colored liquid for great success %s times',
+              'color', 'Drank colored liquid %s times'
               }
 
     if tag in whole:
