@@ -3034,10 +3034,10 @@ class World:
                 mon.bld_delta = (mon.x - self.px,
                                  mon.y - self.py)
 
-                if mon.bld_delta[0] < -1: mon.bld_delta[0] = -1
-                elif mon.bld_delta[0] > 1: mon.bld_delta[0] = 1
-                if mon.bld_delta[1] < -1: mon.bld_delta[1] = -1
-                elif mon.bld_delta[1] > 1: mon.bld_delta[1] = 1
+                if mon.bld_delta[0] < -1: mon.bld_delta = (-1, mon.bld_delta[1])
+                elif mon.bld_delta[0] > 1: mon.bld_delta = (1, mon.bld_delta[1])
+                if mon.bld_delta[1] < -1: mon.bld_delta = (mon.bld_delta[0], -1)
+                elif mon.bld_delta[1] > 1: mon.bld_delta = (mon.bld_delta[0], 1)
 
                 self.msg.m('You push ' + sm)
                 return
@@ -3436,6 +3436,17 @@ class World:
     def move_downright(self): self.move(1, 1)
 
 
+    def testing(self):
+        x,y = self.neighbors[(self.px,self.py)][random.randint(0, len(self.neighbors[(self.px,self.py)])-1)]
+        if (x,y) in self.monmap:
+            return
+        m = self.monsterstock.find('ba1', 1, self.itemstock)
+        if len(m) > 0:
+            m[0].x = x
+            m[0].y = y
+            self.monmap[(x,y)] = m[0]
+
+
 
     def quit(self):
         k = draw_window(["Really quit? Press 'y' if you are truly sure."], self.w, self.h)
@@ -3501,7 +3512,8 @@ class World:
             'P': self.show_messages,
             'Q': self.quit,
             '?': self.show_help,
-            'S': self.save
+            'S': self.save,
+            'w': self.testing
             }
         self.vkeys = {
             libtcod.KEY_KP4: self.move_left,
@@ -3638,12 +3650,15 @@ class World:
 
 
     def monster_conflict(self, mon_attack, mon_defend):
-        if mon_attack.boulder and not mon_defend.large:
-            if mon_defend.visible or mon_defend.visible_old:
-                sm = str(mon_attack)
-                smu = sm[0].upper() + sm[1:]
-                self.msg.m(smu + ' squashes ' + str(mon_defend) + '!')
-            return True
+        if mon_attack.boulder:
+            if mon_defend.large:
+                mon_attack.bld_delta = None
+            else:
+                if mon_defend.visible or mon_defend.visible_old:
+                    sm = str(mon_attack)
+                    smu = sm[0].upper() + sm[1:]
+                    self.msg.m(smu + ' squashes ' + str(mon_defend) + '!')
+                return True
 
         return False
 
@@ -3840,7 +3855,6 @@ class World:
                 dist = math.sqrt(math.pow(abs(self.px - x), 2) + math.pow(abs(self.py - y), 2))
 
             mon.do_move = None
-            mon.do_die = False
 
             if mon.static:
                 pass
@@ -4034,7 +4048,7 @@ class World:
                 if telerange:
                     if (x, y) in self.monmap:
                         d = math.sqrt(math.pow(abs(y - self.py),2) + math.pow(abs(x - self.px),2))
-                        if d <= telerange:
+                        if d <= telerange and not self.monmap[(x,y)].inanimate:
                             in_fov = True
                             is_lit = True
 
