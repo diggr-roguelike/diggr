@@ -901,7 +901,10 @@ class Achievements:
         self.extinguished += 1
 
     def mondeath(self, world, mon, is_rad=False, is_explode=False, is_poison=False):
-        if mon.branch == 'x':
+        if mon.inanimate:
+            return
+
+        if mon.is_mold:
             self.killed_molds += 1
             return
 
@@ -1459,7 +1462,8 @@ class World:
 
         ll = list(self.walkmap - nogens)
 
-        for i in xrange(n):
+        i = 0
+        while i < n:
             lev = self.dlev + random.gauss(0, self.coef.monlevel)
             lev = max(int(round(lev)), 1)
 
@@ -1477,6 +1481,11 @@ class World:
                 m.x = x
                 m.y = y
                 self.monmap[(x, y)] = m
+
+                if m.inanimate:
+                    continue
+
+            i += 1
 
 
         # Generate some mold.
@@ -1607,6 +1616,7 @@ class World:
 
         dx = _dx + self.px
         dy = _dy + self.py
+
         if (dx,dy) in self.walkmap and dx >= 0 and dx < self.w and dy < self.h:
 
             if (dx, dy) in self.monmap:
@@ -2831,6 +2841,10 @@ class World:
 
     def handle_mondeath(self, mon, do_drop=True, do_gain=True,
                         is_rad=False, is_explode=False, is_poison=False):
+
+        if mon.inanimate:
+            do_gain = False
+
         if do_gain and mon.level > self.plev:
             self.msg.m('You just gained level ' + str(mon.level) + '!', True)
             self.plev = mon.level
@@ -2850,7 +2864,7 @@ class World:
         elif is_poison:
             self.achievements.mondeath(self, mon, is_poison=True)
 
-        if exting and mon.branch != 'x':
+        if exting:
             self.achievements.mondone()
 
         # Quests
@@ -3012,6 +3026,26 @@ class World:
 
         sm = str(mon)
         smu = sm[0].upper() + sm[1:]
+
+        ##
+
+        if mon.boulder:
+            if player_move:
+                mon.bld_delta = (mon.x - self.px,
+                                 mon.y - self.py)
+
+                if mon.bld_delta[0] < -1: mon.bld_delta[0] = -1
+                elif mon.bld_delta[0] > 1: mon.bld_delta[0] = 1
+                if mon.bld_delta[1] < -1: mon.bld_delta[1] = -1
+                elif mon.bld_delta[1] > 1: mon.bld_delta[1] = 1
+
+                self.msg.m('You push ' + sm)
+                return
+            else:
+                self.stats.health.dec(6, sm, self.config.sound)
+                return
+
+        ##
 
         d = math.sqrt(math.pow(abs(mon.x - self.px), 2) +
                       math.pow(abs(mon.y - self.py), 2))
@@ -3501,6 +3535,20 @@ class World:
                 if random.randint(1, mon.moldspew[1]) == 1:
                     self.seed_celauto(ki[0], ki[1], mon.moldspew[0])
 
+        if mon.boulder:
+            if mon.bld_delta:
+                ret =  (mon.x + mon.bld_delta[0],
+                        mon.y + mon.bld_delta[1])
+
+                if ret not in self.walkmap:
+                    mon.bld_delta = None
+                    return None, None
+                else:
+                    return ret[0], ret[1]
+            else:
+                return None, None
+
+
         if mon.static:
             return None, None
 
@@ -3588,6 +3636,16 @@ class World:
                 self.msg.m(mn + ' gets stuck in some glue!')
             mon.glued = max(int(random.gauss(*self.coef.glueduration)), 1)
 
+
+    def monster_conflict(self, mon_attack, mon_defend):
+        if mon_attack.boulder and not mon_defend.large:
+            if mon_defend.visible or mon_defend.visible_old:
+                sm = str(mon_attack)
+                smu = sm[0].upper() + sm[1:]
+                self.msg.m(smu + ' squashes ' + str(mon_defend) + '!')
+            return True
+
+        return False
 
     def summon(self, x, y, monname, n):
         m = self.monsterstock.find(monname, n, self.itemstock)
@@ -3836,6 +3894,13 @@ class World:
                         self.fight(mon, False)
                 else:
                     mon.do_move = (mdx, mdy)
+                    
+                    if mon.do_move in self.monmap:
+                        mon2 = self.monmap[mon.do_move]
+                        if self.monster_conflict(mon, mon2):
+                            self.handle_mondeath(mon2, do_gain=False)
+                            mon2.do_die = True
+                            mons.append(mon2)
 
                 mons.append(mon)
 
@@ -3849,15 +3914,20 @@ class World:
             else:
                 mon.summon = None
 
+
         for mon in mons:
-            if mon.do_move:
+            if mon.do_die:
+                if (mon.x, mon.y) in self.monmap:
+                    del self.monmap[(mon.x, mon.y)]
+            elif mon.do_move:
                 mon.old_pos = (mon.x, mon.y)
-                del self.monmap[(mon.x, mon.y)]
-            elif mon.do_die:
                 del self.monmap[(mon.x, mon.y)]
 
         for mon in mons:
-            if mon.do_move:
+            if mon.do_die:
+                continue
+
+            elif mon.do_move:
                 if mon.do_move in self.monmap:
                     mon.do_move = mon.old_pos
 

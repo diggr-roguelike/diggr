@@ -3,17 +3,6 @@ import random
 import copy
 
 
-# 6 Harry Potter
-# 6 Ron Weasley 
-# 6 Robert Langdon
-# 7 Bella Swan
-# 7 Edward Cullen
-# 8 Dumbledore
-# 8 Shredder
-# 9 Darth Vader
-# 10 Hagbard Celine
-# 11 Iucounu
-
 
 class Monster:
     def __init__(self, name, skin=('x', libtcod.cyan), count=10, level=1,
@@ -23,7 +12,8 @@ class Monster:
                  straightline=False, stoneeating=False, sleepattack=False,
                  hungerattack=False, flying=False, radimmune=False, no_a=False,
                  summon=False, branch=None, fireimmune=False, poisimmune=False,
-                 flavor=None, idtag=None, static=False, moldspew=None):
+                 flavor=None, idtag=None, static=False, moldspew=None, is_mold=False,
+                 boulder=False, inanimate=False, large=False):
         self.name = name
         self.skin = skin
         self.count = count
@@ -54,6 +44,10 @@ class Monster:
         self.flavor = flavor
         self.static = static
         self.moldspew = moldspew
+        self.is_mold = is_mold
+        self.boulder = boulder
+        self.inanimate = inanimate
+        self.large = large
 
         if not idtag:
             self.idtag = name
@@ -78,6 +72,7 @@ class Monster:
         self.onfire = 0
         self.fireattack = None
         self.fireduration = 0
+        self.bld_delta = None
 
 
     def __str__(self):
@@ -133,7 +128,7 @@ class MonsterStock:
 
         self.add(Monster('Megatherium americanum', skin=('Q', libtcod.light_amber),
                          branch='a', attack=0.5, defence=3.5, range=5, level=3,
-                         count=6, no_a=True, slow=True, flavor='animal',
+                         count=6, no_a=True, slow=True, flavor='animal', large=True,
                          desc=['A gigantic ground sloth from the Pliocene period.',
                                'It was one of the largest land animals to ever live,',
                                'larger than the modern-day African elephant.']))
@@ -148,7 +143,7 @@ class MonsterStock:
 
         self.add(Monster('Bos primigenius', skin=('Q', libtcod.lightest_gray),
                          branch='a', attack=7.0, defence=1.0, range=10, level=3,
-                         count=3, no_a=True, flavor='animal',
+                         count=3, no_a=True, flavor='animal', 
                          desc=['(Also known as the aurochs.)',
                                'This magnificent animal was the ancesor of modern-day',
                                'domestic cattle. It is much larger and stronger than any',
@@ -170,7 +165,7 @@ class MonsterStock:
         self.add(Monster('Colossochelys atlas', skin=('O', libtcod.darkest_green),
                          branch='a', attack=1.0, defence=24.0, explodeimmune=True,
                          range=10, confimmune=True, slow=True, level=5, count=4, no_a=True,
-                         flavor='giant',
+                         flavor='giant', large=True,
                          desc=['The largest land turtle, ever.',
                                'Found in the Pleistoce perood, it is the size and weight',
                                'of your average SUV vehicle.']))
@@ -183,27 +178,27 @@ class MonsterStock:
 
         self.add(Monster('Arctotherium bonariense', skin=('Q', libtcod.dark_sepia),
                          branch='a', attack=10.0, defence=2.0, range=10, level=6, count=3, no_a=True,
-                         flavor='carnivore',
+                         flavor='carnivore', large=True,
                          desc=['The most fearsome mammal to have ever lived, this bear',
                                'lived during the Pleistocene epoch.',
                                'It is more than twice the size of the modern-day grizzly bear.']))
 
         self.add(Monster('Glyptodon perforatus', skin=('o', libtcod.brass),
                          branch='a', attack=0.2, defence=20.0, range=7, count=7, no_a=True,
-                         explodeimmune=True, level=6, heatseeking=True, flavor='giant',
+                         explodeimmune=True, level=6, heatseeking=True, flavor='giant', large=True,
                          desc=['A relative of the armadillo from the Pleistocene epoch.',
                                'Unlike the modern armadillos, this armored monstrocity is',
                                'the size and weight of a car.']))
 
         self.add(Monster('Pteranodon longiceps', skin=('B', libtcod.lightest_lime),
                          branch='a', attack=3.0, defence=4.0, range=10, level=7, count=8,
-                         no_a=True, flavor='flying',
+                         no_a=True, flavor='flying', large=True,
                          desc=['A flying reptile that had a wingspan of over 6 meters!',
                                'It was a very common animal during the Cretaceous period.']))
 
         self.add(Monster('Hippopotamus gorgops', skin=('Q', libtcod.light_azure),
                          branch='a', attack=8.0, defence=2.0, range=4, level=7, count=5, no_a=True,
-                         flavor='animal',
+                         flavor='animal', large=True,
                          desc=['This hippo from the Miocene period was much, much larger than',
                                'its modern-day living relatives.']))
 
@@ -219,7 +214,7 @@ class MonsterStock:
 
         self.add(Monster('Titanoceratops ouranos', skin=('D', libtcod.sepia), branch='a',
                          attack=11.0, defence=4.0, range=3, level=8, count=8,
-                         no_a=True, flavor='giant',
+                         no_a=True, flavor='giant', large=True,
                          desc=['The largest of many species of triceratops.',
                                'You recognize the familiar triceratops profile from',
                                'numerous film, cartoon and book descriptions of this',
@@ -227,7 +222,7 @@ class MonsterStock:
 
         self.add(Monster('Indricotherium transouralicum', skin=('Q', libtcod.sepia),
                          branch='a', attack=1.0, defence=6.0, range=7, level=9, count=6,
-                         no_a=True, flavor='giant',
+                         no_a=True, flavor='giant', large=True,
                          desc=['Named after the mystical Indrik-Beast, this is the ',
                                'largest land mammal ever to have lived!',
                                'A relative of the rhinoceros, it looks like a ridiculously',
@@ -237,18 +232,18 @@ class MonsterStock:
 
         self.add(Monster('Mammuthus primigenius', skin=('Q', libtcod.darker_amber),
                          branch='a', attack=3.0, defence=4.0, range=6, level=9, count=6,
-                         no_a=True, flavor='giant',
+                         no_a=True, flavor='giant', large=True,
                          desc=['Also known as the wooly mammoth.']))
 
         self.add(Monster('Tyrannosaurus rex', skin=('D', libtcod.light_lime), branch='a',
                          attack=15.0, defence=15.0, range=20, level=10, count=1, no_a=True,
-                         confimmune=True, flavor='carnivore',
+                         confimmune=True, flavor='carnivore', large=True,
                          desc=['The Tyrant Lizard King, in person. No introduction necessary.']))
 
         self.add(Monster('Sauroposeidon proteles', skin=('D', libtcod.light_azure), branch='a',
                          attack=1.0, defence=64.0, range=10, level=11, count=1, no_a=True,
                          slow=True, confimmune=True, explodeimmune=True, radimmune=True,
-                         flavor='earthshake',
+                         flavor='earthshake', large=True,
                          desc=['The Earthshaker-Lizard. A sauropod so truly, veritably huge that',
                                'it might have indeed caused earthquakes merely by walking.',
                                "Also, the World's Largest Dinosaur.",
@@ -362,7 +357,7 @@ class MonsterStock:
 
         self.add(Monster('frost giant', skin=('k', libtcod.lighter_sky),
                          attack=6.0, defence=4.5, range=8, level=8, count=5, branch='b',
-                         flavor='giant',
+                         flavor='giant', large=True,
                          desc=['A humanoid about twice the size of a human.',
                                'He is an evil, emotionless immigrant from the dark',
                                'planes of Jotunheim.']))
@@ -371,7 +366,7 @@ class MonsterStock:
                          attack=3.0, defence=3.0, range=10, level=9, count=1,
                          flying=True, explodeimmune=True, confimmune=True,
                          psyrange=8, psyattack=2.0, branch='b', no_a=True,
-                         flavor='faerie',
+                         flavor='faerie', large=True,
                          desc=['A faerie king.',
                                'He takes on the appearance of a 2 meter tall',
                                'handsome man, wearing a delicate crown.']))
@@ -388,7 +383,7 @@ class MonsterStock:
                          explodeimmune=True, flying=True, confimmune=True,
                          psyrange=2, psyattack=2.0, branch='b',
                          summon=('black knight', 2), no_a=True,
-                         poisimmune=True, flavor=None,
+                         poisimmune=True, flavor=None, large=True,
                          desc=["Self-styled royalty, self-styled wizard, self-styled",
                                'ruler of this dungeon.',
                                'He has instilled unthinking loyalty into his subjects',
@@ -399,7 +394,7 @@ class MonsterStock:
                          explodeimmune=True, flying=True, confimmune=True,
                          psyrange=20, psyattack=2.0, branch='b', fireimmune=True,
                          summon=('Prospero', 2), no_a=True, poisimmune=True,
-                         flavor='weird',
+                         flavor='weird', large=True,
                          desc=['An Outer God: The Lurker at the Threshold, The Key and the Gate,',
                                'The Beyond One, Opener of the Way, The All-in-One',
                                'and the One-in-All.',
@@ -453,7 +448,7 @@ class MonsterStock:
         self.add(Monster('scavenger drone', skin=('Z', libtcod.silver),
                          attack=1.0, defence=24.0, explodeimmune=True, range=10,
                          confimmune=True, slow=True, level=3, count=4, branch='c',
-                         fireimmune=True, poisimmune=True, flavor='robot',
+                         fireimmune=True, poisimmune=True, flavor='robot', 
                          desc=['A remotely-controlled robot used for exploring the dungeon.']))
 
         self.add(Monster('memetic virus', skin=('v', libtcod.dark_gray),
@@ -485,7 +480,7 @@ class MonsterStock:
         self.add(Monster('cyberdemon', skin=('Z', libtcod.red),
                          attack=7.0, defence=2.0, range=4, level=5, count=2,
                          explodeimmune=True, summon=('spore', 2), branch='c',
-                         flavor='robot',
+                         flavor='robot', large=True,
                          desc=['A 3 meter tall hellish demon-robot hybrid.',
                                'Fleshy parts of its demonic body have rotted away,',
                                'to be replaced with crude stainless-steel robotic parts.']))
@@ -493,7 +488,7 @@ class MonsterStock:
         self.add(Monster('shai-hulud', skin=('W', libtcod.gray),
                          attack=2.0, defence=4.5, explodeimmune=True, range=30,
                          level=6, count=4, straightline=True, stoneeating=True,
-                         heatseeking=True, branch='c', flavor='giant',
+                         heatseeking=True, branch='c', flavor='giant', large=True,
                          desc=['A giant worm. It is gray in color and has a skin made of something like granite.',
                                'It is about 15 meters in length.']))
 
@@ -548,20 +543,20 @@ class MonsterStock:
                          attack=0.5, defence=4.0, range=30, sleepattack=True,
                          confimmune=True, explodeimmune=True, radimmune=True, flying=True,
                          no_a=True, count=2, level=9, branch='c', fireimmune=True,
-                         poisimmune=True, flavor='digital',
+                         poisimmune=True, flavor='digital', large=True,
                          desc=["A manifestation of the powerful AI construct named 'Wintermute'."]))
 
         self.add(Monster('Voltron', skin=('Z', libtcod.white),
                          attack=6.0, defence=5.0, range=5, level=10, count=1, no_a=True,
                          explodeimmune=True, confimmune=True, branch='c', heatseeking=True,
-                         fireimmune=True, poisimmune=True, flavor='robot',
+                         fireimmune=True, poisimmune=True, flavor='robot', large=True,
                          desc=['Defender of the Universe.']))
 
         self.add(Monster('Gojira-sama', skin=('G', libtcod.green),
                          attack=6.0, defence=5.0, range=10, level=11, count=1,
                          radimmune=True, explodeimmune=True, branch='c', no_a=True,
                          summon=('mosura-chan', 3), itemdrop=['gbomb', 'radsuit'],
-                         flavor='earthshake',
+                         flavor='earthshake', large=True,
                          desc=['She really hates Japan after what they did',
                                'to the nuclear power plant.']))
 
@@ -645,13 +640,13 @@ class MonsterStock:
 
         self.add(Monster('undine', skin=('u', libtcod.darkest_blue),
                          attack=0.7, defence=3.0, range=10, level=6, count=5,
-                         sleepattack=True, branch='d', flavor='snake',
+                         sleepattack=True, branch='d', flavor='snake', large=True,
                          desc=["A monstrous slave-servant of its megetherian overlords.",
                                'It looks like humongous, deformed mermaid.']))
 
         self.add(Monster('Scylla', skin=('U', libtcod.white),
                          attack=10, defence=10, range=15, level=7, count=1,
-                         branch='d', no_a=True, flavor='giant',
+                         branch='d', no_a=True, flavor='giant', large=True,
                          desc=['A megatherian: an evil, immortal, gigantic creature of',
                                'possibly extraterrestrial origin. They are hellbent on ruling',
                                'Urth. They are powerful enough and amoral enough to be',
@@ -659,7 +654,7 @@ class MonsterStock:
 
         self.add(Monster('Uroboros', skin=('U', libtcod.light_green),
                          attack=10, defence=10, range=15, level=8, count=1,
-                         branch='d', confimmune=True, no_a=True, flavor='giant',
+                         branch='d', confimmune=True, no_a=True, flavor='giant', large=True,
                          desc=['A megatherian: an evil, immortal, gigantic creature of',
                                'possibly extraterrestrial origin. They are hellbent on ruling',
                                'Urth. They are powerful enough and amoral enough to be',
@@ -668,7 +663,7 @@ class MonsterStock:
         self.add(Monster('Erebus', skin=('U', libtcod.light_pink),
                          attack=10, defence=10, range=15, level=9, count=1,
                          branch='d', confimmune=True, explodeimmune=True, no_a=True,
-                         fireimmune=True, flavor='giant',
+                         fireimmune=True, flavor='giant', large=True,
                          desc=['A megatherian: an evil, immortal, gigantic creature of',
                                'possibly extraterrestrial origin. They are hellbent on ruling',
                                'Urth. They are powerful enough and amoral enough to be',
@@ -677,7 +672,7 @@ class MonsterStock:
         self.add(Monster('Arioch', skin=('U', libtcod.light_sky),
                          attack=10, defence=10, range=15, level=10, count=1, no_a=True,
                          branch='d', confimmune=True, explodeimmune=True, radimmune=True,
-                         fireimmune=True, flavor='earthshake',
+                         fireimmune=True, flavor='earthshake', large=True,
                          desc=['A megatherian: an evil, immortal, gigantic creature of',
                                'possibly extraterrestrial origin. They are hellbent on ruling',
                                'Urth. They are powerful enough and amoral enough to be',
@@ -686,7 +681,7 @@ class MonsterStock:
         self.add(Monster('Abaia', skin=('U', libtcod.grey),
                          attack=10, defence=10, range=15, level=11, count=1,
                          branch='d', confimmune=True, explodeimmune=True, radimmune=True,
-                         fireimmune=True, flavor='earthshake',
+                         fireimmune=True, flavor='earthshake', large=True,
                          summon=('undine', 3), no_a=True, itemdrop='gluegun',
                          desc=['A megatherian: an evil, immortal, gigantic creature of',
                                'possibly extraterrestrial origin. They are hellbent on ruling',
@@ -840,7 +835,7 @@ class MonsterStock:
                          attack=7.5, defence=7.5, range=10, level=11, count=1,
                          explodeimmune=True, fireimmune=True, branch='e',
                          confimmune=True, summon=('Conan', 1), no_a=True, poisimmune=True,
-                         flavor='earthshake',
+                         flavor='earthshake', large=True,
                          desc=['The most high god of all Cimmerians, Crom is the god',
                                'of valor and battle. He is a dark, vengeful and',
                                'judgemental god.']))
@@ -1016,33 +1011,192 @@ class MonsterStock:
 
         self.add(Monster('black mold', no_a=True, attack=0, defence=5.0, range=0, branch='x',
                          level=1, count=5, static=True, summon=('bmold1', 10), idtag='bmold1',
-                         moldspew=('bmold',3,3), poisimmune=True,
+                         moldspew=('bmold',3,3), poisimmune=True, skin=('x',libtcod.gray), is_mold=True,
                          desc=['Stachybotrys chartarum, a toxic and sometimes deadly',
                                'species of mold.']))
 
         self.add(Monster('black mold', no_a=True, attack=0, defence=5.0, range=0, branch='x',
                          level=2, count=15, static=True, summon=('bmold1', 10), idtag='bmold1',
-                         moldspew=('bmold',3,3), poisimmune=True,
+                         moldspew=('bmold',3,3), poisimmune=True, skin=('x',libtcod.gray), is_mold=True,
                          desc=['Stachybotrys chartarum, a toxic and sometimes deadly',
                                'species of mold.']))
 
         self.add(Monster('black mold', no_a=True, attack=0, defence=5.0, range=0, branch='x',
                          level=4, count=15, static=True, summon=('bmold2', 10), idtag='bmold2',
-                         moldspew=('bmold',3,3), poisimmune=True,
+                         moldspew=('bmold',3,3), poisimmune=True, skin=('x',libtcod.gray), is_mold=True,
                          desc=['Stachybotrys chartarum, a toxic and sometimes deadly',
                                'species of mold.']))
 
         self.add(Monster('black mold', no_a=True, attack=0, defence=5.0, range=0, branch='x',
                          level=6, count=15, static=True, summon=('bmold3', 10), idtag='bmold3',
-                         moldspew=('bmold',3,3), poisimmune=True,
+                         moldspew=('bmold',3,3), poisimmune=True, skin=('x',libtcod.gray), is_mold=True,
                          desc=['Stachybotrys chartarum, a toxic and sometimes deadly',
                                'species of mold.']))
 
         self.add(Monster('black mold', no_a=True, attack=0, defence=5.0, range=0, branch='x',
                          level=8, count=15, static=True, summon=('mold4', 10), idtag='bmold4',
-                         moldspew=('bmold',3,3), poisimmune=True,
+                         moldspew=('bmold',3,3), poisimmune=True, skin=('x',libtcod.gray), is_mold=True,
                          desc=['Stachybotrys chartarum, a toxic and sometimes deadly',
                                'species of mold.']))
+
+
+        ## Boulders
+
+        self.add(Monster('boulder', boulder=True, inanimate=True, branch='a', skin=('0', libtcod.gray),
+                         level=1, count=3, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         idtag='ba1', desc=['A gigantic rock of spherical shape.']))
+
+        self.add(Monster('boulder', boulder=True, inanimate=True, branch='a', skin=('0', libtcod.gray),
+                         level=2, count=5, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         idtag='ba2', desc=['A gigantic rock of spherical shape.']))
+
+        self.add(Monster('boulder', boulder=True, inanimate=True, branch='a', skin=('0', libtcod.gray),
+                         level=3, count=8, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         idtag='ba3', desc=['A gigantic rock of spherical shape.']))
+
+        self.add(Monster('boulder', boulder=True, inanimate=True, branch='a', skin=('0', libtcod.gray),
+                         level=4, count=8, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         idtag='ba4', desc=['A gigantic rock of spherical shape.']))
+
+        self.add(Monster('boulder', boulder=True, inanimate=True, branch='a', skin=('0', libtcod.gray),
+                         level=5, count=5, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         idtag='ba5', desc=['A gigantic rock of spherical shape.']))
+
+        self.add(Monster('boulder', boulder=True, inanimate=True, branch='a', skin=('0', libtcod.gray),
+                         level=6, count=4, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         idtag='ba6', desc=['A gigantic rock of spherical shape.']))
+
+        self.add(Monster('boulder', boulder=True, inanimate=True, branch='a', skin=('0', libtcod.gray),
+                         level=7, count=3, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         idtag='ba7', desc=['A gigantic rock of spherical shape.']))
+
+        self.add(Monster('boulder', boulder=True, inanimate=True, branch='a', skin=('0', libtcod.gray),
+                         level=8, count=2, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         idtag='ba8', desc=['A gigantic rock of spherical shape.']))
+
+        # 
+
+        self.add(Monster('mountain of meat', boulder=True, inanimate=True, branch='b', skin=('0', libtcod.red),
+                         level=3, count=2, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         idtag='bc1', desc=['A mountain of quivering, perverse, vomitous flesh.']))
+
+        self.add(Monster('mountain of meat', boulder=True, inanimate=True, branch='b', skin=('0', libtcod.red),
+                         level=4, count=4, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         idtag='bc2', desc=['A mountain of quivering, perverse, vomitous flesh.']))
+
+        self.add(Monster('mountain of meat', boulder=True, inanimate=True, branch='b', skin=('0', libtcod.red),
+                         level=5, count=12, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         idtag='bc3', desc=['A mountain of quivering, perverse, vomitous flesh.']))
+
+        self.add(Monster('mountain of meat', boulder=True, inanimate=True, branch='b', skin=('0', libtcod.red),
+                         level=6, count=4, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         idtag='bc4', desc=['A mountain of quivering, perverse, vomitous flesh.']))
+
+        self.add(Monster('mountain of meat', boulder=True, inanimate=True, branch='b', skin=('0', libtcod.red),
+                         level=7, count=2, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         idtag='bc5', desc=['A mountain of quivering, perverse, vomitous flesh.']))
+
+        # 
+
+        self.add(Monster('rollerball', boulder=True, inanimate=True, branch='c', skin=('0', libtcod.dark_blue),
+                         level=2, count=3, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         idtag='bb1', desc=['A huge metal ball with sharp spikes all over it.']))
+
+        self.add(Monster('rollerball', boulder=True, inanimate=True, branch='c', skin=('0', libtcod.dark_blue),
+                         level=3, count=4, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         idtag='bb2', desc=['A huge metal ball with sharp spikes all over it.']))
+
+        self.add(Monster('rollerball', boulder=True, inanimate=True, branch='c', skin=('0', libtcod.dark_blue),
+                         level=4, count=5, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         idtag='bb3', desc=['A huge metal ball with sharp spikes all over it.']))
+
+        self.add(Monster('rollerball', boulder=True, inanimate=True, branch='c', skin=('0', libtcod.dark_blue),
+                         level=5, count=6, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         idtag='bb4', desc=['A huge metal ball with sharp spikes all over it.']))
+
+        self.add(Monster('rollerball', boulder=True, inanimate=True, branch='c', skin=('0', libtcod.dark_blue),
+                         level=6, count=7, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         idtag='bb5', desc=['A huge metal ball with sharp spikes all over it.']))
+
+        self.add(Monster('rollerball', boulder=True, inanimate=True, branch='c', skin=('0', libtcod.dark_blue),
+                         level=7, count=8, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         idtag='bb6', desc=['A huge metal ball with sharp spikes all over it.']))
+
+        self.add(Monster('rollerball', boulder=True, inanimate=True, branch='c', skin=('0', libtcod.dark_blue),
+                         level=8, count=9, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         idtag='bb7', desc=['A huge metal ball with sharp spikes all over it.']))
+
+        self.add(Monster('rollerball', boulder=True, inanimate=True, branch='c', skin=('0', libtcod.dark_blue),
+                         level=9, count=10, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         idtag='bb8', desc=['A huge metal ball with sharp spikes all over it.']))
+
+        #
+
+        self.add(Monster('boulder', boulder=True, inanimate=True, branch='d', skin=('0', libtcod.gray),
+                         level=2, count=6, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         idtag='bd1', desc=['A gigantic rock of spherical shape.']))
+
+        self.add(Monster('boulder', boulder=True, inanimate=True, branch='d', skin=('0', libtcod.gray),
+                         level=3, count=6, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         idtag='bd2', desc=['A gigantic rock of spherical shape.']))
+
+        self.add(Monster('boulder', boulder=True, inanimate=True, branch='d', skin=('0', libtcod.gray),
+                         level=4, count=6, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         idtag='bd3', desc=['A gigantic rock of spherical shape.']))
+
+        self.add(Monster('boulder', boulder=True, inanimate=True, branch='d', skin=('0', libtcod.gray),
+                         level=5, count=3, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         idtag='bd4', desc=['A gigantic rock of spherical shape.']))
+
+        self.add(Monster('boulder', boulder=True, inanimate=True, branch='d', skin=('0', libtcod.gray),
+                         level=6, count=2, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         idtag='bd5', desc=['A gigantic rock of spherical shape.']))
+
+        self.add(Monster('boulder', boulder=True, inanimate=True, branch='d', skin=('0', libtcod.gray),
+                         level=7, count=1, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         idtag='bd6', desc=['A gigantic rock of spherical shape.']))
+
+        # 
+
+        self.add(Monster('boulder', boulder=True, inanimate=True, branch='e', skin=('0', libtcod.gray),
+                         level=1, count=3, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         idtag='be1', desc=['A gigantic rock of spherical shape.']))
+
+        self.add(Monster('boulder', boulder=True, inanimate=True, branch='e', skin=('0', libtcod.gray),
+                         level=2, count=3, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         idtag='be2', desc=['A gigantic rock of spherical shape.']))
+
+        self.add(Monster('boulder', boulder=True, inanimate=True, branch='e', skin=('0', libtcod.gray),
+                         level=3, count=3, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         idtag='be3', desc=['A gigantic rock of spherical shape.']))
+
+        self.add(Monster('boulder', boulder=True, inanimate=True, branch='e', skin=('0', libtcod.gray),
+                         level=4, count=3, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         idtag='be4', desc=['A gigantic rock of spherical shape.']))
+
+        self.add(Monster('boulder', boulder=True, inanimate=True, branch='e', skin=('0', libtcod.gray),
+                         level=5, count=3, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         idtag='be5', desc=['A gigantic rock of spherical shape.']))
+
+        self.add(Monster('boulder', boulder=True, inanimate=True, branch='e', skin=('0', libtcod.gray),
+                         level=6, count=3, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         idtag='be6', desc=['A gigantic rock of spherical shape.']))
+
+        self.add(Monster('boulder', boulder=True, inanimate=True, branch='e', skin=('0', libtcod.gray),
+                         level=7, count=3, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         idtag='be7', desc=['A gigantic rock of spherical shape.']))
+
+        self.add(Monster('boulder', boulder=True, inanimate=True, branch='e', skin=('0', libtcod.gray),
+                         level=8, count=3, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         idtag='be8', desc=['A gigantic rock of spherical shape.']))
+
+        self.add(Monster('boulder', boulder=True, inanimate=True, branch='e', skin=('0', libtcod.gray),
+                         level=9, count=3, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         idtag='be9', desc=['A gigantic rock of spherical shape.']))
+
+        self.add(Monster('boulder', boulder=True, inanimate=True, branch='e', skin=('0', libtcod.gray),
+                         level=10, count=3, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         idtag='be10', desc=['A gigantic rock of spherical shape.']))
 
     
         self.renormalize()
@@ -1051,11 +1205,14 @@ class MonsterStock:
     def renormalize(self):
 
         self.norms = {}
-        for k,v in self.monsters.iteritems():
-            n = sum(k2 * sum(v3.count for v3 in v2) for (k2,v2) in v.iteritems())
+        for branch,v in self.monsters.iteritems():
+            n = 0
+            for lev,v2 in v.iteritems():
+                n += lev * sum(mon.count for mon in v2 if not mon.inanimate)
             n = 840.0 / n
-            self.norms[k] = n
+            self.norms[branch] = n
 
+        print self.norms
         # HACK don't give too many points for cleaning up mold.
         self.norms['x'] /= 2
 
@@ -1172,10 +1329,21 @@ class MonsterStock:
                     m[x].count -= 1
                 break
 
-        if len(m) == 0:
+        if sum(1 for mon in m if not mon.inanimate) == 0:
             del self.monsters[mon.branch][mon.level]
 
-        # HACK you can win by cleaning up mold.
+        winner = False
 
-        return (len(self.monsters[mon.branch]) == 0, ret)
+        if len(self.monsters[mon.branch]) == 0:
+            winner = True
+
+        if mon.inanimate:
+            winner = False
+            ret = False
+
+        # HACK you can win by cleaning up mold.
+        if mon.is_mold:
+            ret = False
+
+        return (winner, ret)
 
