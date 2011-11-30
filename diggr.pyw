@@ -3916,7 +3916,7 @@ class World:
                     if mon.do_move in self.monmap:
                         mon2 = self.monmap[mon.do_move]
                         if self.monster_conflict(mon, mon2):
-                            self.handle_mondeath(mon2, do_gain=False)
+                            self.handle_mondeath(mon2)
                             mon2.do_die = True
                             mons.append(mon2)
 
