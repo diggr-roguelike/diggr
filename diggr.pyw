@@ -1284,6 +1284,7 @@ class World:
 
             if f_ is None:
                 self.walkmap.add((x, y))
+
                 libtcod.map_set_properties(self.tcodmap, x, y, True, True)
                 self.grid[y][x] = -10
             else:
@@ -1295,6 +1296,7 @@ class World:
         f = self.featstock.f[f_]
         w = f.walkable
         v = f.visible
+
         libtcod.map_set_properties(self.tcodmap, x, y, v, w)
 
         if f.nofeature:
@@ -1569,17 +1571,17 @@ class World:
             self.terra()
             self.makerivers()
 
-        self.make_map()
         self.make_feats(nogens)
         self.make_paths()
         self.make_monsters(nogens)
         self.make_items(nogens)
+        self.make_map()
         self.place(nogens)
 
 
     def generate_inv(self):
         self.inv.take(self.itemstock.find('lamp'))
-        l = [self.itemstock.get('pickaxe')]
+        l = [self.itemstock.get('pickaxe'), self.itemstock.find('boulder fort')]
 
         for x in xrange(3):
             l.append(self.itemstock.generate(1))
@@ -2647,15 +2649,19 @@ class World:
         elif item.ebola:
             self.msg.m('The Ebola virus is unleashed!')
             self.paste_celauto(self.px, self.py, 'ebola')
+            self.achievements.use(item)
             return None
 
         elif item.smoke:
             self.paste_celauto(self.px, self.py, 'smokecloud')
+            self.achievements.use(item)
             return item
 
         elif item.trapcloud:
             self.msg.m('You set the nanobots to work.')
             self.paste_celauto(self.px, self.py, 'trapmaker')
+
+            self.achievements.use(item)
 
             if item.count is None:
                 return item
@@ -2667,6 +2673,7 @@ class World:
                 return item
 
             self.airfreshen(self.px, self.py, item.airfreshener)
+            self.achievements.use(item)
 
             if item.ammo > 0:
                 item.ammo -= 1
@@ -2676,7 +2683,13 @@ class World:
             return item
 
         elif item.resource:
+            self.achievements.use(item)
             self.colordrink(item.resource)
+            return None
+
+        elif item.summon:
+            self.summon(self.px, self.py, item.summon[0], item.summon[1])
+            self.achievements.use(item)
             return None
 
         elif item.rangeattack or item.rangeexplode:
@@ -2705,10 +2718,11 @@ class World:
             else:
                 self.fight(self.monmap[(nx, ny)], True, item=item)
 
+            self.achievements.use(item)
+
             if item.ammo == 0:
                 return None
 
-            self.achievements.use(item)
 
         return item
 
@@ -3043,6 +3057,8 @@ class World:
                 return
             else:
                 self.stats.health.dec(6, sm, self.config.sound)
+                self.msg.m('You got squashed. What a silly way to die!')
+                self.dead = True
                 return
 
         ##
@@ -3436,17 +3452,6 @@ class World:
     def move_downright(self): self.move(1, 1)
 
 
-    def testing(self):
-        x,y = self.neighbors[(self.px,self.py)][random.randint(0, len(self.neighbors[(self.px,self.py)])-1)]
-        if (x,y) in self.monmap:
-            return
-        m = self.monsterstock.find('ba1', 1, self.itemstock)
-        if len(m) > 0:
-            m[0].x = x
-            m[0].y = y
-            self.monmap[(x,y)] = m[0]
-
-
 
     def quit(self):
         k = draw_window(["Really quit? Press 'y' if you are truly sure."], self.w, self.h)
@@ -3512,8 +3517,7 @@ class World:
             'P': self.show_messages,
             'Q': self.quit,
             '?': self.show_help,
-            'S': self.save,
-            'w': self.testing
+            'S': self.save
             }
         self.vkeys = {
             libtcod.KEY_KP4: self.move_left,

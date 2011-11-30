@@ -1212,7 +1212,6 @@ class MonsterStock:
             n = 840.0 / n
             self.norms[branch] = n
 
-        print self.norms
         # HACK don't give too many points for cleaning up mold.
         self.norms['x'] /= 2
 

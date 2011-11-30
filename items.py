@@ -517,6 +517,18 @@ class ItemStock:
                              slot='d', rarity=8, ammochance=(20,45), applies=True,
                              desc=['Used for cleaning up noxious fumes, gases and spores.'])
 
+        self.boulder1 = Item('scroll of boulder fort', skin=('{', libtcod.desaturated_cyan),
+                             slot='d', summon=('ba4', 8), applies=True, rarity=3, 
+                             desc=["It's labeled HACKEM MUCHE. Whatever that means..."])
+
+        self.boulder2 = Item('scroll of boulder fort', skin=('{', libtcod.desaturated_cyan),
+                             slot='d', summon=('bc3', 8), applies=True, rarity=3, 
+                             desc=["It's labeled HACKEM MUCHE. Whatever that means..."])
+
+        self.boulder3 = Item('scroll of boulder fort', skin=('{', libtcod.desaturated_cyan),
+                             slot='d', summon=('bb8', 8), applies=True, rarity=3, 
+                             desc=["It's labeled HACKEM MUCHE. Whatever that means..."])
+
         ###
         ### Special item crafting.
         ###
