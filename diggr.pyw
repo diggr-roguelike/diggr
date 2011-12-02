@@ -1581,25 +1581,20 @@ class World:
 
     def generate_inv(self):
         self.inv.take(self.itemstock.find('lamp'))
-        l = [self.itemstock.get('pickaxe'), self.itemstock.find('boulder fort')]
+        self.inv.take(self.itemstock.find('pickaxe'))
+        
+        #self.itemstock.find('boulder fort')
+        pl = [k for k in self.neighbors[(self.px,self.py)] if k in self.walkmap] + [(self.px,self.py)]
 
-        for x in xrange(3):
-            l.append(self.itemstock.generate(1))
+        for x in xrange(9):
+            k = pl[random.randint(0,len(pl)-1)]
+            i = self.itemstock.generate(1)
 
-        if (self.px, self.py) not in self.itemap:
-            self.itemap[(self.px, self.py)] = l
-        else:
-            self.itemap[(self.px, self.py)].extend(l)
+            if k not in self.itemap:
+                self.itemap[k] = [i]
+            else:
+                self.itemap[k].append(i)
 
-        #self.inv.take(self.itemstock.get('necklamp'))
-        #self.inv.take(self.itemstock.get('helmet'))
-        #self.inv.take(self.itemstock.get('boots'))
-
-        #self.itemap[(self.px, self.py)] = [
-        #            self.itemstock.get('dynamite'),
-        #            self.itemstock.get('mauser'),
-        #            self.itemstock.get('pickaxe'),
-        #            self.itemstock.get('tazer')]
 
 
     def move(self, _dx, _dy, do_spring=True):
@@ -3551,20 +3546,6 @@ class World:
                 if random.randint(1, mon.moldspew[1]) == 1:
                     self.seed_celauto(ki[0], ki[1], mon.moldspew[0])
 
-        if mon.boulder:
-            if mon.bld_delta:
-                ret =  (mon.x + mon.bld_delta[0],
-                        mon.y + mon.bld_delta[1])
-
-                if ret not in self.walkmap:
-                    mon.bld_delta = None
-                    return None, None
-                else:
-                    return ret[0], ret[1]
-            else:
-                return None, None
-
-
         if mon.static:
             return None, None
 
@@ -3577,6 +3558,19 @@ class World:
                 if (mon.x, mon.y) in self.featmap and \
                    self.featmap[(mon.x, mon.y)] == self.featstock.f['^']:
                     del self.featmap[(mon.x, mon.y)]
+            else:
+                return None, None
+
+        if mon.boulder:
+            if mon.bld_delta:
+                ret =  (mon.x + mon.bld_delta[0],
+                        mon.y + mon.bld_delta[1])
+
+                if ret not in self.walkmap:
+                    mon.bld_delta = None
+                    return None, None
+                else:
+                    return ret[0], ret[1]
             else:
                 return None, None
 
