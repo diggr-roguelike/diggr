@@ -30,7 +30,7 @@
 #else
 #include <SDL/SDL.h>
 #endif
-#include <png.h>
+#include "../dependencies/libpng-1.5.6/png.h"
 #include "libtcod.h"
 #include "libtcod_int.h"
 

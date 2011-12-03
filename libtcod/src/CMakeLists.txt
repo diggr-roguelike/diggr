@@ -33,12 +33,12 @@ SET(LIBTCOD_C_SRC ${LIBTCOD_C_SRC} ../osx/macsupport.m)
 ENDIF()
 
 SET(PNG_NAME png15_static)
-
+include_directories(../dependencies/libpng-1.5.6)
 
 # Linux wants seperate C and C++ libraries.
 IF(UNIX AND NOT APPLE)
 	add_library(${LIBTCOD_NAME} SHARED ${LIBTCOD_C_SRC})
-	target_link_libraries(${LIBTCOD_NAME} ${PNG_NAME} ${SDL_NAME} ${ZLIB_NAME} ${M_LIB} ${EFENCE_LIBRARY})
+	target_link_libraries(${LIBTCOD_NAME} ${PNG_NAME} ${SDL_NAME} ${ZLIB_NAME} ${M_LIB} ${EFENCE_LIBRARY} X11)
 
 ELSE()
 	add_library(${LIBTCOD_NAME} SHARED ${LIBTCOD_C_SRC}) 

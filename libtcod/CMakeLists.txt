@@ -1,6 +1,8 @@
 cmake_minimum_required (VERSION 2.6)
 project (libtcod)
 
+SET(CMAKE_BUILD_TYPE "Release")
+
 # All projects need "include" directory
 include_directories(include)
 
