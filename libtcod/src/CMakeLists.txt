@@ -46,6 +46,10 @@ ELSE()
 ENDIF()
 
 
+IF(MINGW)
+	target_link_libraries(${LIBTCOD_NAME} dxguid winmm)
+ENDIF()
+
 IF(MSVC OR MINGW)
 	# Since we're exporting functions and clases, we use the "standard" macro combinations to do so under msvc.
 	# These turn them on for the right builds.

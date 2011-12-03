@@ -965,8 +965,13 @@ EVENT_MOUSE_PRESS=8
 EVENT_MOUSE_RELEASE=16
 EVENT_MOUSE=EVENT_MOUSE_MOVE|EVENT_MOUSE_PRESS|EVENT_MOUSE_RELEASE
 EVENT_ANY=EVENT_KEY|EVENT_MOUSE
+
 def sys_check_for_event(mask,k,m) :
     return _lib.TCOD_sys_check_for_event(c_int(mask),byref(k),byref(m))
+
+def sys_wait_for_event(mask,k,m,flush) :
+    return _lib.TCOD_sys_wait_for_event(c_int(mask),byref(k),byref(m),c_int(flush))
+
 
 ############################
 # line module
