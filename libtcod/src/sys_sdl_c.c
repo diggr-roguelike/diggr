@@ -1029,7 +1029,7 @@ TCOD_event_t TCOD_sys_wait_for_event(int eventMask, TCOD_key_t *key, TCOD_mouse_
 			TCOD_sys_SDLtoTCOD(&ev,0);
 		}
 	}
-	SDL_WaitEvent(&ev);
+	/* SDL_WaitEvent(&ev); */
 	tcod_mouse.lbutton_pressed =false;
 	tcod_mouse.rbutton_pressed =false;
 	tcod_mouse.mbutton_pressed =false;

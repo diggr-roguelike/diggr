@@ -972,6 +972,20 @@ def sys_check_for_event(mask,k,m) :
 def sys_wait_for_event(mask,k,m,flush) :
     return _lib.TCOD_sys_wait_for_event(c_int(mask),byref(k),byref(m),c_int(flush))
 
+def console_check_for_keypress():
+    _k = Key()
+    _lib.TCOD_sys_check_for_event(c_int(EVENT_KEY_PRESS),byref(_k),None)
+    return _k
+
+def console_wait_for_keypress(flush):
+    _k = Key()
+    while 1:
+        _lib.TCOD_sys_wait_for_event(c_int(EVENT_KEY_PRESS),byref(_k),None,c_int(flush))
+        if _k.vk in (KEY_SHIFT, KEY_ALT, KEY_CONTROL):
+            continue
+        break
+    return _k
+
 
 ############################
 # line module
