@@ -13,6 +13,15 @@ import libtcodpy as libtcod
 import sqlite3
 
 import sounds
+import moon
+
+# Moon phases.
+# Full: slime, ferns, molds, werewolves/shapeshifters, lunatics
+#  high water, lighter (mixed with white) vision
+# New: vampires, spirits, corpses, wizards
+#  high water, +1 vision but darker (mixed with black)
+# Quarter: aliens, UFO's, no water
+
 
 
 class Logger:
@@ -1023,6 +1032,8 @@ class World:
         self.dlev = 1
         self.plev = 1
         self.branch = None
+        self.moon = None
+        self.did_moon_message = False
         self.t = 0
         self.oldt = -1
         self.tagorder = 1
@@ -1252,7 +1263,54 @@ class World:
         for n,v in watr:
             self.watermap.add(v)
 
+            
+    def flatten_pass(self):
+        towalk = set()
+        towater = set()
 
+        for x in xrange(0,self.w):
+            for y in xrange(self.h):
+                nwall = 0
+                nwater = 0
+                for k in self.neighbors[(x,y)]:
+                    if k not in self.walkmap:
+                        nwall += 1
+                    if k in self.watermap:
+                        nwater += 1
+
+                if (x,y) not in self.walkmap and nwall < 3:
+                    towalk.add((x,y))
+
+                if (x,y) not in self.watermap and nwater > 2:
+                    towater.add((x,y))
+
+        self.walkmap.update(towalk)
+        self.walkmap.update(towater)
+        self.watermap.update(towater)
+
+    def unflow(self):
+        unwater = set()
+
+        for k in self.watermap:
+            nwater = 0
+            for k2 in self.neighbors[k]:
+                if k2 in self.watermap:
+                    nwater += 1
+        
+            if nwater < 5:
+                unwater.add(k)
+
+        self.watermap.difference_update(unwater)
+
+
+    def flatten(self):
+        if self.moon in (moon.NEW, moon.FULL):
+            for x in xrange(5):
+                self.flatten_pass()
+
+        elif self.moon in (moon.FIRST_QUARTER, moon.LAST_QUARTER):
+            self.unflow()
+        
 
     def make_map(self):
         self.tcodmap = libtcod.map_new(self.w, self.h)
@@ -1424,6 +1482,10 @@ class World:
 
         nfounts = int(round(random.gauss(3, 1)))
         ww = list(self.walkmap & self.watermap)
+
+        if len(ww) == 0:
+            return
+
         for tmp in xrange(nfounts):
             d = ww[random.randint(0, len(ww)-1)]
             self.featmap[d] = self.featstock.f[random.choice(['C','V','B','N','M'])]
@@ -1562,6 +1624,10 @@ class World:
         if self.branch is None:
             self.branch = random.choice(['a', 'b', 'c', 'd', 'e'])
 
+        if self.moon is None:
+            m = moon.phase(self._seed)
+            self.moon = m['phase']
+
         nogens = set()
 
         self.makegrid(w_, h_)
@@ -1570,6 +1636,7 @@ class World:
         if self.branch not in self.quests:
             self.terra()
             self.makerivers()
+            self.flatten()
 
         self.make_feats(nogens)
         self.make_paths()
@@ -3687,6 +3754,24 @@ class World:
         return ret
 
 
+    def moon_message(self):
+        if self.did_moon_message:
+            return
+
+        if len(self.msg.strings) > 0 and self.msg.strings[0][2][0] and (self.t - self.msg.strings[0][2][0]) > 9:
+            d = {moon.NEW:  'New moon tonight. A perfect night for evil and the dark arts.',
+                 moon.FULL: 'Full moon tonight. The lunatics are out in droves.',
+                 moon.FIRST_QUARTER: 'First quarter moon tonight. Watch out for the UFOs.',
+                 moon.LAST_QUARTER: 'Last quarter moon tonight. Watch out for the UFOs.',
+                 moon.WAXING_CRESCENT: "Tonight's moon is waxing crescent.",
+                 moon.WAXING_GIBBOUS: "Tonight's moon is waxing gibbous.",
+                 moon.WANING_CRESCENT: "Tonight's moon is waning crescent.",
+                 moon.WANING_GIBBOUS: "Tonight's moon is waning gibbous."}
+
+            self.msg.m(d[self.moon], True)
+            self.did_moon_message = True
+
+
     def monster_flavor_message(self, mon, dist):
         def msg(flavor, dist):
             m = max(0.1, min(1.0, 1.0 - (dist/50)))
@@ -3983,6 +4068,9 @@ class World:
             n = int(15 * (float(self.b_grace) / self.coef.b_graceduration))
             lightradius = max(lightradius, n)
 
+        if self.moon == moon.NEW:
+            lightradius += 1
+
         if self.mapping > 0:
             if withtime:
                 self.mapping -= 1
@@ -4041,6 +4129,9 @@ class World:
                     in_fov = libtcod.map_is_in_fov(self.tcodmap, x, y)
 
                 is_lit = False
+                #is_lit = True  #XX
+                #in_fov = True  #XX 
+                #lightradius = 100 #XX
 
                 if telerange:
                     if (x, y) in self.monmap:
@@ -4127,10 +4218,16 @@ class World:
                             back = libtcod.black
 
                         else:
+
                             if is_terrain:
                                 fore = libtcod.color_lerp(libtcod.white, fore, min(d*2, 1.0))
 
                             fore = libtcod.color_lerp(fore, default_back, min(d, 1.0))
+
+                            if self.moon == moon.FULL:
+                                fore = libtcod.color_lerp(libtcod.gray, fore, 0.6)
+                            elif self.moon == moon.NEW:
+                                fore = libtcod.color_lerp(libtcod.darkest_blue, fore, 0.4)
 
                             if back != default_back:
                                 back = libtcod.color_lerp(back, default_back, min(d, 1.0))
@@ -4187,6 +4284,8 @@ class World:
                 if (mon.x, mon.y) in self.monmap:
                     self.monsters_in_view.append(mon)
 
+            self.moon_message()
+
         if withtime:
             self.oldt = self.t
 
@@ -4211,7 +4310,7 @@ class World:
           '_seed', '_inputs', 'featstock', 'vaultstock',
           'celautostock', 'celautomap',
           'achievements', 'bones', 'resource', 'resource_buildup', 'resource_timeout',
-          'neighbors'
+          'neighbors', 'moon', 'did_moon_message'
           ]
         state = {}
 
