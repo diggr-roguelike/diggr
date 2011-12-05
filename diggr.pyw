@@ -17,10 +17,18 @@ import moon
 
 # Moon phases.
 # Full: slime, ferns, molds, werewolves/shapeshifters, lunatics
-#  high water, lighter (mixed with white) vision
+#    lunatic (summons monsters, permanently confused)
+#    lycanthrope (moves 'fast', erratically)  
+#    ferns (gain nutrition, chance of forced sleep, grows like swamp gas)
+#
 # New: vampires, spirits, corpses, wizards
-#  high water, +1 vision but darker (mixed with black)
-# Quarter: aliens, UFO's, no water
+#    priest of Baalzebub  (revives corpses)
+#    nosferatu (strikes to damage all stats, moves away)
+#    altar of Baalzebub (for sacrificing corpses)
+#
+# Quarter: aliens (target and shoot explosives)
+
+# Prism of the New/Full Moon
 
 
 
@@ -208,7 +216,7 @@ class Coeffs:
         self.purple_telerange = 12
         self.purple_camorange = 3
 
-        self.moldchance = 3
+        self.moldchance = 2
 
         self.resource_timeouts = {'r': 300,
                                   'g': 400,
@@ -1540,7 +1548,7 @@ class World:
                 x, y = ll[random.randint(0, len(ll)-1)]
                 if (x, y) not in self.monmap: break
 
-            m = self.monsterstock.generate(self.branch, lev, self.itemstock)
+            m = self.monsterstock.generate(self.branch, lev, self.itemstock, self.moon)
             if m:
                 m.x = x
                 m.y = y
@@ -1559,7 +1567,7 @@ class World:
         if random.randint(1, self.coef.moldchance) == 1:
             ll = list(self.walkmap - self.watermap - set(self.monmap.iterkeys()))
             x, y = ll[random.randint(0, len(ll)-1)]
-            m = self.monsterstock.generate('x', self.dlev, self.itemstock)
+            m = self.monsterstock.generate('x', self.dlev, self.itemstock, self.moon)
             if m:
                 m.x = x
                 m.y = y
@@ -1625,8 +1633,9 @@ class World:
             self.branch = random.choice(['a', 'b', 'c', 'd', 'e'])
 
         if self.moon is None:
-            m = moon.phase(self._seed)
-            self.moon = m['phase']
+            #m = moon.phase(self._seed)
+            #self.moon = m['phase']
+            self.moon = moon.FULL
 
         nogens = set()
 
@@ -2943,7 +2952,7 @@ class World:
             self.achievements.mondone()
 
         # Quests
-        if self.branch in self.quests and len(self.monmap) == 1:
+        if self.branch in self.quests and sum(1 for m in self.monmap.itervalues() if not m.inanimate) == 1:
             quest = self.quests[self.branch]
 
             questdone = (quest.dlevels[1] == self.dlev)
