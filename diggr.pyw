@@ -4080,7 +4080,7 @@ class World:
         if self.moon == moon.NEW:
             lightradius += 1
         elif self.moon == moon.FULL:
-            lightradius -= 1
+            lightradius -= 1 
 
         if self.mapping > 0:
             if withtime:
