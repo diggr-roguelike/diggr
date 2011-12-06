@@ -6,7 +6,7 @@ class Feature:
                  s_shrine=False, b_shrine=False, v_shrine=False, height=-10,
                  shootable=False, warm=False, branch=None, healingfountain=False,
                  nofeature=False, poison=None, confuse=False, back=None, resource=None,
-                 lit=False, queasy=None, explode=None, pois2=False):
+                 lit=False, queasy=None, explode=None, pois2=False, bb_shrine=False):
         self.walkable = walkable
         self.visible = visible
         self.water = water
@@ -17,6 +17,7 @@ class Feature:
         self.s_shrine = s_shrine
         self.b_shrine = b_shrine
         self.v_shrine = v_shrine
+        self.bb_shrine = bb_shrine
         self.height = height
         self.shootable = shootable
         self.warm = warm
@@ -75,6 +76,9 @@ class FeatureStock:
 
         self.f['v'] = Feature(walkable=True, visible=True, skin=(233, libtcod.azure),
                               v_shrine=True, name='a shrine to Vishnu')
+
+        self.f['bb'] = Feature(walkable=True, visible=True, skin=(16, libtcod.crimson),
+                               bb_shrine=True, name="an Altar of Ba'al-Zebub")
 
         self.f[':'] = Feature(walkable=False, visible=False, skin=(9, libtcod.white),
                               name='a column', height=0)
