@@ -20,7 +20,8 @@ class Item:
                  camorange=None, sounding=False, healingsleep=None,
                  applies_in_slot=False, ebola=False, smoke=False,
                  trapcloud=False, glueimmune=False, craft=None, resource=None,
-                 hide_count=False, swampgas=False, digbonus=0, airfreshener=None):
+                 hide_count=False, swampgas=False, digbonus=0, airfreshener=None, 
+                 corpse=None):
         self.slot = slot
         self.bonus = bonus
         self.name = name
@@ -89,6 +90,7 @@ class Item:
         self.swampgas = swampgas
         self.digbonus = digbonus
         self.airfreshener = airfreshener
+        self.corpse = corpse
 
         self.ammo = None
         self.gencount = 0
@@ -118,6 +120,9 @@ class Item:
                 s = 'an ' + s
             else:
                 s = 'a ' + s
+
+        if self.corpse:
+            s = s + ' of %s' % str(self.corpse)
 
         if self.ammo and self.ammo > 0:
             s = s + ' [%d]' % self.ammo
@@ -528,6 +533,11 @@ class ItemStock:
         self.boulder3 = Item('scroll of boulder fort', skin=('{', libtcod.desaturated_cyan),
                              slot='d', summon=('bb8', 8), applies=True, rarity=3, 
                              desc=["It's labeled HACKEM MUCHE. Whatever that means..."])
+
+
+        # Corpse
+
+        self.corpse = Item('corpse', skin=(21, libtcod.yellow), slot='', rarity=0, desc=[''])
 
         ###
         ### Special item crafting.

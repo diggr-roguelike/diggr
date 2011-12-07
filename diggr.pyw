@@ -189,7 +189,7 @@ class Coeffs:
         self.unarmedattack = 0.1
         self.unarmeddefence = 0.0
 
-        self.nummonsters = (5, 1)
+        self.nummonsters = (8, 1)
         self.monlevel = 0.75
         self.numitems = (3, 1.5)
         self.itemlevel = 0.75
@@ -1479,14 +1479,19 @@ class World:
         self.exit = d
         del m[stairsi]
 
-        a = random.randint(-1, 1)
-        d = m[random.randint(0, len(m)-1)]
-        if a == -1:
-            self.featmap[d] = self.featstock.f['s']
-        elif a == 0:
-            self.featmap[d] = self.featstock.f['b']
-        elif a == 1:
-            self.featmap[d] = self.featstock.f['v']
+        if self.moon == moon.NEW:
+            d = m[random.randint(0, len(m)-1)]
+            self.featmap[d] = self.featstock.f['bb']
+
+        elif not (self.moon == moon.FULL and random.randint(0, 1) == 1):
+            a = random.randint(-1, 1)
+            d = m[random.randint(0, len(m)-1)]
+            if a == -1:
+                self.featmap[d] = self.featstock.f['s']
+            elif a == 0:
+                self.featmap[d] = self.featstock.f['b']
+            elif a == 1:
+                self.featmap[d] = self.featstock.f['v']
 
         nfounts = int(round(random.gauss(3, 1)))
         ww = list(self.walkmap & self.watermap)
@@ -1635,7 +1640,7 @@ class World:
         if self.moon is None:
             #m = moon.phase(self._seed)
             #self.moon = m['phase']
-            self.moon = moon.FULL
+            self.moon = moon.NEW
 
         nogens = set()
 
@@ -2934,11 +2939,21 @@ class World:
             self.plev = mon.level
 
         if do_drop:
-            if len(mon.items) > 0:
+            itemdrop = mon.items
+
+            # HACK
+            if self.moon == moon.NEW and not mon.itemdrop and \
+               mon.flavor not in ('digital', 'air', 'robot'):
+                corpse = self.itemstock.get('corpse')
+                corpse.corpse = mon
+                itemdrop = itemdrop[:]
+                itemdrop.append(corpse)
+
+            if len(itemdrop) > 0:
                 if (mon.x, mon.y) in self.itemap:
-                    self.itemap[(mon.x, mon.y)].extend(mon.items)
+                    self.itemap[(mon.x, mon.y)].extend(itemdrop)
                 else:
-                    self.itemap[(mon.x, mon.y)] = mon.items
+                    self.itemap[(mon.x, mon.y)] = itemdrop
 
 
         winner, exting = self.monsterstock.death(mon)
@@ -2948,7 +2963,7 @@ class World:
         elif is_poison:
             self.achievements.mondeath(self, mon, is_poison=True)
 
-        if exting:
+        if exting and not mon.no_exting:
             self.achievements.mondone()
 
         # Quests
@@ -3700,8 +3715,21 @@ class World:
                 libtcod.line_init(x, y, mon.known_px, mon.known_py)
                 mdx, mdy = libtcod.line_step()
             else:
-                libtcod.path_compute(self.floorpath, x, y, mon.known_px, mon.known_py)
-                mdx, mdy = libtcod.path_walk(self.floorpath, True)
+
+                if mon.fleerange and dist <= mon.fleerange:
+                    mdx, mdy = None, None
+                    for _x,_y in self.neighbors[(x,y)]:
+                        if (_x,_y) in self.walkmap and \
+                           ((mon.known_px >= x and _x < x) or \
+                            (mon.known_px <= x and _x > x) or \
+                            (mon.known_py <= y and _y > y) or \
+                            (mon.known_py >= y and _y < y)):
+                            mdx, mdy = _x, _y
+                            break
+
+                else:
+                    libtcod.path_compute(self.floorpath, x, y, mon.known_px, mon.known_py)
+                    mdx, mdy = libtcod.path_walk(self.floorpath, True)
 
         if mon.stoneeating:
             if mdx is not None:
@@ -4191,7 +4219,13 @@ class World:
 
 
                     elif (x, y) in self.itemap:
-                        c, fore = self.itemap[(x, y)][0].skin
+                        itm = self.itemap[(x, y)][0]
+
+                        # HACK
+                        if itm.corpse:
+                            c, fore = itm.skin[0], itm.corpse.skin[1]
+                        else:
+                            c, fore = itm.skin
 
                     elif feat and feat.skin:
                         c, fore = feat.skin

@@ -13,7 +13,8 @@ class Monster:
                  hungerattack=False, flying=False, radimmune=False, no_a=False,
                  summon=False, branch=None, fireimmune=False, poisimmune=False,
                  flavor=None, idtag=None, static=False, moldspew=None, is_mold=False,
-                 boulder=False, inanimate=False, large=False, moon=None):
+                 boulder=False, inanimate=False, large=False, moon=None, fleerange=None,
+                 no_exting=False):
         self.name = name
         self.skin = skin
         self.count = count
@@ -49,6 +50,8 @@ class Monster:
         self.inanimate = inanimate
         self.large = large
         self.moon = moon
+        self.fleerange = fleerange
+        self.no_exting = no_exting
 
         if not idtag:
             self.idtag = name
@@ -96,6 +99,9 @@ class MonsterStock:
         newmoon_aligned  = (9, 7, 5, 3, 1, 3, 5, 7)
         fullmoon_aligned = (1, 3, 5, 7, 9, 7, 5, 3)
         quartermoon_bias = (5, 7, 2, 7, 9, 7, 2, 7)
+
+        newmoon_only     = (9, 0, 0, 0, 0, 0, 0, 0)
+        fullmoon_only    = (0, 0, 0, 0, 9, 0, 0, 0)
 
         # Megafauna dungeon branch
 
@@ -932,6 +938,58 @@ class MonsterStock:
                                'of valor and battle. He is a dark, vengeful and',
                                'judgemental god.']))
 
+        
+        ## Moon-special monsters.
+        priestmon = Monster("vile priest of Ba'al-Zebub", skin=('p', libtcod.crimson),
+                            attack=2.0, defence=1.0, range=25, fleerange=5, flavor='wizard',
+                            branch='a', count=1, level=2, idtag='priest_a2', moon=newmoon_only,
+                            no_exting=True,
+                            desc=["A depraved worshipper of Ba'al-Zebub, the unclean undead god."])
+
+        def template(m, **args):
+            m = copy.copy(m)
+            for k,v in args.iteritems():
+                setattr(m, k, v)
+            self.add(m)
+
+        template(priestmon, branch='a', level=2, idtag='priest_a2')
+        template(priestmon, branch='a', level=3, idtag='priest_a3')
+        template(priestmon, branch='a', level=4, idtag='priest_a4')
+        template(priestmon, branch='a', level=5, idtag='priest_a5')
+        template(priestmon, branch='a', level=6, idtag='priest_a6')
+        template(priestmon, branch='a', level=7, idtag='priest_a7')
+        template(priestmon, branch='a', level=8, idtag='priest_a8')
+        template(priestmon, branch='a', level=9, idtag='priest_a9')
+
+        template(priestmon, branch='b', level=2, idtag='priest_b2')
+        template(priestmon, branch='b', level=3, idtag='priest_b3')
+        template(priestmon, branch='b', level=4, idtag='priest_b4')
+        template(priestmon, branch='b', level=5, idtag='priest_b5')
+        template(priestmon, branch='b', level=6, idtag='priest_b6')
+        template(priestmon, branch='b', level=7, idtag='priest_b7')
+        template(priestmon, branch='b', level=8, idtag='priest_b8')
+        template(priestmon, branch='b', level=9, idtag='priest_b9')
+
+        template(priestmon, branch='c', level=2, idtag='priest_c2')
+        template(priestmon, branch='c', level=3, idtag='priest_c3')
+        template(priestmon, branch='c', level=4, idtag='priest_c4')
+        template(priestmon, branch='c', level=5, idtag='priest_c5')
+        template(priestmon, branch='c', level=6, idtag='priest_c6')
+        template(priestmon, branch='c', level=7, idtag='priest_c7')
+        template(priestmon, branch='c', level=8, idtag='priest_c8')
+        template(priestmon, branch='c', level=9, idtag='priest_c9')
+
+        template(priestmon, branch='d', level=2, idtag='priest_d2')
+        template(priestmon, branch='d', level=3, idtag='priest_d3')
+        template(priestmon, branch='d', level=4, idtag='priest_d4')
+        template(priestmon, branch='d', level=5, idtag='priest_d5')
+        template(priestmon, branch='d', level=6, idtag='priest_d6')
+        template(priestmon, branch='d', level=7, idtag='priest_d7')
+        template(priestmon, branch='d', level=8, idtag='priest_d8')
+        template(priestmon, branch='d', level=9, idtag='priest_d9')
+
+
+
 
         ## Secret branch
 
@@ -1305,7 +1363,13 @@ class MonsterStock:
         for branch,v in self.monsters.iteritems():
             n = 0
             for lev,v2 in v.iteritems():
-                n += lev * sum(mon.count for mon in v2 if not mon.inanimate)
+                moncount = 0
+                for mon in v2:
+                    if mon.inanimate or mon.no_exting:
+                        continue
+                    moncount += mon.count
+                n += lev * moncount
+
             n = 840.0 / n
             self.norms[branch] = n
 
