@@ -1,25 +1,42 @@
 
-1. Download and build SuperCollider sources:
+PREREQUISITES:
+-------------
+Building for Windows is only tested for the MinGW cross-compilation environment, http://mingw-cross-env.nongnu.org
 
-1.1. Check out SC sources from the repo:
+
+BUILDING:
+--------
+
+1. Build libtcod. It is included in this source tree.
+
+  cd libtcod
+  mkdir build
+  cd build
+  cmake ..
+  make
+
+1.1 Install libtcod files:
+
+  cp src/libtcod.so .../diggr-roguelike
+  cp ../libtcodpy.py .../diggr-roguelike
+
+
+2. Download and build SuperCollider sources: (optional, if you want sound)
+
+2.1. Check out SC sources from the repo:
 
   git clone --recursive git://supercollider.git.sourceforge.net/gitroot/supercollider/supercollider
 
-1.2. Build SC with a minimal required set of dependencies: (Replace '/prefix' with a real directory.)
+2.2. Build SC with a minimal required set of dependencies: (Replace '/prefix' with a real directory.)
 
   cd supercollider
   mkdir build
   cd build
-  AUDIOAPI=portaudio cmake -DFFT_GREEN:BOOL=ON -DNO_LIBSNDFILE:BOOL=ON -DSC_QT:BOOL=OFF -DSUPERNOVA:BOOL=OFF -DNO_AVAHI=ON -DCMAKE_INSTALL_PREFIX:PATH=/prefix/SuperCollider/ ..
+  AUDIOAPI=portaudio cmake -DFFT_GREEN=ON -DNO_LIBSNDFILE=ON -DSC_QT=OFF -DSUPERNOVA=OFF -DNO_AVAHI=ON -DCMAKE_INSTALL_PREFIX:PATH=/prefix/SuperCollider/ -DSC_WII=OFF -DSC_EL=OFF ..
+  make
+  make install/strip
 
-1.3. Install any dependencies cmake complains about, until cmake completes without errors.
-
-1.4. Build and install:
-
-  make 
-  make install
-
-1.5. Copy SC binaries to 'diggr-roguelike/sound/':
+2.3. Copy SC binaries to 'diggr-roguelike/sound/':
 
   cd .../diggr-roguelike/
   cd sound
@@ -28,25 +45,5 @@
   cp -rf /prefix/SuperColliderlib/SuperCollider/plugins/ .
 
 
-
-
-2. Download and build libtcod sources:
-
-2.1. Check out libtcod sources from the repo:
-
-  hg clone https://bitbucket.org/jice/libtcod
-
-2.2. Build libtcod:
-
-  cd libtcod
-  mkdir build
-  cd build
-  cmake ..
-  make
-
-2.3. Copy libtcod binaries to 'diggr-roguelike/':
-
-  cp src/libtcod.so .../diggr-roguelike/
-  cp ../libtcodpy.py .../diggr-roguelike/
 
 
