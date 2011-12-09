@@ -14,7 +14,7 @@ class Monster:
                  summon=False, branch=None, fireimmune=False, poisimmune=False,
                  flavor=None, idtag=None, static=False, moldspew=None, is_mold=False,
                  boulder=False, inanimate=False, large=False, moon=None, fleerange=None,
-                 no_exting=False):
+                 no_exting=False, raise_dead=None):
         self.name = name
         self.skin = skin
         self.count = count
@@ -52,12 +52,16 @@ class Monster:
         self.moon = moon
         self.fleerange = fleerange
         self.no_exting = no_exting
+        self.raise_dead = raise_dead
 
         if not idtag:
             self.idtag = name
         else:
             self.idtag = idtag
 
+        self.reset()
+
+    def reset(self):
         self.x = 0
         self.y = 0
         self.known_px = None
@@ -943,7 +947,7 @@ class MonsterStock:
         priestmon = Monster("vile priest of Ba'al-Zebub", skin=('p', libtcod.crimson),
                             attack=2.0, defence=1.0, range=25, fleerange=5, flavor='wizard',
                             branch='a', count=1, level=2, idtag='priest_a2', moon=newmoon_only,
-                            no_exting=True,
+                            no_exting=True, raise_dead=(15, 2),
                             desc=["A depraved worshipper of Ba'al-Zebub, the unclean undead god."])
 
         def template(m, **args):
@@ -987,6 +991,15 @@ class MonsterStock:
         template(priestmon, branch='d', level=7, idtag='priest_d7')
         template(priestmon, branch='d', level=8, idtag='priest_d8')
         template(priestmon, branch='d', level=9, idtag='priest_d9')
+
+        template(priestmon, branch='e', level=2, idtag='priest_e2')
+        template(priestmon, branch='e', level=3, idtag='priest_e3')
+        template(priestmon, branch='e', level=4, idtag='priest_e4')
+        template(priestmon, branch='e', level=5, idtag='priest_e5')
+        template(priestmon, branch='e', level=6, idtag='priest_e6')
+        template(priestmon, branch='e', level=7, idtag='priest_e7')
+        template(priestmon, branch='e', level=8, idtag='priest_e8')
+        template(priestmon, branch='e', level=9, idtag='priest_e9')
 
 
 

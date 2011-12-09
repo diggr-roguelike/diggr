@@ -414,13 +414,15 @@ def draw_blast2(x, y, w, h, r, func1, func2, color=libtcod.light_azure):
         libtcod.console_flush()
         libtcod.sys_sleep_milli(100)
 
-    back = libtcod.darkest_blue
-    fore = color
-    dr()
-    fore = libtcod.color_lerp(fore, back, 0.5)
-    dr()
-    fore = libtcod.color_lerp(fore, back, 0.5)
-    dr()
+    if color is not None:
+        back = libtcod.darkest_blue
+        fore = color
+        dr()
+        fore = libtcod.color_lerp(fore, back, 0.5)
+        dr()
+        fore = libtcod.color_lerp(fore, back, 0.5)
+        dr()
+
     for c0 in c:
         func2(c0[0], c0[1])
 
@@ -3120,6 +3122,33 @@ class World:
         draw_blast2(x0, y0, self.w, self.h, rad, func1, func2, color=libtcod.yellow)
 
 
+    def raise_dead(self, x0, y0, rad):
+
+        libtcod.map_compute_fov(self.tcodmap, x0, y0, rad,
+                                False, libtcod.FOV_SHADOW)
+
+        ret = []
+
+        def func1(x, y):
+            return libtcod.map_is_in_fov(self.tcodmap, x, y)
+
+        def func2(x, y):
+            if (x,y) in self.itemap:
+                i2 = []
+                for i in self.itemap[(x,y)]:
+                    if i.corpse:
+                        ret.append((x,y,i.corpse))
+                    else:
+                        i2.append(i)
+
+                if len(i2) > 0:
+                    self.itemap[(x,y)] = i2
+                else:
+                    del self.itemap[(x,y)]
+
+        draw_blast2(x0, y0, self.w, self.h, rad, func1, func2, color=None)
+        return ret
+
 
     def fight(self, mon, player_move, item=None, attackstat=None):
 
@@ -3962,6 +3991,7 @@ class World:
 
 
         summons = []
+        raise_dead = []
         fired = []
 
         for k,mon in sorted(self.monmap.iteritems()):
@@ -4007,6 +4037,9 @@ class World:
                 summons.append((k, mon))
                 continue
 
+            if mon.raise_dead and (mon.visible or mon.static) and (self.t % mon.raise_dead[1]) == 0:
+                raise_dead.extend(self.raise_dead(mon.x, mon.y, mon.raise_dead[0]))
+
             mon.visible_old = mon.visible
             mon.visible = False
 
@@ -4046,6 +4079,16 @@ class World:
                     self.msg.m(smu + ' summons ' + str(q[0]) + '!')
             else:
                 mon.summon = None
+
+        for x,y,mon in raise_dead:
+            if (x,y) in self.walkmap and (x,y) not in self.monmap:
+                smu = str(mon)
+                smu = smu[0].upper() + smu[1:]
+                self.msg.m(smu + ' rises from the dead!')
+                mon.reset()
+                mon.x = x
+                mon.y = y
+                self.monmap[(x,y)] = mon
 
 
         for mon in mons:
