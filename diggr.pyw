@@ -2021,6 +2021,22 @@ class World:
 
         a = self.featmap[(self.px, self.py)]
 
+        if a.bb_shrine:
+            for i in self.inv:
+                if i and i.corpse:
+                    self.msg.m("Ba'al-Zebub accepts your sacrifice!")
+                    self.inv.purge(i)
+
+                    i2 = self.itemstock.generate(self.dlev)
+                    if i2:
+                        if (self.px, self.py) not in self.itemap:
+                            self.itemap[(self.px, self.py)] = [i2]
+                        else:
+                            self.itemap[(self.px, self.py)].append(i2)
+                    return
+            self.msg.m("Ba'al-Zebub needs to be sated with blood!!")
+            return
+
         if a.s_shrine:
             if self.b_grace or self.v_grace:
                 self.msg.m("You don't believe in Shiva.")
@@ -3318,12 +3334,20 @@ class World:
                     self.msg.m(smu + ' misses.')
 
             if mon.sleepattack:
-                self.msg.m('You fall asleep!')
-                self.start_sleep(force=True, quick=True, realforced=True)
-                return
+                if dmg > 0:
+                    self.msg.m('You fall asleep!')
+                    self.start_sleep(force=True, quick=True, realforced=True)
 
-            if mon.hungerattack:
+            elif mon.bloodsucker:
+                if dmg > 0:
+                    self.msg.m('You feel weak!')
+                    self.stats.hunger.dec(mon.bloodsucker[0])
+                    self.stats.health.dec(mon.bloodsucker[0], sm, self.config.sound)
+                    mon.fleetimeout = mon.bloodsucker[1]
+
+            elif mon.hungerattack:
                 self.stats.hunger.dec(dmg)
+
             else:
                 self.stats.health.dec(dmg, sm, self.config.sound)
 
@@ -3745,7 +3769,16 @@ class World:
                 mdx, mdy = libtcod.line_step()
             else:
 
+                flee = False
+
                 if mon.fleerange and dist <= mon.fleerange:
+                    flee = True
+
+                elif mon.fleetimeout > 0 and dist <= mon.range - 2:
+                    flee = True
+                    mon.fleetimeout -= 1
+
+                if flee:
                     mdx, mdy = None, None
                     for _x,_y in self.neighbors[(x,y)]:
                         if (_x,_y) in self.walkmap and \
@@ -4081,7 +4114,7 @@ class World:
                 mon.summon = None
 
         for x,y,mon in raise_dead:
-            if (x,y) in self.walkmap and (x,y) not in self.monmap:
+            if (x,y) in self.walkmap and (x,y) not in self.monmap and not (x == self.px and y == self.py):
                 smu = str(mon)
                 smu = smu[0].upper() + smu[1:]
                 self.msg.m(smu + ' rises from the dead!')

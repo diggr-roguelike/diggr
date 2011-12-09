@@ -14,7 +14,7 @@ class Monster:
                  summon=False, branch=None, fireimmune=False, poisimmune=False,
                  flavor=None, idtag=None, static=False, moldspew=None, is_mold=False,
                  boulder=False, inanimate=False, large=False, moon=None, fleerange=None,
-                 no_exting=False, raise_dead=None):
+                 no_exting=False, raise_dead=None, bloodsucker=None):
         self.name = name
         self.skin = skin
         self.count = count
@@ -53,6 +53,7 @@ class Monster:
         self.fleerange = fleerange
         self.no_exting = no_exting
         self.raise_dead = raise_dead
+        self.bloodsucker = bloodsucker
 
         if not idtag:
             self.idtag = name
@@ -76,11 +77,11 @@ class Monster:
         self.visible_old = False
         self.was_seen = False
         self.gencount = 0
-
         self.onfire = 0
         self.fireattack = None
         self.fireduration = 0
         self.bld_delta = None
+        self.fleetimeout = 0
 
 
     def __str__(self):
@@ -944,17 +945,24 @@ class MonsterStock:
 
         
         ## Moon-special monsters.
-        priestmon = Monster("vile priest of Ba'al-Zebub", skin=('p', libtcod.crimson),
-                            attack=2.0, defence=1.0, range=25, fleerange=5, flavor='wizard',
-                            branch='a', count=1, level=2, idtag='priest_a2', moon=newmoon_only,
-                            no_exting=True, raise_dead=(15, 2),
-                            desc=["A depraved worshipper of Ba'al-Zebub, the unclean undead god."])
 
         def template(m, **args):
             m = copy.copy(m)
             for k,v in args.iteritems():
                 setattr(m, k, v)
             self.add(m)
+
+        priestmon = Monster("vile priest of Ba'al-Zebub", skin=('p', libtcod.crimson),
+                            attack=2.0, defence=1.0, range=25, fleerange=5, flavor='wizard',
+                            branch='a', count=1, level=2, idtag='priest_a2', moon=newmoon_only,
+                            no_exting=True, raise_dead=(15, 2),
+                            desc=["A depraved worshipper of Ba'al-Zebub, the unclean undead god."])
+
+        nosferatu = Monster("nosferatu", skin=('y', libtcod.han),
+                            attack=7.0, defence=7.0, range=25, flavor='air', branch='a', count=1, 
+                            level=2, idtag='nosf_a2', moon=newmoon_only, no_exting=True,
+                            bloodsucker=(0.25, 50),
+                            desc=['A bloodsucking walking corpse.'])
 
         template(priestmon, branch='a', level=2, idtag='priest_a2')
         template(priestmon, branch='a', level=3, idtag='priest_a3')
@@ -1001,6 +1009,52 @@ class MonsterStock:
         template(priestmon, branch='e', level=8, idtag='priest_e8')
         template(priestmon, branch='e', level=9, idtag='priest_e9')
 
+        #
+
+        template(nosferatu, branch='a', level=2, idtag='nosf_a2')
+        template(nosferatu, branch='a', level=3, idtag='nosf_a3')
+        template(nosferatu, branch='a', level=4, idtag='nosf_a4')
+        template(nosferatu, branch='a', level=5, idtag='nosf_a5')
+        template(nosferatu, branch='a', level=6, idtag='nosf_a6')
+        template(nosferatu, branch='a', level=7, idtag='nosf_a7')
+        template(nosferatu, branch='a', level=8, idtag='nosf_a8')
+        template(nosferatu, branch='a', level=9, idtag='nosf_a9')
+
+        template(nosferatu, branch='b', level=2, idtag='nosf_b2')
+        template(nosferatu, branch='b', level=3, idtag='nosf_b3')
+        template(nosferatu, branch='b', level=4, idtag='nosf_b4')
+        template(nosferatu, branch='b', level=5, idtag='nosf_b5')
+        template(nosferatu, branch='b', level=6, idtag='nosf_b6')
+        template(nosferatu, branch='b', level=7, idtag='nosf_b7')
+        template(nosferatu, branch='b', level=8, idtag='nosf_b8')
+        template(nosferatu, branch='b', level=9, idtag='nosf_b9')
+
+        template(nosferatu, branch='c', level=2, idtag='nosf_c2')
+        template(nosferatu, branch='c', level=3, idtag='nosf_c3')
+        template(nosferatu, branch='c', level=4, idtag='nosf_c4')
+        template(nosferatu, branch='c', level=5, idtag='nosf_c5')
+        template(nosferatu, branch='c', level=6, idtag='nosf_c6')
+        template(nosferatu, branch='c', level=7, idtag='nosf_c7')
+        template(nosferatu, branch='c', level=8, idtag='nosf_c8')
+        template(nosferatu, branch='c', level=9, idtag='nosf_c9')
+
+        template(nosferatu, branch='d', level=2, idtag='nosf_d2')
+        template(nosferatu, branch='d', level=3, idtag='nosf_d3')
+        template(nosferatu, branch='d', level=4, idtag='nosf_d4')
+        template(nosferatu, branch='d', level=5, idtag='nosf_d5')
+        template(nosferatu, branch='d', level=6, idtag='nosf_d6')
+        template(nosferatu, branch='d', level=7, idtag='nosf_d7')
+        template(nosferatu, branch='d', level=8, idtag='nosf_d8')
+        template(nosferatu, branch='d', level=9, idtag='nosf_d9')
+
+        template(nosferatu, branch='e', level=2, idtag='nosf_e2')
+        template(nosferatu, branch='e', level=3, idtag='nosf_e3')
+        template(nosferatu, branch='e', level=4, idtag='nosf_e4')
+        template(nosferatu, branch='e', level=5, idtag='nosf_e5')
+        template(nosferatu, branch='e', level=6, idtag='nosf_e6')
+        template(nosferatu, branch='e', level=7, idtag='nosf_e7')
+        template(nosferatu, branch='e', level=8, idtag='nosf_e8')
+        template(nosferatu, branch='e', level=9, idtag='nosf_e9')
 
 
 
