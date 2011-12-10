@@ -1642,7 +1642,7 @@ class World:
         if self.moon is None:
             #m = moon.phase(self._seed)
             #self.moon = m['phase']
-            self.moon = moon.NEW
+            self.moon = moon.FULL
 
         nogens = set()
 
@@ -1663,7 +1663,11 @@ class World:
 
 
     def generate_inv(self):
-        self.inv.take(self.itemstock.find('lamp'))
+        if self.moon == moon.FULL:
+            self.inv.take(self.itemstock.find("miner's lamp"))
+        else:
+            self.inv.take(self.itemstock.find('lamp'))
+
         self.inv.take(self.itemstock.find('pickaxe'))
         
         pl = [k for k in self.neighbors[(self.px,self.py)] if k in self.walkmap] + [(self.px,self.py)]
@@ -3826,9 +3830,18 @@ class World:
         return False
 
     def summon(self, x, y, monname, n):
-        m = self.monsterstock.find(monname, n, self.itemstock)
-        if len(m) == 0:
-            return []
+
+        if monname is None:
+            m = []
+            for ii in xrange(n):
+                mmi = self.monsterstock.generate(self.branch, self.dlev, self.itemstock, self.moon)
+                if mmi and not mmi.inanimate:
+                    m.append(mmi)
+
+        else:
+            m = self.monsterstock.find(monname, n, self.itemstock)
+            if len(m) == 0:
+                return []
 
         l = []
         for ki in self.neighbors[(x,y)]:
@@ -4066,7 +4079,12 @@ class World:
                     mons.append(mon)
                     continue
 
-            if mon.summon and (mon.visible or mon.static) and (self.t % mon.summon[1]) == 0:
+            if mon.onfire > 0:
+                fired.append(mon)
+
+            msumm = (mon.summon or mon.summononce)
+
+            if msumm and (mon.visible or mon.static) and (self.t % msumm[1]) == 0:
                 summons.append((k, mon))
                 continue
 
@@ -4075,9 +4093,6 @@ class World:
 
             mon.visible_old = mon.visible
             mon.visible = False
-
-            if mon.onfire > 0:
-                fired.append(mon)
 
             mdx, mdy = self.walk_monster(mon, dist, x, y)
 
@@ -4106,12 +4121,22 @@ class World:
         for k,mon in summons:
             smu = str(mon)
             smu = smu[0].upper() + smu[1:]
-            q = self.summon(k[0], k[1], mon.summon[0], 1)
-            if len(q) > 0:
-                if not mon.static:
-                    self.msg.m(smu + ' summons ' + str(q[0]) + '!')
-            else:
-                mon.summon = None
+
+            if mon.summon:
+                q = self.summon(k[0], k[1], mon.summon[0], 1)
+                if len(q) > 0:
+                    if not mon.static:
+                        self.msg.m(smu + ' summons ' + str(q[0]) + '!')
+                else:
+                    mon.summon = None
+
+            elif mon.summononce:
+                q = self.summon(k[0], k[1], None, mon.summononce[0])
+                if len(q) > 0:
+                    self.msg.m(smu + ' summons monsters!')
+                    mon.summononce = None
+
+
 
         for x,y,mon in raise_dead:
             if (x,y) in self.walkmap and (x,y) not in self.monmap and not (x == self.px and y == self.py):

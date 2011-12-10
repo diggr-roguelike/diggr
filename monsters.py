@@ -14,7 +14,7 @@ class Monster:
                  summon=False, branch=None, fireimmune=False, poisimmune=False,
                  flavor=None, idtag=None, static=False, moldspew=None, is_mold=False,
                  boulder=False, inanimate=False, large=False, moon=None, fleerange=None,
-                 no_exting=False, raise_dead=None, bloodsucker=None):
+                 no_exting=False, raise_dead=None, bloodsucker=None, summononce=None):
         self.name = name
         self.skin = skin
         self.count = count
@@ -54,6 +54,7 @@ class Monster:
         self.no_exting = no_exting
         self.raise_dead = raise_dead
         self.bloodsucker = bloodsucker
+        self.summononce = summononce
 
         if not idtag:
             self.idtag = name
@@ -958,10 +959,10 @@ class MonsterStock:
                             no_exting=True, raise_dead=(15, 2),
                             desc=["A depraved worshipper of Ba'al-Zebub, the unclean undead god."])
 
-        nosferatu = Monster("nosferatu", skin=('y', libtcod.han),
+        nosferatu = Monster("Nosferatu", skin=('y', libtcod.han),
                             attack=7.0, defence=7.0, range=25, flavor='air', branch='a', count=1, 
                             level=2, idtag='nosf_a2', moon=newmoon_only, no_exting=True,
-                            bloodsucker=(0.25, 50),
+                            bloodsucker=(0.25, 50), no_a=True,
                             desc=['A bloodsucking walking corpse.'])
 
         template(priestmon, branch='a', level=2, idtag='priest_a2')
@@ -1056,6 +1057,61 @@ class MonsterStock:
         template(nosferatu, branch='e', level=8, idtag='nosf_e8')
         template(nosferatu, branch='e', level=9, idtag='nosf_e9')
 
+        ##
+
+        lunatic = Monster("lunatic", skin=('h', libtcod.desaturated_blue),
+                            attack=1.0, defence=2.2, range=0, flavor='humanweird',
+                            branch='a', count=1, level=2, idtag='luna_a2', moon=fullmoon_only,
+                            no_exting=True, summononce=(6, 12),
+                            desc=["Strange, selenic emanations have driven this poor soul",
+                                  "to eternally walk the moon-lit dungeon, whispering softly",
+                                  "to the pale, round face of the Moon."])
+
+
+        template(lunatic, branch='a', level=2, idtag='luna_a2')
+        template(lunatic, branch='a', level=3, idtag='luna_a3')
+        template(lunatic, branch='a', level=4, idtag='luna_a4')
+        template(lunatic, branch='a', level=5, idtag='luna_a5')
+        template(lunatic, branch='a', level=6, idtag='luna_a6')
+        template(lunatic, branch='a', level=7, idtag='luna_a7')
+        template(lunatic, branch='a', level=8, idtag='luna_a8')
+        template(lunatic, branch='a', level=9, idtag='luna_a9')
+
+        template(lunatic, branch='b', level=2, idtag='luna_b2')
+        template(lunatic, branch='b', level=3, idtag='luna_b3')
+        template(lunatic, branch='b', level=4, idtag='luna_b4')
+        template(lunatic, branch='b', level=5, idtag='luna_b5')
+        template(lunatic, branch='b', level=6, idtag='luna_b6')
+        template(lunatic, branch='b', level=7, idtag='luna_b7')
+        template(lunatic, branch='b', level=8, idtag='luna_b8')
+        template(lunatic, branch='b', level=9, idtag='luna_b9')
+
+        template(lunatic, branch='c', level=2, idtag='luna_c2')
+        template(lunatic, branch='c', level=3, idtag='luna_c3')
+        template(lunatic, branch='c', level=4, idtag='luna_c4')
+        template(lunatic, branch='c', level=5, idtag='luna_c5')
+        template(lunatic, branch='c', level=6, idtag='luna_c6')
+        template(lunatic, branch='c', level=7, idtag='luna_c7')
+        template(lunatic, branch='c', level=8, idtag='luna_c8')
+        template(lunatic, branch='c', level=9, idtag='luna_c9')
+
+        template(lunatic, branch='d', level=2, idtag='luna_d2')
+        template(lunatic, branch='d', level=3, idtag='luna_d3')
+        template(lunatic, branch='d', level=4, idtag='luna_d4')
+        template(lunatic, branch='d', level=5, idtag='luna_d5')
+        template(lunatic, branch='d', level=6, idtag='luna_d6')
+        template(lunatic, branch='d', level=7, idtag='luna_d7')
+        template(lunatic, branch='d', level=8, idtag='luna_d8')
+        template(lunatic, branch='d', level=9, idtag='luna_d9')
+
+        template(lunatic, branch='e', level=2, idtag='luna_e2')
+        template(lunatic, branch='e', level=3, idtag='luna_e3')
+        template(lunatic, branch='e', level=4, idtag='luna_e4')
+        template(lunatic, branch='e', level=5, idtag='luna_e5')
+        template(lunatic, branch='e', level=6, idtag='luna_e6')
+        template(lunatic, branch='e', level=7, idtag='luna_e7')
+        template(lunatic, branch='e', level=8, idtag='luna_e8')
+        template(lunatic, branch='e', level=9, idtag='luna_e9')
 
 
         ## Secret branch
