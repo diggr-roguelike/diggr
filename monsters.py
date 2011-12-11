@@ -14,7 +14,8 @@ class Monster:
                  summon=False, branch=None, fireimmune=False, poisimmune=False,
                  flavor=None, idtag=None, static=False, moldspew=None, is_mold=False,
                  boulder=False, inanimate=False, large=False, moon=None, fleerange=None,
-                 no_exting=False, raise_dead=None, bloodsucker=None, summononce=None):
+                 no_exting=False, raise_dead=None, bloodsucker=None, summononce=None,
+                 pointscontrib=1, pointsfac=1, fast=False):
         self.name = name
         self.skin = skin
         self.count = count
@@ -55,6 +56,9 @@ class Monster:
         self.raise_dead = raise_dead
         self.bloodsucker = bloodsucker
         self.summononce = summononce
+        self.pointscontrib = pointscontrib
+        self.pointsfac = pointsfac
+        self.fast = fast
 
         if not idtag:
             self.idtag = name
@@ -956,13 +960,13 @@ class MonsterStock:
         priestmon = Monster("vile priest of Ba'al-Zebub", skin=('p', libtcod.crimson),
                             attack=2.0, defence=1.0, range=25, fleerange=5, flavor='wizard',
                             branch='a', count=1, level=2, idtag='priest_a2', moon=newmoon_only,
-                            no_exting=True, raise_dead=(15, 2),
+                            no_exting=True, raise_dead=(15, 2), pointscontrib=0,
                             desc=["A depraved worshipper of Ba'al-Zebub, the unclean undead god."])
 
         nosferatu = Monster("Nosferatu", skin=('y', libtcod.han),
                             attack=7.0, defence=7.0, range=25, flavor='air', branch='a', count=1, 
                             level=2, idtag='nosf_a2', moon=newmoon_only, no_exting=True,
-                            bloodsucker=(0.25, 50), no_a=True,
+                            bloodsucker=(0.25, 50), no_a=True, pointscontrib=0,
                             desc=['A bloodsucking walking corpse.'])
 
         template(priestmon, branch='a', level=2, idtag='priest_a2')
@@ -1060,12 +1064,18 @@ class MonsterStock:
         ##
 
         lunatic = Monster("lunatic", skin=('h', libtcod.desaturated_blue),
-                            attack=1.0, defence=2.2, range=0, flavor='humanweird',
-                            branch='a', count=1, level=2, idtag='luna_a2', moon=fullmoon_only,
-                            no_exting=True, summononce=(6, 12),
-                            desc=["Strange, selenic emanations have driven this poor soul",
-                                  "to eternally walk the moon-lit dungeon, whispering softly",
-                                  "to the pale, round face of the Moon."])
+                          attack=1.0, defence=2.2, range=0, flavor='humanweird',
+                          branch='a', count=1, level=2, idtag='luna_a2', moon=fullmoon_only,
+                          no_exting=True, summononce=(6, 12), pointscontrib=0,
+                          desc=["Strange, selenic emanations have driven this poor soul",
+                                "to eternally walk the moon-lit dungeon, whispering softly",
+                                "to the pale, round face of the Moon."])
+        
+        lycan = Monster("lycanthrope", skin=('l', libtcod.gray),
+                        attack=4.0, defence=1.5, range=20, heatseeking=True, fast=True,
+                        branch='a', count=1, level=2, idtag='lyca_a2', moon=fullmoon_only,
+                        no_exting=True, pointscontrib=0,
+                        desc=['Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.'])
 
 
         template(lunatic, branch='a', level=2, idtag='luna_a2')
@@ -1112,6 +1122,53 @@ class MonsterStock:
         template(lunatic, branch='e', level=7, idtag='luna_e7')
         template(lunatic, branch='e', level=8, idtag='luna_e8')
         template(lunatic, branch='e', level=9, idtag='luna_e9')
+
+
+        
+        template(lycan, branch='a', level=2, idtag='lyca_a2')
+        template(lycan, branch='a', level=3, idtag='lyca_a3')
+        template(lycan, branch='a', level=4, idtag='lyca_a4')
+        template(lycan, branch='a', level=5, idtag='lyca_a5')
+        template(lycan, branch='a', level=6, idtag='lyca_a6')
+        template(lycan, branch='a', level=7, idtag='lyca_a7')
+        template(lycan, branch='a', level=8, idtag='lyca_a8')
+        template(lycan, branch='a', level=9, idtag='lyca_a9')
+
+        template(lycan, branch='b', level=2, idtag='lyca_b2')
+        template(lycan, branch='b', level=3, idtag='lyca_b3')
+        template(lycan, branch='b', level=4, idtag='lyca_b4')
+        template(lycan, branch='b', level=5, idtag='lyca_b5')
+        template(lycan, branch='b', level=6, idtag='lyca_b6')
+        template(lycan, branch='b', level=7, idtag='lyca_b7')
+        template(lycan, branch='b', level=8, idtag='lyca_b8')
+        template(lycan, branch='b', level=9, idtag='lyca_b9')
+
+        template(lycan, branch='c', level=2, idtag='lyca_c2')
+        template(lycan, branch='c', level=3, idtag='lyca_c3')
+        template(lycan, branch='c', level=4, idtag='lyca_c4')
+        template(lycan, branch='c', level=5, idtag='lyca_c5')
+        template(lycan, branch='c', level=6, idtag='lyca_c6')
+        template(lycan, branch='c', level=7, idtag='lyca_c7')
+        template(lycan, branch='c', level=8, idtag='lyca_c8')
+        template(lycan, branch='c', level=9, idtag='lyca_c9')
+
+        template(lycan, branch='d', level=2, idtag='lyca_d2')
+        template(lycan, branch='d', level=3, idtag='lyca_d3')
+        template(lycan, branch='d', level=4, idtag='lyca_d4')
+        template(lycan, branch='d', level=5, idtag='lyca_d5')
+        template(lycan, branch='d', level=6, idtag='lyca_d6')
+        template(lycan, branch='d', level=7, idtag='lyca_d7')
+        template(lycan, branch='d', level=8, idtag='lyca_d8')
+        template(lycan, branch='d', level=9, idtag='lyca_d9')
+
+        template(lycan, branch='e', level=2, idtag='lyca_e2')
+        template(lycan, branch='e', level=3, idtag='lyca_e3')
+        template(lycan, branch='e', level=4, idtag='lyca_e4')
+        template(lycan, branch='e', level=5, idtag='lyca_e5')
+        template(lycan, branch='e', level=6, idtag='lyca_e6')
+        template(lycan, branch='e', level=7, idtag='lyca_e7')
+        template(lycan, branch='e', level=8, idtag='lyca_e8')
+        template(lycan, branch='e', level=9, idtag='lyca_e9')
 
 
         ## Secret branch
@@ -1285,35 +1342,35 @@ class MonsterStock:
         self.add(Monster('black mold', no_a=True, attack=0, defence=5.0, range=0, branch='x',
                          level=1, count=5, static=True, summon=('bmold1', 10), idtag='bmold1',
                          moldspew=('bmold',3,3), poisimmune=True, skin=('x',libtcod.gray), is_mold=True,
-                         moon=quartermoon_bias,
+                         moon=quartermoon_bias, no_exting=True, pointsfac=0.5,
                          desc=['Stachybotrys chartarum, a toxic and sometimes deadly',
                                'species of mold.']))
 
         self.add(Monster('black mold', no_a=True, attack=0, defence=5.0, range=0, branch='x',
                          level=2, count=15, static=True, summon=('bmold1', 10), idtag='bmold1',
                          moldspew=('bmold',3,3), poisimmune=True, skin=('x',libtcod.gray), is_mold=True,
-                         moon=quartermoon_bias,
+                         moon=quartermoon_bias, no_exting=True, pointsfac=0.5,
                          desc=['Stachybotrys chartarum, a toxic and sometimes deadly',
                                'species of mold.']))
 
         self.add(Monster('black mold', no_a=True, attack=0, defence=5.0, range=0, branch='x',
                          level=4, count=15, static=True, summon=('bmold2', 10), idtag='bmold2',
                          moldspew=('bmold',3,3), poisimmune=True, skin=('x',libtcod.gray), is_mold=True,
-                         moon=quartermoon_bias,
+                         moon=quartermoon_bias, no_exting=True, pointsfac=0.5,
                          desc=['Stachybotrys chartarum, a toxic and sometimes deadly',
                                'species of mold.']))
 
         self.add(Monster('black mold', no_a=True, attack=0, defence=5.0, range=0, branch='x',
                          level=6, count=15, static=True, summon=('bmold3', 10), idtag='bmold3',
                          moldspew=('bmold',3,3), poisimmune=True, skin=('x',libtcod.gray), is_mold=True,
-                         moon=quartermoon_bias,
+                         moon=quartermoon_bias, no_exting=True, pointsfac=0.5,
                          desc=['Stachybotrys chartarum, a toxic and sometimes deadly',
                                'species of mold.']))
 
         self.add(Monster('black mold', no_a=True, attack=0, defence=5.0, range=0, branch='x',
                          level=8, count=15, static=True, summon=('mold4', 10), idtag='bmold4',
                          moldspew=('bmold',3,3), poisimmune=True, skin=('x',libtcod.gray), is_mold=True,
-                         moon=quartermoon_bias,
+                         moon=quartermoon_bias, no_exting=True, pointsfac=0.5,
                          desc=['Stachybotrys chartarum, a toxic and sometimes deadly',
                                'species of mold.']))
 
@@ -1322,158 +1379,195 @@ class MonsterStock:
 
         self.add(Monster('boulder', boulder=True, inanimate=True, branch='a', skin=('0', libtcod.gray),
                          level=1, count=3, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         pointscontrib=0, no_exting=True,
                          idtag='ba1', desc=['A gigantic rock of spherical shape.']))
 
         self.add(Monster('boulder', boulder=True, inanimate=True, branch='a', skin=('0', libtcod.gray),
                          level=2, count=5, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         pointscontrib=0, no_exting=True,
                          idtag='ba2', desc=['A gigantic rock of spherical shape.']))
 
         self.add(Monster('boulder', boulder=True, inanimate=True, branch='a', skin=('0', libtcod.gray),
                          level=3, count=8, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         pointscontrib=0, no_exting=True,
                          idtag='ba3', desc=['A gigantic rock of spherical shape.']))
 
         self.add(Monster('boulder', boulder=True, inanimate=True, branch='a', skin=('0', libtcod.gray),
                          level=4, count=8, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         pointscontrib=0, no_exting=True,
                          idtag='ba4', desc=['A gigantic rock of spherical shape.']))
 
         self.add(Monster('boulder', boulder=True, inanimate=True, branch='a', skin=('0', libtcod.gray),
                          level=5, count=5, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         pointscontrib=0, no_exting=True,
                          idtag='ba5', desc=['A gigantic rock of spherical shape.']))
 
         self.add(Monster('boulder', boulder=True, inanimate=True, branch='a', skin=('0', libtcod.gray),
                          level=6, count=4, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         pointscontrib=0, no_exting=True,
                          idtag='ba6', desc=['A gigantic rock of spherical shape.']))
 
         self.add(Monster('boulder', boulder=True, inanimate=True, branch='a', skin=('0', libtcod.gray),
                          level=7, count=3, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         pointscontrib=0, no_exting=True,
                          idtag='ba7', desc=['A gigantic rock of spherical shape.']))
 
         self.add(Monster('boulder', boulder=True, inanimate=True, branch='a', skin=('0', libtcod.gray),
                          level=8, count=2, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         pointscontrib=0, no_exting=True,
                          idtag='ba8', desc=['A gigantic rock of spherical shape.']))
 
         # 
 
         self.add(Monster('mountain of meat', boulder=True, inanimate=True, branch='b', skin=('0', libtcod.red),
                          level=3, count=2, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         pointscontrib=0, no_exting=True,
                          idtag='bc1', desc=['A mountain of quivering, perverse, vomitous flesh.']))
 
         self.add(Monster('mountain of meat', boulder=True, inanimate=True, branch='b', skin=('0', libtcod.red),
                          level=4, count=4, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         pointscontrib=0, no_exting=True,
                          idtag='bc2', desc=['A mountain of quivering, perverse, vomitous flesh.']))
 
         self.add(Monster('mountain of meat', boulder=True, inanimate=True, branch='b', skin=('0', libtcod.red),
                          level=5, count=12, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         pointscontrib=0, no_exting=True,
                          idtag='bc3', desc=['A mountain of quivering, perverse, vomitous flesh.']))
 
         self.add(Monster('mountain of meat', boulder=True, inanimate=True, branch='b', skin=('0', libtcod.red),
                          level=6, count=4, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         pointscontrib=0, no_exting=True,
                          idtag='bc4', desc=['A mountain of quivering, perverse, vomitous flesh.']))
 
         self.add(Monster('mountain of meat', boulder=True, inanimate=True, branch='b', skin=('0', libtcod.red),
                          level=7, count=2, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         pointscontrib=0, no_exting=True,
                          idtag='bc5', desc=['A mountain of quivering, perverse, vomitous flesh.']))
 
         # 
 
         self.add(Monster('rollerball', boulder=True, inanimate=True, branch='c', skin=('0', libtcod.dark_blue),
                          level=2, count=3, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         pointscontrib=0, no_exting=True,
                          idtag='bb1', desc=['A huge metal ball with sharp spikes all over it.']))
 
         self.add(Monster('rollerball', boulder=True, inanimate=True, branch='c', skin=('0', libtcod.dark_blue),
                          level=3, count=4, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         pointscontrib=0, no_exting=True,
                          idtag='bb2', desc=['A huge metal ball with sharp spikes all over it.']))
 
         self.add(Monster('rollerball', boulder=True, inanimate=True, branch='c', skin=('0', libtcod.dark_blue),
                          level=4, count=5, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         pointscontrib=0, no_exting=True,
                          idtag='bb3', desc=['A huge metal ball with sharp spikes all over it.']))
 
         self.add(Monster('rollerball', boulder=True, inanimate=True, branch='c', skin=('0', libtcod.dark_blue),
                          level=5, count=6, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         pointscontrib=0, no_exting=True,
                          idtag='bb4', desc=['A huge metal ball with sharp spikes all over it.']))
 
         self.add(Monster('rollerball', boulder=True, inanimate=True, branch='c', skin=('0', libtcod.dark_blue),
                          level=6, count=7, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         pointscontrib=0, no_exting=True,
                          idtag='bb5', desc=['A huge metal ball with sharp spikes all over it.']))
 
         self.add(Monster('rollerball', boulder=True, inanimate=True, branch='c', skin=('0', libtcod.dark_blue),
                          level=7, count=8, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         pointscontrib=0, no_exting=True,
                          idtag='bb6', desc=['A huge metal ball with sharp spikes all over it.']))
 
         self.add(Monster('rollerball', boulder=True, inanimate=True, branch='c', skin=('0', libtcod.dark_blue),
                          level=8, count=9, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         pointscontrib=0, no_exting=True,
                          idtag='bb7', desc=['A huge metal ball with sharp spikes all over it.']))
 
         self.add(Monster('rollerball', boulder=True, inanimate=True, branch='c', skin=('0', libtcod.dark_blue),
                          level=9, count=10, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         pointscontrib=0, no_exting=True,
                          idtag='bb8', desc=['A huge metal ball with sharp spikes all over it.']))
 
         #
 
         self.add(Monster('boulder', boulder=True, inanimate=True, branch='d', skin=('0', libtcod.gray),
                          level=2, count=6, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         pointscontrib=0, no_exting=True,
                          idtag='bd1', desc=['A gigantic rock of spherical shape.']))
 
         self.add(Monster('boulder', boulder=True, inanimate=True, branch='d', skin=('0', libtcod.gray),
                          level=3, count=6, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         pointscontrib=0, no_exting=True,
                          idtag='bd2', desc=['A gigantic rock of spherical shape.']))
 
         self.add(Monster('boulder', boulder=True, inanimate=True, branch='d', skin=('0', libtcod.gray),
                          level=4, count=6, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         pointscontrib=0, no_exting=True,
                          idtag='bd3', desc=['A gigantic rock of spherical shape.']))
 
         self.add(Monster('boulder', boulder=True, inanimate=True, branch='d', skin=('0', libtcod.gray),
                          level=5, count=3, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         pointscontrib=0, no_exting=True,
                          idtag='bd4', desc=['A gigantic rock of spherical shape.']))
 
         self.add(Monster('boulder', boulder=True, inanimate=True, branch='d', skin=('0', libtcod.gray),
                          level=6, count=2, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         pointscontrib=0, no_exting=True,
                          idtag='bd5', desc=['A gigantic rock of spherical shape.']))
 
         self.add(Monster('boulder', boulder=True, inanimate=True, branch='d', skin=('0', libtcod.gray),
                          level=7, count=1, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         pointscontrib=0, no_exting=True,
                          idtag='bd6', desc=['A gigantic rock of spherical shape.']))
 
         # 
 
         self.add(Monster('boulder', boulder=True, inanimate=True, branch='e', skin=('0', libtcod.gray),
                          level=1, count=3, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         pointscontrib=0, no_exting=True,
                          idtag='be1', desc=['A gigantic rock of spherical shape.']))
 
         self.add(Monster('boulder', boulder=True, inanimate=True, branch='e', skin=('0', libtcod.gray),
                          level=2, count=3, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         pointscontrib=0, no_exting=True,
                          idtag='be2', desc=['A gigantic rock of spherical shape.']))
 
         self.add(Monster('boulder', boulder=True, inanimate=True, branch='e', skin=('0', libtcod.gray),
                          level=3, count=3, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         pointscontrib=0, no_exting=True,
                          idtag='be3', desc=['A gigantic rock of spherical shape.']))
 
         self.add(Monster('boulder', boulder=True, inanimate=True, branch='e', skin=('0', libtcod.gray),
                          level=4, count=3, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         pointscontrib=0, no_exting=True,
                          idtag='be4', desc=['A gigantic rock of spherical shape.']))
 
         self.add(Monster('boulder', boulder=True, inanimate=True, branch='e', skin=('0', libtcod.gray),
                          level=5, count=3, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         pointscontrib=0, no_exting=True,
                          idtag='be5', desc=['A gigantic rock of spherical shape.']))
 
         self.add(Monster('boulder', boulder=True, inanimate=True, branch='e', skin=('0', libtcod.gray),
                          level=6, count=3, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         pointscontrib=0, no_exting=True,
                          idtag='be6', desc=['A gigantic rock of spherical shape.']))
 
         self.add(Monster('boulder', boulder=True, inanimate=True, branch='e', skin=('0', libtcod.gray),
                          level=7, count=3, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         pointscontrib=0, no_exting=True,
                          idtag='be7', desc=['A gigantic rock of spherical shape.']))
 
         self.add(Monster('boulder', boulder=True, inanimate=True, branch='e', skin=('0', libtcod.gray),
                          level=8, count=3, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         pointscontrib=0, no_exting=True,
                          idtag='be8', desc=['A gigantic rock of spherical shape.']))
 
         self.add(Monster('boulder', boulder=True, inanimate=True, branch='e', skin=('0', libtcod.gray),
                          level=9, count=3, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         pointscontrib=0, no_exting=True,
                          idtag='be9', desc=['A gigantic rock of spherical shape.']))
 
         self.add(Monster('boulder', boulder=True, inanimate=True, branch='e', skin=('0', libtcod.gray),
                          level=10, count=3, poisimmune=True, fireimmune=True, confimmune=True, radimmune=True,
+                         pointscontrib=0, no_exting=True,
                          idtag='be10', desc=['A gigantic rock of spherical shape.']))
 
     
@@ -1488,16 +1582,14 @@ class MonsterStock:
             for lev,v2 in v.iteritems():
                 moncount = 0
                 for mon in v2:
-                    if mon.inanimate or mon.no_exting:
-                        continue
-                    moncount += mon.count
+                    moncount += (mon.count * mon.pointscontrib)
                 n += lev * moncount
 
             n = 840.0 / n
             self.norms[branch] = n
 
         # HACK don't give too many points for cleaning up mold.
-        self.norms['x'] /= 2
+        #self.norms['x'] /= 2
 
 
     def add(self, mon):
@@ -1597,7 +1689,7 @@ class MonsterStock:
 
         return m
 
-    def death(self, mon):
+    def death(self, mon, moon):
 
         if not mon.branch:
             return (False, False)
@@ -1619,7 +1711,13 @@ class MonsterStock:
                     m[x].count -= 1
                 break
 
-        if sum(1 for mon in m if not mon.inanimate) == 0:
+        nc = 0
+        for mon in m:
+            if mon.inanimate or (mon.moon and mon.moon[moon-1] <= 0):
+                continue
+            nc += 1
+
+        if nc == 0:
             del self.monsters[mon.branch][mon.level]
 
         winner = False
@@ -1627,13 +1725,10 @@ class MonsterStock:
         if len(self.monsters[mon.branch]) == 0:
             winner = True
 
-        if mon.inanimate:
-            winner = False
+        if mon.no_exting:
             ret = False
 
         # HACK you can win by cleaning up mold.
-        if mon.is_mold:
-            ret = False
 
         return (winner, ret)
 

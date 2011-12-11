@@ -101,7 +101,7 @@ log = Logger()
 
 
 global _version
-_version = '11.12.04'
+_version = '11.12.18'
 
 global _inputs
 global _inputqueue
@@ -775,6 +775,9 @@ class Achievements:
         self.add('plev%d' % world.plev, 'Reached player level %d' % world.plev)
         self.add('dlev%d' % world.dlev, 'Reached dungeon level %d' % world.dlev)
 
+        moonstr = moon.phase_string(world.moon)
+        self.add('moon_%s' % moonstr, 'Played on a %s moon' % moonstr)
+
         if len(self.killed_monsters) == 0:
             self.add('loser', 'Scored *no* kills')
         else:
@@ -935,7 +938,7 @@ class Achievements:
         if is_poison:
             self.ebola += 1
         else:
-            self.killed_monsters.append((mon.level, mon.branch, mon.name, world.dlev, world.plev))
+            self.killed_monsters.append((mon.level * mon.pointsfac, mon.branch, mon.name, world.dlev, world.plev))
 
         if is_rad:
             self.radkilled += 1
@@ -1485,7 +1488,11 @@ class World:
             d = m[random.randint(0, len(m)-1)]
             self.featmap[d] = self.featstock.f['bb']
 
-        elif not (self.moon == moon.FULL and random.randint(0, 1) == 1):
+        elif self.moon == moon.FULL:
+            d = m[random.randint(0, len(m)-1)]
+            self.featmap[d] = self.featstock.f['dd']
+
+        else:
             a = random.randint(-1, 1)
             d = m[random.randint(0, len(m)-1)]
             if a == -1:
@@ -1507,10 +1514,10 @@ class World:
 
 
 
-    def try_feature(self, x, y, att):
+    def try_feature(self, x, y, att, deflt=None):
         if (x,y) not in self.featmap:
-                return None
-        return getattr(self.featmap[(x, y)], att, None)
+                return deflt
+        return getattr(self.featmap[(x, y)], att, deflt)
 
 
     def make_paths(self):
@@ -2978,14 +2985,14 @@ class World:
                     self.itemap[(mon.x, mon.y)] = itemdrop
 
 
-        winner, exting = self.monsterstock.death(mon)
+        winner, exting = self.monsterstock.death(mon, self.moon)
 
         if do_gain:
             self.achievements.mondeath(self, mon, is_rad=is_rad, is_explode=is_explode)
         elif is_poison:
             self.achievements.mondeath(self, mon, is_poison=True)
 
-        if exting and not mon.no_exting:
+        if exting:
             self.achievements.mondone()
 
         # Quests
@@ -3797,6 +3804,13 @@ class World:
                     libtcod.path_compute(self.floorpath, x, y, mon.known_px, mon.known_py)
                     mdx, mdy = libtcod.path_walk(self.floorpath, True)
 
+                    if mon.fast:
+                        mdx2, mdy2 = libtcod.path_walk(self.floorpath, True)
+                        if mdx2 is not None and mdy2 is not None:
+                            mdx, mdy = mdx2, mdy2
+                    
+
+
         if mon.stoneeating:
             if mdx is not None:
                 if (mdx, mdy) not in self.walkmap:
@@ -4209,7 +4223,12 @@ class World:
         if self.moon == moon.NEW:
             lightradius += 1
         elif self.moon == moon.FULL:
-            lightradius -= 1 
+            lightradius -= 2
+
+        lightradius += self.try_feature(self.px, self.py, 'lightbonus', 0)
+
+        if lightradius < 1:
+            lightradius = 1
 
         if self.mapping > 0:
             if withtime:
