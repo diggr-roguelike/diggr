@@ -980,6 +980,13 @@ class Achievements:
         elif item.digging:
             self.digged += 1
 
+        if item.switch_moon:
+            if item.switch_moon == moon.FULL:
+                self.add('full_m_prism', 'Used a prism of the Full Moon', weight=41)
+            elif item.switch_moon == moon.NEW:
+                self.add('new_m_prism', 'Used a prism of the New Moon', weight=41)
+
+
     def wish(self):
         self.wishes += 1
 
@@ -2793,6 +2800,12 @@ class World:
 
         elif item.summon:
             self.summon(self.px, self.py, item.summon[0], item.summon[1])
+            self.achievements.use(item)
+            return None
+
+        elif item.switch_moon:
+            self.moon = item.switch_moon
+            self.regen(self.w, self.h)
             self.achievements.use(item)
             return None
 
