@@ -13,7 +13,7 @@ import os
 import time
 
 
-DEFAULT_VERSION = '11.12.04'
+DEFAULT_VERSION = '11.12.18'
 USERPREF = "user_"
 
 
@@ -47,6 +47,7 @@ def ach_tag_to_text(tag):
     prefix = {'plev': 'Reached player level %s',
               'dlev': 'Reached dungeon level %s',
               'dead_': 'Killed by %s',
+              'moon_': 'Played on a %s moon',
               'user_': '%s'
               }
 
