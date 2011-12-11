@@ -169,6 +169,9 @@ class FeatureStock:
         self.f['!'] = Feature(walkable=True, visible=False, skin=(173, libtcod.dark_green),
                               name='a giant fern')
 
+        self.f['!f'] = Feature(walkable=True, visible=True, skin=(24, libtcod.desaturated_green),
+                               name='a flowering fern')
+
         self.f['w'] = Feature(walkable=True, visible=True, skin=('-', libtcod.sky),
                               water=True, name='a pool of water')
 

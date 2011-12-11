@@ -1499,6 +1499,8 @@ class World:
             d = m[random.randint(0, len(m)-1)]
             self.featmap[d] = self.featstock.f['dd']
 
+            self.paste_celauto(d[0], d[1], 'ffern')
+
         else:
             a = random.randint(-1, 1)
             d = m[random.randint(0, len(m)-1)]
@@ -2807,6 +2809,7 @@ class World:
             self.moon = item.switch_moon
             self.regen(self.w, self.h)
             self.achievements.use(item)
+            self.msg.m('The local space-time continuum shifts slightly.', True)
             return None
 
         elif item.rangeattack or item.rangeexplode:
@@ -4010,6 +4013,9 @@ class World:
         elif ca.featuretoggle:
             if (x, y) not in self.featmap and (x, y) in self.walkmap:
                 self.set_feature(x, y, ca.featuretoggle)
+        elif ca.floorfeaturetoggle:
+            if (x, y) not in self.featmap and (x, y) in self.walkmap and (x, y) not in self.watermap:
+                self.set_feature(x, y, ca.floorfeaturetoggle)
 
     def celauto_off(self, x, y, ca):
         if ca.watertoggle is not None:
