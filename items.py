@@ -2,6 +2,9 @@ import libtcodpy as libtcod
 import random
 import copy
 
+import moon
+
+
 class Item:
     def __init__(self, name, slot='', bonus=0, count=None, ident=False,
                  skin=('~', libtcod.yellow), lightradius=0, explodes=0,
@@ -21,7 +24,7 @@ class Item:
                  applies_in_slot=False, ebola=False, smoke=False,
                  trapcloud=False, glueimmune=False, craft=None, resource=None,
                  hide_count=False, swampgas=False, digbonus=0, airfreshener=None, 
-                 corpse=None):
+                 corpse=None, switch_moon=None):
         self.slot = slot
         self.bonus = bonus
         self.name = name
@@ -90,8 +93,9 @@ class Item:
         self.swampgas = swampgas
         self.digbonus = digbonus
         self.airfreshener = airfreshener
-        self.corpse = corpse
+        self.switch_moon = switch_moon
 
+        self.corpse = corpse
         self.ammo = None
         self.gencount = 0
         self.tag = None
@@ -534,6 +538,17 @@ class ItemStock:
                              slot='d', summon=('bb8', 8), applies=True, rarity=3, 
                              desc=["It's labeled HACKEM MUCHE. Whatever that means..."])
 
+        self.full_moon = Item('prism of the Full Moon', skin=('~', libtcod.blue),
+                              slot='', applies=True, rarity=2, switch_moon=moon.FULL,
+                              desc=['An ancient and very powerful artifact.',
+                                    'Rumor has it that it affects the very fabric of space',
+                                    'and time.'])
+
+        self.new_moon = Item('prism of the New Moon', skin=('~', libtcod.dark_crimson),
+                             slot='', applies=True, rarity=2, switch_moon=moon.NEW,
+                             desc=['An ancient and very powerful artifact.',
+                                   'Rumor has it that it affects the very fabric of space',
+                                   'and time.'])
 
         # Corpse
 

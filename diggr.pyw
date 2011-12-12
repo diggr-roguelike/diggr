@@ -101,7 +101,7 @@ log = Logger()
 
 
 global _version
-_version = '11.12.04'
+_version = '11.12.18'
 
 global _inputs
 global _inputqueue
@@ -775,6 +775,9 @@ class Achievements:
         self.add('plev%d' % world.plev, 'Reached player level %d' % world.plev)
         self.add('dlev%d' % world.dlev, 'Reached dungeon level %d' % world.dlev)
 
+        moonstr = moon.phase_string(world.moon)
+        self.add('moon_%s' % moonstr, 'Played on a %s moon' % moonstr)
+
         if len(self.killed_monsters) == 0:
             self.add('loser', 'Scored *no* kills')
         else:
@@ -935,7 +938,7 @@ class Achievements:
         if is_poison:
             self.ebola += 1
         else:
-            self.killed_monsters.append((mon.level, mon.branch, mon.name, world.dlev, world.plev))
+            self.killed_monsters.append((mon.level * mon.pointsfac, mon.branch, mon.name, world.dlev, world.plev))
 
         if is_rad:
             self.radkilled += 1
@@ -976,6 +979,13 @@ class Achievements:
             self.dowsing += 1
         elif item.digging:
             self.digged += 1
+
+        if item.switch_moon:
+            if item.switch_moon == moon.FULL:
+                self.add('full_m_prism', 'Used a prism of the Full Moon', weight=41)
+            elif item.switch_moon == moon.NEW:
+                self.add('new_m_prism', 'Used a prism of the New Moon', weight=41)
+
 
     def wish(self):
         self.wishes += 1
@@ -1485,7 +1495,13 @@ class World:
             d = m[random.randint(0, len(m)-1)]
             self.featmap[d] = self.featstock.f['bb']
 
-        elif not (self.moon == moon.FULL and random.randint(0, 1) == 1):
+        elif self.moon == moon.FULL:
+            d = m[random.randint(0, len(m)-1)]
+            self.featmap[d] = self.featstock.f['dd']
+
+            self.paste_celauto(d[0], d[1], 'ffern')
+
+        else:
             a = random.randint(-1, 1)
             d = m[random.randint(0, len(m)-1)]
             if a == -1:
@@ -1507,10 +1523,10 @@ class World:
 
 
 
-    def try_feature(self, x, y, att):
+    def try_feature(self, x, y, att, deflt=None):
         if (x,y) not in self.featmap:
-                return None
-        return getattr(self.featmap[(x, y)], att, None)
+                return deflt
+        return getattr(self.featmap[(x, y)], att, deflt)
 
 
     def make_paths(self):
@@ -1642,7 +1658,7 @@ class World:
         if self.moon is None:
             #m = moon.phase(self._seed)
             #self.moon = m['phase']
-            self.moon = moon.NEW
+            self.moon = moon.FULL
 
         nogens = set()
 
@@ -1663,7 +1679,11 @@ class World:
 
 
     def generate_inv(self):
-        self.inv.take(self.itemstock.find('lamp'))
+        if self.moon == moon.FULL:
+            self.inv.take(self.itemstock.find("miner's lamp"))
+        else:
+            self.inv.take(self.itemstock.find('lamp'))
+
         self.inv.take(self.itemstock.find('pickaxe'))
         
         pl = [k for k in self.neighbors[(self.px,self.py)] if k in self.walkmap] + [(self.px,self.py)]
@@ -2020,6 +2040,22 @@ class World:
             return
 
         a = self.featmap[(self.px, self.py)]
+
+        if a.bb_shrine:
+            for i in self.inv:
+                if i and i.corpse:
+                    self.msg.m("Ba'al-Zebub accepts your sacrifice!")
+                    self.inv.purge(i)
+
+                    i2 = self.itemstock.generate(self.dlev)
+                    if i2:
+                        if (self.px, self.py) not in self.itemap:
+                            self.itemap[(self.px, self.py)] = [i2]
+                        else:
+                            self.itemap[(self.px, self.py)].append(i2)
+                    return
+            self.msg.m("Ba'al-Zebub needs to be sated with blood!!")
+            return
 
         if a.s_shrine:
             if self.b_grace or self.v_grace:
@@ -2769,6 +2805,13 @@ class World:
             self.achievements.use(item)
             return None
 
+        elif item.switch_moon:
+            self.moon = item.switch_moon
+            self.regen(self.w, self.h)
+            self.achievements.use(item)
+            self.msg.m('The local space-time continuum shifts slightly.', True)
+            return None
+
         elif item.rangeattack or item.rangeexplode:
             if item.ammo == 0:
                 self.msg.m("It's out of ammo!")
@@ -2958,14 +3001,14 @@ class World:
                     self.itemap[(mon.x, mon.y)] = itemdrop
 
 
-        winner, exting = self.monsterstock.death(mon)
+        winner, exting = self.monsterstock.death(mon, self.moon)
 
         if do_gain:
             self.achievements.mondeath(self, mon, is_rad=is_rad, is_explode=is_explode)
         elif is_poison:
             self.achievements.mondeath(self, mon, is_poison=True)
 
-        if exting and not mon.no_exting:
+        if exting:
             self.achievements.mondone()
 
         # Quests
@@ -3318,12 +3361,20 @@ class World:
                     self.msg.m(smu + ' misses.')
 
             if mon.sleepattack:
-                self.msg.m('You fall asleep!')
-                self.start_sleep(force=True, quick=True, realforced=True)
-                return
+                if dmg > 0:
+                    self.msg.m('You fall asleep!')
+                    self.start_sleep(force=True, quick=True, realforced=True)
 
-            if mon.hungerattack:
+            elif mon.bloodsucker:
+                if dmg > 0:
+                    self.msg.m('You feel weak!')
+                    self.stats.hunger.dec(mon.bloodsucker[0])
+                    self.stats.health.dec(mon.bloodsucker[0], sm, self.config.sound)
+                    mon.fleetimeout = mon.bloodsucker[1]
+
+            elif mon.hungerattack:
                 self.stats.hunger.dec(dmg)
+
             else:
                 self.stats.health.dec(dmg, sm, self.config.sound)
 
@@ -3745,7 +3796,16 @@ class World:
                 mdx, mdy = libtcod.line_step()
             else:
 
+                flee = False
+
                 if mon.fleerange and dist <= mon.fleerange:
+                    flee = True
+
+                elif mon.fleetimeout > 0 and dist <= mon.range - 2:
+                    flee = True
+                    mon.fleetimeout -= 1
+
+                if flee:
                     mdx, mdy = None, None
                     for _x,_y in self.neighbors[(x,y)]:
                         if (_x,_y) in self.walkmap and \
@@ -3759,6 +3819,13 @@ class World:
                 else:
                     libtcod.path_compute(self.floorpath, x, y, mon.known_px, mon.known_py)
                     mdx, mdy = libtcod.path_walk(self.floorpath, True)
+
+                    if mon.fast:
+                        mdx2, mdy2 = libtcod.path_walk(self.floorpath, True)
+                        if mdx2 is not None and mdy2 is not None:
+                            mdx, mdy = mdx2, mdy2
+                    
+
 
         if mon.stoneeating:
             if mdx is not None:
@@ -3793,9 +3860,18 @@ class World:
         return False
 
     def summon(self, x, y, monname, n):
-        m = self.monsterstock.find(monname, n, self.itemstock)
-        if len(m) == 0:
-            return []
+
+        if monname is None:
+            m = []
+            for ii in xrange(n):
+                mmi = self.monsterstock.generate(self.branch, self.dlev, self.itemstock, self.moon)
+                if mmi and not mmi.inanimate:
+                    m.append(mmi)
+
+        else:
+            m = self.monsterstock.find(monname, n, self.itemstock)
+            if len(m) == 0:
+                return []
 
         l = []
         for ki in self.neighbors[(x,y)]:
@@ -3937,6 +4013,9 @@ class World:
         elif ca.featuretoggle:
             if (x, y) not in self.featmap and (x, y) in self.walkmap:
                 self.set_feature(x, y, ca.featuretoggle)
+        elif ca.floorfeaturetoggle:
+            if (x, y) not in self.featmap and (x, y) in self.walkmap and (x, y) not in self.watermap:
+                self.set_feature(x, y, ca.floorfeaturetoggle)
 
     def celauto_off(self, x, y, ca):
         if ca.watertoggle is not None:
@@ -4033,7 +4112,12 @@ class World:
                     mons.append(mon)
                     continue
 
-            if mon.summon and (mon.visible or mon.static) and (self.t % mon.summon[1]) == 0:
+            if mon.onfire > 0:
+                fired.append(mon)
+
+            msumm = (mon.summon or mon.summononce)
+
+            if msumm and (mon.visible or mon.static) and (self.t % msumm[1]) == 0:
                 summons.append((k, mon))
                 continue
 
@@ -4042,9 +4126,6 @@ class World:
 
             mon.visible_old = mon.visible
             mon.visible = False
-
-            if mon.onfire > 0:
-                fired.append(mon)
 
             mdx, mdy = self.walk_monster(mon, dist, x, y)
 
@@ -4073,15 +4154,25 @@ class World:
         for k,mon in summons:
             smu = str(mon)
             smu = smu[0].upper() + smu[1:]
-            q = self.summon(k[0], k[1], mon.summon[0], 1)
-            if len(q) > 0:
-                if not mon.static:
-                    self.msg.m(smu + ' summons ' + str(q[0]) + '!')
-            else:
-                mon.summon = None
+
+            if mon.summon:
+                q = self.summon(k[0], k[1], mon.summon[0], 1)
+                if len(q) > 0:
+                    if not mon.static:
+                        self.msg.m(smu + ' summons ' + str(q[0]) + '!')
+                else:
+                    mon.summon = None
+
+            elif mon.summononce:
+                q = self.summon(k[0], k[1], None, mon.summononce[0])
+                if len(q) > 0:
+                    self.msg.m(smu + ' summons monsters!')
+                    mon.summononce = None
+
+
 
         for x,y,mon in raise_dead:
-            if (x,y) in self.walkmap and (x,y) not in self.monmap:
+            if (x,y) in self.walkmap and (x,y) not in self.monmap and not (x == self.px and y == self.py):
                 smu = str(mon)
                 smu = smu[0].upper() + smu[1:]
                 self.msg.m(smu + ' rises from the dead!')
@@ -4151,7 +4242,12 @@ class World:
         if self.moon == moon.NEW:
             lightradius += 1
         elif self.moon == moon.FULL:
-            lightradius -= 1 
+            lightradius -= 2
+
+        lightradius += self.try_feature(self.px, self.py, 'lightbonus', 0)
+
+        if lightradius < 1:
+            lightradius = 1
 
         if self.mapping > 0:
             if withtime:

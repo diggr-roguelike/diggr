@@ -6,11 +6,12 @@ import libtcodpy as libtcod
 class CelAuto:
     def __init__(self, color=libtcod.light_blue,
                  rule="345/26/5", featuretoggle=None,
-                 watertoggle=None,
+                 watertoggle=None, floorfeaturetoggle=None,
                  pic=None, anchor=(0,0)):
         self.color = color
         self.featuretoggle = featuretoggle
         self.watertoggle = watertoggle
+        self.floorfeaturetoggle = floorfeaturetoggle
         self.pic = pic
         self.anchor = anchor
 
@@ -43,6 +44,10 @@ class CelAutoStock:
         self.bmold = CelAuto(rule="3456/2/6", color=None,
                              featuretoggle='g', pic=["."])
 
+
+        self.ffern = CelAuto(rule="23/24/72", color=None,
+                             floorfeaturetoggle='!f',
+                             pic=["..",".."])
 
         self.nbors = None
 

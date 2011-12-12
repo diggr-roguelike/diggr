@@ -13,7 +13,7 @@ import os
 import time
 
 
-DEFAULT_VERSION = '11.12.04'
+DEFAULT_VERSION = '11.12.18'
 USERPREF = "user_"
 
 
@@ -41,12 +41,15 @@ def ach_tag_to_text(tag):
              'thunderdome_win': 'Became a Thunderdome champion',
              'molds': 'Cleaned up black mold',
              'colorwow': 'Used colored liquid for great success',
-             '6color': 'Drank colored liquid 6 times or more'
+             '6color': 'Drank colored liquid 6 times or more',
+             'full_m_prism': 'Used a prism of the Full Moon',
+             'new_m_prism': 'Used a prism of the New Moon'
              }
 
     prefix = {'plev': 'Reached player level %s',
               'dlev': 'Reached dungeon level %s',
               'dead_': 'Killed by %s',
+              'moon_': 'Played on a %s moon',
               'user_': '%s'
               }
 
