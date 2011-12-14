@@ -1177,7 +1177,7 @@ class MonsterStock:
         ufo = Monster("rigellian", skin=('a', libtcod.dark_lime),
                       attack=7.0, defence=22.0, range=25, 
                       branch='a', count=1, level=2, idtag='ufo_a2', moon=quartermoon_only,
-                      no_exting=True, summononce=(6, 12), 
+                      no_exting=True, 
                       fleerange=8, explodeimmune=True, confimmune=True,
                       radimmune=True, poisimmune=True, fireimmune=True,
                       flying=True, blink_away=5,
@@ -1190,33 +1190,33 @@ class MonsterStock:
 
         template(ufo, branch='a', level=2, idtag='ufo_a2')
         template(ufo, branch='a', level=4, idtag='ufo_a4')
-        template(ufo, branch='a', level=6, idtag='ufo_a6')
-        template(ufo, branch='a', level=8, idtag='ufo_a8')
-        template(ufo, branch='a', level=10, idtag='ufo_a10')
+        template(ufo, branch='a', level=6, idtag='ufo_a6', psyattack=0.25, psyrange=3)
+        template(ufo, branch='a', level=8, idtag='ufo_a8', psyattack=0.25, psyrange=5)
+        template(ufo, branch='a', level=10, idtag='ufo_a10', psyattack=0.25, psyrange=6)
 
         template(ufo, branch='b', level=2, idtag='ufo_b2')
         template(ufo, branch='b', level=4, idtag='ufo_b4')
-        template(ufo, branch='b', level=6, idtag='ufo_b6')
-        template(ufo, branch='b', level=8, idtag='ufo_b8')
-        template(ufo, branch='b', level=10, idtag='ufo_b10')
+        template(ufo, branch='b', level=6, idtag='ufo_b6', psyattack=0.25, psyrange=3)
+        template(ufo, branch='b', level=8, idtag='ufo_b8', psyattack=0.25, psyrange=5)
+        template(ufo, branch='b', level=10, idtag='ufo_b10', psyattack=0.25, psyrange=6)
 
         template(ufo, branch='c', level=2, idtag='ufo_c2')
         template(ufo, branch='c', level=4, idtag='ufo_c4')
-        template(ufo, branch='c', level=6, idtag='ufo_c6')
-        template(ufo, branch='c', level=8, idtag='ufo_c8')
-        template(ufo, branch='c', level=10, idtag='ufo_c10')
+        template(ufo, branch='c', level=6, idtag='ufo_c6', psyattack=0.25, psyrange=3)
+        template(ufo, branch='c', level=8, idtag='ufo_c8', psyattack=0.25, psyrange=5)
+        template(ufo, branch='c', level=10, idtag='ufo_c10', psyattack=0.25, psyrange=6)
 
         template(ufo, branch='d', level=2, idtag='ufo_d2')
         template(ufo, branch='d', level=4, idtag='ufo_d4')
-        template(ufo, branch='d', level=6, idtag='ufo_d6')
-        template(ufo, branch='d', level=8, idtag='ufo_d8')
-        template(ufo, branch='d', level=10, idtag='ufo_d10')
+        template(ufo, branch='d', level=6, idtag='ufo_d6', psyattack=0.25, psyrange=3)
+        template(ufo, branch='d', level=8, idtag='ufo_d8', psyattack=0.25, psyrange=5)
+        template(ufo, branch='d', level=10, idtag='ufo_d10', psyattack=0.25, psyrange=6)
 
         template(ufo, branch='e', level=2, idtag='ufo_e2')
         template(ufo, branch='e', level=4, idtag='ufo_e4')
-        template(ufo, branch='e', level=6, idtag='ufo_e6')
-        template(ufo, branch='e', level=8, idtag='ufo_e8')
-        template(ufo, branch='e', level=10, idtag='ufo_e10')
+        template(ufo, branch='e', level=6, idtag='ufo_e6', psyattack=0.25, psyrange=3)
+        template(ufo, branch='e', level=8, idtag='ufo_e8', psyattack=0.25, psyrange=5)
+        template(ufo, branch='e', level=10, idtag='ufo_e10', psyattack=0.25, psyrange=6)
 
 
         ## Secret branch

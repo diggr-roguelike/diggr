@@ -1656,9 +1656,8 @@ class World:
             self.branch = random.choice(['a', 'b', 'c', 'd', 'e'])
 
         if self.moon is None:
-            #m = moon.phase(self._seed)
-            #self.moon = m['phase']
-            self.moon = moon.FIRST_QUARTER
+            m = moon.phase(self._seed)
+            self.moon = m['phase']
 
         nogens = set()
 
