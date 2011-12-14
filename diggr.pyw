@@ -1658,7 +1658,7 @@ class World:
         if self.moon is None:
             #m = moon.phase(self._seed)
             #self.moon = m['phase']
-            self.moon = moon.FULL
+            self.moon = moon.FIRST_QUARTER
 
         nogens = set()
 
@@ -2123,6 +2123,22 @@ class World:
             self.set_feature(x, y, None)
         else:
             self.set_feature(x, y, '*')
+
+
+    def find_blink_targ(self, _x, _y, range):
+        l = []
+        for x in xrange(_x - range, _x + range + 1):
+            for y in [_y - range, _x + range]:
+                if x >= 0 and y >= 0 and (x,y) in self.walkmap:
+                    l.append((x,y))
+
+        for y in xrange(_y - range - 1, _y + range):
+            for x in [_x - range, _x + range]:
+                if x >= 0 and y >= 0 and (x,y) in self.walkmap:
+                    l.append((x,y))
+
+        l = l[random.randint(0, len(l)-1)]
+        return l[0], l[1]
 
 
     def showinv(self):
@@ -2719,20 +2735,9 @@ class World:
             return None
 
         elif item.jumprange:
-            l = []
-            for x in xrange(self.px - item.jumprange, self.px + item.jumprange + 1):
-                for y in [self.py - item.jumprange, self.px + item.jumprange]:
-                    if x >= 0 and y >= 0 and (x,y) in self.walkmap:
-                        l.append((x,y))
-
-            for y in xrange(self.py - item.jumprange - 1, self.py + item.jumprange):
-                for x in [self.px - item.jumprange, self.px + item.jumprange]:
-                    if x >= 0 and y >= 0 and (x,y) in self.walkmap:
-                        l.append((x,y))
-
-            l = l[random.randint(0, len(l)-1)]
-            self.px = l[0]
-            self.py = l[1]
+            x, y = self.find_blink_targ(self.px, self.py, item.jumprange)
+            self.px = x
+            self.py = y
 
             self.achievements.use(item)
 
@@ -3798,7 +3803,13 @@ class World:
 
                 flee = False
 
-                if mon.fleerange and dist <= mon.fleerange:
+                if mon.blink_away and dist < 2.0:
+                    mdx, mdy = self.find_blink_targ(x, y, mon.blink_away)
+                    return mdx, mdy
+
+                elif mon.fleerange and dist <= mon.fleerange:
+                    if math.fabs(dist - mon.fleerange) < 0.9:
+                        return None, None
                     flee = True
 
                 elif mon.fleetimeout > 0 and dist <= mon.range - 2:

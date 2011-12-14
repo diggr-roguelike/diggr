@@ -262,6 +262,11 @@ class ItemStock:
                                desc=['A metallic wand with a skull-and-crossbones embossed on it.',
                                      'There is an annoying blinking LED light mounted in the handle.'])
 
+        self.deathray = Item('death ray gun', slot='e', skin=('/', libtcod.sky),
+                             rarity=0, applies=True, rangeexplode=True, range=(1, 6),
+                             radius=0, attack=0, ammochance=(50,50), straightline=True,
+                             desc=['A futuristic raygun from a faraway galaxy.'])
+
         self.mauser = Item("Mauser C96", slot='e', skin=('(', libtcod.blue),
                            rangeattack=7.0, range=(0,15), ammochance=(0, 10),
                            straightline=True, applies=True, rarity=15,

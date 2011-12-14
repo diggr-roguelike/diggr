@@ -15,7 +15,7 @@ class Monster:
                  flavor=None, idtag=None, static=False, moldspew=None, is_mold=False,
                  boulder=False, inanimate=False, large=False, moon=None, fleerange=None,
                  no_exting=False, raise_dead=None, bloodsucker=None, summononce=None,
-                 pointscontrib=1, pointsfac=1, fast=False):
+                 pointscontrib=1, pointsfac=1, fast=False, blink_away=None):
         self.name = name
         self.skin = skin
         self.count = count
@@ -59,6 +59,7 @@ class Monster:
         self.pointscontrib = pointscontrib
         self.pointsfac = pointsfac
         self.fast = fast
+        self.blink_away = blink_away
 
         if not idtag:
             self.idtag = name
@@ -112,6 +113,7 @@ class MonsterStock:
 
         newmoon_only     = (9, 0, 0, 0, 0, 0, 0, 0)
         fullmoon_only    = (0, 0, 0, 0, 9, 0, 0, 0)
+        quartermoon_only = (0, 0, 9, 0, 0, 0, 9, 0)
 
         # Megafauna dungeon branch
 
@@ -1169,6 +1171,52 @@ class MonsterStock:
         template(lycan, branch='e', level=7, idtag='lyca_e7')
         template(lycan, branch='e', level=8, idtag='lyca_e8')
         template(lycan, branch='e', level=9, idtag='lyca_e9')
+
+        ##
+
+        ufo = Monster("rigellian", skin=('a', libtcod.dark_lime),
+                      attack=7.0, defence=22.0, range=25, 
+                      branch='a', count=1, level=2, idtag='ufo_a2', moon=quartermoon_only,
+                      no_exting=True, summononce=(6, 12), 
+                      fleerange=8, explodeimmune=True, confimmune=True,
+                      radimmune=True, poisimmune=True, fireimmune=True,
+                      flying=True, blink_away=5,
+                      itemdrop='deathray', pointsfac=5,
+                      desc=['An evil alien overlord.',
+                            'He studies humanity and plots plans of world domination.',
+                            'He might also be the one responsible for abductions of',
+                            'immocents civilians and cattle.'])
+
+
+        template(ufo, branch='a', level=2, idtag='ufo_a2')
+        template(ufo, branch='a', level=4, idtag='ufo_a4')
+        template(ufo, branch='a', level=6, idtag='ufo_a6')
+        template(ufo, branch='a', level=8, idtag='ufo_a8')
+        template(ufo, branch='a', level=10, idtag='ufo_a10')
+
+        template(ufo, branch='b', level=2, idtag='ufo_b2')
+        template(ufo, branch='b', level=4, idtag='ufo_b4')
+        template(ufo, branch='b', level=6, idtag='ufo_b6')
+        template(ufo, branch='b', level=8, idtag='ufo_b8')
+        template(ufo, branch='b', level=10, idtag='ufo_b10')
+
+        template(ufo, branch='c', level=2, idtag='ufo_c2')
+        template(ufo, branch='c', level=4, idtag='ufo_c4')
+        template(ufo, branch='c', level=6, idtag='ufo_c6')
+        template(ufo, branch='c', level=8, idtag='ufo_c8')
+        template(ufo, branch='c', level=10, idtag='ufo_c10')
+
+        template(ufo, branch='d', level=2, idtag='ufo_d2')
+        template(ufo, branch='d', level=4, idtag='ufo_d4')
+        template(ufo, branch='d', level=6, idtag='ufo_d6')
+        template(ufo, branch='d', level=8, idtag='ufo_d8')
+        template(ufo, branch='d', level=10, idtag='ufo_d10')
+
+        template(ufo, branch='e', level=2, idtag='ufo_e2')
+        template(ufo, branch='e', level=4, idtag='ufo_e4')
+        template(ufo, branch='e', level=6, idtag='ufo_e6')
+        template(ufo, branch='e', level=8, idtag='ufo_e8')
+        template(ufo, branch='e', level=10, idtag='ufo_e10')
 
 
         ## Secret branch
