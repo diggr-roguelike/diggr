@@ -15,21 +15,6 @@ import sqlite3
 import sounds
 import moon
 
-# Moon phases.
-# Full: slime, ferns, molds, werewolves/shapeshifters, lunatics
-#    lunatic (summons monsters, permanently confused)
-#    lycanthrope (moves 'fast', erratically)  
-#    ferns (gain nutrition, chance of forced sleep, grows like swamp gas)
-#
-# New: vampires, spirits, corpses, wizards
-#    priest of Baalzebub  (revives corpses)
-#    nosferatu (strikes to damage all stats, moves away)
-#    altar of Baalzebub (for sacrificing corpses)
-#
-# Quarter: aliens (target and shoot explosives)
-
-# Prism of the New/Full Moon
-
 
 
 class Logger:
