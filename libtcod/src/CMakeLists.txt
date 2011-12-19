@@ -45,6 +45,9 @@ ELSE()
 	target_link_libraries(${LIBTCOD_NAME} ${PNG_NAME} ${SDL_NAME} ${ZLIB_NAME} ) 
 ENDIF()
 
+set(LIBTCOD_NAME_STATIC ${LIBTCOD_NAME}_static)
+add_library(${LIBTCOD_NAME_STATIC} STATIC ${LIBTCOD_C_SRC})
+
 
 IF(MINGW)
 	target_link_libraries(${LIBTCOD_NAME} dxguid winmm)
