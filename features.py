@@ -194,7 +194,7 @@ class FeatureStock:
                               lit=True, queasy=0.1, name='swamp gas', explode=3)
 
 
-        self.f['C'] = Feature(walkable=True, visible=True, skin=(20, libtcod.darkest_green),
+        self.f['C'] = Feature(walkable=True, visible=True, skin=(20, libtcod.dark_green),
                               resource='g', name='a Green Fountain')
 
         self.f['V'] = Feature(walkable=True, visible=True, skin=(20, libtcod.dark_red), 
@@ -203,7 +203,7 @@ class FeatureStock:
         self.f['B'] = Feature(walkable=True, visible=True, skin=(20, libtcod.dark_yellow),
                               resource='y', name='a Yellow Fountain')
 
-        self.f['N'] = Feature(walkable=True, visible=True, skin=(20, libtcod.dark_blue),
+        self.f['N'] = Feature(walkable=True, visible=True, skin=(20, libtcod.dark_sky),
                               resource='b', name='a Blue Fountain')
 
         self.f['M'] = Feature(walkable=True, visible=True, skin=(20, libtcod.dark_purple), 

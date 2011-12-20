@@ -429,12 +429,12 @@ class ItemStock:
                            rarity=5, defence=1.0,
                            desc=['A sturdy wooden shield.'])
 
-        self.metalboots = Item('metal boots', slot='g', skin=('[', libtcod.brass),
+        self.metalboots = Item('sabatons', slot='g', skin=('[', libtcod.brass),
                                count=0, rarity=5, defence=0.5,
                                desc=['Heavy boots made out of a single piece of sheet metal.'])
 
-        self.legarmor = Item('leg armor', slot='f', skin=('[', libtcod.copper),
-                             count=0, rarity=5, defence=0.5,
+        self.legarmor = Item('cuisses and schynbalds', slot='f', skin=('[', libtcod.copper),
+                             count=0, rarity=5, defence=0.5, 
                              desc=['Protective iron plates that go on your thighs and shins.'])
 
         self.ringmail = Item('ring mail', slot='c', skin=('[', libtcod.gold),

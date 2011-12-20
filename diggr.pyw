@@ -462,10 +462,8 @@ class Messages:
     def draw(self, x, y, w, turn):
         l = []
         for v,m,z in self.strings[:3]:
-            if v:
-                l.append('%c%s' % (v,m))
-            elif z[0] is None or z[0] >= turn:
-                l.append('%c%s' % (libtcod.COLCTRL_1, m))
+            if z[0] is None or z[0] >= turn:
+                l.append('%c%s' % (v or libtcod.COLCTRL_1, m))
                 z[0] = turn
             else:
                 l.append('%c%s' % (libtcod.COLCTRL_5, m))
@@ -1383,6 +1381,26 @@ class World:
 
 
 
+    def set_item(self, x, y, itms):
+        while 1:
+            if not self.try_feature(x, y, 'stairs'):
+
+                if (x,y) not in self.itemap:
+                    self.itemap[(x,y)] = []
+                iis = self.itemap[(x,y)]
+
+                while len(iis) < 5 and len(itms) > 0:
+                    iis.append(itms.pop(0))
+
+                if len(itms) == 0:
+                    break
+
+            d = [ k for k in self.neighbors[(x,y)] if k in self.walkmap ]
+            if len(d) == 0:
+                iis.extend(itms)
+            x,y = d[random.randint(0, len(d)-1)]
+
+
     def paste_vault(self, v, m, nogens):
         x = None
         y = None
@@ -1432,10 +1450,7 @@ class World:
                     else:
                         itm = self.itemstock.get(z[1])
                         if itm:
-                            if (xx, yy) not in self.itemap:
-                                self.itemap[(xx, yy)] = [itm]
-                            else:
-                                self.itemap[(xx, yy)].append(itm)
+                            self.set_item(xx, yy, [itm])
 
 
     def make_feats(self, nogens):
@@ -1598,10 +1613,7 @@ class World:
             x, y = ll[random.randint(0, len(ll)-1)]
             item = self.itemstock.generate(lev)
             if item:
-                if (x, y) not in self.itemap:
-                    self.itemap[(x, y)] = [item]
-                else:
-                    self.itemap[(x, y)].append(item)
+                self.set_item(x, y, [item])
 
         ## Quests
         if self.branch in self.quests:
@@ -1613,10 +1625,7 @@ class World:
 
                 x, y = ll[random.randint(0, len(ll)-1)]
 
-                if (x, y) not in self.itemap:
-                    self.itemap[(x,y)] = itm2
-                else:
-                    self.itemap[(x,y)].extend(itm2)
+                self.set_item(x, y, itm2)
 
 
     def place(self, nogens):
@@ -1676,10 +1685,7 @@ class World:
             k = pl[random.randint(0,len(pl)-1)]
             i = self.itemstock.generate(1)
 
-            if k not in self.itemap:
-                self.itemap[k] = [i]
-            else:
-                self.itemap[k].append(i)
+            self.set_item(k[0], k[1], [i])
 
 
 
@@ -2033,10 +2039,7 @@ class World:
 
                     i2 = self.itemstock.generate(self.dlev)
                     if i2:
-                        if (self.px, self.py) not in self.itemap:
-                            self.itemap[(self.px, self.py)] = [i2]
-                        else:
-                            self.itemap[(self.px, self.py)].append(i2)
+                        self.set_item(self.px, self.py, [i2])
                     return
             self.msg.m("Ba'al-Zebub needs to be sated with blood!!")
             return
@@ -2256,7 +2259,7 @@ class World:
             pad = ' ' * 12
 
             for i in xrange(len(items)):
-                if i >= 5:
+                if i > 5:
                     floorstuff.append('(There are other items here; clear away the pile to see more)')
                     break
                 else:
@@ -2379,10 +2382,7 @@ class World:
 
         elif cc == 'd':
             i = self.inv.drop(slot)
-            if (self.px, self.py) in self.itemap:
-                self.itemap[(self.px, self.py)].append(i)
-            else:
-                self.itemap[(self.px, self.py)] = [i]
+            self.set_item(self.px, self.py, [i])
             self.tick()
 
         elif cc == 'f':
@@ -2397,10 +2397,7 @@ class World:
 
                 self.msg.m('You throw ' + str(i) + '.')
 
-                if (nx, ny) in self.itemap:
-                    self.itemap[(nx, ny)].append(i)
-                else:
-                    self.itemap[(nx, ny)] = [i]
+                self.set_item(nx, ny, [i])
 
                 if slot in flooritems:
                     del items[flooritems[slot]]
@@ -2419,10 +2416,8 @@ class World:
                         del self.itemap[(self.px, self.py)]
 
                     if item2:
-                        if (self.px, self.py) in self.itemap:
-                            self.itemap[(self.px, self.py)].append(item2)
-                        else:
-                            self.itemap[(self.px, self.py)] = [item2]
+                        self.set_item(self.px, self.py, [item2])
+
                 elif item2:
                     self.inv.take(item2)
 
@@ -2871,10 +2866,7 @@ class World:
             return
 
         self.msg.m('You drop ' + str(i) +'.')
-        if (self.px, self.py) in self.itemap:
-            self.itemap[(self.px, self.py)].append(i)
-        else:
-            self.itemap[(self.px, self.py)] = [i]
+        self.set_item(self.px, self.py, [i])
         self.tick()
 
 
@@ -2907,10 +2899,7 @@ class World:
 
         elif id(i2) != id(i):
             _purge()
-            if (px,py) not in self.itemap:
-                self.itemap[(px,py)] = [i2]
-            else:
-                self.itemap[(px,py)].append(i2)
+            self.set_item(px, py, [i2])
 
         self.tick()
 
@@ -2925,7 +2914,7 @@ class World:
             if i == 0:
                 s.append('%c' % libtcod.COLCTRL_1)
                 s[-1] += '%c) %s' % (chr(97 + i), str(items[i]))
-            elif i >= 5:
+            elif i > 5:
                 s.append('(There are other items here; clear away the pile to see more)')
                 break
             else:
@@ -2984,11 +2973,7 @@ class World:
                 itemdrop.append(corpse)
 
             if len(itemdrop) > 0:
-                if (mon.x, mon.y) in self.itemap:
-                    self.itemap[(mon.x, mon.y)].extend(itemdrop)
-                else:
-                    self.itemap[(mon.x, mon.y)] = itemdrop
-
+                self.set_item(mon.x, mon.y, itemdrop)
 
         winner, exting = self.monsterstock.death(mon, self.moon)
 
@@ -3009,6 +2994,11 @@ class World:
             for msg in quest.messages[self.dlev]:
                 self.msg.m(msg, True)
 
+            if questdone:
+                self.achievements.questdone(self.branch)
+            else:
+                self.set_feature(mon.x, mon.y, '>')
+
             qis = []
             for g in quest.gifts[self.dlev]:
                 if g:
@@ -3018,15 +3008,7 @@ class World:
                 if i:
                     qis.append(i)
 
-            if (mon.x, mon.y) not in self.itemap:
-                self.itemap[(mon.x, mon.y)] = qis
-            else:
-                self.itemap[(mon.x, mon.y)].extend(qis)
-
-            if questdone:
-                self.achievements.questdone(self.branch)
-            else:
-                self.set_feature(mon.x, mon.y, '>')
+            self.set_item(mon.x, mon.y, qis)
 
             return
 
@@ -3412,7 +3394,7 @@ class World:
                     i = self.itemap[(tx, ty)]
                     s.append('You see the following items:')
                     for ix in xrange(len(i)):
-                        if ix >= 5:
+                        if ix > 5:
                             s.append('(And some other items)')
                             break
                         s.append(str(i[ix]))
@@ -3590,10 +3572,7 @@ class World:
             self.msg.m('Nothing happened!')
         else:
             self.msg.m('Suddenly, ' + str(i) + ' appears at your feet!')
-            if (self.px, self.py) in self.itemap:
-                self.itemap[(self.px, self.py)].append(i)
-            else:
-                self.itemap[(self.px, self.py)] = [i]
+            self.set_item(self.px, self.py, [i])
 
 
     def move_down(self): self.move(0, 1)
@@ -3611,7 +3590,7 @@ class World:
         k = draw_window(["Really quit? Press 'y' if you are truly sure."], self.w, self.h)
         if k == 'y':
             self.stats.health.reason = 'quitting'
-            self.done = True
+            #self.done = True
             self.dead = True
 
 
