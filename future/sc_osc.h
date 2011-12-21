@@ -3,8 +3,17 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+
+#ifdef _WIN32
+
+#include <windows.h>
+
+#else
+
 #include <unistd.h>
 #include <sys/wait.h>
+
+#endif
 
 #include "lo/lo.h"
 
@@ -115,6 +124,53 @@ int _handler(const char* path, const char* types, lo_arg** argv,
 struct Engine {
 
     bool active;
+
+#ifdef _WIN32
+    HANDLE child;
+
+    Engine(const std::string& exe,
+           const std::string& execdir,
+           const std::string& synthdir, 
+           const std::string& plugindir) : active(false) {
+
+        std::string tmp3 = execdir+exe;
+
+        std::string tmp4;
+        tmp4 += exe;
+        tmp4 += " -u 55500 -U \"";
+        tmp4 += plugindir;
+        tmp4 += "\"";
+
+        STARTUPINFO si;
+        PROCESS_INFORMATION pi;
+        DWORD tstat;
+
+        GetStartupInfo(&si);
+        si.dwFlags |= STARTF_USESHOWWINDOW;
+
+        CreateProcess(tmp3.c_str(), 
+                      (char*)tmp4.c_str(),
+                      NULL,        // Default process security attributes
+                      NULL,        // Default thread security attributes
+                      FALSE,      // Don't inherit handles from the parent
+                      0,        // Normal priority
+                      NULL,        // Use the same environment as the parent
+                      execdir.c_str(),
+                      &si,        // Startup Information
+                      &pi);        // Process information stored upon return
+
+        child = pi.hProcess;
+    }
+
+
+    void wait() {
+        if (!active) return;
+        WaitForSingleObject(child, 2000);
+    }
+
+
+#else
+
     pid_t child;
 
     Engine(const std::string& exe,
@@ -138,7 +194,7 @@ struct Engine {
             std::string tmp3 = execdir+exe;
 
             if (execl(tmp3.c_str(), exe.c_str(), 
-                       "-u", "55500", "-U", plugindir.c_str(), NULL) < 0) {
+                      "-u", "55500", "-U", plugindir.c_str(), NULL) < 0) {
                 
                 fprintf(stderr, "Could not execle().\n");
             }
@@ -151,10 +207,12 @@ struct Engine {
 
     void wait() {
         if (!active) return;
-
         int tmp;
         waitpid(child, &tmp, 0);
     }
+
+#endif
+
 };
 
 
