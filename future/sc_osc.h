@@ -92,10 +92,10 @@ struct SC_OSC {
         return m_n++;
     }
 
-    void set(unsigned int synthn, const std::string& param, double p) {
+    void set(unsigned int synthn, const std::string& param, float p) {
         if (!active || mute) return;
 
-        lo_send(server_send, "/n_set", "isd", 
+        lo_send(server_send, "/n_set", "isf", 
                 synthn, param.c_str(), p);
     }
 
