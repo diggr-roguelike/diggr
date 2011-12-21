@@ -23,7 +23,7 @@ class Engine:
         wd = os.path.join(cwd, 'sound')
         exedir = os.path.join(wd, '')
         synthdir = os.path.join(wd, 'synths')
-        plugindir os.path.join(wd, 'plugins')
+        plugindir = os.path.join(wd, 'plugins')
 
         if os.name == 'nt':
             exe += '.exe'
@@ -35,10 +35,12 @@ class Engine:
         _sound.sound_stop()
 
     def play(self, name, **args):
-        return _sound.sound_play(name, args[0], c_float(args[1]))
+        k,v = args.items()[0]
+        return _sound.sound_play(name, k, c_float(v))
 
     def set(self, n, **args):
-        _sound.sound_set(n, args[0], c_float(args[1]))
+        k,v = args.items()[0]
+        _sound.sound_set(n, k, c_float(v))
 
     def stop(self, n):
         _sound.sound_free(n)
