@@ -25,17 +25,21 @@ def start_server():
         nm += '.exe'
         sui = subprocess.STARTUPINFO()
         sui.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+    else:
+        pass
+        #subprocess.Popen("jackd -m -d alsa", shell=True)
 
     try:
-        p = subprocess.Popen([os.path.join(wd, nm),
-                             '-u', '55500', '-U', plugindir],
-                             #stdout=open('qq','w'),
-                             env=env,
-                             cwd=wd, startupinfo=sui)
+        #p = subprocess.Popen([os.path.join(wd, nm),
+        #                     '-u', '55500', '-U', plugindir],
+        #                     #stdout=open('qq','w'),
+        #                     env=env,
+        #                     cwd=wd, startupinfo=sui)
+        p = subprocess.Popen('scsynth -u 55500 -R 0', shell=True)
         print 'OK'
         return p, synthdir
     except:
-        print 'ERR'
+        print 'ERR!!'
         return None, synthdir
 
 

@@ -18,6 +18,7 @@
 #include "lo/lo.h"
 
 #include <string>
+//#include <iostream>
 
 
 namespace sc_osc {
@@ -52,7 +53,7 @@ struct SC_OSC {
 
         for (int i = 0; i < 5; ++i) {
             lo_send_from(server_send, server_reply, LO_TT_IMMEDIATE, 
-                         "/notify", "i", 0);
+                         "/notify", "i", 1);
 
             if (lo_server_recv_noblock(server_reply, 1000)) {
                 ok = true;
@@ -81,12 +82,13 @@ struct SC_OSC {
         lo_server_free(server_reply);
     }
 
-    unsigned int play(const std::string& synth, const std::string& param, double p) {
+    unsigned int play(const std::string& synth, const std::string& param, float p) {
         if (!active || mute) return 0;
 
-        lo_send(server_send, "/s_new", "siiisd", 
+        lo_send(server_send, "/s_new", "siiisf", 
                 synth.c_str(), m_n, 0, 0, param.c_str(), p);
 
+	//std::cout << "!!" << m_n << " " << synth << " " << param << " " << p << std::endl;
         return m_n++;
     }
 
@@ -188,6 +190,8 @@ struct Engine {
 
             setenv("SC_SYNTHDEF_PATH", synthdir.c_str(), 1);
             setenv("LD_LIBRARY_PATH", execdir.c_str(), 1);
+	    setenv("SC_JACK_DEFAULT_OUTPUTS", "system:playback_1,system:playback_2", 1);
+	    setenv("SC_JACK_DEFAULT_INPUTS", "system:capture_1,system:capture_2", 1);
 
             chdir(execdir.c_str());
             

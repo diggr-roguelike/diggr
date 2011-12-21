@@ -23,6 +23,9 @@ add_library(${LIBLO_NAME} SHARED ${LIBLO_C_SRC})
 set(LIBLO_NAME_STATIC ${LIBLO_NAME}_static)
 add_library(${LIBLO_NAME_STATIC} STATIC ${LIBLO_C_SRC})
 
+SET_TARGET_PROPERTIES(${LIBLO_NAME_STATIC} PROPERTIES COMPILE_FLAGS -fPIC)
+
+
 IF(MINGW)
         target_link_libraries(${LIBLO_NAME} ws2_32 pq pthread wsock32 )
 ENDIF()

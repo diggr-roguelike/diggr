@@ -37,7 +37,8 @@ extern "C" void sound_set(unsigned int s, const char* p, double pd) {
     if (_sound) _sound->osc.set(s, p, pd);
 }
 
-extern "C" void sound_play(const char* s, const char* p, double pd) {
-    if (_sound) _sound->osc.play(s, p, pd);
+extern "C" int sound_play(const char* s, const char* p, double pd) {
+    if (_sound) return _sound->osc.play(s, p, pd);
+    return 0;
 }
 
