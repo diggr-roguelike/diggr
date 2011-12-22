@@ -15,6 +15,7 @@ import sqlite3
 import sounds
 import moon
 
+import libdiggr as dg
 
 
 class Logger:
@@ -1056,7 +1057,6 @@ class World:
         self.v_grace = 0
 
         self.celautostock = CelAutoStock()
-        self.celautomap = {}
 
         self.floorpath = None
 
@@ -1456,7 +1456,7 @@ class World:
     def make_feats(self, nogens):
 
         self.featmap = {}
-        self.celautomap = {}
+        dg.celauto_init()
 
         # HACK!
         # This is done here, and not in make_items(),
@@ -1499,7 +1499,7 @@ class World:
             d = m[random.randint(0, len(m)-1)]
             self.featmap[d] = self.featstock.f['dd']
 
-            self.paste_celauto(d[0], d[1], 'ffern')
+            self.paste_celauto(d[0], d[1], self.celautostock.FERN)
 
         else:
             a = random.randint(-1, 1)
@@ -1788,7 +1788,7 @@ class World:
                     elif i.radexplode:
                         self.rayblast(self.px, self.py, i.radius)
                     elif i.swampgas:
-                        self.paste_celauto(self.px, self.py, 'swampgas')
+                        self.paste_celauto(self.px, self.py, self.celautostock.SWAMPGAS)
                     else:
                         self.explode(self.px, self.py, i.radius)
                     self.inv.purge(i)
@@ -2745,18 +2745,18 @@ class World:
 
         elif item.ebola:
             self.msg.m('The Ebola virus is unleashed!')
-            self.paste_celauto(self.px, self.py, 'ebola')
+            self.paste_celauto(self.px, self.py, self.celautostock.EBOLA)
             self.achievements.use(item)
             return None
 
         elif item.smoke:
-            self.paste_celauto(self.px, self.py, 'smokecloud')
+            self.paste_celauto(self.px, self.py, self.celautostock.SMOKE)
             self.achievements.use(item)
             return item
 
         elif item.trapcloud:
             self.msg.m('You set the nanobots to work.')
-            self.paste_celauto(self.px, self.py, 'trapmaker')
+            self.paste_celauto(self.px, self.py, self.celautostock.TRAPMAKER)
 
             self.achievements.use(item)
 
@@ -3968,20 +3968,20 @@ class World:
                 self.last_played_themesound = t
 
 
-    def paste_celauto(self, x, y, name):
-        ca = getattr(self.celautostock, name)
-        self.celautostock.paste(self.celautomap, x, y, self.w, self.h, ca)
+    def paste_celauto(self, x, y, ca):
+        self.celautostock.paste(x, y, self.w, self.h, ca)
 
-    def seed_celauto(self, x, y, name):
-        ca = getattr(self.celautostock, name)
-        self.celautostock.seed(self.celautomap, x, y, ca)
+    def seed_celauto(self, x, y, ca):
+        self.celautostock.seed(x, y, ca)
 
     def clear_celauto(self, x, y):
-         self.celautostock.clear(self.celautomap, x, y, self.celauto_off)
+         self.celautostock.clear(x, y, self.celauto_off)
         
 
 
     def celauto_on(self, x, y, ca):
+        ca = self.celautostock.stock[ca]
+
         if ca.watertoggle is not None:
             self.watermap.add((x, y))
         elif ca.featuretoggle:
@@ -3992,6 +3992,8 @@ class World:
                 self.set_feature(x, y, ca.floorfeaturetoggle)
 
     def celauto_off(self, x, y, ca):
+        ca = self.celautostock.stock[ca]
+
         if ca.watertoggle is not None:
             self.watermap.discard((x, y))
         elif ca.featuretoggle and (x, y) in self.featmap and \
@@ -4000,10 +4002,7 @@ class World:
 
     def process_world(self):
 
-        self.celautomap = self.celautostock.celauto_step(
-            self.celautomap, self.neighbors, self.w, self.h,
-            self.celauto_on, self.celauto_off)
-
+        self.celautostock.celauto_step(self.celauto_on, self.celauto_off)
 
         explodes = set()
         mons = []
@@ -4022,7 +4021,7 @@ class World:
                             rblasts.append((k[0], k[1], i.radius))
                             delitems.append(k)
                         elif i.swampgas:
-                            self.paste_celauto(self.px, self.py, 'swampgas')
+                            self.paste_celauto(self.px, self.py, self.celautostock.SWAMPGAS)
                             delitems.append(k)
                         else:
                             explodes.add((k[0], k[1], i.radius))
@@ -4364,8 +4363,9 @@ class World:
 
                         # hackity hack
                         if (x, y) in self.celautomap:
-                            ca,state = self.celautomap[(x, y)]
-                            back = libtcod.color_lerp(back, default_back, float(state) / (ca.rule[2]*2))
+                            ca,state = dg.celauto_get_state(x, y)
+                            maxage = self.celautostock.stock[ca].rule[2]
+                            back = libtcod.color_lerp(back, default_back, float(state) / (maxage*2))
 
                     if not is_lit or range:
                         d0 = math.sqrt(math.pow(abs(y - self.py),2) + math.pow(abs(x - self.px),2))

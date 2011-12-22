@@ -1,5 +1,7 @@
 import libtcodpy as libtcod
 
+import libdiggr as dg
+
 #
 
 
@@ -16,44 +18,51 @@ class CelAuto:
         self.anchor = anchor
 
         rule = rule.split('/')
-        self.rule = (set(int(x) for x in rule[0]), 
-                     set(int(x) for x in rule[1]),
-                     int(rule[2]))
+        rule = (rule[0], rule[1], int(rule[2]))
 
 
 class CelAutoStock:
+
+    EBOLA     = 1
+    SMOKE     = 2
+    TRAPMAKER = 3
+    SWAMPAS   = 4
+    MOLD      = 5
+    FERN      = 6
+
     def __init__(self):
 
-        self.ebola = CelAuto(rule="345/26/5", color=None, featuretoggle='e',
-                             pic=["..",".."])
+        self.stock = {
+            self.EBOLA: CelAuto(rule="345/26/5", color=None, featuretoggle='e',
+                                pic=["..",".."]),
 
-        self.smokecloud = CelAuto(rule="0345/26/6", color=None,
-                                  featuretoggle='f',
-                                  pic=["..",".."])
+            self.SMOKE: CelAuto(rule="0345/26/6", color=None,
+                                featuretoggle='f',
+                                pic=["..",".."]),
 
-        self.trapmaker = CelAuto(rule="13458/38/6", color=None,
-                                 featuretoggle='^',
-                                 pic=[" . ",
-                                      "...",
-                                      " . "])
+            self.TRAPMAKER: CelAuto(rule="13458/38/6", color=None,
+                                    featuretoggle='^',
+                                    pic=[" . ",
+                                         "...",
+                                         " . "]),
 
-        self.swampgas = CelAuto(rule="23/24/32", color=None,
-                                featuretoggle='&',
-                                pic=["..",".."])
+            self.SWAMPGAS: CelAuto(rule="23/24/32", color=None,
+                                   featuretoggle='&',
+                                   pic=["..",".."]),
 
-        self.bmold = CelAuto(rule="3456/2/6", color=None,
-                             featuretoggle='g', pic=["."])
+            self.MOLD: CelAuto(rule="3456/2/6", color=None,
+                               featuretoggle='g', pic=["."]),
+
+            self.FERN: CelAuto(rule="23/24/72", color=None,
+                               floorfeaturetoggle='!f',
+                               pic=["..",".."])
+            }
+
+        for k,v in self.stock.iteritems():
+            dg.celauto_make_rule(k, v.rule[0], v.rule[1], v.rule[2])
 
 
-        self.ffern = CelAuto(rule="23/24/72", color=None,
-                             floorfeaturetoggle='!f',
-                             pic=["..",".."])
-
-        self.nbors = None
-
-
-
-    def paste(self, camap, x, y, w, h, ca):
+    def paste(self, x, y, w, h, ca):
 
         x -= ca.anchor[0]
         y -= ca.anchor[1]
@@ -69,74 +78,13 @@ class CelAutoStock:
                 if x1 < 0 or x1 >= w or y1 < 0 or y1 >= h:
                     continue
 
-                camap[(x1, y1)] = (ca, 0)
+                dg.celauto_seed(x1, y1, ca)
 
-    def seed(self, camap, x, y, ca):
-        camap[(x,y)] = (ca, 0)
+    def seed(self, x, y, ca):
+        dg.celauto_seed(x, y, ca)
 
-    def clear(self, camap, x, y, funcoff):
-        if (x,y) in camap:
-            funcoff(x, y, camap[(x,y)][0])
-            del camap[(x,y)]
+    def clear(self, x, y, funcoff):
+        dg.celauto_clear(x, y, funcoff)
 
-    def celauto_step(self, camap, neighbors, w, h, funcon, funcoff):
-
-        # See:
-        # http://www.mirekw.com/ca/rullex_gene.html
-
-        ret = {}
-
-        que = {}
-        dead = {}
-
-        def find_n(x, y, ca, fque=None):
-            n = 0
-
-            for ki in neighbors[(x,y)]:
-
-                if ki in camap:
-                    if camap[ki][0] == ca and camap[ki][1] == 0:
-                        n += 1
-
-                elif fque is not None:
-                    fque[ki] = ca
-
-            return n
-
-
-        for k,v in sorted(camap.iteritems()):
-
-            x,y = k
-            ca,state = v
-
-            # check if we are dead
-            if state > 0:
-                if state < ca.rule[2] - 1:
-                    ret[k] = (ca, state + 1)
-                else:
-                    dead[k] = ca
-
-            else:
-                # check if we survive
-                n = find_n(x, y, ca, fque=que)
-
-                if n not in ca.rule[0]:
-                    ret[k] = (ca, state + 1)
-                else:
-                    ret[k] = v
-
-        # check for newborn cells
-        for k,ca in sorted(que.iteritems()):
-            x,y = k
-            n = find_n(x, y, ca)
-
-            if n in ca.rule[1]:
-                ret[k] = (ca, 0)
-                funcon(x, y, ca)
-
-        # leave remains of dead cells
-        for k,ca in sorted(dead.iteritems()):
-            x,y = k
-            funcoff(x, y, ca)
-
-        return ret
+    def celauto_step(self, funcon, funcoff):
+        dg.celauto_step(funcon, funcoff)

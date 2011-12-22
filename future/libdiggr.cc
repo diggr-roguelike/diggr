@@ -34,3 +34,6 @@ extern "C" void dg_celauto_step(dg_celauto_callback cbon, dg_celauto_callback cb
     celauto::get().step(cbon, cboff);
 }
 
+extern "C" void dg_celauto_get_state(unsigned int x, unsigned int y, size_t* id, unsigned int* age) {
+    celauto::get().get_state(celauto::pt(x,y), *id, *age);
+}

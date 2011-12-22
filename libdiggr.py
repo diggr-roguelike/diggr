@@ -27,3 +27,8 @@ def celauto_clear(x, y, cb):
 def celauto_step(cbon, cboff):
     _dg.dg_celauto_step(CELAUTOFUNC(cbon), CELAUTOFUNC(cboff))
 
+def celauto_get_state(x, y):
+    id = c_ulong()
+    age = c_uint()
+    _dg.dg_celauto_get_state(c_uint(x), c_uint(y), byref(id), byref(age))
+    return id, age

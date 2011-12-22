@@ -62,6 +62,19 @@ struct CaMap {
         camap.clear();
     }
 
+    void get_state(const pt& xy, size_t& id, unsigned int& age) {
+        camap_t::iterator i = camap.find(xy);
+
+        if (i != camap.end()) {
+            id = i->second.rul->id;
+            age = i->second.age;
+
+        } else {
+            id = 0;
+            age = 0;
+        }
+    }
+
     void seed(const pt& xy, std::shared_ptr<rule> r) {
         camap[xy] = ca_element(r, 0);
     }
