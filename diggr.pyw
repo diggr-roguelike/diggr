@@ -1117,7 +1117,6 @@ class World:
         self.visitedmap = {}
         self.featmap = {}
 
-
         self.neighbors = {}
         for x in xrange(0, w_):
             for y in xrange(0, h_):
@@ -1133,6 +1132,8 @@ class World:
                             continue
 
                         self.neighbors[(x,y)].append(ki)
+
+        dg.neighbors_init(w_, h_)
 
 
     def randgen(self, a, b, c, d, mid):
