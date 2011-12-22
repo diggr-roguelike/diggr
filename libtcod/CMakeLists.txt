@@ -37,3 +37,7 @@ SET(PNG_SHARED OFF)
 add_subdirectory(dependencies/libpng-1.5.6)
 add_subdirectory(src)
 
+
+INSTALL(FILES libtcodpy.py 
+  DESTINATION ${INSTALL_DIR}
+)

@@ -5,7 +5,10 @@ import os
 import time
 import sys
 
-_sound = CDLL('./libsound.so')
+if os.name == 'nt':
+    _sound = CDLL('./libsound.dll')
+else:
+    _sound = CDLL('./libsound.so')
 
 _sound.sound_play.restype = c_int
 

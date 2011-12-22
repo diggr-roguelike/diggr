@@ -4,6 +4,8 @@ project (diggr)
 
 SET(CMAKE_BUILD_TYPE "Release")
 
+SET(CMAKE_CXX_FLAGS "-std=c++0x")
+
 #include_directories(include)
 
 SET(ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
