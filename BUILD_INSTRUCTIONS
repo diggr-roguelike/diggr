@@ -4,46 +4,44 @@ PREREQUISITES:
 Building for Windows is only tested for the MinGW cross-compilation environment, http://mingw-cross-env.nongnu.org
 
 
-BUILDING:
---------
+BUILDING FROM SOURCE:
+--------------------
 
-1. Build libtcod. It is included in this source tree.
+1. Install cmake. You will need it for building. 
 
-  cd libtcod
+2. Build and install:
+
   mkdir build
   cd build
   cmake ..
   make
+  make install
 
-1.1 Install libtcod files:
+3. Download and build SuperCollider sources: (optional, if you want sound)
 
-  cp src/libtcod.so .../diggr-roguelike
-  cp ../libtcodpy.py .../diggr-roguelike
+3.1. Install 'jack2' if you want sound on Linux:
+     (Ubuntu) sudo apt-get install jackd2
+     (Arch)   sudo pacman -S jack2
+     (Fedora) sudo yum install jack-audio-connection-kit
 
-
-2. Download and build SuperCollider sources: (optional, if you want sound)
-
-2.1. Check out SC sources from the repo:
+3.2. Check out SC sources from the repo:
 
   git clone --recursive git://supercollider.git.sourceforge.net/gitroot/supercollider/supercollider
 
-2.2. Build SC with a minimal required set of dependencies: (Replace '/prefix' with a real directory.)
+3.3. Build SC with a minimal required set of dependencies: (Replace '/prefix' with a real directory.)
 
   cd supercollider
   mkdir build
   cd build
-  AUDIOAPI=portaudio cmake -DFFT_GREEN=ON -DNO_LIBSNDFILE=ON -DSC_QT=OFF -DSUPERNOVA=OFF -DNO_AVAHI=ON -DCMAKE_INSTALL_PREFIX:PATH=/prefix/SuperCollider/ -DSC_WII=OFF -DSC_EL=OFF ..
+  cmake -DFFT_GREEN=ON -DNO_LIBSNDFILE=ON -DSC_QT=OFF -DSUPERNOVA=OFF -DNO_AVAHI=ON -DCMAKE_INSTALL_PREFIX:PATH=/prefix/SuperCollider/ -DSC_WII=OFF -DSC_EL=OFF ..
   make
   make install/strip
 
-2.3. Copy SC binaries to 'diggr-roguelike/sound/':
+3.4. Copy SC binaries to 'diggr-roguelike/sound/':
 
   cd .../diggr-roguelike/
   cd sound
   cp /prefix/SuperCollider/bin/scsynth .
   cp /prefix/SuperCollider/lib/libscsynth.so.1 .  
   cp -rf /prefix/SuperColliderlib/SuperCollider/plugins/ .
-
-
-
 
