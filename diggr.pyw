@@ -3978,14 +3978,13 @@ class World:
         self.celautostock.seed(x, y, ca)
 
     def clear_celauto(self, x, y):
-        def tmp11cb(x,y,ca):
+        def cboff(x,y,ca):
             self.celauto_off(x,y,ca)
-        self.celautostock.clear(x, y, tmp11cb)
+        self.celautostock.clear(x, y, cboff)
         
 
 
     def celauto_on(self, x, y, ca):
-        print '-==- ca_on:',x,y,ca
         ca = self.celautostock.stock[ca]
 
         if ca.watertoggle is not None:
@@ -4009,15 +4008,13 @@ class World:
 
     def process_world(self):
 
-        def tmp22cb(x,y,ca):
-            print '--- ca_on',x,y,ca
+        def cbon(x,y,ca):
             self.celauto_on(x,y,ca)
 
-        def tmp33cb(x,y,ca):
-            print '--- ca_off',x,y,ca
+        def cboff(x,y,ca):
             self.celauto_off(x,y,ca)
 
-        self.celautostock.celauto_step(tmp22cb, tmp33cb)
+        self.celautostock.celauto_step(cbon, cboff)
 
         explodes = set()
         mons = []
@@ -4481,7 +4478,6 @@ class World:
           'mapping', 'glued', 's_grace', 'b_grace', 'v_grace', 'forcedsleep',
           'forced2sleep', 'healingsleep',
           '_seed', '_inputs', 'featstock', 'vaultstock',
-          'celautostock', 
           'achievements', 'bones', 'resource', 'resource_buildup', 'resource_timeout',
           'neighbors', 'moon', 'did_moon_message'
           ]
@@ -4491,10 +4487,13 @@ class World:
             state[x] = getattr(self, x)
 
         if 1: #try:
-            f = open('savefile', 'w')
+            f = open('savefile.dat0', 'w')
             cPickle.dump(state, f)
         #except:
         #    return
+
+        dg.state_save('savefile.dat1')
+
         self.msg.m('Saved!')
         self.done = True
 
@@ -4513,13 +4512,15 @@ class World:
         state = None
 
         try:
-            f = open('savefile', 'r')
+            f = open('savefile.dat0', 'r')
             state = cPickle.load(f)
         except:
             return False
 
         for k,v in state.iteritems():
             setattr(self, k, v)
+
+        dg.state_load('savefile.dat1')
 
         random.seed(self._seed)
         global _inputs

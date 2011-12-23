@@ -37,3 +37,12 @@ def celauto_get_state(x, y):
     age = c_uint()
     _dg.dg_celauto_get_state(c_uint(x), c_uint(y), byref(id), byref(age))
     return id.value, age.value
+
+def state_save(fn):
+    _dg.dg_state_save(c_char_p(fn))
+
+def state_load(fn):
+    _dg.dg_state_load(c_char_p(fn))
+
+
+

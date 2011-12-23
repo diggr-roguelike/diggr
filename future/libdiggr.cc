@@ -1,4 +1,5 @@
 
+#include "serialize.h"
 #include "neighbors.h"
 #include "celauto.h"
 
@@ -37,3 +38,16 @@ extern "C" void dg_celauto_step(dg_celauto_callback cbon, dg_celauto_callback cb
 extern "C" void dg_celauto_get_state(unsigned int x, unsigned int y, size_t* id, unsigned int* age) {
     celauto::get().get_state(celauto::pt(x,y), *id, *age);
 }
+
+
+extern "C" void dg_state_save(const char* filename) {
+    serialize::Sink s(filename);
+    celauto::get().write(s);
+}
+
+extern "C" void dg_state_load(const char* filename) {
+    serialize::Source s(filename);
+    celauto::get().read(s);
+}
+
+

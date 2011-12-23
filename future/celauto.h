@@ -8,7 +8,9 @@
 
 #include "neighbors.h"
 
-#include <iostream>
+#include "serialize.h"
+
+
 
 namespace celauto {
 
@@ -190,6 +192,37 @@ struct CaMap {
 	  i->second.age += i->second.age_add;
 	}
 
+    }
+
+
+    inline void write(serialize::Sink& s) {
+        serialize::write(s, camap.size());
+        for (const auto& t : camap) {
+            serialize::write(s, t.first);
+            serialize::write(s, t.second.rul->id);
+            serialize::write(s, t.second.age);
+            serialize::write(s, t.second.age_add);
+        }
+    }
+
+    inline void read(serialize::Source& s) {
+        size_t sz;
+        serialize::read(s, sz);
+
+        for (size_t i = 0; i < sz; ++i) {
+            pt key;
+            ca_element ca;
+            size_t id;
+
+            serialize::read(s, key);
+            serialize::read(s, id);
+            serialize::read(s, ca.age);
+            serialize::read(s, ca.age_add);
+
+            ca.rul = get_rule(id);
+
+            camap[key] = ca;
+        }
     }
 };
 
