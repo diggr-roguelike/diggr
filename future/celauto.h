@@ -8,6 +8,8 @@
 
 #include "neighbors.h"
 
+#include <iostream>
+
 namespace celauto {
 
 typedef std::pair<unsigned int, unsigned int> pt;
@@ -35,9 +37,10 @@ struct rule {
 struct ca_element {
     std::shared_ptr<rule> rul;
     unsigned int age;
+    unsigned int age_add;
 
-    ca_element() : age(0) {}
-    ca_element(std::shared_ptr<rule> r, unsigned int a) : rul(r), age(a) {}
+    ca_element() : age(0), age_add(0) {}
+    ca_element(std::shared_ptr<rule> r, unsigned int a) : rul(r), age(a), age_add(0) {}
 };
 
 
@@ -98,7 +101,7 @@ struct CaMap {
             camap_t::const_iterator i = camap.find(xy_);
 
             if (i != camap.end()) {
-                if (i->second.rul == rul && i->second.age == 0) {
+                if (i->second.rul->id == rul->id && i->second.age == 0) {
                     n++;
                 }
 
@@ -117,18 +120,20 @@ struct CaMap {
         camap_t remove;
         camap_t insert;
 
-
         for (camap_t::iterator i = camap.begin(); i != camap.end(); ++i) {
 
             const pt& xy = i->first;
             std::shared_ptr<rule>& rul = i->second.rul;
-            unsigned int& age = i->second.age;
+            const unsigned int& age = i->second.age;
+	    unsigned int& age_add = i->second.age_add;
+
+	    age_add = 0;
 
             // Check if we are dead.
             if (age > 0) {
 
                 if (age < rul->age - 1) {
-                    age += 1;
+                    age_add = 1;
 
                 } else {
                     remove[xy] = i->second;
@@ -140,7 +145,7 @@ struct CaMap {
                 unsigned int n = find_n(xy, rul, &insert);
 
                 if (rul->survive.count(n) == 0) {
-                    age = 1;
+                    age_add = 1;
                 }
             }
         }
@@ -180,6 +185,11 @@ struct CaMap {
         
             funcoff(xy.first, xy.second, rul->id);
         }
+
+	for (camap_t::iterator i = camap.begin(); i != camap.end(); ++i) {
+	  i->second.age += i->second.age_add;
+	}
+
     }
 };
 

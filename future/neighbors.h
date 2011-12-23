@@ -4,6 +4,8 @@
 #include <vector>
 #include <map>
 
+#include <iostream>
+
 namespace neighbors {
 
 typedef std::pair<unsigned int, unsigned int> pt;
@@ -23,8 +25,8 @@ struct Neighbors {
 
                 std::vector<pt>& v = nbmap[std::make_pair(x, y)];
 
-                for (unsigned int xi = -1; xi <= 1; xi++) {
-                    for (unsigned int yi = -1; yi <= 1; yi++) { 
+                for (int xi = -1; xi <= 1; xi++) {
+                    for (int yi = -1; yi <= 1; yi++) { 
 
                         if (xi == 0 && yi == 0) continue;
 
@@ -45,8 +47,9 @@ struct Neighbors {
 
         ns_t::const_iterator i = nbmap.find(xy);
 
-        if (i != nbmap.end()) 
+        if (i != nbmap.end()) {
             return i->second;
+	}
         
         return empty;
     }

@@ -15,7 +15,7 @@ import sqlite3
 import sounds
 import moon
 
-import libdiggr as dg
+import libdiggrpy as dg
 
 
 class Logger:
@@ -1399,6 +1399,7 @@ class World:
             d = [ k for k in self.neighbors[(x,y)] if k in self.walkmap ]
             if len(d) == 0:
                 iis.extend(itms)
+                return
             x,y = d[random.randint(0, len(d)-1)]
 
 
@@ -1677,7 +1678,8 @@ class World:
             self.inv.take(self.itemstock.find("miner's lamp"))
         else:
             self.inv.take(self.itemstock.find('lamp'))
-
+            self.inv.take(self.itemstock.find('glue nanobots'))
+            
         self.inv.take(self.itemstock.find('pickaxe'))
         
         pl = [k for k in self.neighbors[(self.px,self.py)] if k in self.walkmap] + [(self.px,self.py)]
@@ -3976,11 +3978,14 @@ class World:
         self.celautostock.seed(x, y, ca)
 
     def clear_celauto(self, x, y):
-         self.celautostock.clear(x, y, self.celauto_off)
+        def tmp11cb(x,y,ca):
+            self.celauto_off(x,y,ca)
+        self.celautostock.clear(x, y, tmp11cb)
         
 
 
     def celauto_on(self, x, y, ca):
+        print '-==- ca_on:',x,y,ca
         ca = self.celautostock.stock[ca]
 
         if ca.watertoggle is not None:
@@ -3988,6 +3993,7 @@ class World:
         elif ca.featuretoggle:
             if (x, y) not in self.featmap and (x, y) in self.walkmap:
                 self.set_feature(x, y, ca.featuretoggle)
+                print '(set feature)'
         elif ca.floorfeaturetoggle:
             if (x, y) not in self.featmap and (x, y) in self.walkmap and (x, y) not in self.watermap:
                 self.set_feature(x, y, ca.floorfeaturetoggle)
@@ -4003,7 +4009,15 @@ class World:
 
     def process_world(self):
 
-        self.celautostock.celauto_step(self.celauto_on, self.celauto_off)
+        def tmp22cb(x,y,ca):
+            print '--- ca_on',x,y,ca
+            self.celauto_on(x,y,ca)
+
+        def tmp33cb(x,y,ca):
+            print '--- ca_off',x,y,ca
+            self.celauto_off(x,y,ca)
+
+        self.celautostock.celauto_step(tmp22cb, tmp33cb)
 
         explodes = set()
         mons = []
@@ -4363,8 +4377,8 @@ class World:
                         back = feat.back
 
                         # hackity hack
-                        if (x, y) in self.celautomap:
-                            ca,state = dg.celauto_get_state(x, y)
+                        ca,state = dg.celauto_get_state(x, y)
+                        if ca > 0:
                             maxage = self.celautostock.stock[ca].rule[2]
                             back = libtcod.color_lerp(back, default_back, float(state) / (maxage*2))
 
@@ -4467,7 +4481,7 @@ class World:
           'mapping', 'glued', 's_grace', 'b_grace', 'v_grace', 'forcedsleep',
           'forced2sleep', 'healingsleep',
           '_seed', '_inputs', 'featstock', 'vaultstock',
-          'celautostock', 'celautomap',
+          'celautostock', 
           'achievements', 'bones', 'resource', 'resource_buildup', 'resource_timeout',
           'neighbors', 'moon', 'did_moon_message'
           ]
@@ -4513,6 +4527,10 @@ class World:
 
         self.make_map()
         self.make_paths()
+
+        # HACK
+        dg.neighbors_init(self.w, self.h)
+
         return True
 
 

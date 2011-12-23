@@ -1,6 +1,6 @@
 import libtcodpy as libtcod
 
-import libdiggr as dg
+import libdiggrpy as dg
 
 #
 
@@ -18,7 +18,7 @@ class CelAuto:
         self.anchor = anchor
 
         rule = rule.split('/')
-        rule = (rule[0], rule[1], int(rule[2]))
+        self.rule = (rule[0], rule[1], int(rule[2]))
 
 
 class CelAutoStock:
@@ -26,7 +26,7 @@ class CelAutoStock:
     EBOLA     = 1
     SMOKE     = 2
     TRAPMAKER = 3
-    SWAMPAS   = 4
+    SWAMPGAS  = 4
     MOLD      = 5
     FERN      = 6
 
@@ -62,7 +62,8 @@ class CelAutoStock:
             dg.celauto_make_rule(k, v.rule[0], v.rule[1], v.rule[2])
 
 
-    def paste(self, x, y, w, h, ca):
+    def paste(self, x, y, w, h, _ca):
+        ca = self.stock[_ca]
 
         x -= ca.anchor[0]
         y -= ca.anchor[1]
@@ -78,7 +79,7 @@ class CelAutoStock:
                 if x1 < 0 or x1 >= w or y1 < 0 or y1 >= h:
                     continue
 
-                dg.celauto_seed(x1, y1, ca)
+                dg.celauto_seed(x1, y1, _ca)
 
     def seed(self, x, y, ca):
         dg.celauto_seed(x, y, ca)
