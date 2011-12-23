@@ -2,6 +2,7 @@
 #define __SERIALIZE_H
 
 #include <iostream>
+#include <fstream>
 
 #include <vector>
 #include <map>
@@ -11,7 +12,7 @@ namespace serialize {
 struct Sink {
     std::ofstream out;
 
-    Sink(const std::string& name) : out(name, ios::out|ios::app|ios::binary|ios::trunc) 
+    Sink(const std::string& name) : out(name, std::ios::out|std::ios::app|std::ios::binary|std::ios::trunc) 
         {}
 
     template <typename T>
@@ -23,7 +24,7 @@ struct Sink {
 struct Source {
     std::ifstream inp;
 
-    Source(const std::string& name) : inp(name, ios::in|ios::binary)
+    Source(const std::string& name) : inp(name, std::ios::in|std::ios::binary)
         {}
 
     template <typename T>
@@ -42,7 +43,7 @@ struct writer {
 
 template <typename T> 
 struct reader {
-    void reader(Source& s, T& t) {
+    void read(Source& s, T& t) {
         s>>t;
     }
 };
