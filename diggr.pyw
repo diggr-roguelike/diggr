@@ -3992,7 +3992,6 @@ class World:
         elif ca.featuretoggle:
             if (x, y) not in self.featmap and (x, y) in self.walkmap:
                 self.set_feature(x, y, ca.featuretoggle)
-                print '(set feature)'
         elif ca.floorfeaturetoggle:
             if (x, y) not in self.featmap and (x, y) in self.walkmap and (x, y) not in self.watermap:
                 self.set_feature(x, y, ca.floorfeaturetoggle)
@@ -4539,7 +4538,8 @@ class World:
 
         # Clobber the savefile.
         try:
-            open('savefile', 'w').truncate(0)
+            open('savefile.dat0', 'w').truncate(0)
+            open('savefile.dat1', 'w').truncate(0)
         except:
             pass
 
@@ -4925,9 +4925,12 @@ def main(config, replay=None):
                 _inputs.append((ord('S'), 0))
 
                 world.save()
+            print 'WINDOW CLOSED'
             break
 
-        if world.done or world.dead: break
+        if world.done or world.dead:
+            print 'DONE OR DEAD', world.done, world.dead
+            break
 
         world.draw()
         libtcod.console_flush()
@@ -4982,5 +4985,6 @@ def main(config, replay=None):
 if __name__=='__main__':
     config = Config()
     while 1:
+        print '-----============----'
         if main(config):
             break

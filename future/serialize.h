@@ -12,20 +12,25 @@ namespace serialize {
 struct Sink {
     std::ofstream out;
 
-    Sink(const std::string& name) : out(name, std::ios::out|std::ios::app|std::ios::binary|std::ios::trunc) 
-        {}
+    Sink(const std::string& name) {
+
+	out.exceptions(std::ofstream::failbit|std::ofstream::badbit);
+	out.open(name, std::ios::out|/*std::ios::app|*/std::ios::binary|std::ios::trunc);
+    }
 
     template <typename T>
     void operator<<(const T& t) {
-        out << t;
+        out << t << "\n";
     }
 };
 
 struct Source {
     std::ifstream inp;
-
-    Source(const std::string& name) : inp(name, std::ios::in|std::ios::binary)
-        {}
+    
+    Source(const std::string& name) {
+	inp.exceptions(std::ifstream::failbit|std::ifstream::badbit);
+	inp.open(name, std::ios::in|std::ios::binary);
+    }
 
     template <typename T>
     void operator>>(T& t) {
