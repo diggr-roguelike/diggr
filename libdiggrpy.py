@@ -12,11 +12,9 @@ def neighbors_init(w, h):
     _dg.dg_neighbors_init(c_uint(w), c_uint(h))
 
 def celauto_init():
-    print '*** ca_init'
     _dg.dg_celauto_init();
 
 def celauto_make_rule(i, s, b, a):
-    print '*** ca_make_rule',i,s,b,a
     _dg.dg_celauto_make_rule(c_ulong(i), c_char_p(s), c_char_p(b), c_uint(a))
 
 def celauto_seed(x, y, ri):

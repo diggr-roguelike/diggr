@@ -1678,7 +1678,6 @@ class World:
             self.inv.take(self.itemstock.find("miner's lamp"))
         else:
             self.inv.take(self.itemstock.find('lamp'))
-            self.inv.take(self.itemstock.find('glue nanobots'))
             
         self.inv.take(self.itemstock.find('pickaxe'))
         
@@ -2969,7 +2968,7 @@ class World:
 
             # HACK
             if self.moon == moon.NEW and not mon.itemdrop and \
-               mon.flavor not in ('digital', 'air', 'robot'):
+               mon.flavor not in ('digital', 'air', 'robot') and not mon.boulder:
                 corpse = self.itemstock.get('corpse')
                 corpse.corpse = mon
                 itemdrop = itemdrop[:]
@@ -4204,6 +4203,7 @@ class World:
 
 
     def draw(self, _hlx=None, _hly=None, range=None, lightradius=None):
+        __t11 = time.time()
 
         withtime = False
         if self.oldt != self.t:
@@ -4273,6 +4273,9 @@ class World:
             tracker = True
 
         ###
+
+        __t12 = time.time()
+        print 'drawpreptime:',__t12-__t11
 
         for x in xrange(self.w):
             for y in xrange(self.h):
@@ -4408,6 +4411,8 @@ class World:
 
                 libtcod.console_put_char_ex(None, x, y, c, fore, back)
 
+        __t13 = time.time()
+        print 'drawitertime:',__t13-__t12
 
         statsgrace = None
         if self.s_grace:
@@ -4917,6 +4922,7 @@ def main(config, replay=None):
         config.music_n = config.sound.play("music", rate=min(10, 2.0+(0.5*world.dlev)))
 
     while 1:
+        __tt1 = time.time()
 
         if libtcod.console_is_window_closed():
             if replay is None:
@@ -4925,19 +4931,22 @@ def main(config, replay=None):
                 _inputs.append((ord('S'), 0))
 
                 world.save()
-            print 'WINDOW CLOSED'
             break
 
         if world.done or world.dead:
-            print 'DONE OR DEAD', world.done, world.dead
             break
 
+        __t_1 = time.time()
         world.draw()
+        __t_2 = time.time()
+        print 'Drawtime:',__t_2-__t_1
         libtcod.console_flush()
 
         r = check_autoplay(world)
         if r == -1:
             libtcod.console_check_for_keypress()
+            __tt2 = time.time()
+            print 'Frametime*:',__tt2-__tt1
             continue
         elif r == 1:
             world.draw()
@@ -4946,8 +4955,9 @@ def main(config, replay=None):
 
         if world.dead: break
 
-        #key = libtcod.console_wait_for_keypress(True)
-        #world._inputs.append((key.c, key.vk))
+        __tt2 = time.time()
+        print 'Frametime:',__tt2-__tt1
+
         key = console_wait_for_keypress()
 
         if chr(key.c) in world.ckeys:
@@ -4955,6 +4965,7 @@ def main(config, replay=None):
 
         elif key.vk in world.vkeys:
             world.vkeys[key.vk]()
+
 
 
     if world.dead and not world.done:

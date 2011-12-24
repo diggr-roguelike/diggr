@@ -2,6 +2,7 @@
 #include "serialize.h"
 #include "neighbors.h"
 #include "celauto.h"
+#include <sys/time.h>
 
 
 extern "C" void dg_neighbors_init(unsigned int w, unsigned int h) {
@@ -32,7 +33,14 @@ extern "C" void dg_celauto_clear(unsigned int x, unsigned int y, dg_celauto_call
 }
 
 extern "C" void dg_celauto_step(dg_celauto_callback cbon, dg_celauto_callback cboff) {
+    struct timeval t1;
+    struct timeval t2;
+    gettimeofday(&t1, NULL);
     celauto::get().step(cbon, cboff);
+    gettimeofday(&t2, NULL);
+    size_t n1 = (t1.tv_sec*1000000) + t1.tv_usec;
+    size_t n2 = (t2.tv_sec*1000000) + t2.tv_usec;
+    std::cout << "steptime:"<<(double)(n2-n1)/1e6<<std::endl;
 }
 
 extern "C" void dg_celauto_get_state(unsigned int x, unsigned int y, size_t* id, unsigned int* age) {
