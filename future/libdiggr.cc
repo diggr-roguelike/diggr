@@ -33,8 +33,6 @@ extern "C" void dg_celauto_clear(unsigned int x, unsigned int y, dg_celauto_call
 }
 
 extern "C" void dg_celauto_step(dg_celauto_callback cbon, dg_celauto_callback cboff) {
-    struct timeval t1;
-    struct timeval t2;
     celauto::get().step(cbon, cboff);
 }
 

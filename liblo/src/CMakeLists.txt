@@ -4,13 +4,13 @@ SET(LIBLO_NAME lo)
 add_definitions(-DPACKAGE_NAME="liblo")
 
 add_definitions(-DHAVE_SELECT)
-add_definitions(-DHAVE_INET_ATON)
 
 include_directories(..)
 
 if(MINGW)
         add_definitions(-DWINVER=0x0501)
 else()
+	add_definitions(-DHAVE_INET_ATON)
         add_definitions(-DHAVE_POLL)
         add_definitions(-DHAVE_SYS_SOCKET_H)
 endif()
@@ -27,7 +27,7 @@ SET_TARGET_PROPERTIES(${LIBLO_NAME_STATIC} PROPERTIES COMPILE_FLAGS -fPIC)
 
 
 IF(MINGW)
-        target_link_libraries(${LIBLO_NAME} ws2_32 pq pthread wsock32 )
+        target_link_libraries(${LIBLO_NAME} ws2_32 pthread wsock32 )
 ENDIF()
 
 

@@ -2,6 +2,7 @@
 #define __RENDER_H
 
 #include <math.h>
+#include <stdlib.h>
 
 #include "celauto.h"
 
@@ -167,10 +168,11 @@ struct Grid {
 
 	static double _sparkleinterp[10];
 	static bool did_init = false;
+	static double pi = 3.14159265358979323846;
 
 	if (!did_init) {
 	    for (int i = 0; i < 10; ++i) {
-		_sparkleinterp[i] = pow(sin(i/M_PI), 2);
+		_sparkleinterp[i] = pow(sin(i/pi), 2);
 	    }
 	    did_init = true;
 	}
