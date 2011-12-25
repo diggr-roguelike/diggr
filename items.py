@@ -15,7 +15,7 @@ class Item:
                  homing=False, cooling=False, digging=False, psyimmune=False,
                  rangeexplode=False, springy=False, detector=False,
                  detect_monsters=False, detect_items=False, food=None,
-                 tracker=False, wishing=False, repelrange=None, selfdestruct=None,
+                 wishing=False, repelrange=None, selfdestruct=None,
                  digray=None, jinni=False, heatbonus=0, use_an=False,
                  stackrange=None, mapper=None, converts=None, jumprange=None,
                  explodeimmune=False, telepathyrange=None, makestrap=False,
@@ -60,7 +60,6 @@ class Item:
         self.detect_monsters = detect_monsters
         self.detect_items = detect_items
         self.food = food
-        self.tracker = tracker
         self.wishing = wishing
         self.repelrange = repelrange
         self.selfdestruct = selfdestruct
@@ -392,10 +391,6 @@ class ItemStock:
                             applies=True, detector=True, rarity=2, detect_monsters=True, detect_items=True,
                             desc=['A device that looks somewhat like an old cellphone.',
                                   'It comes with a necklace strap, a display and a large antenna.'])
-
-        self.gps = Item('GPS tracker', slot='b', skin=('"', libtcod.green),
-                        tracker=True, rarity=6, applies=True,
-                        desc=["A device that tracks and remembers where you've already been."])
 
         self.wishing = Item('wand of wishes', slot='e', skin=('/', libtcod.gray),
                             applies=True, wishing=True, rarity=2,

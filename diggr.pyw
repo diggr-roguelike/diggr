@@ -1011,7 +1011,6 @@ class World:
         self.exit = None
         self.itemap = {}
         self.monmap = {}
-        self.visitedmap = {}
 
         self.px = None
         self.py = None
@@ -1114,7 +1113,6 @@ class World:
 
         self.walkmap = set()
         self.watermap = set()
-        self.visitedmap = {}
         self.featmap = {}
 
         self.neighbors = {}
@@ -1134,7 +1132,8 @@ class World:
                         self.neighbors[(x,y)].append(ki)
 
         dg.neighbors_init(w_, h_)
-
+        dg.render_init(w_, h_)
+        
 
     def randgen(self, a, b, c, d, mid):
         x = ((c - a) / 2) + a
@@ -1336,6 +1335,51 @@ class World:
 
                 libtcod.map_set_properties(self.tcodmap, x, y, v, w)
 
+
+    def set_renderprops(self, x, y):
+
+        feat = None
+        if (x,y) in self.featmap:
+            feat = self.featmap[(x,y)]
+
+        if feat and feat.lit:
+            dg.render_set_is_lit(x, y, True)
+        else:
+            dg.render_set_is_lit(x, y, False)
+
+        if feat and feat.back:
+            dg.render_set_back(x, y, feat.back)
+        else:
+            dg.render_set_back(x, y, libtcod.black)
+
+        fore = self.theme[self.branch][0]
+        fore2 = fore
+        fore_i = 0
+        is_terrain = False
+        c = ' '
+
+        if feat and feat.skin:
+            c, fore = feat.skin
+
+        elif (x,y) in self.walkmap:
+            if (x,y) in self.watermap:
+                c = 251
+                fore = libtcod.light_azure
+                fore2 = libtcod.dark_azure
+                fore_i = 1
+            else:
+                c = 250
+                is_terrain = True
+
+        else:
+            if (x,y) in self.watermap:
+                fore = libtcod.desaturated_blue
+            c = 176
+            is_terrain = True
+
+        dg.render_set_skin(x, y, fore, c, fore2, fore_i, is_terrain)
+
+
     def set_feature(self, x, y, f_):
         if (x, y) in self.featmap and self.featmap[(x, y)].stairs:
             return
@@ -1353,6 +1397,8 @@ class World:
                 self.walkmap.discard((x, y))
                 libtcod.map_set_properties(self.tcodmap, x, y, False, False)
                 self.grid[y][x] = 0
+
+            self.set_renderprops(x, y)
             return
 
         f = self.featstock.f[f_]
@@ -1379,6 +1425,9 @@ class World:
         elif f.water is not None:
             if (x, y) in self.watermap:
                 self.watermap.discard((x, y))
+
+
+        self.set_renderprops(x, y)
 
 
 
@@ -1489,29 +1538,28 @@ class World:
         stairsi = random.randint(0, len(m)-1)
         d = m[stairsi]
 
-        self.featmap[d] = self.featstock.f['>']
+        self.set_feature(d[0], d[1], '>')
         self.exit = d
         del m[stairsi]
 
         if self.moon == moon.NEW:
             d = m[random.randint(0, len(m)-1)]
-            self.featmap[d] = self.featstock.f['bb']
+            self.set_feature(d[0], d[1], 'bb')
 
         elif self.moon == moon.FULL:
             d = m[random.randint(0, len(m)-1)]
-            self.featmap[d] = self.featstock.f['dd']
-
+            self.set_feature(d[0], d[1], 'dd')
             self.paste_celauto(d[0], d[1], self.celautostock.FERN)
 
         else:
             a = random.randint(-1, 1)
             d = m[random.randint(0, len(m)-1)]
             if a == -1:
-                self.featmap[d] = self.featstock.f['s']
+                self.set_feature(d[0], d[1], 's')
             elif a == 0:
-                self.featmap[d] = self.featstock.f['b']
+                self.set_feature(d[0], d[1], 'b')
             elif a == 1:
-                self.featmap[d] = self.featstock.f['v']
+                self.set_feature(d[0], d[1], 'v')
 
         nfounts = int(round(random.gauss(3, 1)))
         ww = list(self.walkmap & self.watermap)
@@ -1521,7 +1569,7 @@ class World:
 
         for tmp in xrange(nfounts):
             d = ww[random.randint(0, len(ww)-1)]
-            self.featmap[d] = self.featstock.f[random.choice(['C','V','B','N','M'])]
+            self.set_feature(d[0], d[1], random.choice(['C','V','B','N','M']))
 
 
 
@@ -1672,6 +1720,16 @@ class World:
         self.make_map()
         self.place(nogens)
 
+        for x in xrange(w_):
+            for y in xrange(h_):
+                self.set_renderprops(x, y)
+
+        if self.moon == moon.FULL:
+            dg.render_set_env(libtcod.gray, 0.6)
+        elif self.moon == moon.NEW:
+            dg.render_set_env(libtcod.darkest_blue, 0.4)
+
+
 
     def generate_inv(self):
         if self.moon == moon.FULL:
@@ -1718,9 +1776,6 @@ class World:
                 self.px = dx
                 self.py = dy
 
-                if (dx, dy) not in self.visitedmap:
-                    self.visitedmap[(dx, dy)] = 0
-
                 if (self.px, self.py) in self.itemap:
                     if len(self.itemap[(self.px, self.py)]) > 1:
                         self.msg.m("You see several items here.")
@@ -1756,7 +1811,7 @@ class World:
 
         if self.try_feature(self.px, self.py, 'warm'):
             self.stats.warmth.inc(self.coef.watercold)
-        elif (self.px, self.py) in self.watermap or self.cooling:
+        elif (self.px, self.py) in self.watermap:
             self.stats.warmth.dec(self.coef.watercold)
         else:
             self.stats.warmth.inc(self.inv.get_heatbonus())
@@ -1865,7 +1920,7 @@ class World:
 
         if self.try_feature(self.px, self.py, 'warm'):
             self.stats.warmth.inc(self.coef.watercold)
-        elif (self.px, self.py) in self.watermap or self.cooling:
+        elif (self.px, self.py) in self.watermap:
             self.stats.warmth.dec(self.coef.watercold)
         else:
             self.stats.warmth.inc(self.inv.get_heatbonus())
@@ -1890,7 +1945,7 @@ class World:
 
         if self.try_feature(self.px, self.py, 'warm'):
             self.stats.warmth.inc(self.coef.watercold)
-        elif (self.px, self.py) in self.watermap or self.cooling:
+        elif (self.px, self.py) in self.watermap:
             self.stats.warmth.dec(self.coef.watercold)
         else:
             self.stats.warmth.inc(self.inv.get_heatbonus())
@@ -2630,11 +2685,6 @@ class World:
             draw_window(['Rock depth: ' + str(n)], self.w, self.h)
             self.achievements.use(item)
 
-        elif item.tracker:
-            self.visitedmap[(self.px, self.py)] = 1
-            self.msg.m("You mark this spot in your tracker's memory.")
-            self.achievements.use(item)
-
         elif item.detector:
             s = []
             if item.detect_monsters:
@@ -2672,6 +2722,11 @@ class World:
 
         elif item.mapper:
             self.mapping = item.mapper
+
+            # HACK
+            for x in xrange(w):
+                for y in xrange(h):
+                    dg.render_set_is_lit(x, y, True)
 
             self.achievements.use(item)
             return None
@@ -4202,14 +4257,12 @@ class World:
 
 
 
-    def draw(self, _hlx=None, _hly=None, range=None, lightradius=None):
+    def draw(self, _hlx=1000, _hly=1000, range=(0,1000), lightradius=None):
         __t11 = time.time()
 
         withtime = False
         if self.oldt != self.t:
             withtime = True
-
-        default_back = libtcod.black
 
         if self.resource_timeout and self.resource == 'y':
             lightradius = self.coef.yellow_lightradius
@@ -4236,31 +4289,29 @@ class World:
         if self.mapping > 0:
             if withtime:
                 self.mapping -= 1
+
             if self.mapping > 0:
                 lightradius = 25
+
+            else:
+                # HACK
+                for x in xrange(w):
+                    for y in xrange(h):
+                        dg.render_set_is_lit(x, y, False)
 
 
         if withtime:
             self.process_world()
+            self.monsters_in_view = []
+
 
         # hack, after process_world because confusing features may be created
         if self.try_feature(self.px, self.py, 'confuse'):
             lightradius = 1
 
-        monsters_in_view = []
+        
         did_highlight = False
 
-        libtcod.map_compute_fov(self.tcodmap, self.px, self.py, lightradius,
-                                True,
-                                libtcod.FOV_SHADOW)
-        # FOV_RESTICTIVE works differently for
-        # Windows and Linux builds. (Floating point rounding errors?)
-        # Besides, FOV_SHADOW looks better.
-        # libtcod.FOV_RESTRICTIVE)
-
-        ###
-
-        default_fore = self.theme[self.branch][0]
 
         telerange = 0
         if self.resource_timeout and self.resource == 'p':
@@ -4268,151 +4319,70 @@ class World:
         elif self.inv.head and self.inv.head.telepathyrange:
             telerange = self.inv.head.telepathyrange
 
-        tracker = False
-        if self.inv.neck and self.inv.neck.tracker:
-            tracker = True
 
         ###
 
+        for k,v in sorted(self.itemap.iteritems()):
+            itm = v[0]
+
+            if itm.corpse:
+                dg.render_push_skin(k[0], k[1], itm.corpse.skin[1], itm.skin[0], libtcod.black, 0, False)
+            else:
+                dg.render_push_skin(k[0], k[1], itm.skin[1], itm.skin[0], libtcod.black, 0, False)
+
+        lit_mons = set()
+
+        for k,v in sorted(self.monmap.iteritems()):
+            dg.render_push_skin(k[0], k[1], v.skin[1], v.skin[0], libtcod.black, 0, v.boulder)
+
+            if telerange and not v.inanimate:
+                d = math.sqrt(math.pow(abs(self.px - k[0]),2) + math.pow(abs(self.py - k[1]),2))
+
+                if d <= telerange:
+                    lit_mons.add(k)
+                    dg.render_set_is_lit(k[0], k[1], True)
+
+            # TODO! Visible monsters, mon.visible, monsters_in_view
+
+        pc = '@'
+        if self.sleeping > 1 and (self.t & 1) == 1:
+            pc = '*'
+        elif self.resting and (self.t & 1) == 1:
+            pc = '.'
+        elif self.digging and (self.t & 1) == 1:
+            pc = '('
+        else:
+            pc = '@'
+
+        dg.render_push_skin(self.px, self.py, libtcod.white, pc, libtcod.black, 0, False)
+
+        ###
         __t12 = time.time()
         print 'drawpreptime:',__t12-__t11
 
-        for x in xrange(self.w):
-            for y in xrange(self.h):
-
-                fore = default_fore
-                back = default_back
-                is_terrain = False
-
-                feat = None
-                if (x,y) in self.featmap:
-                    feat = self.featmap[(x,y)]
-
-                if self.mapping:
-                    in_fov = True
-                else:
-                    in_fov = libtcod.map_is_in_fov(self.tcodmap, x, y)
-
-                is_lit = False
-                #is_lit = True  #XX
-                #in_fov = True  #XX 
-                #lightradius = 100 #XX
-
-                if telerange:
-                    if (x, y) in self.monmap:
-                        d = math.sqrt(math.pow(abs(y - self.py),2) + math.pow(abs(x - self.px),2))
-                        if d <= telerange and not self.monmap[(x,y)].inanimate:
-                            in_fov = True
-                            is_lit = True
-
-                if feat and feat.lit:
-                    in_fov = True
-                    is_lit = True
-
-
-                if tracker:
-                    if (x, y) in self.visitedmap:
-                        if self.visitedmap[(x, y)]:
-                            back = libtcod.red
-                        else:
-                            back = libtcod.darkest_gray
-
-                if not in_fov:
-                    c = ' '
-                    fore = libtcod.black
-
-                else:
-
-                    if x == self.px and y == self.py:
-                        fore = libtcod.white
-                        c = '@'
-                        if self.sleeping > 1 and (self.t & 1) == 1:
-                            c = '*'
-                        elif self.resting and (self.t & 1) == 1:
-                            c = '.'
-                        elif self.digging and (self.t & 1) == 1:
-                            c = '('
-
-                    elif (x, y) in self.monmap:
-                        mon = self.monmap[(x, y)]
-                        mon.visible = True
-                        c, fore = mon.skin
-                        monsters_in_view.append(mon)
-
-                        if mon.onfire:
-                            back = libtcod.color_lerp(libtcod.orange, default_back,
-                                                      1.0 - (float(mon.onfire) / mon.fireduration))
-
-
-                    elif (x, y) in self.itemap:
-                        itm = self.itemap[(x, y)][0]
-
-                        # HACK
-                        if itm.corpse:
-                            c, fore = itm.skin[0], itm.corpse.skin[1]
-                        else:
-                            c, fore = itm.skin
-
-                    elif feat and feat.skin:
-                        c, fore = feat.skin
-
-                    elif (x, y) in self.walkmap:
-                        if (x,y) in self.watermap:
-                            c = 251
-                            wave = self.sparkleinterp[(x * y + self.t) % 10]
-                            fore = libtcod.color_lerp(libtcod.light_azure, libtcod.dark_azure, wave)
-                        else:
-                            c = 250
-                            is_terrain = True
-
-                    else:
-                        if (x,y) in self.watermap:
-                            fore = libtcod.desaturated_blue
-                        c = 176   # '#'
-                        is_terrain = True
-
-
-                    if feat and feat.back:
-                        back = feat.back
-
-                        # hackity hack
-                        ca,state = dg.celauto_get_state(x, y)
-                        if ca > 0:
-                            maxage = self.celautostock.stock[ca].rule[2]
-                            back = libtcod.color_lerp(back, default_back, float(state) / (maxage*2))
-
-                    if not is_lit or range:
-                        d0 = math.sqrt(math.pow(abs(y - self.py),2) + math.pow(abs(x - self.px),2))
-                        d = (d0/lightradius)
-
-                        if range and (d0 < range[0] or d0 > range[1]):
-                            fore = libtcod.darkest_gray
-                            back = libtcod.black
-
-                        else:
-
-                            if is_terrain:
-                                fore = libtcod.color_lerp(libtcod.white, fore, min(d*2, 1.0))
-
-                            fore = libtcod.color_lerp(fore, default_back, min(d, 1.0))
-
-                            if self.moon == moon.FULL:
-                                fore = libtcod.color_lerp(libtcod.gray, fore, 0.6)
-                            elif self.moon == moon.NEW:
-                                fore = libtcod.color_lerp(libtcod.darkest_blue, fore, 0.4)
-
-                            if back != default_back:
-                                back = libtcod.color_lerp(back, default_back, min(d, 1.0))
-
-
-                    if x == _hlx and y == _hly:
-                        back = libtcod.white
-                        did_highlight = True
-
-                libtcod.console_put_char_ex(None, x, y, c, fore, back)
-
+        did_highlight = dg.render_draw(self.tcodmap, self.t, self.px, self.py, 
+                                       _hlx, _hly, range[0], range[1], lightradius)
+        
         __t13 = time.time()
         print 'drawitertime:',__t13-__t12
+        ###
+
+        dg.render_pop_skin(self.px, self.py)
+
+
+        for k,v in sorted(self.monmap.iteritems()):
+            dg.render_pop_skin(k[0], k[1])
+            if k in lit_mons:
+                dg.render_set_is_lit(k[0], k[1], False)
+
+            if withtime and dg.render_is_in_fov(k[0], k[1]):
+                self.monsters_in_view.append(v)
+                v.visible = True
+
+        for k,v in sorted(self.itemap.iteritems()):
+            dg.render_pop_skin(k[0], k[1])
+
+        ### 
 
         statsgrace = None
         if self.s_grace:
@@ -4453,14 +4423,7 @@ class World:
 
         # hack
         if withtime:
-            self.monsters_in_view = []
-            for mon in monsters_in_view:
-                if (mon.x, mon.y) in self.monmap:
-                    self.monsters_in_view.append(mon)
-
             self.moon_message()
-
-        if withtime:
             self.oldt = self.t
 
         return did_highlight
@@ -4475,7 +4438,7 @@ class World:
 
         f = None
         atts = [
-          'grid', 'walkmap', 'watermap', 'exit', 'itemap', 'monmap', 'visitedmap',
+          'grid', 'walkmap', 'watermap', 'exit', 'itemap', 'monmap', 
           'featmap', 'px', 'py', 'w', 'h',
           'done', 'dead', 'stats', 'msg', 'coef', 'inv', 'itemstock', 'monsterstock', 'branch',
           'dlev', 'plev', 't', 'oldt', 'tagorder', 'sleeping', 'resting', 'cooling', 'digging', 'blind',

@@ -3,6 +3,7 @@ SET(LIBSOUND_C_SRC libsound.cc)
 
 include_directories(../liblo/)
 include_directories(../liblo/lo)
+include_directories(../libtcod/include)
 
 SET(LIBLO_NAME lo_static)
 SET(LIBSOUND_NAME sound)
@@ -22,6 +23,7 @@ SET(LIBDIGGR_C_SRC libdiggr.cc)
 SET(LIBDIGGR_NAME diggr)
 
 add_library(${LIBDIGGR_NAME} SHARED ${LIBDIGGR_C_SRC})
+target_link_libraries(${LIBDIGGR_NAME} tcod)
 
 
 INSTALL(TARGETS ${LIBSOUND_NAME} ${LIBDIGGR_NAME}
