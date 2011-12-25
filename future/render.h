@@ -7,7 +7,6 @@
 
 #include "libtcod.h"
 
-#include <sys/time.h>
 #include <iostream>
 
 
@@ -37,7 +36,7 @@ struct writer<TCOD_color_t> {
 namespace grender {
 
 
-
+/*
 struct benchmark {
     timeval ts;
     timeval te;
@@ -50,7 +49,7 @@ struct benchmark {
 	return (double)((te.tv_sec*1000000+te.tv_usec) - (ts.tv_sec*1000000+ts.tv_usec)) / 1e6;
     }
 };
-
+*/
 
 struct Grid {
 
@@ -180,25 +179,14 @@ struct Grid {
 
 	TCOD_map_compute_fov(map, px, py, lightradius, true, FOV_SHADOW);
 
-	double othertotal = 0;
-
-	benchmark bm0;
-	bm0.start();
-
 	for (int y = 0; y < h; ++y) {
 	    for (int x = 0; x < w; ++x) {
-		benchmark bm;
 
 		bool in_fov = TCOD_map_is_in_fov(map, x, y);
 
 		unsigned int tmpx = abs(x - px);
 		unsigned int tmpy = abs(y - py);
 		double d = sqrt(tmpx*tmpx + tmpy*tmpy);
-
-		/// 
-		//bm.start();
-		//func(&p, x, y, in_fov, d);
-		//othertotal += bm.end();
 
 		gridpoint& gp = _get(x,y);
 		const std::vector<skin>& skins = gp.skins;
@@ -273,8 +261,6 @@ struct Grid {
 	    }
 	}
     
-	std::cout<<"**Interp time:"<<othertotal<<std::endl;
-	std::cout<<"**Tottime:"<<bm0.end()<<std::endl;
 	return ret;
     }
 

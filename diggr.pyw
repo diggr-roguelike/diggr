@@ -1380,6 +1380,11 @@ class World:
         dg.render_set_skin(x, y, fore, c, fore2, fore_i, is_terrain)
 
 
+    def unset_feature(self, x, y):
+        if (x,y) in self.featmap:
+            del self.featmap[(x,y)]
+            self.set_renderprops(x,y)
+
     def set_feature(self, x, y, f_):
         if (x, y) in self.featmap and self.featmap[(x, y)].stairs:
             return
@@ -1738,7 +1743,8 @@ class World:
             self.inv.take(self.itemstock.find('lamp'))
             
         self.inv.take(self.itemstock.find('pickaxe'))
-        
+        self.inv.take(self.itemstock.find('magic mapper'))        
+
         pl = [k for k in self.neighbors[(self.px,self.py)] if k in self.walkmap] + [(self.px,self.py)]
 
         for x in xrange(9):
@@ -1757,7 +1763,7 @@ class World:
                 self.msg.m('You dislodge yourself from the glue.')
                 if (self.px, self.py) in self.featmap and \
                    self.featmap[(self.px, self.py)] == self.featstock.f['^']:
-                    del self.featmap[(self.px, self.py)]
+                    self.unset_feature(self.px, self.py)
             else:
                 self.msg.m('You are stuck in the glue!')
                 self.tick()
@@ -2057,7 +2063,7 @@ class World:
         fount = self.try_feature(self.px, self.py, 'resource')
         if fount:
             self.colordrink(fount)
-            del self.featmap[(self.px, self.py)]
+            self.unset_feature(self.px, self.py)
             return
             
         if (self.px,self.py) not in self.watermap:
@@ -2724,8 +2730,8 @@ class World:
             self.mapping = item.mapper
 
             # HACK
-            for x in xrange(w):
-                for y in xrange(h):
+            for x in xrange(self.w):
+                for y in xrange(self.h):
                     dg.render_set_is_lit(x, y, True)
 
             self.achievements.use(item)
@@ -3752,7 +3758,7 @@ class World:
             if mon.glued == 0:
                 if (mon.x, mon.y) in self.featmap and \
                    self.featmap[(mon.x, mon.y)] == self.featstock.f['^']:
-                    del self.featmap[(mon.x, mon.y)]
+                    self.unset_feature(mon.x, mon.y)
             else:
                 return None, None
 
@@ -4057,7 +4063,7 @@ class World:
             self.watermap.discard((x, y))
         elif ca.featuretoggle and (x, y) in self.featmap and \
              self.featmap[(x, y)] == self.featstock.f[ca.featuretoggle]:
-            del self.featmap[(x,y)]
+            self.unset_feature(x, y)
 
     def process_world(self):
 
@@ -4258,7 +4264,6 @@ class World:
 
 
     def draw(self, _hlx=1000, _hly=1000, range=(0,1000), lightradius=None):
-        __t11 = time.time()
 
         withtime = False
         if self.oldt != self.t:
@@ -4295,8 +4300,8 @@ class World:
 
             else:
                 # HACK
-                for x in xrange(w):
-                    for y in xrange(h):
+                for x in xrange(self.w):
+                    for y in xrange(self.h):
                         dg.render_set_is_lit(x, y, False)
 
 
@@ -4357,14 +4362,10 @@ class World:
         dg.render_push_skin(self.px, self.py, libtcod.white, pc, libtcod.black, 0, False)
 
         ###
-        __t12 = time.time()
-        print 'drawpreptime:',__t12-__t11
 
         did_highlight = dg.render_draw(self.tcodmap, self.t, self.px, self.py, 
                                        _hlx, _hly, range[0], range[1], lightradius)
         
-        __t13 = time.time()
-        print 'drawitertime:',__t13-__t12
         ###
 
         dg.render_pop_skin(self.px, self.py)
@@ -4885,7 +4886,6 @@ def main(config, replay=None):
         config.music_n = config.sound.play("music", rate=min(10, 2.0+(0.5*world.dlev)))
 
     while 1:
-        __tt1 = time.time()
 
         if libtcod.console_is_window_closed():
             if replay is None:
@@ -4899,17 +4899,12 @@ def main(config, replay=None):
         if world.done or world.dead:
             break
 
-        __t_1 = time.time()
         world.draw()
-        __t_2 = time.time()
-        print 'Drawtime:',__t_2-__t_1
         libtcod.console_flush()
 
         r = check_autoplay(world)
         if r == -1:
             libtcod.console_check_for_keypress()
-            __tt2 = time.time()
-            print 'Frametime*:',__tt2-__tt1
             continue
         elif r == 1:
             world.draw()
@@ -4917,9 +4912,6 @@ def main(config, replay=None):
 
 
         if world.dead: break
-
-        __tt2 = time.time()
-        print 'Frametime:',__tt2-__tt1
 
         key = console_wait_for_keypress()
 
