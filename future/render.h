@@ -11,6 +11,29 @@
 #include <iostream>
 
 
+namespace serialize {
+
+template <>
+struct reader<TCOD_color_t> {
+    void read(Source& s, TCOD_color_t& v) {
+	reader<unsigned char>().read(s, v.r);
+	reader<unsigned char>().read(s, v.g);
+	reader<unsigned char>().read(s, v.b);
+    }
+};
+
+template <>
+struct writer<TCOD_color_t> {
+    void write(Sink& s, const TCOD_color_t& v) {
+	writer<unsigned char>().write(s, v.r);
+	writer<unsigned char>().write(s, v.g);
+	writer<unsigned char>().write(s, v.b);
+    }
+};
+
+}
+
+
 namespace grender {
 
 
@@ -74,7 +97,10 @@ struct Grid {
 	h = _h;
 	grid.clear();
 	grid.resize(w*h);
-	std::cout<<"INIT! "<<w<<" "<<h<<std::endl;
+    }
+
+    gridpoint& _get(unsigned int x, unsigned int y) {
+	return grid[y*w+x];
     }
 
     void set_env(const TCOD_color_t& color, double intensity) {
@@ -83,11 +109,11 @@ struct Grid {
     }
 
     void set_back(unsigned int x, unsigned int y, const TCOD_color_t& color) {
-	grid[y*h+x].back = color;
+	_get(x,y).back = color;
     }
 
     void set_is_lit(unsigned int x, unsigned int y, bool is_lit) {
-	unsigned int& il = grid[y*h+x].is_lit;
+	unsigned int& il = _get(x,y).is_lit;
 
 	if (!is_lit) {
 	    if (il > 0) --il;
@@ -101,7 +127,7 @@ struct Grid {
 		   const TCOD_color_t& fore2, int fore_interp,
 		   bool is_terrain) {
 
-	std::vector<skin>& skins = grid[y*h+x].skins; 
+	std::vector<skin>& skins = _get(x,y).skins; 
 
 	skins.emplace_back(fore, c, fore2, fore_interp, is_terrain);
     }
@@ -111,7 +137,7 @@ struct Grid {
 		  TCOD_color_t fore2, int fore_interp,
 		  bool is_terrain) {
 
-	std::vector<skin>& skins = grid[y*h+x].skins; 
+	std::vector<skin>& skins = _get(x,y).skins; 
 
 	if (skins.size() == 0) {
 	    skins.emplace_back(fore, c, fore2, fore_interp, is_terrain);
@@ -122,7 +148,7 @@ struct Grid {
     }
 
     void pop_skin(unsigned int x, unsigned int y) {
-	std::vector<skin>& skins = grid[y*h+x].skins;
+	std::vector<skin>& skins = _get(x,y).skins;
 
 	if (skins.size() > 0)
 	    skins.pop_back();
@@ -130,7 +156,7 @@ struct Grid {
 
 
     bool is_in_fov(unsigned int x, unsigned int y) {
-	return grid[y*h+x].in_fov;
+	return _get(x,y).in_fov;
     }
 
 
@@ -159,8 +185,8 @@ struct Grid {
 	benchmark bm0;
 	bm0.start();
 
-	for (int x = 0; x < w; ++x) {
-	    for (int y = 0; y < h; ++y) {
+	for (int y = 0; y < h; ++y) {
+	    for (int x = 0; x < w; ++x) {
 		benchmark bm;
 
 		bool in_fov = TCOD_map_is_in_fov(map, x, y);
@@ -174,13 +200,14 @@ struct Grid {
 		//func(&p, x, y, in_fov, d);
 		//othertotal += bm.end();
 
-		gridpoint& gp = grid[y*h+x];
+		gridpoint& gp = _get(x,y);
 		const std::vector<skin>& skins = gp.skins;
 
 		gp.in_fov = in_fov;
 
-		if (skins.size() == 0)
+		if (skins.size() == 0) {
 		    continue;
+		}
 
 		const skin& sk = skins.back();
 
@@ -250,6 +277,63 @@ struct Grid {
 	std::cout<<"**Tottime:"<<bm0.end()<<std::endl;
 	return ret;
     }
+
+    inline void write(serialize::Sink& s) {
+	serialize::write(s, w);
+	serialize::write(s, h);
+	serialize::write(s, env_color);
+	serialize::write(s, env_intensity);
+
+        for (const auto& t : grid) {
+
+            serialize::write(s, t.skins.size());
+	    for (const auto& u : t.skins) {
+		serialize::write(s, u.fore);
+		serialize::write(s, u.c);
+		serialize::write(s, u.fore2);
+		serialize::write(s, u.fore_interp);
+		serialize::write(s, u.is_terrain);
+	    }
+
+            serialize::write(s, t.back);
+            serialize::write(s, t.is_lit);
+            serialize::write(s, t.in_fov);
+        }
+    }
+
+    inline void read(serialize::Source& s) {
+	serialize::read(s, w);
+	serialize::read(s, h);
+	serialize::read(s, env_color);
+	serialize::read(s, env_intensity);
+
+	grid.resize(w*h);
+
+	for (size_t i = 0; i < grid.size(); ++i) {
+
+	    size_t sks;
+            serialize::read(s, sks);
+
+	    gridpoint& p = grid[i];
+
+	    p.skins.resize(sks);
+
+	    for (size_t j = 0; j < sks; ++j) {
+		skin& tmp = p.skins[j];
+		serialize::read(s, tmp.fore);
+		serialize::read(s, tmp.c);
+		serialize::read(s, tmp.fore2);
+		serialize::read(s, tmp.fore_interp);
+		serialize::read(s, tmp.is_terrain);
+	    }
+
+            serialize::read(s, p.back);
+            serialize::read(s, p.is_lit);
+            serialize::read(s, p.in_fov);
+        }
+    }
+
+
 };
 
 

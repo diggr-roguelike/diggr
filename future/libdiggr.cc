@@ -46,17 +46,22 @@ extern "C" void dg_celauto_get_state(unsigned int x, unsigned int y, size_t* id,
 extern "C" void dg_state_save(const char* filename) {
     serialize::Sink s(filename);
     celauto::get().write(s);
+    grender::get().write(s);
 }
 
 extern "C" void dg_state_load(const char* filename) {
     serialize::Source s(filename);
     celauto::get().read(s);
+    grender::get().read(s);
 }
 
 
 extern "C" void dg_render_init(unsigned int w, unsigned int h) {
     grender::get().init(w, h);
 }
+
+// python ctypes and/or libffi is severly broken. This is why struct passed by each individual field.
+
 
 extern "C" void dg_render_set_env(uint8 r, uint8 g, uint8 b, double intensity) {
     TCOD_color_t color;
@@ -77,8 +82,6 @@ extern "C" void dg_render_set_back(unsigned int x, unsigned int y, uint8 r, uint
 extern "C" void dg_render_set_is_lit(unsigned int x, unsigned int y, bool is_lit) {
     grender::get().set_is_lit(x, y, is_lit);
 }
-
-// python ctypes and/or libffi is severly broken. This is why struct passed by each individual field.
 
 extern "C" void dg_render_push_skin(unsigned int x, unsigned int y,
 				    uint8 fr, uint8 fg, uint8 fb, 
