@@ -42,12 +42,12 @@ struct SC_OSC {
 
     SC_OSC(bool _ok, const std::string& synthdir) : active(false), mute(false), m_n(1000) {
 
-        if (!_ok)
-            return;
-
         server_send = lo_address_new(NULL, "55500");
         server_reply = lo_server_new("55501", _error);
         lo_server_add_method(server_reply, NULL, NULL, _handler, this);
+
+        if (!_ok)
+            return;
 
         bool ok = false;
 
@@ -73,7 +73,7 @@ struct SC_OSC {
             fprintf(stderr, "Did not get reply from a /d_loadDir command, turning off sound.\n");
             return;
         }
-
+	
         active = true;
     }
 
@@ -150,18 +150,25 @@ struct Engine {
         GetStartupInfo(&si);
         si.dwFlags |= STARTF_USESHOWWINDOW;
 
-        CreateProcess(tmp3.c_str(), 
-                      (char*)tmp4.c_str(),
-                      NULL,        // Default process security attributes
-                      NULL,        // Default thread security attributes
-                      FALSE,      // Don't inherit handles from the parent
-                      0,        // Normal priority
-                      NULL,        // Use the same environment as the parent
-                      execdir.c_str(),
-                      &si,        // Startup Information
-                      &pi);        // Process information stored upon return
+        BOOL res = SetEnvironmentVariable("SC_SYNTHDEF_PATH", synthdir.c_str());
+
+        if (!res) return;
+
+        res = CreateProcess(tmp3.c_str(), 
+                            (char*)tmp4.c_str(),
+                            NULL,        // Default process security attributes
+                            NULL,        // Default thread security attributes
+                            FALSE,      // Don't inherit handles from the parent
+                            0,        // Normal priority
+			    NULL,        // Use the same environment as the parent
+                            execdir.c_str(),
+                            &si,        // Startup Information
+                            &pi);        // Process information stored upon return
+
+        if (!res) return;
 
         child = pi.hProcess;
+        active = true;
     }
 
 
