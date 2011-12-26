@@ -13,7 +13,7 @@ target_link_libraries(${LIBSOUND_NAME} ${LIBLO_NAME})
 
 
 IF(MINGW)
-	target_link_libraries(${LIBSOUND_NAME} ws2_32 pq)
+	target_link_libraries(${LIBSOUND_NAME} ws2_32)
 ENDIF()
 
 ###

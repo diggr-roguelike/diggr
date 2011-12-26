@@ -44,7 +44,7 @@ if sys.platform.find('linux') != -1:
     LINUX=True
 else:
     try:
-        _lib = ctypes.cdll['./libtcod-mingw.dll']
+        _lib = ctypes.cdll['./libtcod.dll']
         MINGW=True
     except WindowsError:
         _lib = ctypes.cdll['./libtcod-VS.dll']
