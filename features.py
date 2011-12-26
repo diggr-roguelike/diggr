@@ -7,7 +7,7 @@ class Feature:
                  shootable=False, warm=False, branch=None, healingfountain=False,
                  nofeature=False, poison=None, confuse=False, back=None, resource=None,
                  lit=False, queasy=None, explode=None, pois2=False, bb_shrine=False,
-                 lightbonus=0):
+                 lightbonus=0, fire=0)
         self.walkable = walkable
         self.visible = visible
         self.water = water
@@ -34,6 +34,7 @@ class Feature:
         self.explode = explode
         self.pois2 = pois2
         self.lightbonus = lightbonus
+        self.fire = fire
 
 
 class FeatureStock:
@@ -192,6 +193,9 @@ class FeatureStock:
 
         self.f['&'] = Feature(walkable=True, visible=True, skin=None, back=libtcod.darkest_blue,
                               lit=True, queasy=0.1, name='swamp gas', explode=3)
+
+        self.f['"'] = Feature(walkable=True, visible=True, skin=None, back=libtcod.orange,
+                              fire=0.333, name='a fire')
 
 
         self.f['C'] = Feature(walkable=True, visible=True, skin=(20, libtcod.dark_green),

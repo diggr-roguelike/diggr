@@ -204,6 +204,8 @@ class Coeffs:
 
         self.moldchance = 2
 
+        self.burnduration = 5
+
         self.resource_timeouts = {'r': 300,
                                   'g': 400,
                                   'y': 600,
@@ -1050,6 +1052,7 @@ class World:
         self.blind = False
         self.mapping = 0
         self.glued = 0
+        self.onfire = 0
 
         self.s_grace = 0
         self.b_grace = 0
@@ -1787,6 +1790,15 @@ class World:
                         self.msg.m("You see several items here.")
                     else:
                         self.msg.m("You see " + str(self.itemap[(self.px, self.py)][0]) + '.')
+
+                fdmg = self.try_feature(self.px, self.py, 'fire')
+                if fdmg > 0:
+                    self.stats.health.dec(fdmg, "fire", self.config.sound)
+                    self.onfire = max(self.coef.burnduraion, self.onfire)
+
+                if self.onfire > 0:
+                    self.onfire -= 1
+                    self.seed_celauto(mon.x, mon.y, self.celautostock.FIRE)
 
                 if self.try_feature(self.px, self.py, 'sticky') and not self.inv.get_glueimmune():
                     self.msg.m('You just stepped in some glue!', True)
@@ -3227,7 +3239,7 @@ class World:
         return ret
 
 
-    def fight(self, mon, player_move, item=None, attackstat=None):
+    def fight(self, mon, player_move, item=None):
 
         sm = str(mon)
         smu = sm[0].upper() + sm[1:]
@@ -3262,10 +3274,6 @@ class World:
             plev = min(max(self.plev - d + 1, 1), self.plev)
             attack = item.rangeattack
             #log.log('+', d, plev, attack)
-
-        elif player_move and attackstat:
-            plev = attackstat[0]
-            attack = attackstat[1]
 
         else:
             if self.b_grace and player_move:
@@ -3318,7 +3326,7 @@ class World:
                 if item:
                     ca = item.confattack
                     fires = item.fires
-                elif not attackstat:
+                else:
                     ca = self.inv.get_confattack()
                     fires = self.inv.get_fires()
 
@@ -3332,17 +3340,8 @@ class World:
                         self.msg.m('You set ' + sm + ' on fire!')
 
                     mon.onfire = fires
-                    mon.fireduration = fires
-
-                    if mon.fireattack:
-                        mon.fireattack = (max(plev, mon.fireattack[0]), max(dmg, mon.fireattack[1]))
-                    else:
-                        mon.fireattack = (plev, dmg)
 
                 elif not (mon.visible or mon.visible_old):
-                    pass
-
-                elif attackstat:
                     pass
 
                 elif dmg > 4:
@@ -3747,6 +3746,10 @@ class World:
                 if random.randint(1, mon.moldspew[1]) == 1:
                     self.seed_celauto(ki[0], ki[1], mon.moldspew[0])
 
+        if mon.onfire > 0:
+            mon.onfire -= 1
+            self.seed_celauto(mon.x, mon.y, self.celautostock.FIRE)
+
         if mon.static:
             return None, None
 
@@ -4115,7 +4118,6 @@ class World:
 
         summons = []
         raise_dead = []
-        fired = []
 
         for k,mon in sorted(self.monmap.iteritems()):
             #log.log('  tick:', k)
@@ -4156,8 +4158,23 @@ class World:
                     mons.append(mon)
                     continue
 
-            if mon.onfire > 0:
-                fired.append(mon)
+            p = self.try_feature(x, y, 'fire')
+            if p and not mon.fireimmune:
+                mon.hp -= p
+                if mon.hp <= -3.0:
+                    if mon.visible:
+                        smu = str(mon)
+                        smu = smu[0].upper() + smu[1:]
+                        self.msg.m(smu + ' burns to death!')
+
+                    self.handle_mondeath(mon, do_gain=True)
+                    mon.do_die = True
+                    mons.append(mon)
+                    continue
+
+                else:
+                    mon.onfire = max(self.coef.burnduration, mon.onfire)
+
 
             msumm = (mon.summon or mon.summononce)
 
@@ -4248,14 +4265,6 @@ class World:
                 mon.do_move = None
 
                 self.process_monstep(mon)
-
-
-        for mon in fired:
-            self.fight(mon, True, attackstat=mon.fireattack)
-            mon.onfire -= 1
-            if mon.onfire <= 0:
-                mon.fireattack = None
-                mon.fireduration = 0
 
         for x, y, r in sorted(explodes):
             del self.itemap[(x, y)]
@@ -4443,7 +4452,7 @@ class World:
           'featmap', 'px', 'py', 'w', 'h',
           'done', 'dead', 'stats', 'msg', 'coef', 'inv', 'itemstock', 'monsterstock', 'branch',
           'dlev', 'plev', 't', 'oldt', 'tagorder', 'sleeping', 'resting', 'cooling', 'digging', 'blind',
-          'mapping', 'glued', 's_grace', 'b_grace', 'v_grace', 'forcedsleep',
+          'mapping', 'glued', 'onfire', 's_grace', 'b_grace', 'v_grace', 'forcedsleep',
           'forced2sleep', 'healingsleep',
           '_seed', '_inputs', 'featstock', 'vaultstock',
           'achievements', 'bones', 'resource', 'resource_buildup', 'resource_timeout',

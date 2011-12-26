@@ -84,8 +84,6 @@ class Monster:
         self.was_seen = False
         self.gencount = 0
         self.onfire = 0
-        self.fireattack = None
-        self.fireduration = 0
         self.bld_delta = None
         self.fleetimeout = 0
 

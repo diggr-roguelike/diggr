@@ -29,6 +29,7 @@ class CelAutoStock:
     SWAMPGAS  = 4
     MOLD      = 5
     FERN      = 6
+    FIRE      = 7
 
     def __init__(self):
 
@@ -56,6 +57,9 @@ class CelAutoStock:
             self.FERN: CelAuto(rule="23/24/72", color=None,
                                floorfeaturetoggle='!f',
                                pic=["..",".."])
+
+            self.FIRE: CelAuto(rule="012/3/2", color=None,
+                               featuretoggle='"', pic=["."])
             }
 
         for k,v in self.stock.iteritems():
