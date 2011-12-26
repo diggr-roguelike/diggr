@@ -204,7 +204,8 @@ class Coeffs:
 
         self.moldchance = 2
 
-        self.burnduration = 5
+        self.burnduration = 8
+        self.burndamage = 0.333
 
         self.resource_timeouts = {'r': 300,
                                   'g': 400,
@@ -1747,6 +1748,7 @@ class World:
             
         self.inv.take(self.itemstock.find('pickaxe'))
         self.inv.take(self.itemstock.find('magic mapper'))        
+        self.inv.take(self.itemstock.find('flamethrow'))        
 
         pl = [k for k in self.neighbors[(self.px,self.py)] if k in self.walkmap] + [(self.px,self.py)]
 
@@ -1794,11 +1796,14 @@ class World:
                 fdmg = self.try_feature(self.px, self.py, 'fire')
                 if fdmg > 0:
                     self.stats.health.dec(fdmg, "fire", self.config.sound)
-                    self.onfire = max(self.coef.burnduraion, self.onfire)
+                    self.onfire = max(self.coef.burnduration, self.onfire)
+                elif self.onfire:
+                    self.stats.health.dec(self.coef.burndamage, "fire", self.config.sound)
 
                 if self.onfire > 0:
                     self.onfire -= 1
-                    self.seed_celauto(mon.x, mon.y, self.celautostock.FIRE)
+                    self.seed_celauto(self.px, self.py, self.celautostock.FIRE)
+                    self.set_feature(self.px, self.py, '"')
 
                 if self.try_feature(self.px, self.py, 'sticky') and not self.inv.get_glueimmune():
                     self.msg.m('You just stepped in some glue!', True)
@@ -2871,7 +2876,7 @@ class World:
             self.msg.m('The local space-time continuum shifts slightly.', True)
             return None
 
-        elif item.rangeattack or item.rangeexplode:
+        elif item.rangeattack or item.rangeexplode or item.fires:
             if item.ammo == 0:
                 self.msg.m("It's out of ammo!")
                 return item
@@ -2886,7 +2891,7 @@ class World:
             if nx < 0:
                 return -1 #item
 
-            if not item.rangeexplode and (nx, ny) not in self.monmap:
+            if not item.rangeexplode and not item.fires and (nx, ny) not in self.monmap:
                 return -1 #item
 
             if item.ammo > 0:
@@ -2894,6 +2899,9 @@ class World:
 
             if item.rangeexplode:
                 self.explode(nx, ny, item.radius)
+            elif item.fires:
+                self.seed_celauto(nx, ny, self.celautostock.FIRE)
+                self.set_feature(nx, ny, '"')
             else:
                 self.fight(self.monmap[(nx, ny)], True, item=item)
 
@@ -3320,8 +3328,8 @@ class World:
                 del self.monmap[(mon.x, mon.y)]
             else:
 
-                fires = None
                 ca = None
+                fires = None
 
                 if item:
                     ca = item.confattack
@@ -3335,13 +3343,10 @@ class World:
                         self.msg.m(smu + ' looks totally dazed!')
                     mon.confused += int(max(random.gauss(*ca), 1))
 
-                elif fires and dmg > 0 and not mon.fireimmune:
-                    if mon.visible or mon.visile_old:
-                        self.msg.m('You set ' + sm + ' on fire!')
+                if fires and dmg > 0 and not mon.fireimmune:
+                    mon.onfire = max(self.coef.burnduration, mon.onfire)
 
-                    mon.onfire = fires
-
-                elif not (mon.visible or mon.visible_old):
+                if not (mon.visible or mon.visible_old):
                     pass
 
                 elif dmg > 4:
@@ -3749,6 +3754,7 @@ class World:
         if mon.onfire > 0:
             mon.onfire -= 1
             self.seed_celauto(mon.x, mon.y, self.celautostock.FIRE)
+            self.set_feature(mon.x, mon.y, '"')
 
         if mon.static:
             return None, None
@@ -4159,8 +4165,8 @@ class World:
                     continue
 
             p = self.try_feature(x, y, 'fire')
-            if p and not mon.fireimmune:
-                mon.hp -= p
+            if (p or mon.onfire) and not mon.fireimmune:
+                mon.hp -= (p or self.coef.burndamage)
                 if mon.hp <= -3.0:
                     if mon.visible:
                         smu = str(mon)
@@ -4172,7 +4178,7 @@ class World:
                     mons.append(mon)
                     continue
 
-                else:
+                elif p:
                     mon.onfire = max(self.coef.burnduration, mon.onfire)
 
 
@@ -4368,7 +4374,10 @@ class World:
         else:
             pc = '@'
 
-        dg.render_push_skin(self.px, self.py, libtcod.white, pc, libtcod.black, 0, False)
+        pccol = libtcod.white
+        if self.onfire:
+            pccol = libtcod.amber
+        dg.render_push_skin(self.px, self.py, pccol, pc, libtcod.black, 0, False)
 
         ###
 

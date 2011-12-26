@@ -19,7 +19,7 @@ class Item:
                  digray=None, jinni=False, heatbonus=0, use_an=False,
                  stackrange=None, mapper=None, converts=None, jumprange=None,
                  explodeimmune=False, telepathyrange=None, makestrap=False,
-                 summon=None, radimmune=False, radexplode=False, fires=None,
+                 summon=None, radimmune=False, radexplode=False, fires=False,
                  camorange=None, sounding=False, healingsleep=None,
                  applies_in_slot=False, ebola=False, smoke=False,
                  trapcloud=False, glueimmune=False, craft=None, resource=None,
@@ -291,8 +291,8 @@ class ItemStock:
                                   'You learned that much from playing videogames.'])
 
         self.flamethrower = Item("flamethrower", slot='e', skin=('(', libtcod.orange),
-                                 rangeattack=7.0, range=(2,6), ammochance=(1, 6),
-                                 straightline=True, applies=True, rarity=15, fires=10,
+                                 range=(2,8), ammochance=(4, 13),
+                                 straightline=True, applies=True, rarity=15, fires=True,
                                  desc=['A device for setting monsters on fire.',
                                        'Truly ingenious.'])
 
@@ -826,7 +826,7 @@ class ItemStock:
                                    "speed *and* stealth."])
 
         self.craft_a3 = Item('flaming sword ', slot='e', skin=('(', libtcod.yellow),
-                             rarity=0, attack=6.0, fires=10, lightradius=6,
+                             rarity=0, attack=6.0, fires=True, lightradius=6,
                              desc=["A giant sword of flame."])
 
         self.craft_a4 = Item('Brahmic medallion', slot='b', skin=('"', libtcod.yellow),

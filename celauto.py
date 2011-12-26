@@ -56,7 +56,7 @@ class CelAutoStock:
 
             self.FERN: CelAuto(rule="23/24/72", color=None,
                                floorfeaturetoggle='!f',
-                               pic=["..",".."])
+                               pic=["..",".."]),
 
             self.FIRE: CelAuto(rule="012/3/2", color=None,
                                featuretoggle='"', pic=["."])
