@@ -1737,6 +1737,8 @@ class World:
             dg.render_set_env(libtcod.gray, 0.6)
         elif self.moon == moon.NEW:
             dg.render_set_env(libtcod.darkest_blue, 0.4)
+        else:
+            dg.render_set_env(libtcod.white, 0)
 
 
 
@@ -3508,92 +3510,98 @@ class World:
             elif ty >= self.h: ty = self.h - 1
 
 
-    def target(self, range, minrange=None, monstop=False, lightradius=None):
+    def _target(self, point, range, minrange=0, monstop=False, lightradius=None):
 
-        self.draw(range=(minrange or 0, range), lightradius=lightradius)
+        self.draw(range=(minrange, range), lightradius=lightradius)
 
-        monx = None
-        mony = None
-        #log.log(" ## ", len(self.monsters_in_view), ' '.join('%s' % ((mon.x, mon.y),) for mon in self.monsters_in_view))
+        #monx = None
+        #mony = None
 
-        for i in xrange(len(self.monsters_in_view)):
-            mon = self.monsters_in_view[i]
-            d = math.sqrt(math.pow(abs(self.px - mon.x), 2) +
-                          math.pow(abs(self.py - mon.y), 2))
+        if point[0] is None:
+            for i in xrange(len(self.monsters_in_view)):
+                mon = self.monsters_in_view[i]
+                d = math.sqrt(math.pow(abs(self.px - mon.x), 2) +
+                              math.pow(abs(self.py - mon.y), 2))
 
-            #log.log(" #", mon.x, mon.y, d, range, minrange)
-            if d > range:
-                continue
+                #log.log(" #", mon.x, mon.y, d, range, minrange)
+                if d > range:
+                    continue
 
-            if minrange and d < minrange:
-                continue
+                if d < minrange:
+                    continue
 
-            #log.log(" # ok")
-            monx = mon.x
-            mony = mon.y
-            del self.monsters_in_view[i]
-            self.monsters_in_view.append(mon)
-            break
+                #log.log(" # ok")
+                #monx = mon.x
+                #mony = mon.y
+                point = (mon.x, mon.y)
+
+                del self.monsters_in_view[i]
+                self.monsters_in_view.append(mon)
+                break
 
         tmsg = ['Pick a target. '
                 "HJKL YUBN for directions, "
-                "<space> and '.' to target a monster."]
+                "<space> to pick target and and '.' to fire."]
 
-        if monx is not None:
-            self.draw(monx, mony, range=(minrange or 0, range), lightradius=lightradius)
-            if mony <= 2:
+        if point[0] is not None:
+            self.draw(point[0], point[1], range=(minrange, range), 
+                      lightradius=lightradius)
+            if point[1] <= 2:
                 tmsg = []
 
         k = draw_window(tmsg,
                         self.w, self.h, True)
 
-        if k == 'h':
-            dx = max(self.px - range, 0)
-            dy = self.py
-        elif k == 'j':
-            dx = self.px
-            dy = min(self.py + range, self.h - 1)
-        elif k == 'k':
-            dx = self.px
-            dy = max(self.py - range, 0)
-        elif k == 'l':
-            dx = min(self.px + range, self.w - 1)
-            dy = self.py
-        elif k == 'y':
-            dx = max(self.px - int(range * 0.71), 0)
-            dy = max(self.py - int(range * 0.71), 0)
-        elif k == 'u':
-            dx = min(self.px + int(range * 0.71), self.w - 1)
-            dy = max(self.py - int(range * 0.71), 0)
-        elif k == 'b':
-            dx = max(self.px - int(range * 0.71), 0)
-            dy = min(self.py + int(range * 0.71), self.h - 1)
-        elif k == 'n':
-            dx = min(self.px + int(range * 0.71), self.w - 1)
-            dy = min(self.py + int(range * 0.71), self.h - 1)
-        elif k == '.':
-            if monx is not None:
-                dx = monx
-                dy = mony
-            else:
-                return (None, None)
-        elif k == ' ':
-            return (None, None)
-        else:
-            return -1, -1
+        poiok = (point[0] is not None)
 
-        libtcod.line_init(self.px, self.py, dx, dy)
+        if k == 'h':
+            if poiok: return (max(point[0]-1,0), point[1]), False
+            else:     return (max(self.px-range,0), self.py), False
+        elif k == 'j':
+            if poiok: return (point[0], min(point[1]+1,self.h-1)), False
+            else:     return (self.px, min(self.py+range, self.h-1)), False
+        elif k == 'k':
+            if poiok: return (point[0], max(point[1]-1,0)), False
+            else:     return (self.px, max(self.py-range,0)), False
+        elif k == 'l':
+            if poiok: return (min(point[0]+1,self.w-1), point[1]), False
+            else:     return (min(self.px+range,self.w-1), self.py), False
+        elif k == 'y':
+            if poiok: return (max(point[0]-1,0), max(point[1]-1,0)), False
+            else:     return (max(self.px - int(range * 0.71), 0),
+                              max(self.py - int(range * 0.71), 0)), False
+        elif k == 'u':
+            if poiok: return (min(point[0]+1,self.w-1), max(point[1]-1,0)), False
+            else:     return (min(self.px + int(range * 0.71), self.w - 1),
+                              max(self.py - int(range * 0.71), 0)), False
+        elif k == 'b':
+            if poiok: return (max(point[0]-1,0), min(point[1]+1,self.h-1)), False
+            else:     return (max(self.px - int(range * 0.71), 0),
+                              min(self.py + int(range * 0.71), self.h - 1)), False
+        elif k == 'n':
+            if poiok:  return (min(point[0]+1,self.w-1), min(point[1]+1,self.h-1)), False
+            else:      return (min(self.px + int(range * 0.71), self.w - 1),
+                               min(self.py + int(range * 0.71), self.h - 1)), False
+        elif k == '.':
+            if poiok is None:
+                return (None, None), False
+        elif k == ' ':
+            return (None, None), False
+        else:
+            return (-1, -1), True
+
+        libtcod.line_init(self.px, self.py, point[0], point[1])
         xx = None
         yy = None
         while 1:
             tmpx, tmpy = libtcod.line_step()
 
             if tmpx is None:
-                return (xx, yy)
+                return (xx, yy), True
 
             if (tmpx, tmpy) in self.walkmap or self.try_feature(tmpx, tmpy, 'shootable'):
 
-                if minrange:
+                if minrange > 0:
                     d = math.sqrt(math.pow(abs(tmpx - self.px), 2) +
                                   math.pow(abs(tmpy - self.py), 2))
                     if d < minrange:
@@ -3603,10 +3611,24 @@ class World:
                 yy = tmpy
 
                 if monstop and (tmpx, tmpy) in self.monmap:
-                    return (xx, yy)
+                    return (xx, yy), True
 
             else:
-                return (xx, yy)
+                return (xx, yy), True
+
+    def target(self, range, minrange=0, monstop=False, lightradius=None):
+
+        point = (None, None)
+        while 1:
+            point, ok = self._target(point, range, 
+                                     minrange=minrange, 
+                                     monstop=monstop, 
+                                     lightradius=lightradius)
+
+            if ok:
+                print 'RET:',point
+                return point
+
 
 
     def show_messages(self):
