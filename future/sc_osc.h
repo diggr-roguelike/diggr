@@ -55,6 +55,7 @@ struct SC_OSC {
             lo_send_from(server_send, server_reply, LO_TT_IMMEDIATE, 
                          "/notify", "i", 1);
 
+            fprintf(stdout, "Waiting for sound server to start...\n");
             if (lo_server_recv_noblock(server_reply, 1000)) {
                 ok = true;
                 break;
@@ -207,7 +208,9 @@ struct Engine {
             if (execl(tmp3.c_str(), exe.c_str(), 
                       "-u", "55500", "-U", plugindir.c_str(), NULL) < 0) {
                 
-                fprintf(stderr, "Could not execle().\n");
+                fprintf(stderr, "Could not execle(): %s%s -u 55500 -U %s\n",
+                        execdir.c_str(), exe.c_str(), plugindir.c_str());
+                _exit(1);
             }
 
         } else {
