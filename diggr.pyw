@@ -1749,8 +1749,8 @@ class World:
             self.inv.take(self.itemstock.find('lamp'))
             
         self.inv.take(self.itemstock.find('pickaxe'))
-        self.inv.take(self.itemstock.find('magic mapper'))        
-        self.inv.take(self.itemstock.find('flamethrow'))        
+        #self.inv.take(self.itemstock.find('magic mapper'))        
+        #self.inv.take(self.itemstock.find('flamethrow'))        
 
         pl = [k for k in self.neighbors[(self.px,self.py)] if k in self.walkmap] + [(self.px,self.py)]
 
@@ -2409,7 +2409,7 @@ class World:
 
             elif slot in 'abcdefg' and \
                     (not self.inv.backpack1 or self.inv.backpack1.slot == slot or \
-                     not self.inv.backpack2 and self.inv.backpack2.slot == slot):
+                     not self.inv.backpack2 or self.inv.backpack2.slot == slot):
                 do_x = True
 
             if do_x:
@@ -2467,13 +2467,15 @@ class World:
             self.tick()
 
         elif cc == 'q':
-            if slot in flooritems:
-                del items[flooritems[slot]]
-                if len(items) == 0:
-                    del self.itemap[(self.px, self.py)]
-            else:
-                self.inv.drop(slot)
-            self.tick()
+
+            if draw_window(['','Really destroy ' + str(i) +'? (Y/N)', ''], self.w, self.h) in ('y','Y'):
+                if slot in flooritems:
+                    del items[flooritems[slot]]
+                    if len(items) == 0:
+                        del self.itemap[(self.px, self.py)]
+                else:
+                    self.inv.drop(slot)
+                self.tick()
 
         elif cc == 'f':
             while 1:
@@ -2919,9 +2921,11 @@ class World:
                 if nx is not None:
                     break
             if nx < 0:
+                print '!!1'
                 return -1 #item
 
             if not item.rangeexplode and not item.fires and (nx, ny) not in self.monmap:
+                print '!!2'
                 return -1 #item
 
             if item.ammo > 0:
@@ -3567,9 +3571,9 @@ class World:
                 self.monsters_in_view.append(mon)
                 break
 
-        tmsg = ['Pick a target. '
+        tmsg = ['Pick a target.  '
                 "HJKL YUBN for directions, "
-                "<space> to pick target and and '.' to fire."]
+                "<space> to choose and '.' to fire."]
 
         if point[0] is not None:
             self.draw(point[0], point[1], range=(minrange, range), 
@@ -3581,38 +3585,42 @@ class World:
                         self.w, self.h, True)
 
         poiok = (point[0] is not None)
+        final_choice = False
+                           
 
         if k == 'h':
-            if poiok: return (max(point[0]-1,0), point[1]), False
-            else:     return (max(self.px-range,0), self.py), False
+            if poiok: point = (max(point[0]-1,0), point[1])
+            else:     point = (max(self.px-range,0), self.py)
         elif k == 'j':
-            if poiok: return (point[0], min(point[1]+1,self.h-1)), False
-            else:     return (self.px, min(self.py+range, self.h-1)), False
+            if poiok: point = (point[0], min(point[1]+1,self.h-1))
+            else:     point = (self.px, min(self.py+range, self.h-1))
         elif k == 'k':
-            if poiok: return (point[0], max(point[1]-1,0)), False
-            else:     return (self.px, max(self.py-range,0)), False
+            if poiok: point = (point[0], max(point[1]-1,0))
+            else:     point = (self.px, max(self.py-range,0))
         elif k == 'l':
-            if poiok: return (min(point[0]+1,self.w-1), point[1]), False
-            else:     return (min(self.px+range,self.w-1), self.py), False
+            if poiok: point = (min(point[0]+1,self.w-1), point[1])
+            else:     point = (min(self.px+range,self.w-1), self.py)
         elif k == 'y':
-            if poiok: return (max(point[0]-1,0), max(point[1]-1,0)), False
-            else:     return (max(self.px - int(range * 0.71), 0),
-                              max(self.py - int(range * 0.71), 0)), False
+            if poiok: point = (max(point[0]-1,0), max(point[1]-1,0))
+            else:     point = (max(self.px - int(range * 0.71), 0),
+                               max(self.py - int(range * 0.71), 0))
         elif k == 'u':
-            if poiok: return (min(point[0]+1,self.w-1), max(point[1]-1,0)), False
-            else:     return (min(self.px + int(range * 0.71), self.w - 1),
-                              max(self.py - int(range * 0.71), 0)), False
+            if poiok: point = (min(point[0]+1,self.w-1), max(point[1]-1,0))
+            else:     point = (min(self.px + int(range * 0.71), self.w - 1),
+                               max(self.py - int(range * 0.71), 0))
         elif k == 'b':
-            if poiok: return (max(point[0]-1,0), min(point[1]+1,self.h-1)), False
-            else:     return (max(self.px - int(range * 0.71), 0),
-                              min(self.py + int(range * 0.71), self.h - 1)), False
+            if poiok: point = (max(point[0]-1,0), min(point[1]+1,self.h-1))
+            else:     point = (max(self.px - int(range * 0.71), 0),
+                               min(self.py + int(range * 0.71), self.h - 1))
         elif k == 'n':
-            if poiok:  return (min(point[0]+1,self.w-1), min(point[1]+1,self.h-1)), False
-            else:      return (min(self.px + int(range * 0.71), self.w - 1),
-                               min(self.py + int(range * 0.71), self.h - 1)), False
+            if poiok:  point = (min(point[0]+1,self.w-1), min(point[1]+1,self.h-1))
+            else:      point = (min(self.px + int(range * 0.71), self.w - 1),
+                                min(self.py + int(range * 0.71), self.h - 1))
         elif k == '.':
             if poiok is None:
                 return (None, None), False
+            else:
+                final_choice = True
         elif k == ' ':
             return (None, None), False
         else:
@@ -3625,7 +3633,8 @@ class World:
             tmpx, tmpy = libtcod.line_step()
 
             if tmpx is None:
-                return (xx, yy), True
+                #return (xx, yy), True
+                break
 
             if (tmpx, tmpy) in self.walkmap or self.try_feature(tmpx, tmpy, 'shootable'):
 
@@ -3639,10 +3648,18 @@ class World:
                 yy = tmpy
 
                 if monstop and (tmpx, tmpy) in self.monmap:
-                    return (xx, yy), True
+                    #return (xx, yy), True
+                    break
 
             else:
-                return (xx, yy), True
+                break
+                #return (xx, yy), True
+
+        if final_choice and xx == point[0] and yy == point[1]:
+            return (xx, yy), True
+        return (xx, yy), False
+
+
 
     def target(self, range, minrange=0, monstop=False, lightradius=None):
 

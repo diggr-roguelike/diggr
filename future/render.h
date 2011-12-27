@@ -156,7 +156,8 @@ struct Grid {
 
 
     bool is_in_fov(unsigned int x, unsigned int y) {
-	return _get(x,y).in_fov;
+        const gridpoint& gp = _get(x,y);
+        return (gp.in_fov || gp.is_lit > 0);
     }
 
 
