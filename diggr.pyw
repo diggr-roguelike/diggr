@@ -2394,16 +2394,25 @@ class World:
             s.append('f) throw this item')
             choices += 'f'
 
-        if slot not in flooritems:
+        if i.liveexplode is None:
+            s.append('q) destroy this item')
+            choices += 'q'
 
-            if not self.inv.backpack1 or not self.inv.backpack2:
-                s.append('b) move it to a backpack slot')
-                choices += 'b'
+        if slot not in flooritems:
 
             s.append('d) drop this item')
             choices += 'd'
 
+            do_x = False
             if i.slot in 'abcdefg' and slot in 'hi':
+                do_x = True
+
+            elif slot in 'abcdefg' and \
+                    (not self.inv.backpack1 or self.inv.backpack1.slot == slot or \
+                     not self.inv.backpack2 and self.inv.backpack2.slot == slot):
+                do_x = True
+
+            if do_x:
                 s.append('x) swap this item with item in equipment')
                 choices += 'x'
 
@@ -2411,9 +2420,8 @@ class World:
             s.append('t) take this item')
             choices += 't'
 
-            if self.inv.check(i.slot):
-                s.append('x) swap this item with item in equipment')
-                choices += 'x'
+            s.append('x) swap this item with item in equipment')
+            choices += 'x'
 
         self.draw()
         cc = draw_window(s, self.w, self.h)
@@ -2440,15 +2448,6 @@ class World:
             elif i.tag:
                 i.tag = None
 
-        elif cc == 'b':
-            i = self.inv.drop(slot)
-            if not self.inv.backpack1:
-                self.inv.backpack1 = i
-                self.tick()
-            elif not self.inv.backpack2:
-                self.inv.backpack2 = i
-                self.tick()
-
         elif cc == 'c' and i.desc:
             ss = i.desc[:]
             ss.append('')
@@ -2465,6 +2464,15 @@ class World:
         elif cc == 'd':
             i = self.inv.drop(slot)
             self.set_item(self.px, self.py, [i])
+            self.tick()
+
+        elif cc == 'q':
+            if slot in flooritems:
+                del items[flooritems[slot]]
+                if len(items) == 0:
+                    del self.itemap[(self.px, self.py)]
+            else:
+                self.inv.drop(slot)
             self.tick()
 
         elif cc == 'f':
@@ -2498,17 +2506,37 @@ class World:
                         del self.itemap[(self.px, self.py)]
 
                     if item2:
-                        self.set_item(self.px, self.py, [item2])
+                        if not self.inv.take(item2):
+                            self.set_item(self.px, self.py, [item2])
 
                 elif item2:
                     self.inv.take(item2)
 
             else:
-                i = self.inv.drop(slot)
-                item2 = self.inv.drop(i.slot)
-                self.inv.take(i)
-                if item2:
-                    self.inv.take(item2)
+                if slot != i.slot:
+                    i = self.inv.drop(slot)
+                    item2 = self.inv.drop(i.slot)
+                    self.inv.take(i)
+                    if item2:
+                        self.inv.take(item2)
+
+                else:
+                    slt2 = None
+                    if self.inv.backpack1 and self.inv.backpack1.slot == slot:
+                        slt2 = 'h'
+                    elif self.inv.backpack2 and self.inv.backpack2.slot == slot:
+                        slt2 = 'i'
+
+                    if slt2:
+                        i = self.inv.drop(slot)
+                        item2 = self.inv.drop(slt2)
+                        self.inv.take(item2)
+                        self.inv.take(i)
+                    else:
+                        if not self.inv.backpack1:
+                            self.inv.backpack1 = self.inv.drop(slot)
+                        elif not self.inv.backpack2:
+                            self.inv.backpack2 = self.inv.drop(slot)
 
             self.tick()
 
