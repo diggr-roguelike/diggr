@@ -52,10 +52,20 @@ struct SC_OSC {
         bool ok = false;
 
         for (int i = 0; i < 5; ++i) {
-            lo_send_from(server_send, server_reply, LO_TT_IMMEDIATE, 
-                         "/notify", "i", 1);
 
             fprintf(stdout, "Waiting for sound server to start...\n");
+            int r = lo_send_from(server_send, server_reply, LO_TT_IMMEDIATE, 
+                                 "/notify", "i", 1);
+
+            if (r < 0) {
+#ifdef _WIN32
+                Sleep(1000);
+#else
+                sleep(1);
+#endif
+                continue;
+            }
+
             if (lo_server_recv_noblock(server_reply, 1000)) {
                 ok = true;
                 break;

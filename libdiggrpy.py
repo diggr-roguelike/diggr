@@ -38,11 +38,9 @@ def celauto_get_state(x, y):
     return id.value, age.value
 
 def state_save(fn):
-    print '// saving state', fn
     _dg.dg_state_save(c_char_p(fn))
 
 def state_load(fn):
-    print '// loading state', fn
     _dg.dg_state_load(c_char_p(fn))
 
 

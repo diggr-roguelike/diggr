@@ -255,7 +255,7 @@ struct Grid {
 		if (x == hlx && y == hly) {
 		    back = TCOD_white;
 
-		    if (in_fov) {
+		    if (in_fov || gp.is_lit > 0) {
 			ret = true;
 		    }
 		}

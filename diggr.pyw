@@ -105,8 +105,30 @@ class fakekey:
 class Config:
     def __init__(self, sound_enabled=True):
         self.fullscreen = False
+        self.sound_enabled = True
+        self.music_enabled = True
+
         self.sound = sounds.Engine(sound_enabled)
         self.music_n = None
+
+        self.cfgfile = {}
+        self.load()
+    
+    def load(self):
+        try:
+            self.cfgfile = eval(open('diggr.cfg').read())
+        except:
+            pass
+
+        if 'fullscreen' in self.cfgfile:
+            self.fullscreen = bool(self.cfgfile['fullscreen'])
+
+        if 'sound' in self.cfgfile:
+            self.sound_enabled = bool(self.cfgfile['sound'])
+
+        if 'music' in self.cfgfile:
+            self.music_enabled = bool(self.cfgfile['music'])
+
 
 
 def console_wait_for_keypress():
@@ -4952,6 +4974,8 @@ def main(config, replay=None):
 
     #libtcod.sys_set_renderer(libtcod.RENDERER_SDL)
 
+    config.load()
+
     font = 'font.png' #'terminal10x16_gs_ro.png'
     libtcod.console_set_custom_font(font, libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_ASCII_INROW)
     libtcod.console_init_root(w, h, 'Diggr', config.fullscreen, libtcod.RENDERER_SDL)
@@ -5036,6 +5060,5 @@ def main(config, replay=None):
 if __name__=='__main__':
     config = Config()
     while 1:
-        print '-----============----'
         if main(config):
             break
