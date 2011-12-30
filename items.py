@@ -515,7 +515,7 @@ class ItemStock:
 
         self.trapcloud = Item('glue nanobots', slot='d', skin=('{', libtcod.dark_yellow),
                               applies=True, trapcloud=True, rarity=4, count=0,
-                              desc=['Microscopic nanobots that are used in construction work.'
+                              desc=['Microscopic nanobots that are used in construction work.',
                                     'They are good at quickly covering large areas in glue.'])
 
         self.doppel = Item('doppelganger', slot='', skin=('{', libtcod.dark_blue),

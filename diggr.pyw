@@ -28,7 +28,7 @@ class Logger:
         else:
             print ' '.join(str(i) for i in x)
 
-log = Logger()
+# log = Logger()
 
 # random__ = random
 
@@ -163,7 +163,7 @@ def console_wait_for_keypress():
 
     k = libtcod.console_wait_for_keypress(False)
     _inputs.append((k.c, k.vk))
-    #log.log('  key:', k.c, k.vk)
+    #log.log('  key:', (chr(k.c) if k.c > 31 else ''), k.c, k.vk)
     return k
 
 
@@ -1774,8 +1774,8 @@ class World:
             self.inv.take(self.itemstock.find('lamp'))
             
         self.inv.take(self.itemstock.find('pickaxe'))
-        #self.inv.take(self.itemstock.find('magic mapper'))        
-        #self.inv.take(self.itemstock.find('flamethrow'))        
+        self.inv.take(self.itemstock.find('doppel'))        
+        self.inv.take(self.itemstock.find('flamethrow'))        
 
         pl = [k for k in self.neighbors[(self.px,self.py)] if k in self.walkmap] + [(self.px,self.py)]
 
@@ -2637,6 +2637,8 @@ class World:
 
             if self.digging[0] < 0 or self.digging[0] >= self.w:
                 self.digging = None
+                return item
+
             if self.digging[1] < 0 or self.digging[1] >= self.h:
                 self.digging = None
 
@@ -4460,6 +4462,11 @@ class World:
             else:
                 dg.render_push_skin(k[0], k[1], itm.skin[1], itm.skin[0], libtcod.black, 0, False)
 
+
+        if self.doppeltime > 0:
+            dg.render_push_skin(self.doppelpoint[0], self.doppelpoint[1],
+                                libtcod.white, '@', libtcod.black, 0, False)
+
         lit_mons = set()
 
         for k,v in sorted(self.monmap.iteritems()):
@@ -4489,19 +4496,12 @@ class World:
             pccol = libtcod.amber
         dg.render_push_skin(self.px, self.py, pccol, pc, libtcod.black, 0, False)
 
-        if self.doppeltime > 0:
-            dg.render_push_skin(self.doppelpoint[0], self.doppelpoint[1],
-                                libtcod.white, '@', libtcod.black, 0, False)
-
         ###
 
         did_highlight = dg.render_draw(self.tcodmap, self.t, self.px, self.py, 
                                        _hlx, _hly, range[0], range[1], lightradius)
         
         ###
-
-        if self.doppeltime > 0:
-            dg.render_pop_skin(self.doppelpoint[0], self.doppelpoint[1])
 
         dg.render_pop_skin(self.px, self.py)
 
@@ -4514,6 +4514,9 @@ class World:
             if withtime and dg.render_is_in_fov(k[0], k[1]):
                 self.monsters_in_view.append(v)
                 v.visible = True
+
+        if self.doppeltime > 0:
+            dg.render_pop_skin(self.doppelpoint[0], self.doppelpoint[1])
 
         for k,v in sorted(self.itemap.iteritems()):
             dg.render_pop_skin(k[0], k[1])
@@ -4624,6 +4627,8 @@ class World:
             setattr(self, k, v)
 
         dg.state_load('savefile.dat1')
+
+        #log.f = open('LOG.%d' % self._seed, 'a')
 
         random.seed(self._seed)
         global _inputs
@@ -4936,6 +4941,8 @@ def start_game(world, w, h, oldseed=None, oldbones=None):
             world.bones = oldbones
         else:
             world.load_bones()
+
+        #log.f = open('LOG.%d' % world._seed, 'a')
 
         random.seed(world._seed)
         global _inputs
