@@ -1077,6 +1077,9 @@ class World:
         self.glued = 0
         self.onfire = 0
 
+        self.doppelpoint = None
+        self.doppeltime = 0
+
         self.s_grace = 0
         self.b_grace = 0
         self.v_grace = 0
@@ -1817,15 +1820,7 @@ class World:
                     else:
                         self.msg.m("You see " + str(self.itemap[(self.px, self.py)][0]) + '.')
 
-                fdmg = self.try_feature(self.px, self.py, 'fire')
-                if fdmg > 0:
-                    self.stats.health.dec(fdmg, "fire", self.config.sound)
-                    self.onfire = max(self.coef.burnduration, self.onfire)
-                elif self.onfire:
-                    self.stats.health.dec(self.coef.burndamage, "fire", self.config.sound)
-
                 if self.onfire > 0:
-                    self.onfire -= 1
                     self.seed_celauto(self.px, self.py, self.celautostock.FIRE)
                     self.set_feature(self.px, self.py, '"')
 
@@ -1905,10 +1900,22 @@ class World:
                     self.msg.m('Your ' + i.name + ' falls apart!', True)
                     self.inv.purge(i)
 
+        fdmg = self.try_feature(self.px, self.py, 'fire')
+        if fdmg > 0:
+            self.stats.health.dec(fdmg, "fire", self.config.sound)
+            self.onfire = max(self.coef.burnduration, self.onfire)
+        elif self.onfire > 0:
+            if self.cooling == 0:
+                self.stats.health.dec(self.coef.burndamage, "fire", self.config.sound)
+            self.onfire -= 1
+
         if self.cooling > 0:
             self.cooling -= 1
             if self.cooling == 0:
                 self.msg.m("Your layer of cold mud dries up.")
+
+        if self.doppeltime > 0:
+            self.doppeltime -= 1
 
         if self.dead: return
 
@@ -2930,6 +2937,13 @@ class World:
             self.msg.m('The local space-time continuum shifts slightly.', True)
             return None
 
+        elif item.doppel:
+            self.doppelpoint = (self.px, self.py)
+            self.doppeltime = item.doppel
+            self.achievements.use(item)
+            self.msg.m('You activate the doppelganger.')
+            return None
+
         elif item.rangeattack or item.rangeexplode or item.fires:
             if item.ammo == 0:
                 self.msg.m("It's out of ammo!")
@@ -3840,11 +3854,6 @@ class World:
                 if random.randint(1, mon.moldspew[1]) == 1:
                     self.seed_celauto(ki[0], ki[1], mon.moldspew[0])
 
-        if mon.onfire > 0:
-            mon.onfire -= 1
-            self.seed_celauto(mon.x, mon.y, self.celautostock.FIRE)
-            self.set_feature(mon.x, mon.y, '"')
-
         if mon.static:
             return None, None
 
@@ -3909,16 +3918,22 @@ class World:
             if repelrange and dist <= repelrange and dist > 1:
                  return None, None
 
-            if mon.known_px is None or mon.known_py is None:
-                mon.known_px = self.px
-                mon.known_py = self.py
-
-            elif mon.heatseeking and \
-                 ((self.px, self.py) in self.watermap or self.cooling):
-                pass
+            if mon.heatseeking:
+                if ((self.px, self.py) in self.watermap or self.cooling or mon.onfire):
+                    if mon.known_px is None or mon.known_py is None:
+                        mon.known_px = mon.x
+                        mon.known_py = mon.y
+                else:
+                    mon.known_px = self.px
+                    mon.known_py = self.py
             else:
-                mon.known_px = self.px
-                mon.known_py = self.py
+                if self.doppeltime > 0:
+                    mon.known_px = self.doppelpoint[0]
+                    mon.known_py = self.doppelpoint[1]
+                else:
+                    mon.known_px = self.px
+                    mon.known_py = self.py
+
 
             if mon.straightline:
                 libtcod.line_init(x, y, mon.known_px, mon.known_py)
@@ -4260,7 +4275,7 @@ class World:
                     if mon.visible:
                         smu = str(mon)
                         smu = smu[0].upper() + smu[1:]
-                        self.msg.m(smu + ' burns to death!')
+                        self.msg.m(smu + ' burns ' + ('up.' if mon.boulder else 'to death!'))
 
                     self.handle_mondeath(mon, do_gain=True)
                     mon.do_die = True
@@ -4269,6 +4284,12 @@ class World:
 
                 elif p:
                     mon.onfire = max(self.coef.burnduration, mon.onfire)
+
+                else:
+                    mon.onfire -= 1
+                    self.seed_celauto(x, y, self.celautostock.FIRE)
+                    self.set_feature(x, y, '"')
+
 
 
             msumm = (mon.summon or mon.summononce)
@@ -4468,12 +4489,19 @@ class World:
             pccol = libtcod.amber
         dg.render_push_skin(self.px, self.py, pccol, pc, libtcod.black, 0, False)
 
+        if self.doppeltime > 0:
+            dg.render_push_skin(self.doppelpoint[0], self.doppelpoint[1],
+                                libtcod.white, '@', libtcod.black, 0, False)
+
         ###
 
         did_highlight = dg.render_draw(self.tcodmap, self.t, self.px, self.py, 
                                        _hlx, _hly, range[0], range[1], lightradius)
         
         ###
+
+        if self.doppeltime > 0:
+            dg.render_pop_skin(self.doppelpoint[0], self.doppelpoint[1])
 
         dg.render_pop_skin(self.px, self.py)
 
@@ -4551,7 +4579,7 @@ class World:
           'done', 'dead', 'stats', 'msg', 'coef', 'inv', 'itemstock', 'monsterstock', 'branch',
           'dlev', 'plev', 't', 'oldt', 'tagorder', 'sleeping', 'resting', 'cooling', 'digging', 'blind',
           'mapping', 'glued', 'onfire', 's_grace', 'b_grace', 'v_grace', 'forcedsleep',
-          'forced2sleep', 'healingsleep',
+          'forced2sleep', 'healingsleep', 'doppelpoint', 'doppeltime',
           '_seed', '_inputs', 'featstock', 'vaultstock',
           'achievements', 'bones', 'resource', 'resource_buildup', 'resource_timeout',
           'neighbors', 'moon', 'did_moon_message'
