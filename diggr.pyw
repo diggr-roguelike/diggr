@@ -1817,15 +1817,7 @@ class World:
                     else:
                         self.msg.m("You see " + str(self.itemap[(self.px, self.py)][0]) + '.')
 
-                fdmg = self.try_feature(self.px, self.py, 'fire')
-                if fdmg > 0:
-                    self.stats.health.dec(fdmg, "fire", self.config.sound)
-                    self.onfire = max(self.coef.burnduration, self.onfire)
-                elif self.onfire:
-                    self.stats.health.dec(self.coef.burndamage, "fire", self.config.sound)
-
                 if self.onfire > 0:
-                    self.onfire -= 1
                     self.seed_celauto(self.px, self.py, self.celautostock.FIRE)
                     self.set_feature(self.px, self.py, '"')
 
@@ -1904,6 +1896,15 @@ class World:
                 if i.selfdestruct == 0:
                     self.msg.m('Your ' + i.name + ' falls apart!', True)
                     self.inv.purge(i)
+
+        fdmg = self.try_feature(self.px, self.py, 'fire')
+        if fdmg > 0:
+            self.stats.health.dec(fdmg, "fire", self.config.sound)
+            self.onfire = max(self.coef.burnduration, self.onfire)
+        elif self.onfire > 0:
+            if self.cooling == 0:
+                self.stats.health.dec(self.coef.burndamage, "fire", self.config.sound)
+            self.onfire -= 1
 
         if self.cooling > 0:
             self.cooling -= 1
@@ -3840,11 +3841,6 @@ class World:
                 if random.randint(1, mon.moldspew[1]) == 1:
                     self.seed_celauto(ki[0], ki[1], mon.moldspew[0])
 
-        if mon.onfire > 0:
-            mon.onfire -= 1
-            self.seed_celauto(mon.x, mon.y, self.celautostock.FIRE)
-            self.set_feature(mon.x, mon.y, '"')
-
         if mon.static:
             return None, None
 
@@ -3914,7 +3910,7 @@ class World:
                 mon.known_py = self.py
 
             elif mon.heatseeking and \
-                 ((self.px, self.py) in self.watermap or self.cooling):
+                 ((self.px, self.py) in self.watermap or self.cooling or mon.onfire):
                 pass
             else:
                 mon.known_px = self.px
@@ -4260,7 +4256,7 @@ class World:
                     if mon.visible:
                         smu = str(mon)
                         smu = smu[0].upper() + smu[1:]
-                        self.msg.m(smu + ' burns to death!')
+                        self.msg.m(smu + ' burns ' + ('up.' if mon.boulder else 'to death!'))
 
                     self.handle_mondeath(mon, do_gain=True)
                     mon.do_die = True
@@ -4269,6 +4265,12 @@ class World:
 
                 elif p:
                     mon.onfire = max(self.coef.burnduration, mon.onfire)
+
+                else:
+                    mon.onfire -= 1
+                    self.seed_celauto(x, y, self.celautostock.FIRE)
+                    self.set_feature(x, y, '"')
+
 
 
             msumm = (mon.summon or mon.summononce)
