@@ -227,7 +227,7 @@ class Coeffs:
         self.moldchance = 2
 
         self.burnduration = 8
-        self.burndamage = 0.333
+        self.burndamage = 0.76
 
         self.resource_timeouts = {'r': 300,
                                   'g': 400,
