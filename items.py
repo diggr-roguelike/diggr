@@ -24,7 +24,7 @@ class Item:
                  applies_in_slot=False, ebola=False, smoke=False,
                  trapcloud=False, glueimmune=False, craft=None, resource=None,
                  hide_count=False, swampgas=False, digbonus=0, airfreshener=None, 
-                 corpse=None, switch_moon=None):
+                 corpse=None, switch_moon=None, doppel=None):
         self.slot = slot
         self.bonus = bonus
         self.name = name
@@ -93,6 +93,7 @@ class Item:
         self.digbonus = digbonus
         self.airfreshener = airfreshener
         self.switch_moon = switch_moon
+        self.doppel = doppel
 
         self.corpse = corpse
         self.ammo = None
@@ -516,6 +517,11 @@ class ItemStock:
                               applies=True, trapcloud=True, rarity=4, count=0,
                               desc=['Microscopic nanobots that are used in construction work.'
                                     'They are good at quickly covering large areas in glue.'])
+
+        self.doppel = Item('doppelganger', slot='', skin=('{', libtcod.dark_blue),
+                           applies=True, doppel=16, rarity=6, 
+                           desc=['A holographic depiction of a player character.',
+                                 'Useful for tricking monsters.'])
 
         self.gasspore = Item('swamp gas spore', slot='', skin=(',', libtcod.dark_blue),
                              rarity=5, swampgas=True, throwable=True, liveexplode=3, 
