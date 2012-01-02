@@ -1,0 +1,48 @@
+
+To run the game, type
+
+ ./diggr
+
+To run the highscore and achievement viewer and game replayer, type
+
+ ./diggr-replayer
+
+Please visit the official site, http://code.google.com/p/diggr-roguelike for more info.
+
+Also, the Diggr Global Online Score Table is available over at http://diggr.name
+You can place an entry into the global highscore from the game itself.
+
+If you are running a 64-bit distribution with an older glibc version, type
+
+ ./diggr-fix-glibc
+
+I bundled a glibc 2.14 binary with the game.
+
+
+
+REQUIREMENTS:
+
+* Python. All modern Linux distributions have this pre-installed.
+
+* The SDL libraries. 
+
+* The jack audio toolkit if you want sound.
+
+
+  To install them under Ubuntu, Debian or Mint, type:
+
+    sudo apt-get install libsdl1.2debian jackd2
+
+  To install them under RedHat, Fedora or CentOS, type:
+
+    sudo yum install SDL jack-audio-connection-kit
+
+  To install under Arch Linux, type:
+
+    sudo pacman -S sdl jack2
+    
+NOTE: I recommend installing jack2, not jack. The two are equavelent from the point of view of a 
+program that uses them; however, jack2 is more user-friendly and should work out-of-the-box 
+without extra configuration steps.
+
+
