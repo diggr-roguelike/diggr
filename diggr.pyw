@@ -1774,8 +1774,8 @@ class World:
             self.inv.take(self.itemstock.find('lamp'))
             
         self.inv.take(self.itemstock.find('pickaxe'))
-        self.inv.take(self.itemstock.find('doppel'))        
-        self.inv.take(self.itemstock.find('mapper'))
+        #self.inv.take(self.itemstock.find('doppel'))        
+        #self.inv.take(self.itemstock.find('mapper'))
 
         pl = [k for k in self.neighbors[(self.px,self.py)] if k in self.walkmap] + [(self.px,self.py)]
 
