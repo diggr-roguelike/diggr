@@ -70,6 +70,11 @@ struct SC_OSC {
                 ok = true;
                 break;
             }
+
+#ifdef _WIN32
+            // Hack for Windows. :(
+            Sleep(1000);
+#endif
         }
 
         if (!ok) {
@@ -159,7 +164,8 @@ struct Engine {
         DWORD tstat;
 
         GetStartupInfo(&si);
-        si.dwFlags |= STARTF_USESHOWWINDOW;
+        si.dwFlags = STARTF_USESHOWWINDOW;
+        si.wShowWindow = SW_HIDE;
 
         BOOL res = SetEnvironmentVariable("SC_SYNTHDEF_PATH", synthdir.c_str());
 
@@ -170,7 +176,7 @@ struct Engine {
                             NULL,        // Default process security attributes
                             NULL,        // Default thread security attributes
                             FALSE,      // Don't inherit handles from the parent
-                            0,        // Normal priority
+                            CREATE_NO_WINDOW,        // 
 			    NULL,        // Use the same environment as the parent
                             execdir.c_str(),
                             &si,        // Startup Information
