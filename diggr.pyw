@@ -87,7 +87,7 @@ class Logger:
 
 
 global _version
-_version = '11.12.18'
+_version = '12.01.01'
 
 global _inputs
 global _inputqueue
@@ -1775,7 +1775,7 @@ class World:
             
         self.inv.take(self.itemstock.find('pickaxe'))
         self.inv.take(self.itemstock.find('doppel'))        
-        self.inv.take(self.itemstock.find('flamethrow'))        
+        self.inv.take(self.itemstock.find('mapper'))
 
         pl = [k for k in self.neighbors[(self.px,self.py)] if k in self.walkmap] + [(self.px,self.py)]
 
@@ -2775,15 +2775,12 @@ class World:
             s = []
             if item.detect_monsters:
                 s.append('You detect the following monsters:')
-                for v in self.monmap.itervalues():
-                    s.append('  '+str(v))
+                s.extend(sorted('  '+str(v) for v in self.monmap.itervalues()))
                 s.append('')
 
             if item.detect_items:
                 s.append('You detect the following items:')
-                for v in self.itemap.itervalues():
-                    for vv in v:
-                        s.append('  '+str(vv))
+                s.extend(sorted('  '+str(vv) for v in self.itemap.itervalues() for vv in v))
                 s.append('')
 
             if len(s) > 19:
@@ -2959,11 +2956,9 @@ class World:
                 if nx is not None:
                     break
             if nx < 0:
-                print '!!1'
                 return -1 #item
 
             if not item.rangeexplode and not item.fires and (nx, ny) not in self.monmap:
-                print '!!2'
                 return -1 #item
 
             if item.ammo > 0:
@@ -3709,7 +3704,6 @@ class World:
                                      lightradius=lightradius)
 
             if ok:
-                print 'RET:',point
                 return point
 
 
@@ -4390,6 +4384,46 @@ class World:
 
 
 
+    def draw_hud(self):
+        statsgrace = None
+        if self.s_grace:
+            statsgrace = (chr(234),
+                          ((self.s_grace * 6) / self.coef.s_graceduration) + 1,
+                          (self.s_grace > self.coef.s_graceduration - self.coef.s_praytimeout))
+
+        elif self.v_grace:
+            statsgrace = (chr(233),
+                          ((self.v_grace * 6) / self.coef.v_graceduration) + 1,
+                          (self.v_grace > self.coef.v_graceduration - self.coef.v_praytimeout))
+
+        elif self.b_grace:
+            statsgrace = (chr(127),
+                          ((self.b_grace * 6) / self.coef.b_graceduration) + 1,
+                          False)
+
+        statsresource = None
+        if self.resource:
+            if self.resource_timeout:
+                n = ((self.resource_timeout * 6) / self.coef.resource_timeouts[self.resource] + 1)
+            else:
+                n = self.resource_buildup
+
+            statsresource = (self.resource, n,
+                             True if self.resource_timeout else False)
+
+        if self.px > self.w / 2:
+            self.stats.draw(0, 0, grace=statsgrace, resource=statsresource)
+        else:
+            self.stats.draw(self.w - 14, 0, grace=statsgrace, resource=statsresource)
+
+        if self.py > self.h / 2:
+            self.msg.draw(15, 0, self.w - 30, self.t)
+        else:
+            self.msg.draw(15, self.h - 3, self.w - 30, self.t)
+
+
+    ### 
+
     def draw(self, _hlx=1000, _hly=1000, range=(0,1000), lightradius=None):
 
         withtime = False
@@ -4418,7 +4452,9 @@ class World:
         if lightradius < 1:
             lightradius = 1
 
+        did_mapping = False
         if self.mapping > 0:
+            did_mapping = True
             if withtime:
                 self.mapping -= 1
 
@@ -4523,42 +4559,8 @@ class World:
 
         ### 
 
-        statsgrace = None
-        if self.s_grace:
-            statsgrace = (chr(234),
-                          ((self.s_grace * 6) / self.coef.s_graceduration) + 1,
-                          (self.s_grace > self.coef.s_graceduration - self.coef.s_praytimeout))
-
-        elif self.v_grace:
-            statsgrace = (chr(233),
-                          ((self.v_grace * 6) / self.coef.v_graceduration) + 1,
-                          (self.v_grace > self.coef.v_graceduration - self.coef.v_praytimeout))
-
-        elif self.b_grace:
-            statsgrace = (chr(127),
-                          ((self.b_grace * 6) / self.coef.b_graceduration) + 1,
-                          False)
-
-        statsresource = None
-        if self.resource:
-            if self.resource_timeout:
-                n = ((self.resource_timeout * 6) / self.coef.resource_timeouts[self.resource] + 1)
-            else:
-                n = self.resource_buildup
-
-            statsresource = (self.resource, n,
-                             True if self.resource_timeout else False)
-
-        if self.px > self.w / 2:
-            self.stats.draw(0, 0, grace=statsgrace, resource=statsresource)
-        else:
-            self.stats.draw(self.w - 14, 0, grace=statsgrace, resource=statsresource)
-
-        if self.py > self.h / 2:
-            self.msg.draw(15, 0, self.w - 30, self.t)
-        else:
-            self.msg.draw(15, self.h - 3, self.w - 30, self.t)
-
+        if not did_mapping:
+            self.draw_hud()
 
         # hack
         if withtime:
