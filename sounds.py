@@ -49,7 +49,7 @@ class Engine:
         _sound.sound_free(n)
 
     def toggle_mute(self):
-        _sound.toggle_mute()
+        _sound.sound_toggle_mute()
 
 def main():
     e = Engine()
