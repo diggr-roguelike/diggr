@@ -4905,8 +4905,8 @@ class World:
         # HACK
         if self.save_disabled:
             return
-        self.config.sound.toggle_mute()
-        if self.config.sound.mute:
+        isok = self.config.sound.toggle_mute()
+        if not isok:
             if self.config.music_n >= 0:
                 self.config.sound.stop(self.config.music_n)
             self.config.music_n = -1

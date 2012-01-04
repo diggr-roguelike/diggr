@@ -11,7 +11,7 @@ else:
     _sound = CDLL('./libsound.so')
 
 _sound.sound_play.restype = c_int
-
+_sound.sound_toggle_mute.restype = c_int
 
 
 
@@ -49,7 +49,7 @@ class Engine:
         _sound.sound_free(n)
 
     def toggle_mute(self):
-        _sound.sound_toggle_mute()
+        return _sound.sound_toggle_mute()
 
 def main():
     e = Engine()

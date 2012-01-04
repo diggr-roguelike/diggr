@@ -25,8 +25,9 @@ void sound_stop() {
     }
 }
 
-extern "C" void sound_toggle_mute() {
-    if (_sound) _sound->osc.toggle_mute();
+extern "C" int sound_toggle_mute() {
+    if (_sound) return _sound->osc.toggle_mute();
+    return 0;
 }
 
 extern "C" void sound_free(unsigned int s) {

@@ -129,8 +129,9 @@ struct SC_OSC {
         lo_server_recv_noblock(server_reply, 2000);
     }
 
-    void toggle_mute() {
+    bool toggle_mute() {
         mute = !mute;
+        return (active && !mute);
     }
 };
 
