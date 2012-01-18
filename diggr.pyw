@@ -2825,9 +2825,9 @@ class World:
                 return None
 
             jinni = Monster('Jinni', level=self.plev+1,
-                            attack=max(self.inv.get_attack(), 0.5),
-                            defence=self.inv.get_defence(),
-                            range=self.inv.get_lightradius(),
+                            attack=self.dlev*0.1,
+                            defence=self.dlev*0.2,
+                            range=max(self.dlev-1, 1),
                             skin=('&', libtcod.yellow),
                             desc=['A supernatural fire fiend.'])
 
@@ -2999,6 +2999,10 @@ class World:
         if b in self.quests:
             self.dlev = self.quests[b].dlevels[0]
 
+        if self.dlev >= 26:
+            self.victory()
+            return
+
         self.regen(self.w, self.h)
         self.tick()
         self.achievements.descend(self)
@@ -3101,6 +3105,17 @@ class World:
         self.apply_from_ground_aux(i, px, py)
 
 
+    def victory(self):
+        while 1:
+            c = draw_window(['Congratulations! You have won the game.', '', 'Press space to exit.'], self.w, self.h)
+            if c == ' ': break
+
+        self.stats.health.reason = 'winning'
+        self.done = True
+        self.dead = True
+        self.achievements.winner()
+
+
     def handle_mondeath(self, mon, do_drop=True, do_gain=True,
                         is_rad=False, is_explode=False, is_poison=False):
 
@@ -3162,16 +3177,8 @@ class World:
 
             return
 
-
         if winner:
-            while 1:
-                c = draw_window(['Congratulations! You have won the game.', '', 'Press space to exit.'], self.w, self.h)
-                if c == ' ': break
-
-            self.stats.health.reason = 'winning'
-            self.done = True
-            self.dead = True
-            self.achievements.winner()
+            self.victory()
 
 
     def rayblast(self, x0, y0, rad):
@@ -4165,6 +4172,9 @@ class World:
             if (x, y) not in self.featmap and (x, y) in self.walkmap and (x, y) not in self.watermap:
                 self.set_feature(x, y, ca.floorfeaturetoggle)
 
+        if ca.littoggle is not None:
+            dg.render_set_is_lit(x, y, True)
+
     def celauto_off(self, x, y, ca):
         ca = self.celautostock.stock[ca]
 
@@ -4173,6 +4183,10 @@ class World:
         elif ca.featuretoggle and (x, y) in self.featmap and \
              self.featmap[(x, y)] == self.featstock.f[ca.featuretoggle]:
             self.unset_feature(x, y)
+
+        if ca.littoggle is not None:
+            dg.render_set_is_lit(x, y, False)
+
 
     def process_world(self):
 
@@ -4952,7 +4966,7 @@ def start_game(world, w, h, oldseed=None, oldbones=None):
 
         world.regen(w, h)
         world.generate_inv()
-        world.msg.m("Kill all the monsters in the dungeon to win the game.")
+        world.msg.m("Kill all the monsters in the dungeon or reach level 26 to win the game.")
         world.msg.m("Please press '?' to see help.")
 
 def check_autoplay(world):

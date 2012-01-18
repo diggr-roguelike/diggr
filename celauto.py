@@ -8,7 +8,7 @@ import libdiggrpy as dg
 class CelAuto:
     def __init__(self, color=libtcod.light_blue,
                  rule="345/26/5", featuretoggle=None,
-                 watertoggle=None, floorfeaturetoggle=None,
+                 watertoggle=None, floorfeaturetoggle=None, littoggle=None,
                  pic=None, anchor=(0,0)):
         self.color = color
         self.featuretoggle = featuretoggle
@@ -16,6 +16,7 @@ class CelAuto:
         self.floorfeaturetoggle = floorfeaturetoggle
         self.pic = pic
         self.anchor = anchor
+        self.littoggle = littoggle
 
         rule = rule.split('/')
         self.rule = (rule[0], rule[1], int(rule[2]))
@@ -48,7 +49,7 @@ class CelAutoStock:
                                          " . "]),
 
             self.SWAMPGAS: CelAuto(rule="23/24/32", color=None,
-                                   featuretoggle='&',
+                                   featuretoggle='&', littoggle=True,
                                    pic=["..",".."]),
 
             self.MOLD: CelAuto(rule="3456/2/6", color=None,
