@@ -4203,7 +4203,7 @@ class World:
             if (x, y) not in self.featmap and (x, y) in self.walkmap and (x, y) not in self.watermap:
                 self.set_feature(x, y, ca.floorfeaturetoggle)
 
-        if ca.littoggle is not None:
+        if ca.littoggle is not None and (x,y) in self.walkmap:
             dg.render_set_is_lit(x, y, True)
 
     def celauto_off(self, x, y, ca):
@@ -4215,7 +4215,7 @@ class World:
              self.featmap[(x, y)] == self.featstock.f[ca.featuretoggle]:
             self.unset_feature(x, y)
 
-        if ca.littoggle is not None:
+        if ca.littoggle is not None and (x,y) in self.walkmap:
             dg.render_set_is_lit(x, y, False)
 
 
@@ -4997,7 +4997,7 @@ def start_game(world, w, h, oldseed=None, oldbones=None):
 
         world.regen(w, h)
         world.generate_inv()
-        world.msg.m("Kill all the monsters in the dungeon or reach level 26 to win the game.")
+        world.msg.m("Kill all the monsters in the dungeon or reach dungeon level 26 to win the game.")
         world.msg.m("Please press '?' to see help.")
 
 def check_autoplay(world):
