@@ -769,6 +769,7 @@ class Achievements:
         self.healing = 0
         self.booze = 0
         self.food = 0
+        self.nodoz = 0
         self.dowsing = 0
         self.radkilled = 0
         self.explodekilled = 0
@@ -872,8 +873,9 @@ class Achievements:
         foodbucket = ((self.food / 5) * 5)
         boozebucket = ((self.booze / 5) * 5)
         pillbucket = ((self.healing / 5) * 5)
+        nodozbucket = ((self.nodoz / 5) * 5)
 
-        if self.food == 0 and self.booze == 0 and self.healing == 0:
+        if self.food == 0 and self.booze == 0 and self.healing == 0 and self.nodoz == 0:
             self.add('teetotal', 'Never ate food, drank alcohol or used medicine', weight=9)
         else:
             if self.food == 0:
@@ -890,6 +892,11 @@ class Achievements:
                 self.add('nopill', 'Never used medicine', weight=7)
             elif pillbucket > 0:
                 self.add('%dpill' % pillbucket, 'Swallowed a pill at least %d times' % pillbucket, weight=5)
+
+            if self.nodoz == 0:
+                self.add('nopep', 'Never used No-Doz pills', weight=7)
+            elif nodozbucket > 0:
+                self.add('%dpep' % nodozbucket, 'Used No-Doz pills at least %d times' % nodozbucket, weight=5)
 
         if self.crafted > 0:
             self.add('%dcraft' % self.crafted, 'Tried crafting %d times' % self.crafted, weight=15)
@@ -984,6 +991,8 @@ class Achievements:
             self.booze += 1
         elif item.healing or item.healingsleep:
             self.healing += 1
+        elif item.nodoz:
+            self.nodoz += 1
         elif item.homing:
             self.dowsing += 1
         elif item.digging:
@@ -2723,6 +2732,28 @@ class World:
                 self.msg.m('Aaahh.')
                 self.stats.sleep.dec(max(random.gauss(*self.coef.boozestrength), 0))
                 self.stats.warmth.inc(max(random.gauss(*self.coef.boozestrength), 0))
+
+            self.achievements.use(item)
+            return None
+
+        elif item.nodoz:
+            
+            if self.v_grace:
+                self.msg.m('Your religion prohibits eating pills.')
+                return item
+
+            if item.bonus < 0:
+                self.msg.m('Your heart starts palpitating!', True)
+                self.stats.tired.x = min(-2.9, self.stats.tired.x)
+            else:
+                n = self.stats.tired.x - (-2.9)
+
+                if n <= 0:
+                    self.msg.m('Nothing happens.')
+                else:
+                    self.msg.m('Wow, what a kick!')
+                    self.stats.sleep.inc(n)
+                    self.stats.tired.dec(n)
 
             self.achievements.use(item)
             return None

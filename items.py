@@ -24,7 +24,7 @@ class Item:
                  applies_in_slot=False, ebola=False, smoke=False,
                  trapcloud=False, glueimmune=False, craft=None, resource=None,
                  hide_count=False, swampgas=False, digbonus=0, airfreshener=None, 
-                 corpse=None, switch_moon=None, doppel=None):
+                 corpse=None, switch_moon=None, doppel=None, nodoz=False):
         self.slot = slot
         self.bonus = bonus
         self.name = name
@@ -94,6 +94,7 @@ class Item:
         self.airfreshener = airfreshener
         self.switch_moon = switch_moon
         self.doppel = doppel
+        self.nodoz = nodoz
 
         self.corpse = corpse
         self.ammo = None
@@ -249,6 +250,11 @@ class ItemStock:
                               rarity=20, applies=True, food=(3, 0.5),
                               cursedchance=7, stackrange=3, count=1,
                               desc=['A mushroom growing on the cave floor.'])
+
+        self.nodoz = Item("No-Doz pep pill$s", slot='d', skin=('%', libtcod.light_red),
+                          rarity=20, applies=True, nodoz=True,
+                          cursedchance=4, stackrange=7, count=1,
+                          desc=['An over-the-counter medicine that helps combat sleep deprivation.'])
 
         self.rpg = Item('RPG launcher', slot='e', skin=('(', libtcod.red),
                         rarity=15, applies=True, rangeexplode=True, range=(4, 15),
