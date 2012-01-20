@@ -1113,6 +1113,8 @@ class World:
         self.config = config
         self.last_played_themesound = 0
 
+        self.new_visibles = False
+
         ### 
 
         self.theme = { 'a': (libtcod.lime,),
@@ -4586,6 +4588,7 @@ class World:
 
         dg.render_pop_skin(self.px, self.py)
 
+        self.new_visibles = False
 
         for k,v in sorted(self.monmap.iteritems()):
             dg.render_pop_skin(k[0], k[1])
@@ -4595,6 +4598,11 @@ class World:
             if withtime and dg.render_is_in_fov(k[0], k[1]):
                 self.monsters_in_view.append(v)
                 v.visible = True
+
+                # Hack
+                if not v.visible_old:
+                    self.new_visibles = True
+
 
         if self.doppeltime > 0:
             dg.render_pop_skin(self.doppelpoint[0], self.doppelpoint[1])
@@ -5017,6 +5025,11 @@ def check_autoplay(world):
             world.msg.m('You stop resting.')
             world.resting = False
             return 1
+
+        elif world.new_visibles:
+            world.digging = None
+            return 1
+
         else:
             world.rest()
             return -1
@@ -5026,6 +5039,11 @@ def check_autoplay(world):
             world.convert_to_floor(world.digging[0], world.digging[1])
             world.digging = None
             return 1
+
+        elif world.new_visibles:
+            world.digging = None
+            return 1
+
         else:
             world.grid[world.digging[1]][world.digging[0]] -= world.digging[2]
             world.tick()
