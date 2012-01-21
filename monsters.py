@@ -935,8 +935,8 @@ class MonsterStock:
 
         self.add(Monster('Conan', skin=('K', libtcod.sepia),
                          attack=7.5, defence=5.5, range=8, level=10, count=1,
-                         confimmune=True, itemdrop='excalibur', branch='e', no_a=True,
-                         flavor='humanwarrior',
+                         confimmune=True,  branch='e', no_a=True,
+                         flavor='humanwarrior', itemdrop='eyeofkali',
                          desc=['A well-muscled adventurer,',
                                'he looks like he just stepped off a movie poster.',
                                "He hates competition."]))
@@ -945,7 +945,7 @@ class MonsterStock:
                          attack=7.5, defence=7.5, range=10, level=11, count=1,
                          explodeimmune=True, fireimmune=True, branch='e',
                          confimmune=True, summon=('Conan', 1), no_a=True, poisimmune=True,
-                         flavor='earthshake', large=True,
+                         flavor='earthshake', large=True, itemdrop='excalibur',
                          desc=['The most high god of all Cimmerians, Crom is the god',
                                'of valor and battle. He is a dark, vengeful and',
                                'judgemental god.']))

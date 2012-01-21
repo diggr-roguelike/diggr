@@ -562,6 +562,13 @@ class ItemStock:
                                    'Rumor has it that it affects the very fabric of space',
                                    'and time.'])
 
+        self.eyeofkali = Item('the Eye of Kali', slot='', skin=('*', libtcod.red),
+                              count=0,
+                              desc=['A gigantic ruby.',
+                                    'It is said that this magical jewel is ',
+                                    'bathed in the blood of virgins.'])
+
+
         # Corpse
 
         self.corpse = Item('corpse', skin=(21, libtcod.yellow), slot='', rarity=0, desc=[''])

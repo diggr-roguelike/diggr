@@ -65,6 +65,9 @@ class FeatureStock:
         self.f['8'] = Feature(walkable=True, visible=True, skin=(175, libtcod.red),
                               stairs=1, name='an entrance to the Rehabilitation Thunderdome', branch='q')
 
+        self.f['qk'] = Feature(walkable=True, visible=True, skin=(175, libtcod.dark_gray),
+                               stairs=1, name='an entrace to the temple of Kali', branch='qk')
+
         self.f['*'] = Feature(walkable=True, visible=False, skin=('*', libtcod.lightest_green),
                               name='rubble')
 

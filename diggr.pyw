@@ -85,6 +85,12 @@ class Logger:
 # Z: large robot
 
 
+# a: find the monolith
+# b: circle of cthulhu: sacrifice 5 monsters and craft the call of cthulhu
+# c: the graphite vault/maze, with root password inside (crystalline graphite, carbonized graphite)
+# d: none, but add vaults with colored fountains
+# e: eye of kali (from Conan), with statue of kali
+
 
 global _version
 _version = '12.02.05'
@@ -1139,8 +1145,16 @@ class World:
                                   5: [None, None, None],
                                   6: [None, None, None],
                                   7: ['deusex']})
+
+        questkali = QuestInfo(moncounts={15:10},
+                              monlevels=(8,11),
+                              itemcounts={15:10},
+                              dlevels=(15,15),
+                              messages={15: []},
+                              gifts={15: []})
         
-        self.quests = {'q': quest1}
+        self.quests = {'q': quest1,
+                       'qk': questkali}
 
         self.neighbors = None
 
@@ -1725,14 +1739,24 @@ class World:
 
     def place(self, nogens):
         s = self.walkmap - nogens - set(self.monmap.iterkeys())
+        sold = s
 
         # Do not place a player in an unfair position.
         # Otherwise, the monster will get a free move and might
         # kill the player.
-        for k in self.monmap.iterkeys():
-            for ki in self.neighbors[k]:
-                if ki in s:
-                    s.remove(ki)
+        monn = set(k for k in self.monmap.iterkeys())
+
+        for x in xrange(3):
+            monn2 = set()
+            for k in monn:
+                for ki in self.neighbors[k]:
+                    monn2.add(ki)
+            monn.update(monn2)
+
+        s.difference_update(monn)
+
+        if len(s) == 0:
+            s = sold
 
         s = list(s)
         x, y = s[random.randint(0, len(s)-1)]
@@ -5005,7 +5029,7 @@ def start_game(world, w, h, oldseed=None, oldbones=None):
 
         world.regen(w, h)
         world.generate_inv()
-        world.msg.m("Kill all the monsters in the dungeon or reach dungeon level 26 to win the game.")
+        world.msg.m("Kill all the monsters in the dungeon or reach dungeon level 26 to win the game.", True)
         world.msg.m("Please press '?' to see help.")
 
 def check_autoplay(world):

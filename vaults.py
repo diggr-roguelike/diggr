@@ -38,6 +38,21 @@ class VaultStock:
     def __init__(self):
         self.vaults = {}
 
+        # Syms explanation:
+        #
+        #  None: skip cell.
+        #  (<feature>, <flag>): generate just the feature.
+        #  (<feature>, True, <flag>): mark this cell as 'do-not-occupy'.
+        #  (<feature>, <item>, <flag>): generate the specified item on this cell.
+        #
+        # If <flag> is 'True' this means to center on this spot. Should be only one marked cell.
+        #
+        # If <feature> is 'None' -- generate a plain floor cell.
+        # If <feature> is 'False' or '0' -- generate a plain wall cell.
+        # Otherwise <feature> should be a string, to generate a feature cell.
+        #
+
+
         syms = {' ': None,
                 '.': (None, False),
                 '#': (0, False),
@@ -92,6 +107,7 @@ class VaultStock:
                   '9': ('4', False),
                   '0': ('5', False),
                   'z': ('8', True),
+                  'K': ('qk', True),
                   '.': (None, False) }
 
 
@@ -101,6 +117,8 @@ class VaultStock:
         self.add(Vault(syms=symsb, pic=["z"], chance=2, level=(1,3), count=3, free=True, branch='c'))
         self.add(Vault(syms=symsb, pic=["z"], chance=2, level=(1,3), count=3, free=True, branch='d'))
         self.add(Vault(syms=symsb, pic=["z"], chance=2, level=(1,3), count=3, free=True, branch='e'))
+
+        self.add(Vault(syms=symsb, pic=["K"], chance=1, level=(15,15), count=1, free=True, branch='e'))
 
         self.add(Vault(syms=symsb, pic=["...",
                                         ".9.",
@@ -126,7 +144,6 @@ class VaultStock:
                                         ".9.",
                                         "..."],
                        chance=2, level=(5,6), count=1, branch='e'))
-
 
         self.add(Vault(syms=symsb, pic=["5"], chance=3, level=(3,3), count=1, branch='a'))
         self.add(Vault(syms=symsb, pic=["5"], chance=3, level=(6,6), count=1, branch='a'))
@@ -600,6 +617,38 @@ class VaultStock:
                        chance=1, level=(7,7), count=1, branch='q', anywhere=True,
                        message=["This is Thunderdome!",
                                 "Four men enter, one man leaves!"]))
+
+
+        ###########################################
+
+        # The temple of Kali
+
+        self.add(Vault(syms={'#': None,
+                             '.': (None, False)},
+                       pic=["#######################################################################",
+                            "#------!!!!YYYYYYYYYYYYYYYY!!!!------#...........,,,,,,,,,,,,,,,,,,,,,#",
+                            "#-----!!!YYY..............YYY!!!-----#.###########################,,,,#",
+                            "#----!!!YY..................YY!!!----#...........#,,,,,,,,,,,,,,,,,,,,#",
+                            "#---!!!YY..################..YY!!!---###########.#,####################",
+                            "#--!!!YY..#................#..YY!!!--............#,#,,,,,,,,,,,,,,,,,,#",
+                            "#-!!!YY........###..###........YY!!!-o.###########,#,##############,,,#",
+                            "#!!!YY...........#..#...........YY!!!............#,#,####,,oo,,####,1,#",
+                            "#!!YY..#....###...##...###....#..YY!!o #########.#,#,###,,,,,,,,###,,,#",
+                            "#!!Y..#....##..o......o..##....#..Y!!............#,#,##,,o____o,,##,2,#",
+                            "#!!Y..#..#......o.--.o......#..#..Y!!o.###########,S,#,,,_,,K,_,,,#,,,#",
+                            "#!!Y..#....##..o......o..##....#..Y!!............#,#,##,,o____o,,##,3,#",
+                            "#!!YY..#....###...##...###....#..YY!!o.#########.#,#,###,,,,,,,,###,,,#",
+                            "#!!!YY...........#..#...........YY!!!............#,#,####,,oo,,####,4,#",
+                            "#-!!!YY........###..###........YY!!!-o.###########,#,##############,,,#",
+                            "#--!!!YY..#................#..YY!!!--............#,#,,,,,,,,,,,,,,,,,,#",
+                            "#---!!!YY..################..YY!!!---###########.#,####################",
+                            "#----!!!YY..................YY!!!----#...........#,,,,,,,,,,,,,,,,,,,,#",
+                            "#-----!!!YYY..............YYY!!!-----#.###########################,,,,#",
+                            "#------!!!!YYYYYYYYYYYYYYYY!!!!------#...........,,,,,,,,,,,,,,,,,,,,,#",
+                            "#######################################################################"],
+                       chance=1, level=(15,15), count=1, branch='qk', anywhere=True,
+                       message=["You feel a special foreboding."]))
+
 
 
     def add(self, v):
