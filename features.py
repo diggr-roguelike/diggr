@@ -195,7 +195,7 @@ class FeatureStock:
                               lit=True, queasy=0.1, name='swamp gas', explode=3)
 
         self.f['"'] = Feature(walkable=True, visible=True, skin=None, back=libtcod.red,
-                              fire=0.333, name='a fire')
+                              fire=0.333, name='napalm')
 
 
         self.f['C'] = Feature(walkable=True, visible=True, skin=(20, libtcod.dark_green),

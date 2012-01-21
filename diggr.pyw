@@ -87,7 +87,7 @@ class Logger:
 
 
 global _version
-_version = '12.01.01'
+_version = '12.02.05'
 
 global _inputs
 global _inputqueue
