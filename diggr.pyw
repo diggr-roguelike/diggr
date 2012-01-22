@@ -2273,8 +2273,11 @@ class World:
             return
 
 
-    def convert_to_floor(self, x, y, rubble=0):
-        if rubble == 0:
+    def convert_to_floor(self, x, y, rubble):
+        if self.try_feature(x, y, 'permanent'):
+            return
+
+        if not rubble:
             self.set_feature(x, y, None)
         else:
             self.set_feature(x, y, '*')
@@ -2921,10 +2924,10 @@ class World:
         elif item.digray:
             if item.digray[0] == 1:
                 for x in xrange(0, self.w):
-                    self.convert_to_floor(x, self.py)
+                    self.convert_to_floor(x, self.py, False)
             if item.digray[1] == 1:
                 for y in xrange(0, self.h):
-                    self.convert_to_floor(self.px, y)
+                    self.convert_to_floor(self.px, y, False)
             self.msg.m('The wand explodes in a brilliant white flash!')
 
             self.achievements.use(item)
@@ -3020,6 +3023,10 @@ class World:
             self.msg.m('You activate the doppelganger.')
             return None
 
+        elif item.winning:
+            self.victory(msg=item.winning)
+            return None
+                    
         elif item.rangeattack or item.rangeexplode or item.fires:
             if item.ammo == 0:
                 self.msg.m("It's out of ammo!")
@@ -3361,10 +3368,7 @@ class World:
             if (x,y) in self.featmap and self.featmap[(x,y)].explode:
                 draw_floodfill(x, y, self.w, self.h, func_ff)
 
-            if random.randint(0, 5) == 0:
-                self.set_feature(x, y, '*')
-            else:
-                self.set_feature(x, y, None)
+            self.convert_to_floor(x, y, (random.randint(0, 5) == 0))
 
 
         draw_blast(x0, y0, self.w, self.h, rad, func_r)
@@ -4065,8 +4069,11 @@ class World:
 
         if mon.stoneeating:
             if mdx is not None:
+                if self.try_feature(mdx, mdy, 'permanent'):
+                    return None, None
+
                 if (mdx, mdy) not in self.walkmap:
-                    self.convert_to_floor(mdx, mdy, rubble=1)
+                    self.convert_to_floor(mdx, mdy, True)
 
         return mdx, mdy
 
@@ -5073,7 +5080,7 @@ def check_autoplay(world):
 
     if world.digging:
         if world.grid[world.digging[1]][world.digging[0]] <= -10:
-            world.convert_to_floor(world.digging[0], world.digging[1])
+            world.convert_to_floor(world.digging[0], world.digging[1], False)
             world.digging = None
             return 1
 

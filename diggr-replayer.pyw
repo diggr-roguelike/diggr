@@ -24,6 +24,7 @@ def ach_tag_to_text(tag):
              'nogun': 'Never used a firearm',
              'winner': ' =*= Won the game =*= ',
              'winkali': 'Returned the Eye of Kali',
+             'winroot': 'Hacked for the root password',
              'stealth': 'Killed a monster massively out of depth',
              'small_stealth': 'Killed a monster out of depth',
              'onebranch': 'Visited only one dungeon branch',

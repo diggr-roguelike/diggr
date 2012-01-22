@@ -663,6 +663,79 @@ class VaultStock:
                        message=["You feel a special foreboding."]))
 
 
+        # the vault
+
+        vvsyms = {'.': None,
+                  '#': ('#!', False),
+                  'x': ('##', False),
+                  'S': ('signvault', False, False),
+                  'Z': ('signvault', False, True),
+                  '@': (None, 'rootpwd', False)}
+
+
+        self.add(Vault(syms=vvsyms, 
+                       pic=["..........Z...........",
+                            ".####################.",
+                            ".#xxxxxxxx####xxxxxx#.",
+                            ".#x######xxxx#x####x#.",
+                            ".#xxxxxx####x#x##xxx#.",
+                            ".######x##@#x#x##x###S",
+                            "S#xxxxxx##xxx#xx#xxx#.",
+                            ".#x############x###x#.",
+                            ".#xxx#xxx#xxxx#x#xxx#.",
+                            ".###xxx#xxx##xxx#x###.",
+                            ".################x###.",
+                            "...........S.........."],
+                       chance=3, level=(15,19), count=1, branch='c'))
+
+        self.add(Vault(syms=vvsyms,
+                       pic=["..........S...........",
+                            ".####################.",
+                            ".#xxxxxxxxxxxxxxxxxx#.",
+                            ".#x################x#.",
+                            ".#xxxxxx#xxxxx#xxxxx#.",
+                            ".######x#x###x#x#####Z",
+                            "S#xxxxxx#xx@#x#xxxxx#.",
+                            ".#x##########x#####x#.",
+                            ".#x####xxxx##x#xxx#x#.",
+                            ".#xxxxxx##x##xxx#xxx#.",
+                            ".#########x##########.",
+                            "...........S.........."],
+                       chance=3, level=(15,19), count=1, branch='c'))
+
+        self.add(Vault(syms=vvsyms,
+                       pic=["..........S...........",
+                            ".#########x##########.",
+                            ".#xxxx####x#xxx#xxxx#.",
+                            ".#x##xxxxxx#x#x#x##x#.",
+                            ".#x#########x#x#x#xx#.",
+                            ".#xxxxx#xxx#@#xxx#x##S",
+                            "Z#####x#x#x#######xx#.",
+                            ".#xxxxx#x#x##xxxx##x#.",
+                            ".#x#####x#x##x##xx#x#.",
+                            ".#xxxxxxx#xxxx###xxx#.",
+                            ".####################.",
+                            "...........S.........."],
+                       chance=3, level=(15,19), count=1, branch='c'))
+
+        self.add(Vault(syms=vvsyms,
+                       pic=["..........S...........",
+                            ".##########x#########.",
+                            ".#xxxxxxx##x#xxx#xxx#.",
+                            ".#x#####x##xxx#xxx#x#.",
+                            ".#x#####x##########x#.",
+                            ".#xxxxx#xxxx#xxxxxxx#S",
+                            "S#####x####x#x#######.",
+                            ".#xxxxx#x@#x#xxxxxxx#.",
+                            ".#x#####x##x#######x#.",
+                            ".#xxxxxxx##xxxxxxxxx#.",
+                            ".####################.",
+                            "...........Z.........."],
+                       chance=3, level=(15,19), count=1, branch='c'))
+
+
+
+
 
     def add(self, v):
         v.postprocess()

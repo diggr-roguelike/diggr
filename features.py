@@ -7,7 +7,7 @@ class Feature:
                  shootable=False, warm=False, branch=None, healingfountain=False,
                  nofeature=False, poison=None, confuse=False, back=None, resource=None,
                  lit=False, queasy=None, explode=None, pois2=False, bb_shrine=False,
-                 lightbonus=0, fire=0, sign=None, special=None):
+                 lightbonus=0, fire=0, sign=None, special=None, permanent=False):
         self.walkable = walkable
         self.visible = visible
         self.water = water
@@ -37,6 +37,7 @@ class Feature:
         self.fire = fire
         self.sign = sign
         self.special = special
+        self.permanent = permanent
 
 
 class FeatureStock:
@@ -227,6 +228,16 @@ class FeatureStock:
 
         self.f['kali'] = Feature(walkable=True, visible=True, skin=(234,  libtcod.white),
                                  special='kali', name='a statue of Kali')
+
+        self.f['signvault'] = Feature(walkable=True, visible=True, skin=(254, libtcod.white),
+                                      sign='"Entrance to the Vault. Robbers beware."',
+                                      name='an engraving on the floor')
+
+        self.f['##'] = Feature(walkable=False, visible=False, skin=(176, libtcod.grey),
+                               name='carbonized graphite', height=10)
+
+        self.f['#!'] = Feature(walkable=False, visible=False, skin=(176, libtcod.grey),
+                               name='crystalline graphite', height=1000, permanent=True)
 
 
         # green: high damage bonus

@@ -25,7 +25,7 @@ class Item:
                  trapcloud=False, glueimmune=False, craft=None, resource=None,
                  hide_count=False, swampgas=False, digbonus=0, airfreshener=None, 
                  corpse=None, switch_moon=None, doppel=None, nodoz=False,
-                 special=None):
+                 special=None, winning=None):
         self.slot = slot
         self.bonus = bonus
         self.name = name
@@ -97,6 +97,7 @@ class Item:
         self.doppel = doppel
         self.nodoz = nodoz
         self.special = special
+        self.winning = winning
 
         self.corpse = corpse
         self.ammo = None
@@ -565,7 +566,7 @@ class ItemStock:
                                    'and time.'])
 
         self.eyeofkali = Item('the Eye of Kali', slot='', skin=('*', libtcod.red),
-                              count=0, special='kali',
+                              rarity=0, count=0, special='kali',
                               desc=['A gigantic ruby.',
                                     'It is said that this magical jewel is ',
                                     'bathed in the blood of virgins.'])
@@ -905,6 +906,11 @@ class ItemStock:
                            rarity=0, applies=True, wishing=True, count=7, hide_count=True,
                            desc=['Translated from the Latin, literally:',
                                  '"the god from the machine".'])
+
+        self.rootpwd = Item('the root password', slot='', skin=('!', libtcod.white),
+                            rarity=0, applies=True, winning=('winroot', 'Hacked for the root password'),
+                            count=0, 
+                            desc=['Must be something extremely important.'])
 
 
 
