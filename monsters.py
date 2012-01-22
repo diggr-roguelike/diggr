@@ -950,6 +950,27 @@ class MonsterStock:
                                'of valor and battle. He is a dark, vengeful and',
                                'judgemental god.']))
 
+        # #
+        self.add(Monster('acolyte of Kali', skin=('h', libtcod.gray),
+                         attack=3.5, defence=2.5, range=8, level=7, count=3,
+                         confimmune=True,  branch='qk', 
+                         desc=['A bloodthirsty worshipper of Kali Ma.']))
+
+        self.add(Monster('acolyte of Kali', skin=('h', libtcod.gray),
+                         attack=3.5, defence=2.5, range=8, level=8, count=3,
+                         confimmune=True,  branch='qk', 
+                         desc=['A bloodthirsty worshipper of Kali Ma.']))
+
+        self.add(Monster('acolyte of Kali', skin=('h', libtcod.gray),
+                         attack=3.5, defence=2.5, range=8, level=9, count=3,
+                         confimmune=True,  branch='qk', 
+                         desc=['A bloodthirsty worshipper of Kali Ma.']))
+
+        self.add(Monster('acolyte of Kali', skin=('h', libtcod.gray),
+                         attack=3.5, defence=2.5, range=8, level=10, count=3,
+                         confimmune=True,  branch='qk', 
+                         desc=['A bloodthirsty worshipper of Kali Ma.']))
+
         
         ## Moon-special monsters.
 

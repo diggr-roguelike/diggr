@@ -1082,6 +1082,7 @@ class World:
 
         self.dlev = 1
         self.plev = 1
+
         self.branch = None
         self.moon = None
         self.did_moon_message = False
@@ -1137,8 +1138,9 @@ class World:
                        'd': (libtcod.darkest_grey,),
                        'e': (libtcod.lightest_yellow,),
                        's': (libtcod.darkest_blue,),
-                       'q': (libtcod.white,) }
-
+                       'q': (libtcod.white,),
+                       'qk': (libtcod.grey,) }
+        
         quest1 = QuestInfo(moncounts={3:1, 4:1, 5:2, 6:2, 7:3}, 
                            monlevels=(3,8),
                            itemcounts={3:1, 4:1, 5:1, 6:1, 7:1}, 
@@ -1817,8 +1819,9 @@ class World:
             self.inv.take(self.itemstock.find('lamp'))
             
         self.inv.take(self.itemstock.find('pickaxe'))
-        #self.inv.take(self.itemstock.find('doppel'))        
-        #self.inv.take(self.itemstock.find('mapper'))
+
+        # REMOVEME
+        self.inv.take(self.itemstock.find('minibom'))
 
         pl = [k for k in self.neighbors[(self.px,self.py)] if k in self.walkmap] + [(self.px,self.py)]
 
@@ -2345,6 +2348,14 @@ class World:
         else: return 'backpack'
 
 
+    def delete_item(self, items, c, x, y):
+        del items[c]
+        if len(items) == 0:
+            del self.itemap[(x,y)]
+            return True
+        return False
+
+
     def take_aux(self, items, c):
 
         i = items[c]
@@ -2361,9 +2372,7 @@ class World:
                     did_scavenge = True
 
                     if i.count == 0:
-                        del items[c]
-                        if len(items) == 0:
-                            del self.itemap[(self.px, self.py)]
+                        if self.delete_item(items, c, self.px, self.py):
                             break
 
                 elif i.ammo > 0 and ii.ammo and ii.ammo < ii.ammochance[1]:
@@ -2380,9 +2389,7 @@ class World:
         ok = self.inv.take(i)
         if ok:
             self.msg.m('You take ' + str(i) + '.')
-            del items[c]
-            if len(items) == 0:
-                del self.itemap[(self.px, self.py)]
+            self.delete_item(items, c, self.px, self.py)
         else:
             self.msg.m('You have no free inventory slot for ' + str(i) + '!')
 
@@ -2555,9 +2562,7 @@ class World:
 
             if draw_window(['','Really destroy ' + str(i) +'? (Y/N)', ''], self.w, self.h) in ('y','Y'):
                 if slot in flooritems:
-                    del items[flooritems[slot]]
-                    if len(items) == 0:
-                        del self.itemap[(self.px, self.py)]
+                    self.delete_item(items, flooritems[slot], self.px, self.py)
                 else:
                     self.inv.drop(slot)
                 self.tick()
@@ -2577,9 +2582,7 @@ class World:
                 self.set_item(nx, ny, [i])
 
                 if slot in flooritems:
-                    del items[flooritems[slot]]
-                    if len(items) == 0:
-                        del self.itemap[(self.px, self.py)]
+                    self.delete_item(items, flooritems[slot], self.px, self.py)
 
                 self.tick()
 
@@ -2588,9 +2591,7 @@ class World:
                 item2 = self.inv.drop(i.slot)
                 ok = self.inv.take(i)
                 if ok:
-                    del items[flooritems[slot]]
-                    if len(items) == 0:
-                        del self.itemap[(self.px, self.py)]
+                    self.delete_item(items, flooritems[slot], self.px, self.py)
 
                     if item2:
                         if not self.inv.take(item2):
@@ -3111,10 +3112,8 @@ class World:
 
             for ix in xrange(len(self.itemap[(px, py)])):
                 if id(self.itemap[(px, py)][ix]) == id(i):
-                    del self.itemap[(px, py)][ix]
 
-                    if len(self.itemap[(px, py)]) == 0:
-                        del self.itemap[(px, py)]
+                    self.delete_item(self.itemap[(px, py)], ix, px, py)
                     break
 
         i2 = self.apply(i)
@@ -3181,6 +3180,26 @@ class World:
             return
 
         self.apply_from_ground_aux(i, px, py)
+
+
+    def filter_items(self, x, y, func, ret):
+        if (x,y) not in self.itemap:
+            return
+
+        i2 = []
+        for i in self.itemap[(x,y)]:
+            q1,q2 = func(i)
+            if q1:
+                if ret is not None:
+                    ret.append((x,y,q2))
+            else:
+                i2.append(i)
+
+        if len(i2) > 0:
+            self.itemap[(x,y)] = i2
+        else:
+            del self.itemap[(x,y)]
+
 
 
     def victory(self, msg=None):
@@ -3370,7 +3389,6 @@ class World:
 
         draw_blast2(x0, y0, self.w, self.h, rad, func1, func2, color=libtcod.yellow)
 
-
     def raise_dead(self, x0, y0, rad):
 
         libtcod.map_compute_fov(self.tcodmap, x0, y0, rad,
@@ -3382,18 +3400,7 @@ class World:
             return libtcod.map_is_in_fov(self.tcodmap, x, y)
 
         def func2(x, y):
-            if (x,y) in self.itemap:
-                i2 = []
-                for i in self.itemap[(x,y)]:
-                    if i.corpse:
-                        ret.append((x,y,i.corpse))
-                    else:
-                        i2.append(i)
-
-                if len(i2) > 0:
-                    self.itemap[(x,y)] = i2
-                else:
-                    del self.itemap[(x,y)]
+            self.filter_items(x, y, lambda i: (i.corpse, i.corpse), ret)
 
         draw_blast2(x0, y0, self.w, self.h, rad, func1, func2, color=None)
         return ret
@@ -4091,7 +4098,6 @@ class World:
         return False
 
     def summon(self, x, y, monname, n):
-
         if monname is None:
             m = []
             for ii in xrange(n):
@@ -4288,30 +4294,22 @@ class World:
                     if i.liveexplode == 0:
                         if i.summon:
                             self.summon(k[0], k[1], i.summon[0], i.summon[1])
-                            delitems.append(k)
                         elif i.radexplode:
                             rblasts.append((k[0], k[1], i.radius))
-                            delitems.append(k)
                         elif i.swampgas:
                             self.paste_celauto(self.px, self.py, self.celautostock.SWAMPGAS)
-                            delitems.append(k)
                         else:
                             explodes.add((k[0], k[1], i.radius))
+
+                        delitems.append(k)
 
         for x,y,r in rblasts:
             self.rayblast(x, y, r)
 
         for ix,iy in delitems:
-            if (ix,iy) in self.itemap:
-                l2 = []
-                for i in self.itemap[(ix,iy)]:
-                    if i.liveexplode != 0:
-                        l2.append(i)
-
-                if len(l2) > 0:
-                    self.itemap[(ix,iy)] = l2
-                else:
-                    del self.itemap[(ix,iy)]
+            print 'before',len(self.itemap[(ix,iy)])
+            self.filter_items(ix, iy, lambda i: (i.liveexplode == 0, None), None)
+            print 'after',len(self.itemap[(ix,iy)])
 
 
         summons = []
@@ -4471,7 +4469,6 @@ class World:
                 self.process_monstep(mon)
 
         for x, y, r in sorted(explodes):
-            del self.itemap[(x, y)]
             self.explode(x, y, r)
 
 
