@@ -4307,10 +4307,7 @@ class World:
             self.rayblast(x, y, r)
 
         for ix,iy in delitems:
-            print 'before',len(self.itemap[(ix,iy)])
             self.filter_items(ix, iy, lambda i: (i.liveexplode == 0, None), None)
-            print 'after',len(self.itemap[(ix,iy)])
-
 
         summons = []
         raise_dead = []
