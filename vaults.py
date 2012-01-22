@@ -624,7 +624,20 @@ class VaultStock:
         # The temple of Kali
 
         self.add(Vault(syms={'#': None,
-                             '.': (None, False)},
+                             '.': (None, False),
+                             '-': ('W', False),
+                             'Y': ('Y', False),
+                             '!': ('!', False),
+                             'o': (':', False),
+                             ',': (None, True, False),
+                             '_': ('W', True, False),
+                             '1': ('1', True, False),
+                             '2': ('2', True, False),
+                             '3': ('3', True, False),
+                             '4': ('4', True, False),
+                             'S': ('signkali', True, False),
+                             'K': ('kali', True, False)
+                             },
                        pic=["#######################################################################",
                             "#------!!!!YYYYYYYYYYYYYYYY!!!!------#...........,,,,,,,,,,,,,,,,,,,,,#",
                             "#-----!!!YYY..............YYY!!!-----#.###########################,,,,#",

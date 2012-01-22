@@ -24,7 +24,8 @@ class Item:
                  applies_in_slot=False, ebola=False, smoke=False,
                  trapcloud=False, glueimmune=False, craft=None, resource=None,
                  hide_count=False, swampgas=False, digbonus=0, airfreshener=None, 
-                 corpse=None, switch_moon=None, doppel=None, nodoz=False):
+                 corpse=None, switch_moon=None, doppel=None, nodoz=False,
+                 special=None):
         self.slot = slot
         self.bonus = bonus
         self.name = name
@@ -95,6 +96,7 @@ class Item:
         self.switch_moon = switch_moon
         self.doppel = doppel
         self.nodoz = nodoz
+        self.special = special
 
         self.corpse = corpse
         self.ammo = None
@@ -563,7 +565,7 @@ class ItemStock:
                                    'and time.'])
 
         self.eyeofkali = Item('the Eye of Kali', slot='', skin=('*', libtcod.red),
-                              count=0,
+                              count=0, special='kali',
                               desc=['A gigantic ruby.',
                                     'It is said that this magical jewel is ',
                                     'bathed in the blood of virgins.'])

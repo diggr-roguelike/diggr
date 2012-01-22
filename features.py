@@ -7,7 +7,7 @@ class Feature:
                  shootable=False, warm=False, branch=None, healingfountain=False,
                  nofeature=False, poison=None, confuse=False, back=None, resource=None,
                  lit=False, queasy=None, explode=None, pois2=False, bb_shrine=False,
-                 lightbonus=0, fire=0):
+                 lightbonus=0, fire=0, sign=None, special=None):
         self.walkable = walkable
         self.visible = visible
         self.water = water
@@ -35,6 +35,8 @@ class Feature:
         self.pois2 = pois2
         self.lightbonus = lightbonus
         self.fire = fire
+        self.sign = sign
+        self.special = special
 
 
 class FeatureStock:
@@ -215,6 +217,16 @@ class FeatureStock:
 
         self.f['M'] = Feature(walkable=True, visible=True, skin=(20, libtcod.dark_purple), 
                               resource='p', name='a Purple Fountain')
+
+
+        # quest/winning specials
+
+        self.f['signkali'] = Feature(walkable=True, visible=True, skin=('.', libtcod.white),
+                                     sign="kali ma, kali ma shakti de", 
+                                     name='an engraving on the floor')
+
+        self.f['kali'] = Feature(walkable=True, visible=True, skin=(234,  libtcod.white),
+                                 special='kali', name='a statue of Kali')
 
 
         # green: high damage bonus

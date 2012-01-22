@@ -832,8 +832,13 @@ class Achievements:
                 self.add('%dfires' % firebucket, 'Used a firearm at least %d times' % firebucket, weight=20)
 
         nbranches = len(self.branches)
+
         if 'q' in self.branches:
             self.add('thunderdome', 'Visited the Rehabilitation Thunderdome', weight=26)
+            nbranches -= 1
+
+        if 'qk' in self.branches:
+            self.add('kalitemple', 'Visited the temple of Kali', weight=98)
             nbranches -= 1
 
         if nbranches <= 1:
@@ -938,7 +943,10 @@ class Achievements:
         if branch == 'q':
             self.add('thunderdome_win', 'Became a Thunderdome champion', weight=78)
 
-    def winner(self):
+    def winner(self, msg=None):
+        if msg:
+            self.add(msg[0], msg[1], weight=99)
+
         self.add('winner', ' =*= Won the game =*= ', weight=100)
 
     def mondone(self):
@@ -1855,6 +1863,10 @@ class World:
                     else:
                         self.msg.m("You see " + str(self.itemap[(self.px, self.py)][0]) + '.')
 
+                sign = self.try_feature(self.px, self.py, 'sign')
+                if sign:
+                    self.msg.m('You see an engraving: ' + sign)
+
                 if self.onfire > 0:
                     self.seed_celauto(self.px, self.py, self.celautostock.FIRE)
                     self.set_feature(self.px, self.py, '"')
@@ -2245,6 +2257,15 @@ class World:
             self.v_grace = self.coef.v_graceduration
             self.tick()
             self.achievements.pray('v')
+
+        elif a.special == 'kali':
+            for i in self.inv:
+                if i and i.special == 'kali':
+                    self.msg.m('You return the Eye to Kali.', True)
+                    self.victory(msg=('winkali', 'Returned the Eye of Kali'))
+                    return
+
+            self.msg.m('Kali is silent. Perhaps she requires an offering?', True)
 
         else:
             self.msg.m('You need to be standing at a shrine to pray.')
@@ -3162,7 +3183,7 @@ class World:
         self.apply_from_ground_aux(i, px, py)
 
 
-    def victory(self):
+    def victory(self, msg=None):
         while 1:
             c = draw_window(['Congratulations! You have won the game.', '', 'Press space to exit.'], self.w, self.h)
             if c == ' ': break
@@ -3170,7 +3191,7 @@ class World:
         self.stats.health.reason = 'winning'
         self.done = True
         self.dead = True
-        self.achievements.winner()
+        self.achievements.winner(msg)
 
 
     def handle_mondeath(self, mon, do_drop=True, do_gain=True,
