@@ -1820,8 +1820,6 @@ class World:
             
         self.inv.take(self.itemstock.find('pickaxe'))
 
-        # REMOVEME
-        self.inv.take(self.itemstock.find('minibom'))
 
         pl = [k for k in self.neighbors[(self.px,self.py)] if k in self.walkmap] + [(self.px,self.py)]
 

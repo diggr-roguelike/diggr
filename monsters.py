@@ -953,22 +953,22 @@ class MonsterStock:
         # #
         self.add(Monster('acolyte of Kali', skin=('h', libtcod.gray),
                          attack=3.5, defence=2.5, range=8, level=7, count=3,
-                         confimmune=True,  branch='qk', 
+                         confimmune=True,  branch='qk', idtag='akali_1',
                          desc=['A bloodthirsty worshipper of Kali Ma.']))
 
         self.add(Monster('acolyte of Kali', skin=('h', libtcod.gray),
                          attack=3.5, defence=2.5, range=8, level=8, count=3,
-                         confimmune=True,  branch='qk', 
+                         confimmune=True,  branch='qk', idtag='akali_2',
                          desc=['A bloodthirsty worshipper of Kali Ma.']))
 
         self.add(Monster('acolyte of Kali', skin=('h', libtcod.gray),
                          attack=3.5, defence=2.5, range=8, level=9, count=3,
-                         confimmune=True,  branch='qk', 
+                         confimmune=True,  branch='qk', idtag='akali_3',
                          desc=['A bloodthirsty worshipper of Kali Ma.']))
 
         self.add(Monster('acolyte of Kali', skin=('h', libtcod.gray),
                          attack=3.5, defence=2.5, range=8, level=10, count=3,
-                         confimmune=True,  branch='qk', 
+                         confimmune=True,  branch='qk', idtag='akali_4',
                          desc=['A bloodthirsty worshipper of Kali Ma.']))
 
         
@@ -1783,8 +1783,8 @@ class MonsterStock:
                 break
 
         nc = 0
-        for mon in m:
-            if mon.inanimate or (mon.moon and mon.moon[moon-1] <= 0):
+        for m_ in m:
+            if m_.inanimate or (m_.moon and m_.moon[moon-1] <= 0):
                 continue
             nc += 1
 
