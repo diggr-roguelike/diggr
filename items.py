@@ -201,7 +201,7 @@ class ItemStock:
                                 desc=['Watch out!!'])
 
         self.litgbomb = Item('activated gamma bomb', skin=('!', libtcod.yellow),
-                             radexplode=True, liveexplode=4, slot='d', radius=12,
+                             radexplode=True, liveexplode=5, slot='d', radius=12,
                              throwable=True, desc=['Watch out!!'])
 
         self.bomb = Item('exploding spore', skin=('!', libtcod.yellow), explodes=True,
@@ -209,7 +209,7 @@ class ItemStock:
                          desc=['Uh-oh.'])
 
         self.radblob = Item('radiation blob', skin=('!', libtcod.yellow), radexplode=True,
-                            liveexplode=2, slot='d', radius=8, throwable=True,
+                            liveexplode=4, slot='d', radius=8, throwable=True,
                             desc=['Uh-oh.'])
 
         self.pickaxe = Item("miner's pickaxe", slot='e', skin=('(', libtcod.gray),
@@ -372,11 +372,11 @@ class ItemStock:
                                      "Here in the caves there is nothing to be ashamed of, really."])
 
         self.furpants = Item('fur pants', slot='f', count=0,
-                             skin=('[', libtcod.gray), defence=0.15, heatbonus=0.005, rarity=5,
+                             skin=('[', libtcod.gray), defence=0.15, heatbonus=0.01, rarity=5,
                              desc=['Shaggy pants made of fur. You would look like a true barbarian in them.'])
 
         self.furcoat = Item('fur coat', slot='c',
-                             skin=('[', libtcod.gray), defence=0.15, heatbonus=0.005, rarity=5,
+                             skin=('[', libtcod.gray), defence=0.15, heatbonus=0.01, rarity=5,
                              desc=['A shaggy coat made of fur. You would look like a true barbarian in it.'])
 
         self.halolamp = Item("halogen lamp", slot='b', lightradius=12, rarity=3,
@@ -909,7 +909,7 @@ class ItemStock:
 
         self.rootpwd = Item('the root password', slot='', skin=('!', libtcod.white),
                             rarity=0, applies=True, winning=('winroot', 'Hacked for the root password'),
-                            count=0, 
+                            count=0, explodes=True, radius=5
                             desc=['Must be something extremely important.'])
 
 

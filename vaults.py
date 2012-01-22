@@ -668,8 +668,8 @@ class VaultStock:
         vvsyms = {'.': None,
                   '#': ('#!', False),
                   'x': ('##', False),
-                  'S': ('signvault', False, False),
-                  'Z': ('signvault', False, True),
+                  'S': ('signvault', '', False),
+                  'Z': ('signvault', '', True),
                   '@': (None, 'rootpwd', False)}
 
 

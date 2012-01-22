@@ -234,7 +234,7 @@ class FeatureStock:
                                       name='an engraving on the floor')
 
         self.f['##'] = Feature(walkable=False, visible=False, skin=(176, libtcod.grey),
-                               name='carbonized graphite', height=10)
+                               name='carbonized graphite', height=1)
 
         self.f['#!'] = Feature(walkable=False, visible=False, skin=(176, libtcod.grey),
                                name='crystalline graphite', height=1000, permanent=True)
