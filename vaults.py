@@ -38,6 +38,21 @@ class VaultStock:
     def __init__(self):
         self.vaults = {}
 
+        # Syms explanation:
+        #
+        #  None: skip cell.
+        #  (<feature>, <flag>): generate just the feature.
+        #  (<feature>, True, <flag>): mark this cell as 'do-not-occupy'.
+        #  (<feature>, <item>, <flag>): generate the specified item on this cell.
+        #
+        # If <flag> is 'True' this means to center on this spot. Should be only one marked cell.
+        #
+        # If <feature> is 'None' -- generate a plain floor cell.
+        # If <feature> is 'False' or '0' -- generate a plain wall cell.
+        # Otherwise <feature> should be a string, to generate a feature cell.
+        #
+
+
         syms = {' ': None,
                 '.': (None, False),
                 '#': (0, False),
@@ -92,6 +107,7 @@ class VaultStock:
                   '9': ('4', False),
                   '0': ('5', False),
                   'z': ('8', True),
+                  'K': ('qk', True),
                   '.': (None, False) }
 
 
@@ -101,6 +117,8 @@ class VaultStock:
         self.add(Vault(syms=symsb, pic=["z"], chance=2, level=(1,3), count=3, free=True, branch='c'))
         self.add(Vault(syms=symsb, pic=["z"], chance=2, level=(1,3), count=3, free=True, branch='d'))
         self.add(Vault(syms=symsb, pic=["z"], chance=2, level=(1,3), count=3, free=True, branch='e'))
+
+        self.add(Vault(syms=symsb, pic=["K"], chance=1, level=(15,15), count=1, free=True, branch='e'))
 
         self.add(Vault(syms=symsb, pic=["...",
                                         ".9.",
@@ -126,7 +144,6 @@ class VaultStock:
                                         ".9.",
                                         "..."],
                        chance=2, level=(5,6), count=1, branch='e'))
-
 
         self.add(Vault(syms=symsb, pic=["5"], chance=3, level=(3,3), count=1, branch='a'))
         self.add(Vault(syms=symsb, pic=["5"], chance=3, level=(6,6), count=1, branch='a'))
@@ -600,6 +617,124 @@ class VaultStock:
                        chance=1, level=(7,7), count=1, branch='q', anywhere=True,
                        message=["This is Thunderdome!",
                                 "Four men enter, one man leaves!"]))
+
+
+        ###########################################
+
+        # The temple of Kali
+
+        self.add(Vault(syms={'#': None,
+                             '.': (None, False),
+                             '-': ('W', False),
+                             'Y': ('Y', False),
+                             '!': ('!', False),
+                             'o': (':', False),
+                             ',': (None, True, False),
+                             '_': ('W', True, False),
+                             '1': ('1', True, False),
+                             '2': ('2', True, False),
+                             '3': ('3', True, False),
+                             '4': ('4', True, False),
+                             'S': ('signkali', True, False),
+                             'K': ('kali', True, False)
+                             },
+                       pic=["#######################################################################",
+                            "#------!!!!YYYYYYYYYYYYYYYY!!!!------#...........,,,,,,,,,,,,,,,,,,,,,#",
+                            "#-----!!!YYY..............YYY!!!-----#.###########################,,,,#",
+                            "#----!!!YY..................YY!!!----#...........#,,,,,,,,,,,,,,,,,,,,#",
+                            "#---!!!YY..################..YY!!!---###########.#,####################",
+                            "#--!!!YY..#................#..YY!!!--............#,#,,,,,,,,,,,,,,,,,,#",
+                            "#-!!!YY........###..###........YY!!!-o.###########,#,##############,,,#",
+                            "#!!!YY...........#..#...........YY!!!............#,#,####,,oo,,####,1,#",
+                            "#!!YY..#....###...##...###....#..YY!!o.#########.#,#,###,,,,,,,,###,,,#",
+                            "#!!Y..#....##..o......o..##....#..Y!!............#,#,##,,o____o,,##,2,#",
+                            "#!!Y..#..#......o.--.o......#..#..Y!!o.###########,S,#,,,_,,K,_,,,#,,,#",
+                            "#!!Y..#....##..o......o..##....#..Y!!............#,#,##,,o____o,,##,3,#",
+                            "#!!YY..#....###...##...###....#..YY!!o.#########.#,#,###,,,,,,,,###,,,#",
+                            "#!!!YY...........#..#...........YY!!!............#,#,####,,oo,,####,4,#",
+                            "#-!!!YY........###..###........YY!!!-o.###########,#,##############,,,#",
+                            "#--!!!YY..#................#..YY!!!--............#,#,,,,,,,,,,,,,,,,,,#",
+                            "#---!!!YY..################..YY!!!---###########.#,####################",
+                            "#----!!!YY..................YY!!!----#...........#,,,,,,,,,,,,,,,,,,,,#",
+                            "#-----!!!YYY..............YYY!!!-----#.###########################,,,,#",
+                            "#------!!!!YYYYYYYYYYYYYYYY!!!!------#...........,,,,,,,,,,,,,,,,,,,,,#",
+                            "#######################################################################"],
+                       chance=1, level=(15,15), count=1, branch='qk', anywhere=True,
+                       message=["You feel a special foreboding."]))
+
+
+        # the vault
+
+        vvsyms = {'.': None,
+                  '#': ('#!', False),
+                  'x': ('##', False),
+                  'S': ('signvault', '', False),
+                  'Z': ('signvault', '', True),
+                  '@': (None, 'rootpwd', False)}
+
+
+        self.add(Vault(syms=vvsyms, 
+                       pic=["..........Z...........",
+                            ".####################.",
+                            ".#xxxxxxxx####xxxxxx#.",
+                            ".#x######xxxx#x####x#.",
+                            ".#xxxxxx####x#x##xxx#.",
+                            ".######x##@#x#x##x###S",
+                            "S#xxxxxx##xxx#xx#xxx#.",
+                            ".#x############x###x#.",
+                            ".#xxx#xxx#xxxx#x#xxx#.",
+                            ".###xxx#xxx##xxx#x###.",
+                            ".################x###.",
+                            "...........S.........."],
+                       chance=3, level=(15,19), count=1, branch='c'))
+
+        self.add(Vault(syms=vvsyms,
+                       pic=["..........S...........",
+                            ".####################.",
+                            ".#xxxxxxxxxxxxxxxxxx#.",
+                            ".#x################x#.",
+                            ".#xxxxxx#xxxxx#xxxxx#.",
+                            ".######x#x###x#x#####Z",
+                            "S#xxxxxx#xx@#x#xxxxx#.",
+                            ".#x##########x#####x#.",
+                            ".#x####xxxx##x#xxx#x#.",
+                            ".#xxxxxx##x##xxx#xxx#.",
+                            ".#########x##########.",
+                            "...........S.........."],
+                       chance=3, level=(15,19), count=1, branch='c'))
+
+        self.add(Vault(syms=vvsyms,
+                       pic=["..........S...........",
+                            ".#########x##########.",
+                            ".#xxxx####x#xxx#xxxx#.",
+                            ".#x##xxxxxx#x#x#x##x#.",
+                            ".#x#########x#x#x#xx#.",
+                            ".#xxxxx#xxx#@#xxx#x##S",
+                            "Z#####x#x#x#######xx#.",
+                            ".#xxxxx#x#x##xxxx##x#.",
+                            ".#x#####x#x##x##xx#x#.",
+                            ".#xxxxxxx#xxxx###xxx#.",
+                            ".####################.",
+                            "...........S.........."],
+                       chance=3, level=(15,19), count=1, branch='c'))
+
+        self.add(Vault(syms=vvsyms,
+                       pic=["..........S...........",
+                            ".##########x#########.",
+                            ".#xxxxxxx##x#xxx#xxx#.",
+                            ".#x#####x##xxx#xxx#x#.",
+                            ".#x#####x##########x#.",
+                            ".#xxxxx#xxxx#xxxxxxx#S",
+                            "S#####x####x#x#######.",
+                            ".#xxxxx#x@#x#xxxxxxx#.",
+                            ".#x#####x##x#######x#.",
+                            ".#xxxxxxx##xxxxxxxxx#.",
+                            ".####################.",
+                            "...........Z.........."],
+                       chance=3, level=(15,19), count=1, branch='c'))
+
+
+
 
 
     def add(self, v):

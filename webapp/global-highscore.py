@@ -13,7 +13,7 @@ import os
 import time
 
 
-DEFAULT_VERSION = '12.01.01'
+DEFAULT_VERSION = '12.02.05'
 USERPREF = "user_"
 
 
@@ -25,6 +25,8 @@ def ach_tag_to_text(tag):
              'nowish': 'Never wished for an item',
              'nogun': 'Never used a firearm',
              'winner': ' =*= Won the game =*= ',
+             'winkali': 'Returned the Eye of Kali',
+             'winroot': 'Hacked for the root password',
              'stealth': 'Killed a monster massively out of depth',
              'small_stealth': 'Killed a monster out of depth',
              'onebranch': 'Visited only one dungeon branch',
@@ -40,6 +42,7 @@ def ach_tag_to_text(tag):
 	     'ebola': 'Killed a monster via Ebolavirus',
              'thunderdome': 'Visited the Rehabilitation Thunderdome',
              'thunderdome_win': 'Became a Thunderdome champion',
+             'kalitemple': 'Visited the temple of Kali',
              'molds': 'Cleaned up black mold',
              'colorwow': 'Used colored liquid for great success',
              '6color': 'Drank colored liquid 6 times or more',

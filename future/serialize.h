@@ -18,6 +18,8 @@ struct Sink {
 	out.open(name, std::ios::out|/*std::ios::app|*/std::ios::binary|std::ios::trunc);
     }
 
+    ~Sink() { out.close(); }
+
     template <typename T>
     void operator<<(const T& t) {
         out << t << "\n";
@@ -31,6 +33,8 @@ struct Source {
 	inp.exceptions(std::ifstream::failbit|std::ifstream::badbit);
 	inp.open(name, std::ios::in|std::ios::binary);
     }
+
+    ~Source() { inp.close(); }
 
     template <typename T>
     void operator>>(T& t) {

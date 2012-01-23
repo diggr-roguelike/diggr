@@ -7,7 +7,7 @@ class Feature:
                  shootable=False, warm=False, branch=None, healingfountain=False,
                  nofeature=False, poison=None, confuse=False, back=None, resource=None,
                  lit=False, queasy=None, explode=None, pois2=False, bb_shrine=False,
-                 lightbonus=0, fire=0):
+                 lightbonus=0, fire=0, sign=None, special=None, permanent=False):
         self.walkable = walkable
         self.visible = visible
         self.water = water
@@ -35,6 +35,9 @@ class Feature:
         self.pois2 = pois2
         self.lightbonus = lightbonus
         self.fire = fire
+        self.sign = sign
+        self.special = special
+        self.permanent = permanent
 
 
 class FeatureStock:
@@ -64,6 +67,9 @@ class FeatureStock:
 
         self.f['8'] = Feature(walkable=True, visible=True, skin=(175, libtcod.red),
                               stairs=1, name='an entrance to the Rehabilitation Thunderdome', branch='q')
+
+        self.f['qk'] = Feature(walkable=True, visible=True, skin=(175, libtcod.dark_gray),
+                               stairs=1, name='an entrace to the temple of Kali', branch='qk')
 
         self.f['*'] = Feature(walkable=True, visible=False, skin=('*', libtcod.lightest_green),
                               name='rubble')
@@ -195,7 +201,7 @@ class FeatureStock:
                               lit=True, queasy=0.1, name='swamp gas', explode=3)
 
         self.f['"'] = Feature(walkable=True, visible=True, skin=None, back=libtcod.red,
-                              fire=0.333, name='a fire')
+                              fire=0.333, name='napalm')
 
 
         self.f['C'] = Feature(walkable=True, visible=True, skin=(20, libtcod.dark_green),
@@ -212,6 +218,26 @@ class FeatureStock:
 
         self.f['M'] = Feature(walkable=True, visible=True, skin=(20, libtcod.dark_purple), 
                               resource='p', name='a Purple Fountain')
+
+
+        # quest/winning specials
+
+        self.f['signkali'] = Feature(walkable=True, visible=True, skin=('.', libtcod.white),
+                                     sign="kali ma, kali ma shakti de", 
+                                     name='an engraving on the floor')
+
+        self.f['kali'] = Feature(walkable=True, visible=True, skin=(234,  libtcod.white),
+                                 special='kali', name='a statue of Kali')
+
+        self.f['signvault'] = Feature(walkable=True, visible=True, skin=(254, libtcod.white),
+                                      sign='"Entrance to the Vault. Robbers beware."',
+                                      name='an engraving on the floor')
+
+        self.f['##'] = Feature(walkable=False, visible=False, skin=(176, libtcod.grey),
+                               name='carbonized graphite', height=1)
+
+        self.f['#!'] = Feature(walkable=False, visible=False, skin=(176, libtcod.grey),
+                               name='crystalline graphite', height=1000, permanent=True)
 
 
         # green: high damage bonus

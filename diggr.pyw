@@ -85,9 +85,15 @@ class Logger:
 # Z: large robot
 
 
+# a: find the monolith
+# b: circle of cthulhu: sacrifice 5 monsters and craft the call of cthulhu
+# c: the graphite vault/maze, with root password inside (crystalline graphite, carbonized graphite)
+# d: none, but add vaults with colored fountains
+# e: eye of kali (from Conan), with statue of kali
+
 
 global _version
-_version = '12.01.01'
+_version = '12.02.05'
 
 global _inputs
 global _inputqueue
@@ -826,8 +832,13 @@ class Achievements:
                 self.add('%dfires' % firebucket, 'Used a firearm at least %d times' % firebucket, weight=20)
 
         nbranches = len(self.branches)
+
         if 'q' in self.branches:
             self.add('thunderdome', 'Visited the Rehabilitation Thunderdome', weight=26)
+            nbranches -= 1
+
+        if 'qk' in self.branches:
+            self.add('kalitemple', 'Visited the temple of Kali', weight=98)
             nbranches -= 1
 
         if nbranches <= 1:
@@ -932,7 +943,10 @@ class Achievements:
         if branch == 'q':
             self.add('thunderdome_win', 'Became a Thunderdome champion', weight=78)
 
-    def winner(self):
+    def winner(self, msg=None):
+        if msg:
+            self.add(msg[0], msg[1], weight=99)
+
         self.add('winner', ' =*= Won the game =*= ', weight=100)
 
     def mondone(self):
@@ -1068,6 +1082,11 @@ class World:
 
         self.dlev = 1
         self.plev = 1
+
+        # REMOVEME
+        self.dlev = 15
+        self.plev = 9
+
         self.branch = None
         self.moon = None
         self.did_moon_message = False
@@ -1123,8 +1142,9 @@ class World:
                        'd': (libtcod.darkest_grey,),
                        'e': (libtcod.lightest_yellow,),
                        's': (libtcod.darkest_blue,),
-                       'q': (libtcod.white,) }
-
+                       'q': (libtcod.white,),
+                       'qk': (libtcod.grey,) }
+        
         quest1 = QuestInfo(moncounts={3:1, 4:1, 5:2, 6:2, 7:3}, 
                            monlevels=(3,8),
                            itemcounts={3:1, 4:1, 5:1, 6:1, 7:1}, 
@@ -1139,8 +1159,16 @@ class World:
                                   5: [None, None, None],
                                   6: [None, None, None],
                                   7: ['deusex']})
+
+        questkali = QuestInfo(moncounts={15:10},
+                              monlevels=(8,11),
+                              itemcounts={15:10},
+                              dlevels=(15,15),
+                              messages={15: []},
+                              gifts={15: []})
         
-        self.quests = {'q': quest1}
+        self.quests = {'q': quest1,
+                       'qk': questkali}
 
         self.neighbors = None
 
@@ -1725,14 +1753,24 @@ class World:
 
     def place(self, nogens):
         s = self.walkmap - nogens - set(self.monmap.iterkeys())
+        sold = s
 
         # Do not place a player in an unfair position.
         # Otherwise, the monster will get a free move and might
         # kill the player.
-        for k in self.monmap.iterkeys():
-            for ki in self.neighbors[k]:
-                if ki in s:
-                    s.remove(ki)
+        monn = set(k for k in self.monmap.iterkeys())
+
+        for x in xrange(3):
+            monn2 = set()
+            for k in monn:
+                for ki in self.neighbors[k]:
+                    monn2.add(ki)
+            monn.update(monn2)
+
+        s.difference_update(monn)
+
+        if len(s) == 0:
+            s = sold
 
         s = list(s)
         x, y = s[random.randint(0, len(s)-1)]
@@ -1743,6 +1781,8 @@ class World:
     def regen(self, w_, h_):
         if self.branch is None:
             self.branch = random.choice(['a', 'b', 'c', 'd', 'e'])
+            # REMOVEME
+            self.branch = 'c'
 
         if self.moon is None:
             m = moon.phase(self._seed)
@@ -1785,8 +1825,10 @@ class World:
             self.inv.take(self.itemstock.find('lamp'))
             
         self.inv.take(self.itemstock.find('pickaxe'))
-        #self.inv.take(self.itemstock.find('doppel'))        
-        #self.inv.take(self.itemstock.find('mapper'))
+
+        # REMOVEME
+        self.inv.take(self.itemstock.get('deusex'))
+
 
         pl = [k for k in self.neighbors[(self.px,self.py)] if k in self.walkmap] + [(self.px,self.py)]
 
@@ -1830,6 +1872,10 @@ class World:
                         self.msg.m("You see several items here.")
                     else:
                         self.msg.m("You see " + str(self.itemap[(self.px, self.py)][0]) + '.')
+
+                sign = self.try_feature(self.px, self.py, 'sign')
+                if sign:
+                    self.msg.m('You see an engraving: ' + sign)
 
                 if self.onfire > 0:
                     self.seed_celauto(self.px, self.py, self.celautostock.FIRE)
@@ -2222,13 +2268,25 @@ class World:
             self.tick()
             self.achievements.pray('v')
 
+        elif a.special == 'kali':
+            for i in self.inv:
+                if i and i.special == 'kali':
+                    self.msg.m('You return the Eye to Kali.', True)
+                    self.victory(msg=('winkali', 'Returned the Eye of Kali'))
+                    return
+
+            self.msg.m('Kali is silent. Perhaps she requires an offering?', True)
+
         else:
             self.msg.m('You need to be standing at a shrine to pray.')
             return
 
 
-    def convert_to_floor(self, x, y, rubble=0):
-        if rubble == 0:
+    def convert_to_floor(self, x, y, rubble):
+        if self.try_feature(x, y, 'permanent'):
+            return
+
+        if not rubble:
             self.set_feature(x, y, None)
         else:
             self.set_feature(x, y, '*')
@@ -2300,6 +2358,14 @@ class World:
         else: return 'backpack'
 
 
+    def delete_item(self, items, c, x, y):
+        del items[c]
+        if len(items) == 0:
+            del self.itemap[(x,y)]
+            return True
+        return False
+
+
     def take_aux(self, items, c):
 
         i = items[c]
@@ -2316,9 +2382,7 @@ class World:
                     did_scavenge = True
 
                     if i.count == 0:
-                        del items[c]
-                        if len(items) == 0:
-                            del self.itemap[(self.px, self.py)]
+                        if self.delete_item(items, c, self.px, self.py):
                             break
 
                 elif i.ammo > 0 and ii.ammo and ii.ammo < ii.ammochance[1]:
@@ -2335,9 +2399,7 @@ class World:
         ok = self.inv.take(i)
         if ok:
             self.msg.m('You take ' + str(i) + '.')
-            del items[c]
-            if len(items) == 0:
-                del self.itemap[(self.px, self.py)]
+            self.delete_item(items, c, self.px, self.py)
         else:
             self.msg.m('You have no free inventory slot for ' + str(i) + '!')
 
@@ -2510,9 +2572,7 @@ class World:
 
             if draw_window(['','Really destroy ' + str(i) +'? (Y/N)', ''], self.w, self.h) in ('y','Y'):
                 if slot in flooritems:
-                    del items[flooritems[slot]]
-                    if len(items) == 0:
-                        del self.itemap[(self.px, self.py)]
+                    self.delete_item(items, flooritems[slot], self.px, self.py)
                 else:
                     self.inv.drop(slot)
                 self.tick()
@@ -2532,9 +2592,7 @@ class World:
                 self.set_item(nx, ny, [i])
 
                 if slot in flooritems:
-                    del items[flooritems[slot]]
-                    if len(items) == 0:
-                        del self.itemap[(self.px, self.py)]
+                    self.delete_item(items, flooritems[slot], self.px, self.py)
 
                 self.tick()
 
@@ -2543,9 +2601,7 @@ class World:
                 item2 = self.inv.drop(i.slot)
                 ok = self.inv.take(i)
                 if ok:
-                    del items[flooritems[slot]]
-                    if len(items) == 0:
-                        del self.itemap[(self.px, self.py)]
+                    self.delete_item(items, flooritems[slot], self.px, self.py)
 
                     if item2:
                         if not self.inv.take(item2):
@@ -2877,10 +2933,10 @@ class World:
         elif item.digray:
             if item.digray[0] == 1:
                 for x in xrange(0, self.w):
-                    self.convert_to_floor(x, self.py)
+                    self.convert_to_floor(x, self.py, False)
             if item.digray[1] == 1:
                 for y in xrange(0, self.h):
-                    self.convert_to_floor(self.px, y)
+                    self.convert_to_floor(self.px, y, False)
             self.msg.m('The wand explodes in a brilliant white flash!')
 
             self.achievements.use(item)
@@ -2976,6 +3032,10 @@ class World:
             self.msg.m('You activate the doppelganger.')
             return None
 
+        elif item.winning:
+            self.victory(msg=item.winning)
+            return None
+                    
         elif item.rangeattack or item.rangeexplode or item.fires:
             if item.ammo == 0:
                 self.msg.m("It's out of ammo!")
@@ -3066,10 +3126,8 @@ class World:
 
             for ix in xrange(len(self.itemap[(px, py)])):
                 if id(self.itemap[(px, py)][ix]) == id(i):
-                    del self.itemap[(px, py)][ix]
 
-                    if len(self.itemap[(px, py)]) == 0:
-                        del self.itemap[(px, py)]
+                    self.delete_item(self.itemap[(px, py)], ix, px, py)
                     break
 
         i2 = self.apply(i)
@@ -3138,7 +3196,27 @@ class World:
         self.apply_from_ground_aux(i, px, py)
 
 
-    def victory(self):
+    def filter_items(self, x, y, func, ret):
+        if (x,y) not in self.itemap:
+            return
+
+        i2 = []
+        for i in self.itemap[(x,y)]:
+            q1,q2 = func(i)
+            if q1:
+                if ret is not None:
+                    ret.append((x,y,q2))
+            else:
+                i2.append(i)
+
+        if len(i2) > 0:
+            self.itemap[(x,y)] = i2
+        else:
+            del self.itemap[(x,y)]
+
+
+
+    def victory(self, msg=None):
         while 1:
             c = draw_window(['Congratulations! You have won the game.', '', 'Press space to exit.'], self.w, self.h)
             if c == ' ': break
@@ -3146,7 +3224,7 @@ class World:
         self.stats.health.reason = 'winning'
         self.done = True
         self.dead = True
-        self.achievements.winner()
+        self.achievements.winner(msg)
 
 
     def handle_mondeath(self, mon, do_drop=True, do_gain=True,
@@ -3299,10 +3377,7 @@ class World:
             if (x,y) in self.featmap and self.featmap[(x,y)].explode:
                 draw_floodfill(x, y, self.w, self.h, func_ff)
 
-            if random.randint(0, 5) == 0:
-                self.set_feature(x, y, '*')
-            else:
-                self.set_feature(x, y, None)
+            self.convert_to_floor(x, y, (random.randint(0, 5) == 0))
 
 
         draw_blast(x0, y0, self.w, self.h, rad, func_r)
@@ -3325,7 +3400,6 @@ class World:
 
         draw_blast2(x0, y0, self.w, self.h, rad, func1, func2, color=libtcod.yellow)
 
-
     def raise_dead(self, x0, y0, rad):
 
         libtcod.map_compute_fov(self.tcodmap, x0, y0, rad,
@@ -3337,18 +3411,7 @@ class World:
             return libtcod.map_is_in_fov(self.tcodmap, x, y)
 
         def func2(x, y):
-            if (x,y) in self.itemap:
-                i2 = []
-                for i in self.itemap[(x,y)]:
-                    if i.corpse:
-                        ret.append((x,y,i.corpse))
-                    else:
-                        i2.append(i)
-
-                if len(i2) > 0:
-                    self.itemap[(x,y)] = i2
-                else:
-                    del self.itemap[(x,y)]
+            self.filter_items(x, y, lambda i: (i.corpse, i.corpse), ret)
 
         draw_blast2(x0, y0, self.w, self.h, rad, func1, func2, color=None)
         return ret
@@ -4015,8 +4078,11 @@ class World:
 
         if mon.stoneeating:
             if mdx is not None:
+                if self.try_feature(mdx, mdy, 'permanent'):
+                    return None, None
+
                 if (mdx, mdy) not in self.walkmap:
-                    self.convert_to_floor(mdx, mdy, rubble=1)
+                    self.convert_to_floor(mdx, mdy, True)
 
         return mdx, mdy
 
@@ -4046,7 +4112,6 @@ class World:
         return False
 
     def summon(self, x, y, monname, n):
-
         if monname is None:
             m = []
             for ii in xrange(n):
@@ -4243,31 +4308,20 @@ class World:
                     if i.liveexplode == 0:
                         if i.summon:
                             self.summon(k[0], k[1], i.summon[0], i.summon[1])
-                            delitems.append(k)
                         elif i.radexplode:
                             rblasts.append((k[0], k[1], i.radius))
-                            delitems.append(k)
                         elif i.swampgas:
                             self.paste_celauto(self.px, self.py, self.celautostock.SWAMPGAS)
-                            delitems.append(k)
                         else:
                             explodes.add((k[0], k[1], i.radius))
+
+                        delitems.append(k)
 
         for x,y,r in rblasts:
             self.rayblast(x, y, r)
 
         for ix,iy in delitems:
-            if (ix,iy) in self.itemap:
-                l2 = []
-                for i in self.itemap[(ix,iy)]:
-                    if i.liveexplode != 0:
-                        l2.append(i)
-
-                if len(l2) > 0:
-                    self.itemap[(ix,iy)] = l2
-                else:
-                    del self.itemap[(ix,iy)]
-
+            self.filter_items(ix, iy, lambda i: (i.liveexplode == 0, None), None)
 
         summons = []
         raise_dead = []
@@ -4426,7 +4480,6 @@ class World:
                 self.process_monstep(mon)
 
         for x, y, r in sorted(explodes):
-            del self.itemap[(x, y)]
             self.explode(x, y, r)
 
 
@@ -5005,7 +5058,7 @@ def start_game(world, w, h, oldseed=None, oldbones=None):
 
         world.regen(w, h)
         world.generate_inv()
-        world.msg.m("Kill all the monsters in the dungeon or reach dungeon level 26 to win the game.")
+        world.msg.m("Kill all the monsters in the dungeon or reach dungeon level 26 to win the game.", True)
         world.msg.m("Please press '?' to see help.")
 
 def check_autoplay(world):
@@ -5036,7 +5089,7 @@ def check_autoplay(world):
 
     if world.digging:
         if world.grid[world.digging[1]][world.digging[0]] <= -10:
-            world.convert_to_floor(world.digging[0], world.digging[1])
+            world.convert_to_floor(world.digging[0], world.digging[1], False)
             world.digging = None
             return 1
 

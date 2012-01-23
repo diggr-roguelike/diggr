@@ -935,8 +935,8 @@ class MonsterStock:
 
         self.add(Monster('Conan', skin=('K', libtcod.sepia),
                          attack=7.5, defence=5.5, range=8, level=10, count=1,
-                         confimmune=True, itemdrop='excalibur', branch='e', no_a=True,
-                         flavor='humanwarrior',
+                         confimmune=True,  branch='e', no_a=True,
+                         flavor='humanwarrior', itemdrop='eyeofkali',
                          desc=['A well-muscled adventurer,',
                                'he looks like he just stepped off a movie poster.',
                                "He hates competition."]))
@@ -945,10 +945,31 @@ class MonsterStock:
                          attack=7.5, defence=7.5, range=10, level=11, count=1,
                          explodeimmune=True, fireimmune=True, branch='e',
                          confimmune=True, summon=('Conan', 1), no_a=True, poisimmune=True,
-                         flavor='earthshake', large=True,
+                         flavor='earthshake', large=True, itemdrop='excalibur',
                          desc=['The most high god of all Cimmerians, Crom is the god',
                                'of valor and battle. He is a dark, vengeful and',
                                'judgemental god.']))
+
+        # #
+        self.add(Monster('acolyte of Kali', skin=('h', libtcod.gray),
+                         attack=3.5, defence=2.5, range=8, level=7, count=3,
+                         confimmune=True,  branch='qk', idtag='akali_1',
+                         desc=['A bloodthirsty worshipper of Kali Ma.']))
+
+        self.add(Monster('acolyte of Kali', skin=('h', libtcod.gray),
+                         attack=3.5, defence=2.5, range=8, level=8, count=3,
+                         confimmune=True,  branch='qk', idtag='akali_2',
+                         desc=['A bloodthirsty worshipper of Kali Ma.']))
+
+        self.add(Monster('acolyte of Kali', skin=('h', libtcod.gray),
+                         attack=3.5, defence=2.5, range=8, level=9, count=3,
+                         confimmune=True,  branch='qk', idtag='akali_3',
+                         desc=['A bloodthirsty worshipper of Kali Ma.']))
+
+        self.add(Monster('acolyte of Kali', skin=('h', libtcod.gray),
+                         attack=3.5, defence=2.5, range=8, level=10, count=3,
+                         confimmune=True,  branch='qk', idtag='akali_4',
+                         desc=['A bloodthirsty worshipper of Kali Ma.']))
 
         
         ## Moon-special monsters.
@@ -1762,8 +1783,8 @@ class MonsterStock:
                 break
 
         nc = 0
-        for mon in m:
-            if mon.inanimate or (mon.moon and mon.moon[moon-1] <= 0):
+        for m_ in m:
+            if m_.inanimate or (m_.moon and m_.moon[moon-1] <= 0):
                 continue
             nc += 1
 
