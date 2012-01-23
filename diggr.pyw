@@ -1782,7 +1782,7 @@ class World:
         if self.branch is None:
             self.branch = random.choice(['a', 'b', 'c', 'd', 'e'])
             # REMOVEME
-            self.branch = 'c'
+            self.branch = 'd'
 
         if self.moon is None:
             m = moon.phase(self._seed)

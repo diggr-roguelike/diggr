@@ -673,7 +673,7 @@ class VaultStock:
                   '@': (None, 'rootpwd', False)}
 
 
-        self.add(Vault(syms=vvsyms, 
+        self.add(Vault(syms=vvsyms,
                        pic=["..........Z...........",
                             ".####################.",
                             ".#xxxxxxxx####xxxxxx#.",
@@ -732,6 +732,92 @@ class VaultStock:
                             ".####################.",
                             "...........Z.........."],
                        chance=3, level=(15,19), count=1, branch='c'))
+
+
+        ##
+
+        fountsyms = {' ': None,
+                     '.': (None, False),
+                     'o': (':', False),
+                     '+': ('W', False),
+                     '1': ('C', False),
+                     '2': ('V', False),
+                     '3': ('B', False),
+                     '4': ('N', False),
+                     '5': ('M', True),
+                     'Z': ('W', True)}
+
+        self.add(Vault(syms=fountsyms,
+                       pic=["     .....     ",
+                            "   ..ooooo..   ",
+                            "  .oo.....oo.  ",
+                            " .o...+++...o. ",
+                            ".o..+++.+++..o.",
+                            ".o..+1+.+3+..o.",
+                            ".o..+++2+++..o.",
+                            " .o...+++...o. ",
+                            "  .oo.....oo.  ",
+                            "   ..ooooo..   ",
+                            "     .....     "],
+                       chance=5, level=(13,23), count=3, branch='d'))
+
+        self.add(Vault(syms=fountsyms,
+                       pic=["     .....     ",
+                            "   ..ooooo..   ",
+                            "  .oo.....oo.  ",
+                            " .o...+++...o. ",
+                            ".o..+++4+++..o.",
+                            ".o..+.+.+3+..o.",
+                            ".o..+++2+++..o.",
+                            " .o...+++...o. ",
+                            "  .oo.....oo.  ",
+                            "   ..ooooo..   ",
+                            "     .....     "],
+                       chance=5, level=(13,23), count=3, branch='d'))
+
+        self.add(Vault(syms=fountsyms,
+                       pic=["     .....     ",
+                            "   ..ooooo..   ",
+                            "  .oo.....oo.  ",
+                            " .o...+++...o. ",
+                            ".o..+++4+++..o.",
+                            ".o..+.+5+3+..o.",
+                            ".o..+++.+++..o.",
+                            " .o...+++...o. ",
+                            "  .oo.....oo.  ",
+                            "   ..ooooo..   ",
+                            "     .....     "],
+                       chance=5, level=(13,23), count=3, branch='d'))
+
+        self.add(Vault(syms=fountsyms,
+                       pic=["     .....     ",
+                            "   ..ooooo..   ",
+                            "  .oo.....oo.  ",
+                            " .o...+++...o. ",
+                            ".o..+++4+++..o.",
+                            ".o..+1+5+.+..o.",
+                            ".o..+++.+++..o.",
+                            " .o...+++...o. ",
+                            "  .oo.....oo.  ",
+                            "   ..ooooo..   ",
+                            "     .....     "],
+                       chance=5, level=(13,23), count=3, branch='d'))
+
+        self.add(Vault(syms=fountsyms,
+                       pic=["     .....     ",
+                            "   ..ooooo..   ",
+                            "  .oo.....oo.  ",
+                            " .o...+++...o. ",
+                            ".o..+++.+++..o.",
+                            ".o..+1+5+.+..o.",
+                            ".o..+++2+++..o.",
+                            " .o...+++...o. ",
+                            "  .oo.....oo.  ",
+                            "   ..ooooo..   ",
+                            "     .....     "],
+                       chance=5, level=(13,23), count=3, branch='d'))
+
+        ###
 
 
 
