@@ -909,7 +909,7 @@ class ItemStock:
 
         self.rootpwd = Item('the root password', slot='', skin=('!', libtcod.white),
                             rarity=0, applies=True, winning=('winroot', 'Hacked for the root password'),
-                            count=0, explodes=True, radius=5
+                            count=0, explodes=True, radius=5,
                             desc=['Must be something extremely important.'])
 
 
