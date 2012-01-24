@@ -843,7 +843,7 @@ class VaultStock:
                             "  .653...254.  ",
                             "   ..43216..   ",
                             "     .....     "],
-                       chance=4, level=(10,20), count=3, branch='b'))
+                       chance=1, level=(10,20), count=5, branch='b'))
 
         ###
 

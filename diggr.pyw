@@ -1084,7 +1084,7 @@ class World:
         self.plev = 1
 
         # REMOVEME
-        self.dlev = 10
+        self.dlev = 15
         self.plev = 9
 
         self.branch = None
