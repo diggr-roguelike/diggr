@@ -239,6 +239,35 @@ class FeatureStock:
         self.f['#!'] = Feature(walkable=False, visible=False, skin=(176, libtcod.grey),
                                name='crystalline graphite', height=1000, permanent=True)
 
+        self.f['cthulhu'] = Feature(walkable=True, visible=True, skin=(254, libtcod.red),
+                                    special='cthulhu', name="an unholy stone")
+
+        self.f['signcth1'] = Feature(walkable=True, visible=True, skin=(250, libtcod.red),
+                                    sign="PH'NGLUI",
+                                    name='eldritch engravings')
+
+        self.f['signcth2'] = Feature(walkable=True, visible=True, skin=(250, libtcod.red),
+                                    sign="MGLW'NAFH",
+                                    name='eldritch engravings')
+
+        self.f['signcth3'] = Feature(walkable=True, visible=True, skin=(250, libtcod.red),
+                                    sign="CTHULHU",
+                                    name='eldritch engravings')
+
+        self.f['signcth4'] = Feature(walkable=True, visible=True, skin=(250, libtcod.red),
+                                    sign="R'LYEH",
+                                    name='eldritch engravings')
+
+        self.f['signcth5'] = Feature(walkable=True, visible=True, skin=(250, libtcod.red),
+                                    sign="WGAH'NAGL",
+                                    name='eldritch engravings')
+
+        self.f['signcth6'] = Feature(walkable=True, visible=True, skin=(250, libtcod.red),
+                                    sign="FHTAGN",
+                                    name='eldritch engravings')
+
+
+        ##
 
         # green: high damage bonus
         # red: health, warmth, hunger regeneration

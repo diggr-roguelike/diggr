@@ -1084,7 +1084,7 @@ class World:
         self.plev = 1
 
         # REMOVEME
-        self.dlev = 15
+        self.dlev = 10
         self.plev = 9
 
         self.branch = None
@@ -1782,7 +1782,7 @@ class World:
         if self.branch is None:
             self.branch = random.choice(['a', 'b', 'c', 'd', 'e'])
             # REMOVEME
-            self.branch = 'd'
+            self.branch = 'b'
 
         if self.moon is None:
             m = moon.phase(self._seed)
@@ -3241,8 +3241,17 @@ class World:
             itemdrop = mon.items
 
             # HACK
-            if self.moon == moon.NEW and not mon.itemdrop and \
-               mon.flavor not in ('digital', 'air', 'robot') and not mon.boulder:
+            is_noncorpse = False
+            if mon.flavor in ('digital', 'air', 'robot') or mon.boulder:
+                is_noncorpse = True
+
+            if self.try_feature(mon.x, mon.y, 'special') == 'cthulhu' and not is_noncorpse:
+                # HACK HACK!
+                itm = self.itemstock.get(random.choice(['cthulhu_o1', 'cthulhu_o2', 'cthulhu_o3']))
+                if itm:
+                    itemdrop = [itm]
+
+            elif self.moon == moon.NEW and not mon.itemdrop and not is_noncorpse:
                 corpse = self.itemstock.get('corpse')
                 corpse.corpse = mon
                 itemdrop = itemdrop[:]

@@ -914,7 +914,53 @@ class ItemStock:
 
 
 
+        self.cthulhu_o1 = Item("unholy offering", slot='', skin=('%', libtcod.pink),
+                               rarity=0, applies=True,
+                               craft=('ctho1',{'ctho1':'cthulhu_m1'}),
+                               desc=["A sacrificial offering to the evil gods of R'lyeh."])
+
+        self.cthulhu_m1 = Item("unholy amulet", slot='', skin=('"', libtcod.pink),
+                               rarity=0, applies=True,
+                               craft=('cthm1',{'cthm2':'cthulhu_m3'}),
+                               desc=["A depraved amulet to mark one as an unholy acolyte of R'lyeh."])
+
+        self.cthulhu_o2 = Item("sacrifical corpse", slot='', skin=('%', libtcod.pink),
+                               rarity=0, applies=True,
+                               craft=('ctho2',{'ctho2':'cthulhu_m2'}),
+                               desc=["A bloody sacrifice to the evil gods of R'lyeh."])
+
+        self.cthulhu_m2 = Item("eldritch skull", slot='', skin=('"', libtcod.pink),
+                               rarity=0, applies=True,
+                               craft=('cthm2',{'cthm1':'cthulhu_m3'}),
+                               desc=["A remnant of a tormented spirit, sacrificed",
+                                     "to appease the unholy gods of R'lyeh."])
+
+        self.cthulhu_o3 = Item("eldritch sacrifice", slot='', skin=('%', libtcod.pink),
+                               rarity=0, applies=True,
+                               craft=('ctho3',{'cthm3':'ccthulhu'}),
+                               desc=["A depraved sacrifice for the evil gods of R'lyeh."])
+
+        self.cthulhu_m3 = Item("eldritch crystal", slot='', skin=('"', libtcod.pink),
+                               rarity=0, applies=True,
+                               craft=('cthm3',{'ctho3':'ccthulhu'}),
+                               desc=["An evil artifact. It pulsates with the unholy",
+                                     "psychic energies of ancient, eldritch horror."])
+
+        self.ccthulhu = Item('the Call of Cthulhu', slot='', skin=('~', libtcod.red),
+                             rarity=0, applies=True, winning=('wincthulhu', 'Called upon Cthulhu'),
+                             count=0, 
+                             desc=["An eldritch medallion of R'lyeh.",
+                                   "Ancient beyond measure and just as evil."])
+
+
         self.regenpool()
+
+
+        # o + o = m1
+        # o2 + o2 = m2
+        # m1 + m2 = m3
+        # m3 + o3 = c
+
 
     def regenpool(self):
         self._randpool = []

@@ -819,7 +819,33 @@ class VaultStock:
 
         ###
 
+        cthsyms = {' ': None,
+                   '.': (None, False),
+                   'x': ('cthulhu', False),
+                   'X': ('cthulhu', True),
+                   '1': ('signcth1', False),
+                   '2': ('signcth2', False),
+                   '3': ('signcth3', False),
+                   '4': ('signcth4', False),
+                   '5': ('signcth5', False),
+                   '6': ('signcth6', False)}
 
+
+        self.add(Vault(syms=cthsyms,
+                       pic=["     .....     ",
+                            "   ..45612..   ",
+                            "  .231...234.  ",
+                            " .16..xxx..35. ",
+                            ".45.xxxxxxx.46.",
+                            ".36.xxxXxxx.51.",
+                            ".25.xxxxxxx.62.",
+                            " .14..xxx..13. ",
+                            "  .653...254.  ",
+                            "   ..43216..   ",
+                            "     .....     "],
+                       chance=4, level=(10,20), count=3, branch='b'))
+
+        ###
 
 
 
