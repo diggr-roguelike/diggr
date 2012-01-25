@@ -1782,7 +1782,7 @@ class World:
         if self.branch is None:
             self.branch = random.choice(['a', 'b', 'c', 'd', 'e'])
             # REMOVEME
-            self.branch = 'b'
+            self.branch = 'a'
 
         if self.moon is None:
             m = moon.phase(self._seed)
@@ -2276,6 +2276,9 @@ class World:
                     return
 
             self.msg.m('Kali is silent. Perhaps she requires an offering?', True)
+
+        elif a.special == 'monolith':
+            self.victory(msg=('winmono', 'Rubbed the Monolith'))
 
         else:
             self.msg.m('You need to be standing at a shrine to pray.')

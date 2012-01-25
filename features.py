@@ -239,7 +239,7 @@ class FeatureStock:
         self.f['#!'] = Feature(walkable=False, visible=False, skin=(176, libtcod.grey),
                                name='crystalline graphite', height=1000, permanent=True)
 
-        self.f['cthulhu'] = Feature(walkable=True, visible=True, skin=(254, libtcod.red),
+        self.f['cthulhu'] = Feature(walkable=True, visible=True, skin=(16, libtcod.gray),
                                     special='cthulhu', name="an unholy stone")
 
         self.f['signcth1'] = Feature(walkable=True, visible=True, skin=(250, libtcod.red),
@@ -265,6 +265,9 @@ class FeatureStock:
         self.f['signcth6'] = Feature(walkable=True, visible=True, skin=(250, libtcod.red),
                                     sign="FHTAGN",
                                     name='eldritch engravings')
+
+        self.f['monolith'] = Feature(walkable=True, visible=True, skin=(8, libtcod.light_gray),
+                                     special='monolith', name="the Monolith")
 
 
         ##

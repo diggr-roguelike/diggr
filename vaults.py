@@ -845,6 +845,20 @@ class VaultStock:
                             "     .....     "],
                        chance=1, level=(10,20), count=5, branch='b'))
 
+
+        ### 
+
+        self.add(Vault(syms={'#': (0, False),
+                             '!': ('!', False),
+                             '@': ('monolith', False)},
+                       pic=["#####",
+                            "#!!!#",
+                            "#!@!#",
+                            "#!!!#",
+                            "#####"],
+                       chance=6, level=(11, 21), count=1, branch='a', anywhere=True))
+
+
         ###
 
 
