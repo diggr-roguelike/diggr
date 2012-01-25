@@ -849,8 +849,8 @@ class VaultStock:
         ### 
 
         self.add(Vault(syms={'#': (0, False),
-                             '!': ('!', False),
-                             '@': ('monolith', False)},
+                             '!': ('!', True, False),
+                             '@': ('monolith', True, False)},
                        pic=["#####",
                             "#!!!#",
                             "#!@!#",
