@@ -122,3 +122,24 @@ def grid_set_walk(x, y, v):
 
 def grid_set_water(x, y, v):
     _dg.dg_grid_set_water(c_uint(x), c_uint(y), c_bool(v))
+
+def grid_add_nogen(x, y):
+    _dg.dg_grid_add_nogen(c_uint(x), c_uint(y))
+
+def grid_one_of_floor():
+    x = c_uint()
+    y = c_uint()
+    _dg.dg_grid_one_of_floor(byref(x), byref(y))
+    return x.value, y.value
+
+def grid_one_of_water():
+    x = c_uint()
+    y = c_uint()
+    _dg.dg_grid_one_of_water(byref(x), byref(y))
+    return x.value, y.value
+
+def grid_one_of_walk():
+    x = c_uint()
+    y = c_uint()
+    _dg.dg_grid_one_of_walk(byref(x), byref(y))
+    return x.value, y.value

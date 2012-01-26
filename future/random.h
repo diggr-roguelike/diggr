@@ -3,7 +3,7 @@
 
 #include <random>
 
-namespace random {
+namespace rnd {
 
 struct Generator {
 

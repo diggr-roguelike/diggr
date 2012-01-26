@@ -10,7 +10,19 @@
 #include <algorithm>
 #include <unordered_set>
 #include <unordered_map>
-#include <numeric_limits>
+#include <limits>
+
+namespace std {
+
+template <typename A, typename B>
+struct hash< pair<A,B> > {
+    size_t operator()(const pair<A,B>& p) const {
+        return hash<A>()(p.first) ^ hash<B>()(p.second);
+    }
+};
+
+}
+
 
 
 namespace grid {
@@ -49,7 +61,7 @@ struct Map {
     }
 
     double& _get(const pt& xy) {
-        return grid[pt.second*w+pt.first];
+        return grid[xy.second*w+xy.first];
     }
 
 
@@ -74,21 +86,21 @@ struct Map {
 
         if (mid == std::numeric_limits<int>::max()) {
             mid = _get(a, b) + _get(c, b) + _get(a, d) + _get(c, d);
-            mid = (mid / 4.0) - step + random::get().range(-s, s);
+            mid = (mid / 4.0) - step + rnd::get().range(-s, s);
         }
 
         _get(x, y) = mid;
 
-        double top = ((_get(a, b) + _get(c, b) + mid) / 3) - step + random::get().range(-s, s);
+        double top = ((_get(a, b) + _get(c, b) + mid) / 3) - step + rnd::get().range(-s, s);
         _get(x, b) = top;
 
-        double bot = ((_get(a, d) + _get(c, d) + mid) / 3) - step + random::get().range(-s, s);
+        double bot = ((_get(a, d) + _get(c, d) + mid) / 3) - step + rnd::get().range(-s, s);
         _get(x, d) = bot;
 
-        double lef = ((_get(a, b) + _get(a, d) + mid) / 3) - step + random::get().range(-s, s);
+        double lef = ((_get(a, b) + _get(a, d) + mid) / 3) - step + rnd::get().range(-s, s);
         _get(a, y) = lef;
 
-        double rig = ((_get(c, b) + _get(c, d) + mid) / 3) - step + random::get().range(-s, s);
+        double rig = ((_get(c, b) + _get(c, d) + mid) / 3) - step + rnd::get().range(-s, s);
         _get(c, y) = rig;
 
         double none = std::numeric_limits<int>::max();
@@ -168,7 +180,7 @@ struct Map {
         double qq = n / (l.size() + 1);
 
         for (auto& i : l) {
-            flow(i.second.first, i.second.second, out, qq);
+            flow(i.second, out, qq);
         }
     }
 
@@ -176,13 +188,13 @@ struct Map {
                   std::unordered_map<pt, int>& watr,
                   double n, double q) {
 
-        unsigned int x = random::get().range(0, w-1);
-        unsigned int y = random::get().range(0, h-1);
+        unsigned int x = rnd::get().range((unsigned int)0, w-1);
+        unsigned int y = rnd::get().range((unsigned int)0, h-1);
 
         std::unordered_set<pt> out;
-        flow(x, y, out, n);
+        flow(pt(x, y), out, n);
 
-        for (pt& xy : out) {
+        for (const pt& xy : out) {
 
             watr[xy] += 1;
 
@@ -207,7 +219,7 @@ struct Map {
         for (const pt& xy : gout) {
 
             if (_get(xy) <= 0) {
-                walkmap.insert(pt);
+                walkmap.insert(xy);
             }
         }
         
@@ -220,7 +232,7 @@ struct Map {
         std::sort(watr_r.begin(), watr_r.end());
         std::reverse(watr_r.begin(), watr_r.end());
 
-        int pctwater = random::get().gauss(5, 1);
+        int pctwater = rnd::get().gauss(5.0, 1.0);
         if (pctwater <= 1) pctwater = 1;
 
         pctwater = watr_r.size() / pctwater;
@@ -352,14 +364,14 @@ struct Map {
     }
 
 
-    pt _one_of(const std::vector<pt>& tmp) {
+    pt _one_of(std::vector<pt>& tmp) {
         if (tmp.size() == 0) {
-            return pt(random::get().range(0, w-1),
-                      random::get().range(0, h-1));
+            return pt(rnd::get().range((unsigned int)0, w-1),
+                      rnd::get().range((unsigned int)0, h-1));
         }
 
         std::sort(tmp.begin(), tmp.end());
-        return tmp[random::get().range(0, tmp.size()-1)];
+        return tmp[rnd::get().range(0, (int)tmp.size()-1)];
     }
 
     pt one_of_floor() {

@@ -135,7 +135,7 @@ extern "C" bool dg_render_draw(TCOD_map_t map, unsigned int t,
 }
 
 extern "C" void dg_random_init(long seed) {
-    random::get().init(seed);
+    rnd::get().init(seed);
 }
 
 extern "C" void dg_grid_init(unsigned int w, unsigned int h) {
@@ -170,3 +170,24 @@ extern "C" void dg_grid_set_water(unsigned int x, unsigned int y, bool v) {
     return grid::get().set_water(x, y, v);
 }
 
+extern "C" void dg_grid_add_nogen(unsigned int x, unsigned int y) {
+    grid::get().add_nogen(x, y);
+}
+
+extern "C" void dg_grid_one_of_floor(unsigned int* x, unsigned int* y) {
+    grid::pt xy = grid::get().one_of_floor();
+    *x = xy.first;
+    *y = xy.second;
+}
+
+extern "C" void dg_grid_one_of_water(unsigned int* x, unsigned int* y) {
+    grid::pt xy = grid::get().one_of_water();
+    *x = xy.first;
+    *y = xy.second;
+}
+
+extern "C" void dg_grid_one_of_walk(unsigned int* x, unsigned int* y) {
+    grid::pt xy = grid::get().one_of_walk();
+    *x = xy.first;
+    *y = xy.second;
+}

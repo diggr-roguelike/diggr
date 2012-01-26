@@ -79,8 +79,8 @@ struct reader< std::pair<T1,T2> > {
 template <typename T>
 inline void write_stl(Sink& s, const T& v) {
     s<<v.size();
-    for (const T& i : v) {
-        writer<T>().write(s, i);
+    for (const auto& i : v) {
+        writer<typename T::value_type>().write(s, i);
     }
 }
 
