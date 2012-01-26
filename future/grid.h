@@ -90,13 +90,13 @@ struct Map {
 
         if (!domid) {
             mid = _get(x, y);
-            std::cout << "!" << mid << std::endl;
+            //std::cout << "!" << mid << std::endl;
 
         } else {
 
             mid = _get(a, b) + _get(c, b) + _get(a, d) + _get(c, d);
             mid = (mid / 4.0) - step + rnd::get().range(-s, s);
-            std::cout << " . " << mid << std::endl;
+            //std::cout << " . " << mid << std::endl;
 
             _get(x, y) = mid;
         }
@@ -104,13 +104,13 @@ struct Map {
         double top = ((_get(a, b) + _get(c, b) + mid) / 3.0) - step + rnd::get().range(-s, s);
         _get(x, b) = top;
 
-        double bot = ((_get(a, d) + _get(c, d) + mid) / 3) - step + rnd::get().range(-s, s);
+        double bot = ((_get(a, d) + _get(c, d) + mid) / 3.0) - step + rnd::get().range(-s, s);
         _get(x, d) = bot;
 
-        double lef = ((_get(a, b) + _get(a, d) + mid) / 3) - step + rnd::get().range(-s, s);
+        double lef = ((_get(a, b) + _get(a, d) + mid) / 3.0) - step + rnd::get().range(-s, s);
         _get(a, y) = lef;
 
-        double rig = ((_get(c, b) + _get(c, d) + mid) / 3) - step + rnd::get().range(-s, s);
+        double rig = ((_get(c, b) + _get(c, d) + mid) / 3.0) - step + rnd::get().range(-s, s);
         _get(c, y) = rig;
 
         subdivide_mapgen(a, b, x, y, true);
@@ -175,16 +175,16 @@ struct Map {
 
             double v = _get(xy_);
 
-            if (out.count(xy_) == 0) {
-                std::cout << "        " << v << " ~~ " << v0 << std::endl;
-            }
+            //if (out.count(xy_) == 0) {
+            //    std::cout << "        " << v << " ~~ " << v0 << std::endl;
+            //}
 
             if (out.count(xy_) == 0 && fabs(v - v0) <= 1.0) {
                 l.push_back(std::make_pair(v, xy_));
             }
         }
 
-        std::cout << "    " << l.size() << " " << v0 << std::endl;
+        //std::cout << "    " << l.size() << " " << v0 << std::endl;
 
         if (l.size() == 0)
             return;
