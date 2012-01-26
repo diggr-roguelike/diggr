@@ -98,7 +98,7 @@ struct CaMap {
 
         unsigned int n = 0;
 
-        for (auto& xy_ : neighbors::get()(xy)) {
+        for (const auto& xy_ : neighbors::get()(xy)) {
 
             camap_t::const_iterator i = camap.find(xy_);
 

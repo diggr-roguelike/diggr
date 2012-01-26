@@ -91,4 +91,34 @@ def render_draw(map, t, px, py, hlx, hly, rmin, rmax, lr):
                               c_uint(hlx), c_uint(hly), c_uint(rmin), c_uint(rmax),
                               c_uint(lr))
 
+def random_init(seed):
+    _dg.dg_random_init(c_long(seed))
 
+def grid_init(w, h):
+    _dg.dg_grid_init(c_uint(w), c_uint(h))
+
+def grid_generate(type):
+    _dg.dg_grid_generate(c_int(type))
+
+def grid_set_height(x, y, h):
+    _dg.dg_grid_set_height(c_uint(x), c_uint(y), c_double(h))
+
+_dg.dg_grid_get_height.restype = c_double
+
+def grid_get_height(x, y):
+    return _dg.dg_grid_get_height(c_uint(x), c_uint(y))
+
+_dg.dg_grid_is_walk.restype = c_bool
+_dg.dg_grid_is_water.restype = c_bool
+
+def grid_is_walk(x, y):
+    return _dg.dg_grid_is_walk(c_uint(x), c_uint(y))
+
+def grid_is_water(x, y):
+    return _dg.dg_grid_is_walk(c_uint(x), c_uint(y))
+
+def grid_set_walk(x, y, v):
+    _dg.dg_grid_set_walk(c_uint(x), c_uint(y), c_bool(v))
+
+def grid_set_water(x, y, v):
+    _dg.dg_grid_set_water(c_uint(x), c_uint(y), c_bool(v))

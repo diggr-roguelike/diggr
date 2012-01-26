@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <map>
+#include <unordered_set>
 
 namespace serialize {
 
@@ -117,6 +118,13 @@ struct writer< std::map<K,V> > {
     }
 };
 
+template <typename T>
+struct writer< std::unordered_set<T> > {
+    void write(Sink& s, const std::unordered_set<T>& v) {
+        write_stl(s, v);
+    }
+};
+
 
 template <typename T>
 struct reader< std::vector<T> > {
@@ -128,6 +136,13 @@ struct reader< std::vector<T> > {
 template <typename K,typename V>
 struct reader< std::map<K,V> > {
     void read(Source& s, std::map<K,V>& v) {
+        read_stl(s, v);
+    }
+};
+
+template <typename T>
+struct reader< std::unordered_set<T> > {
+    void read(Source& s, std::unordered_set<T>& v) {
         read_stl(s, v);
     }
 };

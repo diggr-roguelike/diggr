@@ -3,6 +3,8 @@
 #include "neighbors.h"
 #include "celauto.h"
 #include "render.h"
+#include "random.h"
+#include "grid.h"
 
 
 extern "C" void dg_neighbors_init(unsigned int w, unsigned int h) {
@@ -45,12 +47,14 @@ extern "C" void dg_state_save(const char* filename) {
     serialize::Sink s(filename);
     celauto::get().write(s);
     grender::get().write(s);
+    grid::get().write(s);
 }
 
 extern "C" void dg_state_load(const char* filename) {
     serialize::Source s(filename);
     celauto::get().read(s);
     grender::get().read(s);
+    grid::get().read(s);
 }
 
 
@@ -130,4 +134,39 @@ extern "C" bool dg_render_draw(TCOD_map_t map, unsigned int t,
     return grender::get().draw(map, t, px, py, hlx, hly, rmin, rmax, lr);
 }
 
+extern "C" void dg_random_init(long seed) {
+    random::get().init(seed);
+}
+
+extern "C" void dg_grid_init(unsigned int w, unsigned int h) {
+    grid::get().init(w, h);
+}
+
+extern "C" void dg_grid_generate(int type) {
+    grid::get().generate(type);
+}
+
+extern "C" void dg_grid_set_height(unsigned int x, unsigned int y, double h) {
+    grid::get().set_height(x, y, h);
+}
+
+extern "C" double dg_grid_get_height(unsigned int x, unsigned int y) {
+    return grid::get().get_height(x, y);
+}
+
+extern "C" bool dg_grid_is_walk(unsigned int x, unsigned int y) {
+    return grid::get().is_walk(x, y);
+}
+
+extern "C" bool dg_grid_is_water(unsigned int x, unsigned int y) {
+    return grid::get().is_water(x, y);
+}
+
+extern "C" void dg_grid_set_walk(unsigned int x, unsigned int y, bool v) {
+    return grid::get().set_walk(x, y, v);
+}
+
+extern "C" void dg_grid_set_water(unsigned int x, unsigned int y, bool v) {
+    return grid::get().set_water(x, y, v);
+}
 

@@ -1051,10 +1051,7 @@ class QuestInfo:
 class World:
 
     def __init__(self, config):
-        self.grid = None
 
-        self.walkmap = None
-        self.watermap = None
         self.featmap = {}
         self.exit = None
         self.itemap = {}
@@ -1175,12 +1172,9 @@ class World:
 
 
     def makegrid(self, w_, h_):
-        self.w = w_
-        self.h = h_
-        self.grid = [[10 for x in xrange(self.w)] for y in xrange(self.h)]
 
-        self.walkmap = set()
-        self.watermap = set()
+        dg.grid_init(w_, h_)
+
         self.featmap = {}
 
         self.neighbors = {}
@@ -1201,187 +1195,7 @@ class World:
 
         dg.neighbors_init(w_, h_)
         dg.render_init(w_, h_)
-        
-
-    def randgen(self, a, b, c, d, mid):
-        x = ((c - a) / 2) + a
-        y = ((d - b) / 2) + b
-        if (a == x or c == x) and (b == y or d == y): return
-
-        s = max((c-a), (d-b))
-        step = 0 #max(n, 1)
-        s = 1 #max(step / 3, 1)
-
-        if not mid:
-            mid = self.grid[b][a] + self.grid[b][c] + self.grid[d][a] + self.grid[d][c]
-            mid = int(mid / 4.0) - step + random.randint(-s, s)
-
-        self.grid[y][x] = mid
-
-        top = ((self.grid[b][a] + self.grid[b][c] + mid) / 3) - step + random.randint(-s, s)
-        self.grid[b][x] = top
-
-        bot = ((self.grid[d][a] + self.grid[d][c] + mid) / 3) - step + random.randint(-s, s)
-        self.grid[d][x] = bot
-
-        lef = ((self.grid[b][a] + self.grid[d][a] + mid) / 3) - step + random.randint(-s, s)
-        self.grid[y][a] = lef
-
-        rig = ((self.grid[b][c] + self.grid[d][c] + mid) / 3) - step + random.randint(-s, s)
-        self.grid[y][c] = rig
-
-        self.randgen(a, b, x, y, None)
-        self.randgen(x, b, c, y, None)
-        self.randgen(a, y, x, d, None)
-        self.randgen(x, y, c, d, None)
-
-    def normalize(self, ):
-        avg = 0.0
-        min = 2000
-        max = -2000
-        for row in self.grid:
-            for v in row:
-                avg += v
-
-        avg = avg / (self.w * self.h)
-
-        for x in xrange(self.w):
-            for y in xrange(self.h):
-                self.grid[y][x] -= avg
-                v = self.grid[y][x]
-                if v > max: max = v
-                elif v < min: min = v
-
-        scale = (max - min) / 20
-
-        for x in xrange(self.w):
-            for y in xrange(self.h):
-                self.grid[y][x] = int(self.grid[y][x] / scale)
-                if self.grid[y][x] > 10: self.grid[y][x] = 10
-                elif self.grid[y][x] < -10: self.grid[y][x] = -10
-
-
-    def terra(self):
-        self.randgen(0, 0, self.w - 1, self.h - 1, -10)
-        self.normalize()
-        return self.grid
-
-
-    def flow(self, x, y, out, n, q):
-        if n < 1e-5: return
-
-        v0 = self.grid[y][x]
-        l = []
-        if (x,y) in out: return
-        out.add((x, y))
-
-        for ki in self.neighbors[(x,y)]:
-            zx, zy = ki
-            v = self.grid[zy][zx]
-
-            if (zx,zy) not in out and v <= v0:
-                l.append((v, zx, zy))
-
-        if len(l) == 0: return
-
-        l.sort()
-        l = l[:2]
-        qq = n / (len(l) + 1)
-
-        for v,ix,iy in l:
-            self.flow(ix, iy, out, qq, q)
-
-
-    def makeflow(self, gout, watr, n, q):
-
-        x = random.randint(0, self.w-1)
-        y = random.randint(0, self.h-1)
-        out = set()
-        self.flow(x, y, out, n, q)
-
-        for ix,iy in out:
-
-            if (ix,iy) not in watr:
-                watr[(ix,iy)] = 1
-            else:
-                watr[(ix,iy)] += 1
-
-            self.grid[iy][ix] -= q
-            if self.grid[iy][ix] < -10:
-                self.grid[iy][ix] = -10
-
-        gout.update(out)
-
-
-    def makerivers(self):
-        gout = set()
-        watr = {}
-        for x in xrange(50):
-            self.makeflow(gout, watr, 100.0, 1)
-
-        for x,y in gout:
-            if self.grid[y][x] <= 0:
-                self.walkmap.add((x,y))
-
-        watr = [(v,k) for (k,v) in watr.iteritems()]
-        watr.sort()
-        watr.reverse()
-
-        pctwater = random.gauss(5, 1)
-        if pctwater <= 1: pctwater = 1
-        watr = watr[:int(len(watr)/pctwater)]
-
-        for n,v in watr:
-            self.watermap.add(v)
-
-            
-    def flatten_pass(self):
-        towalk = set()
-        towater = set()
-
-        for x in xrange(0,self.w):
-            for y in xrange(self.h):
-                nwall = 0
-                nwater = 0
-                for k in self.neighbors[(x,y)]:
-                    if k not in self.walkmap:
-                        nwall += 1
-                    if k in self.watermap:
-                        nwater += 1
-
-                if (x,y) not in self.walkmap and nwall < 3:
-                    towalk.add((x,y))
-
-                if (x,y) not in self.watermap and nwater > 2:
-                    towater.add((x,y))
-
-        self.walkmap.update(towalk)
-        self.walkmap.update(towater)
-        self.watermap.update(towater)
-
-    def unflow(self):
-        unwater = set()
-
-        for k in self.watermap:
-            nwater = 0
-            for k2 in self.neighbors[k]:
-                if k2 in self.watermap:
-                    nwater += 1
-        
-            if nwater < 5:
-                unwater.add(k)
-
-        self.watermap.difference_update(unwater)
-
-
-    def flatten(self):
-        if self.moon in (moon.NEW, moon.FULL):
-            for x in xrange(5):
-                self.flatten_pass()
-
-        elif self.moon in (moon.FIRST_QUARTER, moon.LAST_QUARTER):
-            self.unflow()
-        
+      
 
     def make_map(self):
         self.tcodmap = libtcod.map_new(self.w, self.h)
@@ -1389,7 +1203,7 @@ class World:
 
         for x in xrange(self.w):
             for y in xrange(self.h):
-                if (x,y) in self.walkmap:
+                if dg.grid_is_walk(x, y):
                     v = True
                     w = True
                 else:
@@ -1429,8 +1243,8 @@ class World:
         if feat and feat.skin:
             c, fore = feat.skin
 
-        elif (x,y) in self.walkmap:
-            if (x,y) in self.watermap:
+        elif dg.grid_is_walk(x, y):
+            if dg.grid_is_water(x, y):
                 c = 251
                 fore = libtcod.light_azure
                 fore2 = libtcod.dark_azure
@@ -1440,7 +1254,7 @@ class World:
                 is_terrain = True
 
         else:
-            if (x,y) in self.watermap:
+            if dg.grid_is_water(x,y):
                 fore = libtcod.desaturated_blue
             c = 176
             is_terrain = True
@@ -1462,14 +1276,14 @@ class World:
                 del self.featmap[(x, y)]
 
             if f_ is None:
-                self.walkmap.add((x, y))
-
+                dg.grid_set_walk(x, y, True)
                 libtcod.map_set_properties(self.tcodmap, x, y, True, True)
-                self.grid[y][x] = -10
+                dg.grid_set_height(x, y, -10.0)
+
             else:
-                self.walkmap.discard((x, y))
+                dg.grid_set_walk(x, y, False)
                 libtcod.map_set_properties(self.tcodmap, x, y, False, False)
-                self.grid[y][x] = 0
+                dg.grid_set_height(x, y, 0.0)
 
             self.set_renderprops(x, y)
             return
@@ -1487,17 +1301,16 @@ class World:
             self.featmap[(x, y)] = f
 
         if w:
-            self.walkmap.add((x, y))
+            dg.grid_set_walk(x, y, True)
         else:
-            if (x, y) in self.walkmap:
-                self.walkmap.discard((x, y))
-        self.grid[y][x] = f.height
+            dg.grid_set_walk(x, y, False)
+
+        dg.grid_set_height(x, y, f.height)
 
         if f.water:
-            self.watermap.add((x, y))
+            dg.grid_set_water(x, y, True)
         elif f.water is not None:
-            if (x, y) in self.watermap:
-                self.watermap.discard((x, y))
+            dg.grid_set_water(x, y, False)
 
 
         self.set_renderprops(x, y)
@@ -1518,7 +1331,7 @@ class World:
                 if len(itms) == 0:
                     break
 
-            d = [ k for k in self.neighbors[(x,y)] if k in self.walkmap ]
+            d = [ k for k in self.neighbors[(x,y)] if dg.grid_is_walk(k[0], k[1]) ]
             if len(d) == 0:
                 iis.extend(itms)
                 return
@@ -1587,6 +1400,7 @@ class World:
         # so that vaults could generate items.
         self.itemap = {}
 
+        # TODO
         m = list(self.walkmap - self.watermap)
 
         oldvaults = set()
@@ -1600,6 +1414,7 @@ class World:
             if not vault or not vault.free:
                 break
 
+        # TODO
         m = list(self.walkmap - self.watermap)
 
         if len(m) == 0: return
@@ -1635,6 +1450,8 @@ class World:
                 self.set_feature(d[0], d[1], 'v')
 
         nfounts = int(round(random.gauss(3, 1)))
+
+        # TODO
         ww = list(self.walkmap & self.watermap)
 
         if len(ww) == 0:
@@ -1660,7 +1477,7 @@ class World:
         def floor_callback(xfrom, yfrom, xto, yto, world):
             if (xto, yto) in world.monmap:
                 return 0.0
-            elif (xto, yto) in world.walkmap:
+            elif dg.grid_is_walk(xto, yto):
                 return 1.0
             return 0.0
 
@@ -1678,6 +1495,7 @@ class World:
         else:
             n = int(max(random.gauss(*self.coef.nummonsters), 1))
 
+        # TODO
         ll = list(self.walkmap - nogens)
 
         i = 0
@@ -1711,6 +1529,7 @@ class World:
             return
 
         if random.randint(1, self.coef.moldchance) == 1:
+            # TODO
             ll = list(self.walkmap - self.watermap - set(self.monmap.iterkeys()))
             x, y = ll[random.randint(0, len(ll)-1)]
             m = self.monsterstock.generate('x', self.dlev, self.itemstock, self.moon)
@@ -1728,6 +1547,7 @@ class World:
         else:
             n = int(max(random.gauss(self.coef.numitems[0] + self.dlev, self.coef.numitems[1]), 1))
 
+        # TODO
         ll = list(self.walkmap - nogens)
 
         for i in xrange(n):
@@ -1752,6 +1572,7 @@ class World:
 
 
     def place(self, nogens):
+        # TODO
         s = self.walkmap - nogens - set(self.monmap.iterkeys())
         sold = s
 
@@ -1794,9 +1615,15 @@ class World:
 
         # Quests
         if self.branch not in self.quests:
-            self.terra()
-            self.makerivers()
-            self.flatten()
+            gentype = 0
+
+            if self.moon in (moon.NEW, moon.FULL):
+                gentype = 1
+            elif self.moon in (moon.FIRST_QUARTER, moon.LAST_QUARTER):
+                gentype = -1
+
+            dg.grid_generate(gentype)
+
 
         self.make_feats(nogens)
         self.make_paths()
@@ -1830,7 +1657,7 @@ class World:
         self.inv.take(self.itemstock.get('deusex'))
 
 
-        pl = [k for k in self.neighbors[(self.px,self.py)] if k in self.walkmap] + [(self.px,self.py)]
+        pl = [k for k in self.neighbors[(self.px,self.py)] if dg.grid_is_walk(k[0], k[1])] + [(self.px,self.py)]
 
         for x in xrange(9):
             k = pl[random.randint(0,len(pl)-1)]
@@ -1857,7 +1684,7 @@ class World:
         dx = _dx + self.px
         dy = _dy + self.py
 
-        if (dx,dy) in self.walkmap and dx >= 0 and dx < self.w and dy < self.h:
+        if dg.grid_is_walk(dx,dy) and dx >= 0 and dx < self.w and dy < self.h:
 
             if (dx, dy) in self.monmap:
                 self.fight(self.monmap[(dx, dy)], True)
@@ -1910,7 +1737,7 @@ class World:
 
         if self.try_feature(self.px, self.py, 'warm'):
             self.stats.warmth.inc(self.coef.watercold)
-        elif (self.px, self.py) in self.watermap:
+        elif dg.grid_is_water(self.px, self.py):
             self.stats.warmth.dec(self.coef.watercold)
         else:
             self.stats.warmth.inc(self.inv.get_heatbonus())
@@ -2031,7 +1858,7 @@ class World:
 
         if self.try_feature(self.px, self.py, 'warm'):
             self.stats.warmth.inc(self.coef.watercold)
-        elif (self.px, self.py) in self.watermap:
+        elif dg.grid_is_water(self.px, self.py):
             self.stats.warmth.dec(self.coef.watercold)
         else:
             self.stats.warmth.inc(self.inv.get_heatbonus())
@@ -2056,7 +1883,7 @@ class World:
 
         if self.try_feature(self.px, self.py, 'warm'):
             self.stats.warmth.inc(self.coef.watercold)
-        elif (self.px, self.py) in self.watermap:
+        elif dg.grid_is_water(self.px, self.py):
             self.stats.warmth.dec(self.coef.watercold)
         else:
             self.stats.warmth.inc(self.inv.get_heatbonus())
@@ -2171,7 +1998,7 @@ class World:
             self.unset_feature(self.px, self.py)
             return
             
-        if (self.px,self.py) not in self.watermap:
+        if not dg.grid_is_water(self.px, self.py):
             self.msg.m('There is no water here you could drink.')
             return
 
@@ -2299,12 +2126,12 @@ class World:
         l = []
         for x in xrange(_x - range, _x + range + 1):
             for y in [_y - range, _x + range]:
-                if x >= 0 and y >= 0 and (x,y) in self.walkmap:
+                if x >= 0 and y >= 0 and dg.grid_is_walk(x,y):
                     l.append((x,y))
 
         for y in xrange(_y - range - 1, _y + range):
             for x in [_x - range, _x + range]:
-                if x >= 0 and y >= 0 and (x,y) in self.walkmap:
+                if x >= 0 and y >= 0 and dg.grid_is_walk(x,y):
                     l.append((x,y))
 
         l = l[random.randint(0, len(l)-1)]
@@ -2715,7 +2542,7 @@ class World:
             if not self.digging:
                 return item
 
-            if self.digging[:2] in self.walkmap:
+            if dg.grid_is_walk(self.digging[0], self.digging[1]):
                 self.msg.m('There is nothing to dig there.')
                 self.digging = None
             else:
@@ -2856,7 +2683,7 @@ class World:
             while x >= 0 and y >= 0 and x < self.w and y < self.h:
                 x += s[0]
                 y += s[1]
-                if (x,y) in self.walkmap:
+                if dg.grid_is_walk(x,y):
                     break
                 n += 1
 
@@ -2909,7 +2736,7 @@ class World:
         elif item.jinni:
             l = []
             for ki in self.neighbors[(self.px,self.py)]:
-                if ki in self.walkmap and ki not in self.monmap:
+                if dg.grid_is_walk(ki[0], ki[1]) and ki not in self.monmap:
                     l.append(ki)
 
             if len(l) == 0:
@@ -2957,11 +2784,11 @@ class World:
             return None
 
         elif item.makestrap:
-            if (self.px,self.py) in self.featmap:
+            if (self.px, self.py) in self.featmap:
                 self.msg.m('Nothing happens.')
                 return item
 
-            if (self.px,self.py) in self.watermap:
+            if dg.grid_is_water(self.px, self.py):
                 self.msg.m("That won't work while you're standing on water.")
                 return item
 
@@ -3653,8 +3480,8 @@ class World:
                     f = self.featmap[(tx, ty)]
                     s.append('You see ' + f.name + '.')
 
-                elif (tx, ty) in self.walkmap:
-                    if (tx, ty) in self.watermap:
+                elif dg.grid_is_walk(tx, ty):
+                    if dg.grid_is_water(tx, ty):
                         s.append('You see a water-covered floor.')
                     else:
                         s.append('You see a cave floor.')
@@ -3784,7 +3611,7 @@ class World:
                 #return (xx, yy), True
                 break
 
-            if (tmpx, tmpy) in self.walkmap or self.try_feature(tmpx, tmpy, 'shootable'):
+            if dg.grid_is_walk(tmpx, tmpy) or self.try_feature(tmpx, tmpy, 'shootable'):
 
                 if minrange > 0:
                     d = math.sqrt(math.pow(abs(tmpx - self.px), 2) +
@@ -3985,7 +3812,7 @@ class World:
                 ret =  (mon.x + mon.bld_delta[0],
                         mon.y + mon.bld_delta[1])
 
-                if ret not in self.walkmap:
+                if not dg.grid_is_walk(ret[0], ret[1]):
                     mon.bld_delta = None
                     return None, None
                 else:
@@ -4013,7 +3840,7 @@ class World:
         if dist > rang or mon.confused or (mon.sleepattack and self.sleeping):
             mdx = x + random.randint(-1, 1)
             mdy = y + random.randint(-1, 1)
-            if (mdx, mdy) not in self.walkmap:
+            if not dg.grid_is_walk(mdx, mdy):
                 mdx = None
                 mdy = None
             if mon.confused:
@@ -4030,7 +3857,7 @@ class World:
                  return None, None
 
             if mon.heatseeking:
-                if ((self.px, self.py) in self.watermap or self.cooling or mon.onfire):
+                if (dg.grid_is_water(self.px, self.py) or self.cooling or mon.onfire):
                     if mon.known_px is None or mon.known_py is None:
                         mon.known_px = mon.x
                         mon.known_py = mon.y
@@ -4069,7 +3896,7 @@ class World:
                 if flee:
                     mdx, mdy = None, None
                     for _x,_y in self.neighbors[(x,y)]:
-                        if (_x,_y) in self.walkmap and \
+                        if dg.grid_is_walk(_x,_y) and \
                            ((mon.known_px >= x and _x < x) or \
                             (mon.known_px <= x and _x > x) or \
                             (mon.known_py <= y and _y > y) or \
@@ -4093,7 +3920,7 @@ class World:
                 if self.try_feature(mdx, mdy, 'permanent'):
                     return None, None
 
-                if (mdx, mdy) not in self.walkmap:
+                if not dg.grid_is_walk(mdx, mdy):
                     self.convert_to_floor(mdx, mdy, True)
 
         return mdx, mdy
@@ -4138,7 +3965,7 @@ class World:
 
         l = []
         for ki in self.neighbors[(x,y)]:
-            if ki in self.walkmap and \
+            if dg.grid_is_walk(ki[0], ki[1]) and \
                ki not in self.monmap and \
                (ki[0] != self.px or ki[1] != self.py):
                 l.append(ki)
@@ -4274,27 +4101,27 @@ class World:
         ca = self.celautostock.stock[ca]
 
         if ca.watertoggle is not None:
-            self.watermap.add((x, y))
+            dg.grid_set_water(x, y, True)
         elif ca.featuretoggle:
-            if (x, y) not in self.featmap and (x, y) in self.walkmap:
+            if (x, y) not in self.featmap and dg.grid_is_walk(x, y):
                 self.set_feature(x, y, ca.featuretoggle)
         elif ca.floorfeaturetoggle:
-            if (x, y) not in self.featmap and (x, y) in self.walkmap and (x, y) not in self.watermap:
+            if (x, y) not in self.featmap and dg.grid_is_walk(x, y) and not dg.grid_is_water(x, y):
                 self.set_feature(x, y, ca.floorfeaturetoggle)
 
-        if ca.littoggle is not None and (x,y) in self.walkmap:
+        if ca.littoggle is not None and dg.grid_is_walk(x,y):
             dg.render_set_is_lit(x, y, True)
 
     def celauto_off(self, x, y, ca):
         ca = self.celautostock.stock[ca]
 
         if ca.watertoggle is not None:
-            self.watermap.discard((x, y))
+            dg.grid_set_water(x, y, False)
         elif ca.featuretoggle and (x, y) in self.featmap and \
              self.featmap[(x, y)] == self.featstock.f[ca.featuretoggle]:
             self.unset_feature(x, y)
 
-        if ca.littoggle is not None and (x,y) in self.walkmap:
+        if ca.littoggle is not None and dg.grid_is_walk(x,y):
             dg.render_set_is_lit(x, y, False)
 
 
@@ -4458,7 +4285,7 @@ class World:
 
 
         for x,y,mon in raise_dead:
-            if (x,y) in self.walkmap and (x,y) not in self.monmap and not (x == self.px and y == self.py):
+            if dg.grid_is_walk(x,y) and (x,y) not in self.monmap and not (x == self.px and y == self.py):
                 smu = str(mon)
                 smu = smu[0].upper() + smu[1:]
                 self.msg.m(smu + ' rises from the dead!')
@@ -4692,12 +4519,13 @@ class World:
         # HACK! For supporting replays of games that have been saved and then loaded.
         if self.save_disabled:
             random.seed(self._seed)
+            dg.random_init(self._seed)
             return
 
 
         f = None
         atts = [
-          'grid', 'walkmap', 'watermap', 'exit', 'itemap', 'monmap', 
+          'exit', 'itemap', 'monmap', 
           'featmap', 'px', 'py', 'w', 'h',
           'done', 'dead', 'stats', 'msg', 'coef', 'inv', 'itemstock', 'monsterstock', 'branch',
           'dlev', 'plev', 't', 'oldt', 'tagorder', 'sleeping', 'resting', 'cooling', 'digging', 'blind',
@@ -4751,6 +4579,7 @@ class World:
         #log.f = open('LOG.%d' % self._seed, 'a')
 
         random.seed(self._seed)
+        dg.random_init(self._seed)
         global _inputs
         _inputs = self._inputs
 
@@ -5065,6 +4894,7 @@ def start_game(world, w, h, oldseed=None, oldbones=None):
         #log.f = open('LOG.%d' % world._seed, 'a')
 
         random.seed(world._seed)
+        dg.random_init(world._seed)
         global _inputs
         _inputs = world._inputs
 
@@ -5100,7 +4930,9 @@ def check_autoplay(world):
             return -1
 
     if world.digging:
-        if world.grid[world.digging[1]][world.digging[0]] <= -10:
+        height = dg.grid_get_height(world.digging[0], world.digging[1])
+
+        if height <= -10:
             world.convert_to_floor(world.digging[0], world.digging[1], False)
             world.digging = None
             return 1
@@ -5110,7 +4942,7 @@ def check_autoplay(world):
             return 1
 
         else:
-            world.grid[world.digging[1]][world.digging[0]] -= world.digging[2]
+            dg.grid_set_height(world.digging[0], world.digging[1], height - world.digging[2])
             world.tick()
             return -1
 

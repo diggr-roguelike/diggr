@@ -4,7 +4,6 @@
 #include <vector>
 #include <map>
 
-#include <iostream>
 
 namespace neighbors {
 
