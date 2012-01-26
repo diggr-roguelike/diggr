@@ -1338,7 +1338,7 @@ class World:
             x,y = d[random.randint(0, len(d)-1)]
 
 
-    def paste_vault(self, v, m, nogens):
+    def paste_vault(self, v):
         x = None
         y = None
 
@@ -1348,7 +1348,7 @@ class World:
 
         else:
             for x in xrange(10):
-                d = m[random.randint(0, len(m)-1)]
+                d = dg.grid_one_of_floor()
 
                 x0 = d[0] - v.anchor[0]
                 y0 = d[1] - v.anchor[1]
@@ -1383,14 +1383,14 @@ class World:
 
                 if len(z) >= 3:
                     if z[1] is True:
-                        nogens.add((xx,yy))
+                        dg.grid_add_nogen(xx, yy)
                     else:
                         itm = self.itemstock.get(z[1])
                         if itm:
                             self.set_item(xx, yy, [itm])
 
 
-    def make_feats(self, nogens):
+    def make_feats(self):
 
         self.featmap = {}
         dg.celauto_init()
@@ -1400,48 +1400,40 @@ class World:
         # so that vaults could generate items.
         self.itemap = {}
 
-        # TODO
-        m = list(self.walkmap - self.watermap)
-
         oldvaults = set()
         while 1:
             vault = self.vaultstock.get(self.branch, self.dlev, oldvaults)
 
             if vault:
-                self.paste_vault(vault, m, nogens)
+                self.paste_vault(vault)
                 oldvaults.add(vault)
 
             if not vault or not vault.free:
                 break
 
-        # TODO
-        m = list(self.walkmap - self.watermap)
-
-        if len(m) == 0: return
-
         # Quests
         if self.branch in self.quests:
             return
 
-        stairsi = random.randint(0, len(m)-1)
-        d = m[stairsi]
+        d = dg.grid_one_of_floor()
 
         self.set_feature(d[0], d[1], '>')
         self.exit = d
-        del m[stairsi]
+
+        dg.grid_add_nogen(d[0], d[1])
 
         if self.moon == moon.NEW:
-            d = m[random.randint(0, len(m)-1)]
+            d = dg.grid_one_of_floor()
             self.set_feature(d[0], d[1], 'bb')
 
         elif self.moon == moon.FULL:
-            d = m[random.randint(0, len(m)-1)]
+            d = dg.grid_one_of_floor()
             self.set_feature(d[0], d[1], 'dd')
             self.paste_celauto(d[0], d[1], self.celautostock.FERN)
 
         else:
             a = random.randint(-1, 1)
-            d = m[random.randint(0, len(m)-1)]
+            d = dg.grid_one_of_floor()
             if a == -1:
                 self.set_feature(d[0], d[1], 's')
             elif a == 0:
@@ -1451,14 +1443,8 @@ class World:
 
         nfounts = int(round(random.gauss(3, 1)))
 
-        # TODO
-        ww = list(self.walkmap & self.watermap)
-
-        if len(ww) == 0:
-            return
-
         for tmp in xrange(nfounts):
-            d = ww[random.randint(0, len(ww)-1)]
+            d = dg.grid_one_of_water()
             self.set_feature(d[0], d[1], random.choice(['C','V','B','N','M']))
 
 
@@ -1495,9 +1481,6 @@ class World:
         else:
             n = int(max(random.gauss(*self.coef.nummonsters), 1))
 
-        # TODO
-        ll = list(self.walkmap - nogens)
-
         i = 0
         while i < n:
             lev = self.dlev + random.gauss(0, self.coef.monlevel)
@@ -1509,7 +1492,7 @@ class World:
                           self.quests[self.branch].monlevels[1])
 
             while 1:
-                x, y = ll[random.randint(0, len(ll)-1)]
+                x, y = dg.grid_one_of_walk()
                 if (x, y) not in self.monmap: break
 
             m = self.monsterstock.generate(self.branch, lev, self.itemstock, self.moon)
@@ -1517,6 +1500,8 @@ class World:
                 m.x = x
                 m.y = y
                 self.monmap[(x, y)] = m
+
+                dg.grid_add_nogen(x, y)
 
                 if m.inanimate:
                     continue
@@ -1529,9 +1514,7 @@ class World:
             return
 
         if random.randint(1, self.coef.moldchance) == 1:
-            # TODO
-            ll = list(self.walkmap - self.watermap - set(self.monmap.iterkeys()))
-            x, y = ll[random.randint(0, len(ll)-1)]
+            x, y = dg.grid_one_of_floor()
             m = self.monsterstock.generate('x', self.dlev, self.itemstock, self.moon)
             if m:
                 m.x = x
@@ -1547,13 +1530,10 @@ class World:
         else:
             n = int(max(random.gauss(self.coef.numitems[0] + self.dlev, self.coef.numitems[1]), 1))
 
-        # TODO
-        ll = list(self.walkmap - nogens)
-
         for i in xrange(n):
             lev = self.dlev + random.gauss(0, self.coef.itemlevel)
             lev = max(int(round(lev)), 1)
-            x, y = ll[random.randint(0, len(ll)-1)]
+            x, y = dg.grid_one_of_walk()
             item = self.itemstock.generate(lev)
             if item:
                 self.set_item(x, y, [item])
@@ -1566,15 +1546,12 @@ class World:
             if dl == self.dlev and len(itm) > 0:
                 itm2 = [copy.copy(i) for i in itm]
 
-                x, y = ll[random.randint(0, len(ll)-1)]
+                x, y = dg.grid_one_of_walk()
 
                 self.set_item(x, y, itm2)
 
 
     def place(self, nogens):
-        # TODO
-        s = self.walkmap - nogens - set(self.monmap.iterkeys())
-        sold = s
 
         # Do not place a player in an unfair position.
         # Otherwise, the monster will get a free move and might
@@ -1588,13 +1565,10 @@ class World:
                     monn2.add(ki)
             monn.update(monn2)
 
-        s.difference_update(monn)
+        for k in monn:
+            dg.grid_add_nogen(k[0], k[1])
 
-        if len(s) == 0:
-            s = sold
-
-        s = list(s)
-        x, y = s[random.randint(0, len(s)-1)]
+        x, y = dg.grid_one_of_walk()
         self.px = x
         self.py = y
 
@@ -4454,7 +4428,6 @@ class World:
                     lit_mons.add(k)
                     dg.render_set_is_lit(k[0], k[1], True)
 
-            # TODO! Visible monsters, mon.visible, monsters_in_view
 
         pc = '@'
         if self.sleeping > 1 and (self.t & 1) == 1:

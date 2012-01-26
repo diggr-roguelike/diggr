@@ -28,6 +28,8 @@ struct Map {
     std::unordered_set<pt> walkmap;
     std::unordered_set<pt> watermap;
 
+    std::unordered_set<pt> nogens;
+
     void init(unsigned int _w, unsigned int _h) {
         w = _w;
         h = _h;
@@ -35,6 +37,7 @@ struct Map {
         grid.resize(w*h);
         walkmap.clear();
         watermap.clear();
+        nogens.clear();
 
         for (int i = 0; i < w*h; ++i) {
             grid[i] = 10.0;
@@ -342,6 +345,63 @@ struct Map {
         } else {
             watermap.erase(pt(x, y));
         }
+    }
+
+    void add_nogen(unsigned int x, unsigned int y) {
+        nogens.insert(pt(x, y));
+    }
+
+
+    pt _one_of(const std::vector<pt>& tmp) {
+        if (tmp.size() == 0) {
+            return pt(random::get().range(0, w-1),
+                      random::get().range(0, h-1));
+        }
+
+        std::sort(tmp.begin(), tmp.end());
+        return tmp[random::get().range(0, tmp.size()-1)];
+    }
+
+    pt one_of_floor() {
+        std::vector<pt> tmp;
+
+        for (const pt& v : walkmap) {
+            if (watermap.count(v) != 0 ||
+                nogens.count(v) != 0)
+                continue;
+
+            tmp.push_back(v);
+        }
+
+        return _one_of(tmp);
+    }
+
+    pt one_of_water() {
+        std::vector<pt> tmp;
+
+        for (const pt& v : watermap) {
+            if (walkmap.count(v) == 0 ||
+                nogens.count(v) != 0)
+                continue;
+
+            tmp.push_back(v);
+        }
+
+        return _one_of(tmp);
+    }
+
+
+    pt one_of_walk() {
+        std::vector<pt> tmp;
+
+        for (const pt& v : walkmap) {
+            if (nogens.count(v) != 0)
+                continue;
+
+            tmp.push_back(v);
+        }
+
+        return _one_of(tmp);
     }
 
 
