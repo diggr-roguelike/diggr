@@ -1173,6 +1173,9 @@ class World:
 
     def makegrid(self, w_, h_):
 
+        self.w = w_
+        self.h = h_
+
         dg.grid_init(w_, h_)
 
         self.featmap = {}
@@ -1469,7 +1472,7 @@ class World:
 
         self.floorpath = libtcod.path_new_using_function(self.w, self.h, floor_callback, self, 1.0)
 
-    def make_monsters(self, nogens):
+    def make_monsters(self):
 
         self.monsterstock.clear_gencount()
         self.monmap = {}
@@ -1522,7 +1525,7 @@ class World:
                 self.monmap[(x, y)] = m
 
 
-    def make_items(self, nogens):
+    def make_items(self):
 
         ## Quests
         if self.branch in self.quests:
@@ -1551,7 +1554,7 @@ class World:
                 self.set_item(x, y, itm2)
 
 
-    def place(self, nogens):
+    def place(self):
 
         # Do not place a player in an unfair position.
         # Otherwise, the monster will get a free move and might
@@ -1583,8 +1586,6 @@ class World:
             m = moon.phase(self._seed)
             self.moon = m['phase']
 
-        nogens = set()
-
         self.makegrid(w_, h_)
 
         # Quests
@@ -1599,12 +1600,12 @@ class World:
             dg.grid_generate(gentype)
 
 
-        self.make_feats(nogens)
+        self.make_feats()
         self.make_paths()
-        self.make_monsters(nogens)
-        self.make_items(nogens)
+        self.make_monsters()
+        self.make_items()
         self.make_map()
-        self.place(nogens)
+        self.place()
 
         for x in xrange(w_):
             for y in xrange(h_):

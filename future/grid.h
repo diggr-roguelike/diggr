@@ -12,6 +12,9 @@
 #include <unordered_map>
 #include <limits>
 
+#include <iostream>
+
+
 namespace std {
 
 template <typename A, typename B>
@@ -70,8 +73,7 @@ struct Map {
 
 
     void subdivide_mapgen(unsigned int a, unsigned int b, 
-                          unsigned int c, unsigned int d,
-                          double mid) {
+                          unsigned int c, unsigned int d, bool domid) {
 
         unsigned int x = ((c - a) / 2) + a;
         unsigned int y = ((d - b) / 2) + b;
@@ -80,18 +82,26 @@ struct Map {
             (b == y || d == y))
             return;
 
-        //unsigned int s = std::max(c-a, d-b);
-        unsigned int step = 0;
-        unsigned int s = 1;
+        //int s = std::max(c-a, d-b);
+        int step = 0;
+        int s = 1;
 
-        if (mid == std::numeric_limits<int>::max()) {
+        double mid;
+
+        if (!domid) {
+            mid = _get(x, y);
+            std::cout << "!" << mid << std::endl;
+
+        } else {
+
             mid = _get(a, b) + _get(c, b) + _get(a, d) + _get(c, d);
             mid = (mid / 4.0) - step + rnd::get().range(-s, s);
+            std::cout << " . " << mid << std::endl;
+
+            _get(x, y) = mid;
         }
 
-        _get(x, y) = mid;
-
-        double top = ((_get(a, b) + _get(c, b) + mid) / 3) - step + rnd::get().range(-s, s);
+        double top = ((_get(a, b) + _get(c, b) + mid) / 3.0) - step + rnd::get().range(-s, s);
         _get(x, b) = top;
 
         double bot = ((_get(a, d) + _get(c, d) + mid) / 3) - step + rnd::get().range(-s, s);
@@ -103,11 +113,10 @@ struct Map {
         double rig = ((_get(c, b) + _get(c, d) + mid) / 3) - step + rnd::get().range(-s, s);
         _get(c, y) = rig;
 
-        double none = std::numeric_limits<int>::max();
-        subdivide_mapgen(a, b, x, y, none);
-        subdivide_mapgen(x, b, c, y, none);
-        subdivide_mapgen(a, y, x, d, none);
-        subdivide_mapgen(x, y, c, d, none);
+        subdivide_mapgen(a, b, x, y, true);
+        subdivide_mapgen(x, b, c, y, true);
+        subdivide_mapgen(a, y, x, d, true);
+        subdivide_mapgen(x, y, c, d, true);
     }
 
 
@@ -125,13 +134,13 @@ struct Map {
         for (double& i : grid) {
             i -= avg;
             if (i > max) max = i;
-            if (i < min) min = i;
+            else if (i < min) min = i;
         }
 
         double scale = (max - min) / 20.0;
 
         for (double& i : grid) {
-            i /= scale;
+            i = (i / scale);
 
             if (i > 10.0) i = 10.0;
             else if (i < -10.0) i = -10.0;
@@ -139,7 +148,8 @@ struct Map {
     }
 
     void makegrid() {
-        subdivide_mapgen(0, 0, w - 1, h - 1, -10);        
+        _get((w-1)/2, (h-1)/2) = -10;
+        subdivide_mapgen(0, 0, w - 1, h - 1, false);
         normalize();
     }
 
@@ -147,6 +157,8 @@ struct Map {
     void flow(const pt& xy,
               std::unordered_set<pt>& out, 
               double n) {
+
+        //std::cout << "  FLOW: " << xy.first << "," << xy.second << " " << n << std::endl;
 
         if (n < 1e-5)
             return;
@@ -163,10 +175,16 @@ struct Map {
 
             double v = _get(xy_);
 
-            if (out.count(xy_) == 0 && v <= v0) {
+            if (out.count(xy_) == 0) {
+                std::cout << "        " << v << " ~~ " << v0 << std::endl;
+            }
+
+            if (out.count(xy_) == 0 && fabs(v - v0) <= 1.0) {
                 l.push_back(std::make_pair(v, xy_));
             }
         }
+
+        std::cout << "    " << l.size() << " " << v0 << std::endl;
 
         if (l.size() == 0)
             return;
@@ -194,6 +212,8 @@ struct Map {
         std::unordered_set<pt> out;
         flow(pt(x, y), out, n);
 
+        std::cout << x << "," << y << " " << out.size() << std::endl;
+
         for (const pt& xy : out) {
 
             watr[xy] += 1;
@@ -212,9 +232,28 @@ struct Map {
         std::unordered_set<pt> gout;
         std::unordered_map<pt, int> watr;
 
+        for (int y = 0; y < h; ++y) {
+            for (int x = 0; x < w; ++x) {
+                std::cout << (char)('A'+(int)_get(x, y));
+            }
+            std::cout << std::endl;
+        }
+
         for (int i = 0; i < 50; ++i) {
             makeflow(gout, watr, 100.0, 1);
         }
+
+        for (int y = 0; y < h; ++y) {
+            for (int x = 0; x < w; ++x) {
+                if (gout.count(pt(x,y)) != 0) {
+                    std::cout << ' ';
+                } else {
+                    std::cout << (char)('A'+(int)_get(x, y));
+                }
+            }
+            std::cout << std::endl;
+        }
+
 
         for (const pt& xy : gout) {
 
@@ -235,6 +274,9 @@ struct Map {
         int pctwater = rnd::get().gauss(5.0, 1.0);
         if (pctwater <= 1) pctwater = 1;
 
+        std::cout << "WATER: " << gout.size() << " " << walkmap.size() << " : " 
+                  << watr_r.size() << " " << pctwater << " " << watermap.size() << std::endl;
+
         pctwater = watr_r.size() / pctwater;
 
         if (watr_r.size() > pctwater) {
@@ -243,7 +285,11 @@ struct Map {
 
         for (const auto& v : watr_r) {
             watermap.insert(v.second);
+            std::cout << " !!! " << watermap.size() << " " << v.second.first << "," << v.second.second << std::endl;
         }
+
+        std::cout << "W2: " << watr_r.size() << " " << pctwater << " " 
+                  << watermap.size() << " " << walkmap.size() << std::endl;
     }
 
     void flatten_pass() {
@@ -308,6 +354,8 @@ struct Map {
     }
 
     void flatten(int type) {
+        std::cout << "FLATTEN: " << type << std::endl;
+
         if (type == 1) {
             for (int i = 0; i < 5; ++i) {
                 flatten_pass();
@@ -340,6 +388,7 @@ struct Map {
     }
 
     bool is_water(unsigned int x, unsigned int y) {
+        std::cout << "   \\> " << x << "," << y << ":" << watermap.count(pt(x, y)) << std::endl;
         return (watermap.count(pt(x, y)) != 0);
     }
 
@@ -352,6 +401,7 @@ struct Map {
     }
 
     void set_water(unsigned int x, unsigned int y, bool v) {
+        std::cout << "   /> " << x << "," << y << ":" << v << std::endl;
         if (v) {
             watermap.insert(pt(x, y));
         } else {

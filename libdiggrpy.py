@@ -115,7 +115,7 @@ def grid_is_walk(x, y):
     return _dg.dg_grid_is_walk(c_uint(x), c_uint(y))
 
 def grid_is_water(x, y):
-    return _dg.dg_grid_is_walk(c_uint(x), c_uint(y))
+    return _dg.dg_grid_is_water(c_uint(x), c_uint(y))
 
 def grid_set_walk(x, y, v):
     _dg.dg_grid_set_walk(c_uint(x), c_uint(y), c_bool(v))
