@@ -1498,8 +1498,8 @@ def path_new_using_function(w, h, func, userdata=0, dcost=1.41):
     return (_lib.TCOD_path_new_using_function(w, h, cbk_func,
             py_object(userdata), c_float(dcost)), cbk_func)
 
-def path_compute(p, ox, oy, dx, dy):
-    return _lib.TCOD_path_compute(p[0], ox, oy, dx, dy)
+def path_compute(p, ox, oy, dx, dy, cutoff):
+    return _lib.TCOD_path_compute(p[0], ox, oy, dx, dy, cutoff)
 
 def path_get_origin(p):
     x = c_int()
@@ -1528,10 +1528,10 @@ def path_get(p, idx):
 def path_is_empty(p):
     return _lib.TCOD_path_is_empty(p[0])
 
-def path_walk(p, recompute):
+def path_walk(p, recompute, cutoff):
     x = c_int()
     y = c_int()
-    if _lib.TCOD_path_walk(p[0], byref(x), byref(y), c_int(recompute)):
+    if _lib.TCOD_path_walk(p[0], byref(x), byref(y), c_int(recompute), c_int(cutoff)):
         return x.value, y.value
     return None,None
 

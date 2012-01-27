@@ -207,7 +207,7 @@ static void heap_reorder(TCOD_path_data_t *path, uint32 offset) {
 /* private functions */
 static void TCOD_path_push_cell(TCOD_path_data_t *path, int x, int y);
 static void TCOD_path_get_cell(TCOD_path_data_t *path, int *x, int *y, float *distance);
-static void TCOD_path_set_cells(TCOD_path_data_t *path);
+static void TCOD_path_set_cells(TCOD_path_data_t *path, int cutoff);
 static float TCOD_path_walk_cost(TCOD_path_data_t *path, int xFrom, int yFrom, int xTo, int yTo);
 
 static TCOD_path_data_t *TCOD_path_new_intern(int w, int h) {
@@ -245,7 +245,7 @@ TCOD_path_t TCOD_path_new_using_function(int map_width, int map_height, TCOD_pat
 	return (TCOD_path_t)path;
 }
 
-bool TCOD_path_compute(TCOD_path_t p, int ox,int oy, int dx, int dy) {
+bool TCOD_path_compute(TCOD_path_t p, int ox,int oy, int dx, int dy, int cutoff) {
 	TCOD_path_data_t *path=(TCOD_path_data_t *)p;
 	TCOD_IFNOT(p != NULL) return false;
 	path->ox=ox;
@@ -264,7 +264,12 @@ bool TCOD_path_compute(TCOD_path_t p, int ox,int oy, int dx, int dy) {
 	path->heur[ ox + oy * path->w ] = 1.0f; /* anything != 0 */
 	TCOD_path_push_cell(path,ox,oy); /* put the origin cell as a bootstrap */
 	/* fill the djikstra grid until we reach dx,dy */
-	TCOD_path_set_cells(path);
+        struct timeval tv1;
+        struct timeval tv2;
+        gettimeofday(&tv1, NULL);
+	TCOD_path_set_cells(path, cutoff);
+        gettimeofday(&tv2, NULL);
+        printf("%d\n", (tv2.tv_sec*1000000+tv2.tv_usec) - (tv1.tv_sec*1000000+tv1.tv_usec));
 	if ( path->grid[dx + dy * path->w] == 0 ) return false; /* no path found */
 	/* there is a path. retrieve it */
 	do {
@@ -294,7 +299,7 @@ void TCOD_path_reverse(TCOD_path_t p) {
 	}
 }
 
-bool TCOD_path_walk(TCOD_path_t p, int *x, int *y, bool recalculate_when_needed) {
+bool TCOD_path_walk(TCOD_path_t p, int *x, int *y, bool recalculate_when_needed, int cutoff) {
 	int newx,newy;
 	float can_walk;
 	int d;
@@ -309,8 +314,8 @@ bool TCOD_path_walk(TCOD_path_t p, int *x, int *y, bool recalculate_when_needed)
 	if ( can_walk == 0.0f ) {
 		if (! recalculate_when_needed ) return false; /* don't walk */
 		/* calculate a new path */
-		if (! TCOD_path_compute(path, path->ox,path->oy, path->dx,path->dy) ) return false ; /* cannot find a new path */
-		return TCOD_path_walk(p,x,y,true); /* walk along the new path */
+		if (! TCOD_path_compute(path, path->ox,path->oy, path->dx,path->dy, cutoff) ) return false ; /* cannot find a new path */
+		return TCOD_path_walk(p,x,y,true,cutoff); /* walk along the new path */
 	}
 	if ( x ) *x=newx;
 	if ( y ) *y=newy;
@@ -373,8 +378,13 @@ static void TCOD_path_get_cell(TCOD_path_data_t *path, int *x, int *y, float *di
 	*distance=path->grid[offset];
 }
 /* fill the grid, starting from the origin until we reach the destination */
-static void TCOD_path_set_cells(TCOD_path_data_t *path) {
+static void TCOD_path_set_cells(TCOD_path_data_t *path, int cutoff) {
+	int stepstaken = 0;
 	while ( path->grid[path->dx + path->dy * path->w ] == 0 && ! TCOD_list_is_empty(path->heap) ) {
+
+		stepstaken++;
+		if (stepstaken > cutoff)
+                    break;
 
 		int x,y,i,imax;
 		float distance;

@@ -3871,11 +3871,11 @@ class World:
                             break
 
                 else:
-                    libtcod.path_compute(self.floorpath, x, y, mon.known_px, mon.known_py)
-                    mdx, mdy = libtcod.path_walk(self.floorpath, True)
+                    libtcod.path_compute(self.floorpath, x, y, mon.known_px, mon.known_py, rang*2)
+                    mdx, mdy = libtcod.path_walk(self.floorpath, True, rang*2)
 
                     if mon.fast:
-                        mdx2, mdy2 = libtcod.path_walk(self.floorpath, True)
+                        mdx2, mdy2 = libtcod.path_walk(self.floorpath, True, rang*2)
                         if mdx2 is not None and mdy2 is not None:
                             mdx, mdy = mdx2, mdy2
                     
