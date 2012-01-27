@@ -1080,10 +1080,6 @@ class World:
         self.dlev = 1
         self.plev = 1
 
-        # REMOVEME
-        self.dlev = 15
-        self.plev = 9
-
         self.branch = None
         self.moon = None
         self.did_moon_message = False
@@ -1579,8 +1575,6 @@ class World:
     def regen(self, w_, h_):
         if self.branch is None:
             self.branch = random.choice(['a', 'b', 'c', 'd', 'e'])
-            # REMOVEME
-            self.branch = 'a'
 
         if self.moon is None:
             m = moon.phase(self._seed)
@@ -1627,9 +1621,6 @@ class World:
             self.inv.take(self.itemstock.find('lamp'))
             
         self.inv.take(self.itemstock.find('pickaxe'))
-
-        # REMOVEME
-        self.inv.take(self.itemstock.get('deusex'))
 
 
         pl = [k for k in self.neighbors[(self.px,self.py)] if dg.grid_is_walk(k[0], k[1])] + [(self.px,self.py)]

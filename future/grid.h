@@ -157,7 +157,6 @@ struct Map {
               double n) {
 
         if (n < 1e-5) {
-            std::cout << "Done." << std::endl;
             return;
         }
 
@@ -176,13 +175,12 @@ struct Map {
             double pressure = 0.0; //n / 10.0;
 
             if (out.count(xy_) == 0 && v + pressure <= v0) {
-//fabs(v - v0) <= pressure /*1.0*/) {
+                //fabs(v - v0) <= pressure /*1.0*/) {
                 l.push_back(std::make_pair(v, xy_));
             }
         }
 
         if (l.size() == 0) {
-            std::cout << "  None." << std::endl;
             return;
         }
 
@@ -200,10 +198,8 @@ struct Map {
             vtotal += i.first;
         }
 
-        //double qq = n / (l.size() + 1);
-
         for (auto& i : l) {
-            flow(i.second, out, n * (i.first / vtotal)); //qq);
+            flow(i.second, out, n * (i.first / vtotal));
         }
     }
 
@@ -222,11 +218,6 @@ struct Map {
         
         unsigned int y = index / w;
         unsigned int x = index % w;
-
-        //unsigned int x = xy.first;
-        //unsigned int y = xy.second;
-        //unsigned int x = rnd::get().range((unsigned int)0, w-1);
-        //unsigned int y = rnd::get().range((unsigned int)0, h-1);
 
         std::unordered_set<pt> out;
         flow(pt(x, y), out, n);
@@ -346,14 +337,16 @@ struct Map {
     }
 
     void flatten(int type) {
-
         if (type == 1) {
             for (int i = 0; i < 5; ++i) {
                 flatten_pass();
             }
 
         } else if (type == -1) {
-            unflow();
+            flatten_pass();
+            for (int i = 0; i < 6; ++i) {
+                unflow();
+            }
         }
     }
 
