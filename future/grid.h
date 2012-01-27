@@ -90,13 +90,11 @@ struct Map {
 
         if (!domid) {
             mid = _get(x, y);
-            //std::cout << "!" << mid << std::endl;
 
         } else {
 
             mid = _get(a, b) + _get(c, b) + _get(a, d) + _get(c, d);
             mid = (mid / 4.0) - step + rnd::get().range(-s, s);
-            //std::cout << " . " << mid << std::endl;
 
             _get(x, y) = mid;
         }
@@ -158,10 +156,10 @@ struct Map {
               std::unordered_set<pt>& out, 
               double n) {
 
-        //std::cout << "  FLOW: " << xy.first << "," << xy.second << " " << n << std::endl;
-
-        if (n < 1e-5)
+        if (n < 1e-5) {
+            std::cout << "Done." << std::endl;
             return;
+        }
 
         if (out.count(xy) != 0)
             return;
@@ -175,30 +173,37 @@ struct Map {
 
             double v = _get(xy_);
 
-            //if (out.count(xy_) == 0) {
-            //    std::cout << "        " << v << " ~~ " << v0 << std::endl;
-            //}
+            double pressure = 0.0; //n / 10.0;
 
-            if (out.count(xy_) == 0 && fabs(v - v0) <= 1.0) {
+            if (out.count(xy_) == 0 && v + pressure <= v0) {
+//fabs(v - v0) <= pressure /*1.0*/) {
                 l.push_back(std::make_pair(v, xy_));
             }
         }
 
-        //std::cout << "    " << l.size() << " " << v0 << std::endl;
-
-        if (l.size() == 0)
+        if (l.size() == 0) {
+            std::cout << "  None." << std::endl;
             return;
-
-        std::sort(l.begin(), l.end());
-
-        if (l.size() > 2) {
-            l.resize(2);
         }
 
-        double qq = n / (l.size() + 1);
+        std::sort(l.begin(), l.end());
+        std::reverse(l.begin(), l.end());
+
+        int culln = 4;
+
+        if (l.size() > culln) {
+            l.resize(culln);
+        }
+
+        double vtotal = 0.0;
+        for (auto& i : l) {
+            vtotal += i.first;
+        }
+
+        //double qq = n / (l.size() + 1);
 
         for (auto& i : l) {
-            flow(i.second, out, qq);
+            flow(i.second, out, n * (i.first / vtotal)); //qq);
         }
     }
 
@@ -206,13 +211,25 @@ struct Map {
                   std::unordered_map<pt, int>& watr,
                   double n, double q) {
 
-        unsigned int x = rnd::get().range((unsigned int)0, w-1);
-        unsigned int y = rnd::get().range((unsigned int)0, h-1);
+        std::vector<double> grid_norm;
+
+        for (double v : grid) {
+            grid_norm.push_back((v + 10.0) * 5);
+        }
+
+        std::discrete_distribution<size_t> ddist(grid_norm.begin(), grid_norm.end());
+        size_t index = ddist(rnd::get().gen);
+        
+        unsigned int y = index / w;
+        unsigned int x = index % w;
+
+        //unsigned int x = xy.first;
+        //unsigned int y = xy.second;
+        //unsigned int x = rnd::get().range((unsigned int)0, w-1);
+        //unsigned int y = rnd::get().range((unsigned int)0, h-1);
 
         std::unordered_set<pt> out;
         flow(pt(x, y), out, n);
-
-        std::cout << x << "," << y << " " << out.size() << std::endl;
 
         for (const pt& xy : out) {
 
@@ -232,28 +249,9 @@ struct Map {
         std::unordered_set<pt> gout;
         std::unordered_map<pt, int> watr;
 
-        for (int y = 0; y < h; ++y) {
-            for (int x = 0; x < w; ++x) {
-                std::cout << (char)('A'+(int)_get(x, y));
-            }
-            std::cout << std::endl;
+        for (int i = 0; i < 100; i++) {
+            makeflow(gout, watr, 50.0, 1);
         }
-
-        for (int i = 0; i < 50; ++i) {
-            makeflow(gout, watr, 100.0, 1);
-        }
-
-        for (int y = 0; y < h; ++y) {
-            for (int x = 0; x < w; ++x) {
-                if (gout.count(pt(x,y)) != 0) {
-                    std::cout << ' ';
-                } else {
-                    std::cout << (char)('A'+(int)_get(x, y));
-                }
-            }
-            std::cout << std::endl;
-        }
-
 
         for (const pt& xy : gout) {
 
@@ -274,9 +272,6 @@ struct Map {
         int pctwater = rnd::get().gauss(5.0, 1.0);
         if (pctwater <= 1) pctwater = 1;
 
-        std::cout << "WATER: " << gout.size() << " " << walkmap.size() << " : " 
-                  << watr_r.size() << " " << pctwater << " " << watermap.size() << std::endl;
-
         pctwater = watr_r.size() / pctwater;
 
         if (watr_r.size() > pctwater) {
@@ -285,11 +280,8 @@ struct Map {
 
         for (const auto& v : watr_r) {
             watermap.insert(v.second);
-            std::cout << " !!! " << watermap.size() << " " << v.second.first << "," << v.second.second << std::endl;
         }
 
-        std::cout << "W2: " << watr_r.size() << " " << pctwater << " " 
-                  << watermap.size() << " " << walkmap.size() << std::endl;
     }
 
     void flatten_pass() {
@@ -354,7 +346,6 @@ struct Map {
     }
 
     void flatten(int type) {
-        std::cout << "FLATTEN: " << type << std::endl;
 
         if (type == 1) {
             for (int i = 0; i < 5; ++i) {
@@ -388,7 +379,6 @@ struct Map {
     }
 
     bool is_water(unsigned int x, unsigned int y) {
-        std::cout << "   \\> " << x << "," << y << ":" << watermap.count(pt(x, y)) << std::endl;
         return (watermap.count(pt(x, y)) != 0);
     }
 
@@ -401,7 +391,6 @@ struct Map {
     }
 
     void set_water(unsigned int x, unsigned int y, bool v) {
-        std::cout << "   /> " << x << "," << y << ":" << v << std::endl;
         if (v) {
             watermap.insert(pt(x, y));
         } else {
