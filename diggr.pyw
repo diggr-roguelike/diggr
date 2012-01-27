@@ -4230,6 +4230,7 @@ class World:
 
                 mons.append(mon)
 
+
         for k,mon in summons:
             smu = str(mon)
             smu = smu[0].upper() + smu[1:]
@@ -4376,7 +4377,6 @@ class World:
         if withtime:
             self.process_world()
             self.monsters_in_view = []
-
 
         # hack, after process_world because confusing features may be created
         if self.try_feature(self.px, self.py, 'confuse'):
