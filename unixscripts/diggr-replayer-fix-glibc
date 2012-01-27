@@ -1,0 +1,8 @@
+
+GLIBC=$PWD/libc-2.15.so
+
+if which python2; then
+  LD_PRELOAD=$GLIBC python2 diggr-replayer.py;
+else
+  LD_PRELOAD=$GLIBC python diggr-replayer.py; 
+fi

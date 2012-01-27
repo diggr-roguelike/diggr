@@ -1,0 +1,6 @@
+
+if which python2; then
+  python2 diggr.py;
+else
+  python diggr.py; 
+fi

@@ -1,0 +1,6 @@
+
+if which python2; then
+  python2 diggr-replayer.py;
+else
+  python diggr-replayer.py; 
+fi
