@@ -266,10 +266,10 @@ bool TCOD_path_compute(TCOD_path_t p, int ox,int oy, int dx, int dy, int cutoff)
 	/* fill the djikstra grid until we reach dx,dy */
         struct timeval tv1;
         struct timeval tv2;
-        gettimeofday(&tv1, NULL);
+        /*gettimeofday(&tv1, NULL);*/
 	TCOD_path_set_cells(path, cutoff);
-        gettimeofday(&tv2, NULL);
-        printf("%d\n", (tv2.tv_sec*1000000+tv2.tv_usec) - (tv1.tv_sec*1000000+tv1.tv_usec));
+        /*gettimeofday(&tv2, NULL);*/
+        /*printf("%d\n", (tv2.tv_sec*1000000+tv2.tv_usec) - (tv1.tv_sec*1000000+tv1.tv_usec));*/
 	if ( path->grid[dx + dy * path->w] == 0 ) return false; /* no path found */
 	/* there is a path. retrieve it */
 	do {

@@ -34,9 +34,9 @@ INSTALL(FILES ${OTHER_FILES} DESTINATION ${INSTALL_DIR})
 
 INSTALL(PROGRAMS unixscripts/diggr unixscripts/diggr-replayer DESTINATION ${INSTALL_DIR})
 
-IF("${arch_hint}" STREQUAL "x64")
-  INSTALL(PROGRAMS unixscripts/diggr-fix-glibc unixscripts/diggr-replayer-fix-glibc ${INSTALL_DIR})
-ENDIF()
+#IF("${arch_hint}" STREQUAL "x64")
+#  INSTALL(PROGRAMS unixscripts/diggr-fix-glibc unixscripts/diggr-replayer-fix-glibc ${INSTALL_DIR})
+#ENDIF()
 
 INSTALL(CODE "FILE(MAKE_DIRECTORY ${INSTALL_DIR}/replays)")
 

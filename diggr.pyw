@@ -2092,13 +2092,16 @@ class World:
         l = []
         for x in xrange(_x - range, _x + range + 1):
             for y in [_y - range, _x + range]:
-                if x >= 0 and y >= 0 and dg.grid_is_walk(x,y):
+                if x >= 0 and y >= 0 and dg.grid_is_walk(x,y) and (x,y) not in self.monmap:
                     l.append((x,y))
 
         for y in xrange(_y - range - 1, _y + range):
             for x in [_x - range, _x + range]:
-                if x >= 0 and y >= 0 and dg.grid_is_walk(x,y):
+                if x >= 0 and y >= 0 and dg.grid_is_walk(x,y) and (x,y) not in self.monmap:
                     l.append((x,y))
+
+        if len(l) == 0:
+            return _x, _y
 
         l = l[random.randint(0, len(l)-1)]
         return l[0], l[1]
@@ -3879,6 +3882,13 @@ class World:
                         if mdx2 is not None and mdy2 is not None:
                             mdx, mdy = mdx2, mdy2
                     
+                    if mdx is None or mdy is None:
+                        mdx = x + random.randint(-1, 1)
+                        mdy = y + random.randint(-1, 1)
+                        if not dg.grid_is_walk(mdx, mdy):
+                            mdx = None
+                            mdy = None
+
 
 
         if mon.stoneeating:
@@ -4887,7 +4897,7 @@ def check_autoplay(world):
             return 1
 
         elif world.new_visibles:
-            world.digging = None
+            world.resting = False
             return 1
 
         else:
