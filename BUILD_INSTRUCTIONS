@@ -9,39 +9,18 @@ BUILDING FROM SOURCE:
 
 1. Install cmake. You will need it for building. 
 
-2. Build and install:
+2. Check out prerequisites:
+
+   git submodule update --init --recursive
+
+3. Build and install:
 
   mkdir build
   cd build
   cmake ..
   make
-  make install
-
-3. Download and build SuperCollider sources: (optional, if you want sound)
-
-3.1. Install 'jack2' if you want sound on Linux:
-     (Ubuntu) sudo apt-get install jackd2
-     (Arch)   sudo pacman -S jack2
-     (Fedora) sudo yum install jack-audio-connection-kit
-
-3.2. Check out SC sources from the repo:
-
-  git clone --recursive git://supercollider.git.sourceforge.net/gitroot/supercollider/supercollider
-
-3.3. Build SC with a minimal required set of dependencies: (Replace '/prefix' with a real directory.)
-
-  cd supercollider
-  mkdir build
-  cd build
-  cmake -DFFT_GREEN=ON -DNO_LIBSNDFILE=ON -DSC_QT=OFF -DSUPERNOVA=OFF -DNO_AVAHI=ON -DCMAKE_INSTALL_PREFIX:PATH=/prefix/SuperCollider/ -DSC_WII=OFF -DSC_EL=OFF ..
-  make
   make install/strip
 
-3.4. Copy SC binaries to 'diggr-roguelike/sound/':
+4. A working installation of the game will be in ../dist
 
-  cd .../diggr-roguelike/
-  cd sound
-  cp /prefix/SuperCollider/bin/scsynth .
-  cp /prefix/SuperCollider/lib/libscsynth.so.1 .  
-  cp -rf /prefix/SuperColliderlib/SuperCollider/plugins/ .
 

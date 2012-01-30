@@ -23,24 +23,32 @@ SET(PY_SOURCES celauto.py features.py items.py monsters.py moon.py sounds.py vau
 SET(OTHER_FILES font.png diggr.cfg README BUILD_INSTRUCTIONS GUIDE.txt)
 
 INSTALL(FILES ${PY_SOURCES} DESTINATION ${INSTALL_DIR})
-
-INSTALL(FILES diggr.pyw DESTINATION ${INSTALL_DIR}
-        RENAME diggr.py)
-
-INSTALL(FILES diggr-replayer.pyw DESTINATION ${INSTALL_DIR}
-        RENAME diggr-replayer.py)
-
 INSTALL(FILES ${OTHER_FILES} DESTINATION ${INSTALL_DIR})
+
+if(WIN32)
+
+  INSTALL(FILES diggr.pyw diggr-replayer.pyw diggr-py2exe.py DESTINATION ${INSTALL_DIR})
+
+else()
+
+  INSTALL(FILES diggr.pyw DESTINATION ${INSTALL_DIR}
+          RENAME diggr.py)
+
+  INSTALL(FILES diggr-replayer.pyw DESTINATION ${INSTALL_DIR}
+          RENAME diggr-replayer.py)
+
+  INSTALL(PROGRAMS unixscripts/diggr unixscripts/diggr-replayer DESTINATION ${INSTALL_DIR})
+
+endif()
 
 INSTALL(DIRECTORY "sound/synths/" DESTINATION "${INSTALL_DIR}/sound/synths")
 
-INSTALL(PROGRAMS unixscripts/diggr unixscripts/diggr-replayer DESTINATION ${INSTALL_DIR})
+INSTALL(CODE "FILE(MAKE_DIRECTORY ${INSTALL_DIR}/replays)")
 
 #IF("${arch_hint}" STREQUAL "x64")
 #  INSTALL(PROGRAMS unixscripts/diggr-fix-glibc unixscripts/diggr-replayer-fix-glibc ${INSTALL_DIR})
 #ENDIF()
 
-INSTALL(CODE "FILE(MAKE_DIRECTORY ${INSTALL_DIR}/replays)")
 
 # TODO:
 # copy libc-2.15.so
