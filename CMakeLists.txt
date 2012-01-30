@@ -71,6 +71,11 @@ option(SC_PSYCOLLIDER "" OFF)
 
 get_filename_component(CWD "${CMAKE_SOURCE_DIR}" ABSOLUTE)
 set(CMAKE_SOURCE_DIR "${CWD}/supercollider")
+
+if(MINGW)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -U__STRICT_ANSI__")
+endif()
+
 add_subdirectory("supercollider/" EXCLUDE_FROM_ALL)
 
 # TODO: Prune this list, as not everything here is useful/needed.
@@ -101,7 +106,11 @@ set(plugins_list
 
 # I have to set this propery again, due to CMake being braindead about recursion. 
 # FFfffuuuuu....
-set_property(TARGET ${plugins_list} PROPERTY COMPILE_DEFINITIONS NO_LIBSNDFILE)
+#set_property(TARGET ${plugins_list} APPEND PROPERTY COMPILE_DEFINITIONS NO_LIBSNDFILE)
+
+#if(MINGW)
+#  set_property(TARGET libscsynth APPEND PROPERTY COMPILE_DEFINITIONS "SC_PLUGIN_LOAD_SYM=\"\"")
+#endif()
 
 add_custom_target(scsynth_fake ALL DEPENDS scsynth)
 add_custom_target(plugins_fake ALL DEPENDS ${plugins_list})
