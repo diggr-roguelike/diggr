@@ -99,6 +99,10 @@ set(plugins_list
         UIUGens FFT_UGens PV_ThirdParty ML_UGens
 )
 
+# I have to set this propery again, due to CMake being braindead about recursion. 
+# FFfffuuuuu....
+set_property(TARGET ${plugins_list} PROPERTY COMPILE_DEFINITIONS NO_LIBSNDFILE)
+
 add_custom_target(scsynth_fake ALL DEPENDS scsynth)
 add_custom_target(plugins_fake ALL DEPENDS ${plugins_list})
 
