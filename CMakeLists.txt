@@ -32,6 +32,8 @@ INSTALL(FILES diggr-replayer.pyw DESTINATION ${INSTALL_DIR}
 
 INSTALL(FILES ${OTHER_FILES} DESTINATION ${INSTALL_DIR})
 
+INSTALL(DIRECTORY "sound/synths/" DESTINATION "${INSTALL_DIR}/sound/synths")
+
 INSTALL(PROGRAMS unixscripts/diggr unixscripts/diggr-replayer DESTINATION ${INSTALL_DIR})
 
 #IF("${arch_hint}" STREQUAL "x64")
@@ -41,5 +43,69 @@ INSTALL(PROGRAMS unixscripts/diggr unixscripts/diggr-replayer DESTINATION ${INST
 INSTALL(CODE "FILE(MAKE_DIRECTORY ${INSTALL_DIR}/replays)")
 
 # TODO:
-# copy sound/ directory
 # copy libc-2.15.so
+
+# Set up a minimum Supercollider build.
+
+option(SC_QT "" OFF)
+option(FFT_GREEN "" ON)
+option(NO_LIBSNDFILE "" ON)
+option(SUPERNOVA "" OFF)
+option(NO_AVAHI "" ON)
+option(SC_WII "" OFF)
+option(SC_EL "" OFF)
+option(SC_ED "" OFF)
+option(SC_VIM "" OFF)
+option(SC_PSYCOLLIDER "" OFF)
+
+# CMake suxx. Why is that in the year 2012 we are still forced to
+# put up with this idiocy?
+
+get_filename_component(CWD "${CMAKE_SOURCE_DIR}" ABSOLUTE)
+set(CMAKE_SOURCE_DIR "${CWD}/supercollider")
+add_subdirectory("supercollider/" EXCLUDE_FROM_ALL)
+
+# TODO: Prune this list, as not everything here is useful/needed.
+set(plugins_list 
+        BinaryOpUGens
+        ChaosUGens
+        DelayUGens
+        DemandUGens
+        DynNoiseUGens
+        FilterUGens
+        GendynUGens
+        GrainUGens
+        IOUGens
+        LFUGens
+        MulAddUGens
+        NoiseUGens
+        OscUGens
+        PanUGens
+        PhysicalModelingUGens
+        ReverbUGens
+        TestUGens
+        TriggerUGens
+        UnaryOpUGens
+        UnpackFFTUGens
+
+        UIUGens FFT_UGens PV_ThirdParty ML_UGens
+)
+
+add_custom_target(scsynth_fake ALL DEPENDS scsynth)
+add_custom_target(plugins_fake ALL DEPENDS ${plugins_list})
+
+install(DIRECTORY "${CMAKE_BINARY_DIR}/supercollider/server/scsynth/" 
+        DESTINATION "${INSTALL_DIR}/sound"
+        USE_SOURCE_PERMISSIONS
+        FILES_MATCHING PATTERN "*scsynth*"
+        REGEX "CMakeFiles" EXCLUDE)
+
+install(DIRECTORY "${CMAKE_BINARY_DIR}/supercollider/server/plugins/"
+        DESTINATION "${INSTALL_DIR}/sound/plugins"
+        USE_SOURCE_PERMISSIONS
+        FILES_MATCHING REGEX "Gens|ThirdParty"
+        REGEX "CMakeFiles" EXCLUDE)
+
+# CMake does not allow this. FFffuuuu....
+#install(TARGETS supercollider/scsynth DESTINATION "${INSTALL_DIR}/sound")
+#install(TARGETS ${plugins_list} DESTINATION "${INSTALL_DIR}/sound/plugins")
