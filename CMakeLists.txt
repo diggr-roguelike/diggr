@@ -27,7 +27,9 @@ INSTALL(FILES ${OTHER_FILES} DESTINATION ${INSTALL_DIR})
 
 if(WIN32)
 
-  INSTALL(FILES diggr.pyw diggr-replayer.pyw diggr-py2exe.py DESTINATION ${INSTALL_DIR})
+  INSTALL(FILES diggr.pyw diggr-replayer.pyw diggr-py2exe.py 
+                Rock-Collecting.ico 
+          DESTINATION ${INSTALL_DIR})
 
 else()
 
