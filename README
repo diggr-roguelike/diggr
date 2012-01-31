@@ -16,7 +16,7 @@ If you are running a 64-bit distribution with an older glibc version, type
 
  ./diggr-fix-glibc
 
-I bundled a glibc 2.14 binary with the game.
+I bundled a glibc 2.15 binary with the game.
 
 
 
