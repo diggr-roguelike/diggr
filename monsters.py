@@ -954,21 +954,25 @@ class MonsterStock:
         self.add(Monster('acolyte of Kali', skin=('h', libtcod.gray),
                          attack=3.5, defence=2.5, range=8, level=7, count=3,
                          confimmune=True,  branch='qk', idtag='akali_1',
+                         psyattack=0.15, psyrange=6,
                          desc=['A bloodthirsty worshipper of Kali Ma.']))
 
         self.add(Monster('acolyte of Kali', skin=('h', libtcod.gray),
                          attack=3.5, defence=2.5, range=8, level=8, count=3,
                          confimmune=True,  branch='qk', idtag='akali_2',
+                         psyattack=0.20, psyrange=10,
                          desc=['A bloodthirsty worshipper of Kali Ma.']))
 
         self.add(Monster('acolyte of Kali', skin=('h', libtcod.gray),
                          attack=3.5, defence=2.5, range=8, level=9, count=3,
                          confimmune=True,  branch='qk', idtag='akali_3',
+                         psyattack=0.25, psyrange=14,
                          desc=['A bloodthirsty worshipper of Kali Ma.']))
 
         self.add(Monster('acolyte of Kali', skin=('h', libtcod.gray),
                          attack=3.5, defence=2.5, range=8, level=10, count=3,
                          confimmune=True,  branch='qk', idtag='akali_4',
+                         psyattack=0.25, psyrange=18,
                          desc=['A bloodthirsty worshipper of Kali Ma.']))
 
         
