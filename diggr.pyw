@@ -275,7 +275,7 @@ class Stats:
         libtcod.console_set_color_control(libtcod.COLCTRL_4, libtcod.red, libtcod.black)
         libtcod.console_set_color_control(libtcod.COLCTRL_5, libtcod.gray, libtcod.black)
 
-    def draw(self, x, y, grace=None, resource=None):
+    def draw(self, x, y, grace=None, resource=None, luck=None):
         s = "%cHealth: %c%s\n" \
             "%cWarmth: %c%s\n" \
             "%c Tired: %c%s\n" \
@@ -304,6 +304,17 @@ class Stats:
                 (libtcod.COLCTRL_FORE_RGB, col[0], col[1], col[2], ss,
                  libtcod.COLCTRL_FORE_RGB, col2[0], col2[1], col2[2],
                  chr(175) * min(resource[1], 6))
+
+        if luck:
+            luck = max(-3, min(3, luck))
+            if luck < 0:
+                l = abs(luck)
+                s += "%c  Luck: %c%s%s\n" % \
+                    (libtcod.COLCTRL_1, libtcod.COLCTRL_4, (3 - l) * ' ', l * chr(18))
+            else:
+                s += "%c  Luck: %c   %s\n" % \
+                    (libtcod.COLCTRL_1, libtcod.COLCTRL_3, luck * chr(17))
+
 
         def pr(x):
             if x >= 2.0: return    '   +++'
@@ -3276,10 +3287,10 @@ class World:
         def roll(attack, leva, defence, levd):
             a = 0
             for x in xrange(leva):
-                a += random.uniform(0, attack)
+                a += dg.random_uniform(0, attack)
             d = 0
             for x in xrange(levd):
-                d += random.uniform(0, defence)
+                d += dg.random_uniform(0, defence)
 
             ret = max(a - d, 0)
             #print ' ->', ret, ':', attack, leva, '/', defence, levd
@@ -4327,10 +4338,12 @@ class World:
             statsresource = (self.resource, n,
                              True if self.resource_timeout else False)
 
+        luck = -2
+
         if self.px > self.w / 2:
-            self.stats.draw(0, 0, grace=statsgrace, resource=statsresource)
+            self.stats.draw(0, 0, grace=statsgrace, resource=statsresource, luck=luck)
         else:
-            self.stats.draw(self.w - 14, 0, grace=statsgrace, resource=statsresource)
+            self.stats.draw(self.w - 14, 0, grace=statsgrace, resource=statsresource, luck=luck)
 
         if self.py > self.h / 2:
             self.msg.draw(15, 0, self.w - 30, self.t)

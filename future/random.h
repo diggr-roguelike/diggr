@@ -27,6 +27,17 @@ struct Generator {
     }
 
     template <typename T>
+    T uniform(T a, T b) {
+        std::uniform_real_distribution<T> dist(a, b);
+        return dist(gen);
+    }
+
+    unsigned int geometric(double p) {
+        std::geometric_distribution<unsigned int> dist(p);
+        return dist(gen);
+    }
+
+    template <typename T>
     T n(T n_) {
         return range((unsigned int)0, n_-1);
     }

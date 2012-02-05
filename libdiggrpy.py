@@ -106,8 +106,18 @@ def random_n(n):
 
 _dg.dg_random_gauss.restype = c_double
 
-def gauss(m, s):
+def random_gauss(m, s):
     return _dg.dg_random_gauss(c_double(m), c_double(s))
+
+_dg.dg_random_uniform.restype = c_double
+
+def random_uniform(a, b):
+    return _dg.dg_random_uniform(c_double(a), c_double(b))
+
+_dg.dg_random_geometric = c_uint
+
+def random_geometric(p):
+    return _dg.dg_random_geometric(c_double(p))
 
 
 def grid_init(w, h):

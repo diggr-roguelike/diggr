@@ -150,6 +150,13 @@ extern "C" double dg_random_gauss(double m, double s) {
     return rnd::get().gauss(m, s);
 }
 
+extern "C" double dg_random_uniform(double a, double b) {
+    return rnd::get().uniform(a, b);
+}
+
+extern "C" unsigned int dg_random_geometric(double p) {
+    return rnd::get().geometric(p);
+}
 
 extern "C" void dg_grid_init(unsigned int w, unsigned int h) {
     grid::get().init(w, h);
