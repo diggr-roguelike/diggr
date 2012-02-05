@@ -25,6 +25,11 @@ struct Generator {
         std::normal_distribution<T> dist(mean, stddev);
         return dist(gen);
     }
+
+    template <typename T>
+    T n(T n_) {
+        return range((unsigned int)0, n_-1);
+    }
 };
 
 inline Generator& get() {

@@ -2,7 +2,7 @@
 
 import math
 import os
-import random
+#import random
 import copy
 import time
 
@@ -1334,7 +1334,7 @@ class World:
             if len(d) == 0:
                 iis.extend(itms)
                 return
-            x,y = d[random.randint(0, len(d)-1)]
+            x,y = d[dg.random_n(len(d))]
 
 
     def paste_vault(self, v):
@@ -1342,8 +1342,8 @@ class World:
         y = None
 
         if v.anywhere:
-            x = random.randint(0, self.w - v.w - 1)
-            y = random.randint(0, self.h - v.h - 1)
+            x = dg.random_n(self.w - v.w)
+            y = dg.random_n(self.h - v.h)
 
         else:
             for x in xrange(10):
@@ -1431,7 +1431,7 @@ class World:
             self.paste_celauto(d[0], d[1], self.celautostock.FERN)
 
         else:
-            a = random.randint(-1, 1)
+            a = dg.random_range(-1, 1)
             d = dg.grid_one_of_floor()
             if a == -1:
                 self.set_feature(d[0], d[1], 's')
@@ -1440,11 +1440,11 @@ class World:
             elif a == 1:
                 self.set_feature(d[0], d[1], 'v')
 
-        nfounts = int(round(random.gauss(3, 1)))
+        nfounts = int(round(dg.random_gauss(3, 1)))
 
         for tmp in xrange(nfounts):
             d = dg.grid_one_of_water()
-            self.set_feature(d[0], d[1], random.choice(['C','V','B','N','M']))
+            self.set_feature(d[0], d[1], ['C','V','B','N','M'][dg.random_n(5)])
 
 
 
@@ -1478,11 +1478,11 @@ class World:
             n = self.quests[self.branch].moncounts.get(self.dlev, 0)
 
         else:
-            n = int(max(random.gauss(*self.coef.nummonsters), 1))
+            n = int(max(dg.random_gauss(*self.coef.nummonsters), 1))
 
         i = 0
         while i < n:
-            lev = self.dlev + random.gauss(0, self.coef.monlevel)
+            lev = self.dlev + dg.random_gauss(0, self.coef.monlevel)
             lev = max(int(round(lev)), 1)
 
             # Quests
@@ -1512,7 +1512,7 @@ class World:
         if self.branch in self.quests:
             return
 
-        if random.randint(1, self.coef.moldchance) == 1:
+        if dg.random_range(1, self.coef.moldchance) == 1:
             x, y = dg.grid_one_of_floor()
             m = self.monsterstock.generate('x', self.dlev, self.itemstock, self.moon)
             if m:
@@ -1527,10 +1527,10 @@ class World:
         if self.branch in self.quests:
             n = self.quests[self.branch].itemcounts.get(self.dlev, 0)
         else:
-            n = int(max(random.gauss(self.coef.numitems[0] + self.dlev, self.coef.numitems[1]), 1))
+            n = int(max(dg.random_gauss(self.coef.numitems[0] + self.dlev, self.coef.numitems[1]), 1))
 
         for i in xrange(n):
-            lev = self.dlev + random.gauss(0, self.coef.itemlevel)
+            lev = self.dlev + dg.random_gauss(0, self.coef.itemlevel)
             lev = max(int(round(lev)), 1)
             x, y = dg.grid_one_of_walk()
             item = self.itemstock.generate(lev)
@@ -1574,7 +1574,7 @@ class World:
         
     def regen(self, w_, h_):
         if self.branch is None:
-            self.branch = random.choice(['a', 'b', 'c', 'd', 'e'])
+            self.branch = ['a', 'b', 'c', 'd', 'e'][dg.random_n(5)]
 
         if self.moon is None:
             m = moon.phase(self._seed)
@@ -1626,7 +1626,7 @@ class World:
         pl = [k for k in self.neighbors[(self.px,self.py)] if dg.grid_is_walk(k[0], k[1])] + [(self.px,self.py)]
 
         for x in xrange(9):
-            k = pl[random.randint(0,len(pl)-1)]
+            k = pl[dg.random_n(len(pl))]
             i = self.itemstock.generate(1)
 
             self.set_item(k[0], k[1], [i])
@@ -1676,7 +1676,7 @@ class World:
 
                 if self.try_feature(self.px, self.py, 'sticky') and not self.inv.get_glueimmune():
                     self.msg.m('You just stepped in some glue!', True)
-                    self.glued = max(int(random.gauss(*self.coef.glueduration)), 1)
+                    self.glued = max(int(dg.random_gauss(*self.coef.glueduration)), 1)
 
 
         else:
@@ -1885,11 +1885,11 @@ class World:
             return
 
         if quick:
-            self.sleeping = int(random.gauss(*self.coef.quicksleeptime))
+            self.sleeping = int(dg.random_gauss(*self.coef.quicksleeptime))
         else:
             if not realforced2:
                 self.msg.m('You fall asleep.')
-            self.sleeping = int(random.gauss(*self.coef.sleeptime))
+            self.sleeping = int(dg.random_gauss(*self.coef.sleeptime))
 
         self.digging = None
         self.resting = False
@@ -1974,7 +1974,7 @@ class World:
 
         self.stats.thirst.inc(6)
 
-        x = abs(random.gauss(0, 0.7))
+        x = abs(dg.random_gauss(0, 0.7))
         tmp = x - self.coef.waterpois
         if tmp > 0:
             self.stats.health.dec(tmp, "unclean water", self.config.sound)
@@ -2015,7 +2015,7 @@ class World:
 
             ss = "hwp"
             decc = self.coef.shivadecstat
-            ss = ss[random.randint(0, len(ss)-1)]
+            ss = ss[dg.random_n(len(ss))]
 
             if ss == 'h': self.stats.hunger.dec(decc)
             elif ss == 'w': self.stats.warmth.dec(decc)
@@ -2103,7 +2103,7 @@ class World:
         if len(l) == 0:
             return _x, _y
 
-        l = l[random.randint(0, len(l)-1)]
+        l = l[dg.random_n(len(l))]
         return l[0], l[1]
 
 
@@ -2526,13 +2526,13 @@ class World:
 
             if item.bonus < 0:
                 self.msg.m('This pill makes your eyes pop out of their sockets!', True)
-                self.stats.tired.dec(max(random.gauss(*item.healing), 0))
-                self.stats.sleep.dec(max(random.gauss(*item.healing), 0))
+                self.stats.tired.dec(max(dg.random_gauss(*item.healing), 0))
+                self.stats.sleep.dec(max(dg.random_gauss(*item.healing), 0))
             else:
                 self.msg.m('Eating this pill makes you dizzy.')
-                self.stats.health.inc(max(random.gauss(*item.healing), 0))
-                self.stats.hunger.dec(max(random.gauss(*item.healing), 0))
-                self.stats.sleep.dec(max(random.gauss(*item.healing), 0))
+                self.stats.health.inc(max(dg.random_gauss(*item.healing), 0))
+                self.stats.hunger.dec(max(dg.random_gauss(*item.healing), 0))
+                self.stats.sleep.dec(max(dg.random_gauss(*item.healing), 0))
 
             self.achievements.use(item)
             return None
@@ -2546,11 +2546,11 @@ class World:
 
             if item.bonus < 0:
                 self.msg.m('You drift into a restless sleep!', True)
-                self.sleeping = max(random.gauss(*item.healingsleep), 1)
+                self.sleeping = max(dg.random_gauss(*item.healingsleep), 1)
                 self.forced2sleep = True
             else:
                 self.msg.m('You drift into a gentle sleep.')
-                self.sleeping = max(random.gauss(*item.healingsleep), 1)
+                self.sleeping = max(dg.random_gauss(*item.healingsleep), 1)
                 self.forced2sleep = True
                 self.healingsleep = True
 
@@ -2568,10 +2568,10 @@ class World:
 
             if item.bonus < 0:
                 self.msg.m('Yuck, eating this makes you vomit!', True)
-                self.stats.hunger.dec(max(random.gauss(*item.food), 0))
+                self.stats.hunger.dec(max(dg.random_gauss(*item.food), 0))
             else:
                 self.msg.m('Mm, yummy.')
-                self.stats.hunger.inc(max(random.gauss(*item.food), 0))
+                self.stats.hunger.inc(max(dg.random_gauss(*item.food), 0))
 
             self.achievements.use(item)
             return None
@@ -2587,8 +2587,8 @@ class World:
                 self.blind = True
             else:
                 self.msg.m('Aaahh.')
-                self.stats.sleep.dec(max(random.gauss(*self.coef.boozestrength), 0))
-                self.stats.warmth.inc(max(random.gauss(*self.coef.boozestrength), 0))
+                self.stats.sleep.dec(max(dg.random_gauss(*self.coef.boozestrength), 0))
+                self.stats.warmth.inc(max(dg.random_gauss(*self.coef.boozestrength), 0))
 
             self.achievements.use(item)
             return None
@@ -2679,7 +2679,7 @@ class World:
             self.achievements.use(item)
 
         elif item.cooling:
-            self.cooling = max(int(random.gauss(*self.coef.coolingduration)), 1)
+            self.cooling = max(int(dg.random_gauss(*self.coef.coolingduration)), 1)
             self.msg.m("You cover yourself in cold mud.")
 
             self.achievements.use(item)
@@ -2720,7 +2720,7 @@ class World:
                             desc=['A supernatural fire fiend.'])
 
             self.msg.m('A malevolent spirit appears!')
-            q = l[random.randint(0, len(l)-1)]
+            q = l[dg.random_n(len(l))]
             jinni.x = q[0]
             jinni.y = q[1]
             jinni.items = [self.itemstock.get('wishing')]
@@ -3046,7 +3046,7 @@ class World:
 
             if self.try_feature(mon.x, mon.y, 'special') == 'cthulhu' and not is_noncorpse:
                 # HACK HACK!
-                itm = self.itemstock.get(random.choice(['cthulhu_o1', 'cthulhu_o2', 'cthulhu_o3']))
+                itm = self.itemstock.get(['cthulhu_o1', 'cthulhu_o2', 'cthulhu_o3'][dg.random_n(3)])
                 if itm:
                     itemdrop = [itm]
 
@@ -3185,7 +3185,7 @@ class World:
             if (x,y) in self.featmap and self.featmap[(x,y)].explode:
                 draw_floodfill(x, y, self.w, self.h, func_ff)
 
-            self.convert_to_floor(x, y, (random.randint(0, 5) == 0))
+            self.convert_to_floor(x, y, (dg.random_range(0, 5) == 0))
 
 
         draw_blast(x0, y0, self.w, self.h, rad, func_r)
@@ -3319,7 +3319,7 @@ class World:
                 if ca and dmg > 0 and not mon.confimmune:
                     if mon.visible or mon.visible_old:
                         self.msg.m(smu + ' looks totally dazed!')
-                    mon.confused += int(max(random.gauss(*ca), 1))
+                    mon.confused += int(max(dg.random_gauss(*ca), 1))
 
                 if fires and dmg > 0 and not mon.fireimmune:
                     mon.onfire = max(self.coef.burnduration, mon.onfire)
@@ -3758,7 +3758,7 @@ class World:
 
         if mon.moldspew and (self.t % mon.moldspew[2]) == 0:
             for ki in self.neighbors[(x,y)]:
-                if random.randint(1, mon.moldspew[1]) == 1:
+                if dg.random_range(1, mon.moldspew[1]) == 1:
                     self.seed_celauto(ki[0], ki[1], mon.moldspew[0])
 
         if mon.static:
@@ -3807,8 +3807,8 @@ class World:
             rang = 1
 
         if dist > rang or mon.confused or (mon.sleepattack and self.sleeping):
-            mdx = x + random.randint(-1, 1)
-            mdy = y + random.randint(-1, 1)
+            mdx = x + dg.random_range(-1, 1)
+            mdy = y + dg.random_range(-1, 1)
             if not dg.grid_is_walk(mdx, mdy):
                 mdx = None
                 mdy = None
@@ -3883,8 +3883,8 @@ class World:
                             mdx, mdy = mdx2, mdy2
                     
                     if mdx is None or mdy is None:
-                        mdx = x + random.randint(-1, 1)
-                        mdy = y + random.randint(-1, 1)
+                        mdx = x + dg.random_range(-1, 1)
+                        mdy = y + dg.random_range(-1, 1)
                         if not dg.grid_is_walk(mdx, mdy):
                             mdx = None
                             mdy = None
@@ -3910,7 +3910,7 @@ class World:
                 mn = str(mon)
                 mn = mn[0].upper() + mn[1:]
                 self.msg.m(mn + ' gets stuck in some glue!')
-            mon.glued = max(int(random.gauss(*self.coef.glueduration)), 1)
+            mon.glued = max(int(dg.random_gauss(*self.coef.glueduration)), 1)
 
 
     def monster_conflict(self, mon_attack, mon_defend):
@@ -3950,7 +3950,7 @@ class World:
         for i in xrange(len(m)):
             if len(l) == 0:
                 return ret
-            j = random.randint(0, len(l)-1)
+            j = dg.random_n(len(l))
             xx,yy = l[j]
             del l[j]
 
@@ -4044,11 +4044,11 @@ class World:
         d = (mon.level - self.plev)
         if d >= 2:
             ok = False
-            if d == 2 and random.randint(0, 50) == 1:
+            if d == 2 and dg.random_range(0, 50) == 1:
                 ok = True
-            elif d == 3 and random.randint(0, 20) == 1:
+            elif d == 3 and dg.random_range(0, 20) == 1:
                 ok = True
-            elif random.randint(0, 10) == 1:
+            elif dg.random_range(0, 10) == 1:
                 ok = True
 
             if ok:
@@ -4493,7 +4493,6 @@ class World:
     def save(self):
         # HACK! For supporting replays of games that have been saved and then loaded.
         if self.save_disabled:
-            random.seed(self._seed)
             dg.random_init(self._seed)
             return
 
@@ -4553,7 +4552,6 @@ class World:
 
         #log.f = open('LOG.%d' % self._seed, 'a')
 
-        random.seed(self._seed)
         dg.random_init(self._seed)
         global _inputs
         _inputs = self._inputs
@@ -4868,7 +4866,6 @@ def start_game(world, w, h, oldseed=None, oldbones=None):
 
         #log.f = open('LOG.%d' % world._seed, 'a')
 
-        random.seed(world._seed)
         dg.random_init(world._seed)
         global _inputs
         _inputs = world._inputs

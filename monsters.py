@@ -1,5 +1,5 @@
 import libtcodpy as libtcod
-import random
+import libdiggrpy as dg
 import copy
 
 
@@ -1734,7 +1734,7 @@ class MonsterStock:
                     continue
 
                 if m[x].moon:
-                    tmp = random.randint(1,9)
+                    tmp = dg.random_range(1,9)
                     if tmp > m[x].moon[moon-1]:
                         continue
 
@@ -1746,7 +1746,7 @@ class MonsterStock:
                     return None
                 continue
 
-            tmp = okix[random.randint(0, len(okix)-1)]
+            tmp = okix[dg.random_n(len(okix))]
             tmp = m[tmp]
             tmp.gencount += 1
             break

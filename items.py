@@ -1,5 +1,5 @@
 import libtcodpy as libtcod
-import random
+import libdiggrpy as dg
 import copy
 
 import moon
@@ -141,17 +141,17 @@ class Item:
 
     def postprocess(self):
         if self.cursedchance:
-            if random.randint(0, self.cursedchance) == 0:
+            if dg.random_range(0, self.cursedchance) == 0:
                 self.bonus = -1
 
         if self.ammochance:
             if self.ammochance[0] < 0:
                 self.ammo = -1
             else:
-                self.ammo = random.randint(self.ammochance[0], self.ammochance[1])
+                self.ammo = dg.random_range(self.ammochance[0], self.ammochance[1])
 
         if self.selfdestruct:
-            self.selfdestruct = int(max(random.gauss(*self.selfdestruct), 1))
+            self.selfdestruct = int(max(dg.random_gauss(*self.selfdestruct), 1))
 
 
 class ItemStock:
@@ -991,7 +991,7 @@ class ItemStock:
         if len(l) == 0:
             return None
 
-        x = int(random.randint(0, len(l)-1))
+        x = dg.random_n(len(l))
         item = l[x][1]
         r = copy.copy(item)
         r.postprocess()
@@ -1002,7 +1002,7 @@ class ItemStock:
         if len(self._randpool) == 0:
             self.regenpool()
 
-        i = int(random.randint(0, len(self._randpool)-1))
+        i = dg.random_n(len(self._randpool))
         item = self._randpool[i]
 
         item.gencount += 1

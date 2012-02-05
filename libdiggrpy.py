@@ -94,6 +94,22 @@ def render_draw(map, t, px, py, hlx, hly, rmin, rmax, lr):
 def random_init(seed):
     _dg.dg_random_init(c_long(seed))
 
+_dg.dg_random_range.restype = c_int
+
+def random_range(a, b):
+    return _dg.dg_random_range(c_int(a), c_int(b))
+
+_dg.dg_random_n.restype = c_uint
+
+def random_n(n):
+    return _dg.dg_random_n(c_uint(n))
+
+_dg.dg_random_gauss.restype = c_double
+
+def gauss(m, s):
+    return _dg.dg_random_gauss(c_double(m), c_double(s))
+
+
 def grid_init(w, h):
     _dg.dg_grid_init(c_uint(w), c_uint(h))
 

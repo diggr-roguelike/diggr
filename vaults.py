@@ -1,5 +1,5 @@
 import libtcodpy as libtcod
-import random
+import libdiggrpy as dg
 
 
 class Vault:
@@ -915,7 +915,7 @@ class VaultStock:
         for x in xrange(len(self.vaults[branch][level])):
             v = self.vaults[branch][level][x]
 
-            chance = random.randint(1, v.chance)
+            chance = dg.random_range(1, v.chance)
 
             if v in vaultstoskip:
                 continue

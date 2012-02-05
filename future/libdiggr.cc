@@ -138,6 +138,19 @@ extern "C" void dg_random_init(long seed) {
     rnd::get().init(seed);
 }
 
+extern "C" int dg_random_range(int a, int b) {
+    return rnd::get().range(a, b);
+}
+
+extern "C" unsigned int dg_random_n(unsigned int n) {
+    return rnd::get().n(n);
+}
+
+extern "C" double dg_random_gauss(double m, double s) {
+    return rnd::get().gauss(m, s);
+}
+
+
 extern "C" void dg_grid_init(unsigned int w, unsigned int h) {
     grid::get().init(w, h);
 }
