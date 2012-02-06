@@ -69,10 +69,8 @@ class Monster:
         self.reset()
 
     def reset(self):
-        self.x = 0
-        self.y = 0
-        self.known_px = None
-        self.known_py = None
+        self.xy = (0, 0)
+        self.known_pxy = (None, None)
         self.do_move = None
         self.do_die = False
         self.hp = 3.0
