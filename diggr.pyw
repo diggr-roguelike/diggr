@@ -539,27 +539,44 @@ class Messages:
 
 class Inventory:
     def __init__(self):
-        self.head = None
-        self.neck = None
-        self.trunk = None
-        self.left = None
-        self.right = None
-        self.legs = None
-        self.feet = None
-        self.backpack1 = None
-        self.backpack2 = None
+        self._items = {
+            'a': None,
+            'b': None,
+            'c': None,
+            'd': None,
+            'e': None,
+            'f': None,
+            'g': None,
+            'h': None,
+            'i': None }
+        self._slotnames = {
+            'a': 'head',
+            'b': 'neck',
+            'c': 'trunk',
+            'd': 'left hand',
+            'e': 'right hand',
+            'f': 'legs',
+            'g': 'feet',
+            'h': 'backpack 1',
+            'i': 'backpack 2'}
+        self._slotnums = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i']
 
     def draw(self, w, h, dlev, plev, floor=None):
-        s = [
-            ("a)       Head: %c%s", self.head),
-            ("b)       Neck: %c%s", self.neck),
-            ("c)      Trunk: %c%s", self.trunk),
-            ("d)  Left hand: %c%s", self.left),
-            ("e) Right hand: %c%s", self.right),
-            ("f)       Legs: %c%s", self.legs),
-            ("g)       Feet: %c%s", self.feet),
-            ("h) Backpack 1: %c%s", self.backpack1),
-            ("i) Backpack 2: %c%s", self.backpack2)]
+
+        def fmt(slot):
+            nm = self._slotnames[slot]
+            nm = nm[0].upper() + nm[1:]
+            pad = ' '*(10-len(nm))
+            itm = ' -'
+            tmp = self._items[slot]
+            if tmp:
+                itm = str(tmp)
+            return "%c%c)%s %s:%c%s" % (libtcod.COLCTRL_5, 
+                                        slot, pad, nm,
+                                        libtcod.COLCTRL_1,
+                                        itm)
+
+        s = [fmt(slot) for slot in self._slotnums]
 
         if floor:
             s.extend(floor)
@@ -568,186 +585,69 @@ class Inventory:
                   "Character level: %d" % plev,
                   "  Dungeon level: %d" % dlev])
 
-        def pr(x):
-            if not x:
-                return ' -'
-            return str(x)
-
-        for x in xrange(len(s)):
-            if type(s[x]) == type((0,)):
-                s[x] = ("%c" % libtcod.COLCTRL_5) + \
-                       s[x][0] % (libtcod.COLCTRL_1, pr(s[x][1]))
-
         return draw_window(s, w, h)
 
     def take(self, i, slot=None):
         if not slot:
             slot = i.slot
-        if   slot == 'a' and not self.head: self.head = i
-        elif slot == 'b' and not self.neck: self.neck = i
-        elif slot == 'c' and not self.trunk: self.trunk = i
-        elif slot == 'd' and not self.left: self.left = i
-        elif slot == 'e' and not self.right: self.right = i
-        elif slot == 'f' and not self.legs: self.legs = i
-        elif slot == 'g' and not self.feet: self.feet = i
-        elif slot == 'h' and not self.backpack1: self.backpack1 = i
-        elif slot == 'i' and not self.backpack2: self.backpack2 = i
-        elif not self.backpack1: self.backpack1 = i
-        elif not self.backpack2: self.backpack2 = i
-        else: return False
-        return True
+
+        if not self._items[slot]:
+            self._items[slot] = i
+            return True
+
+        elif not self._items['h']:
+            self._items['h'] = i
+            return True
+
+        elif not self._items['i']:
+            self._items['i'] = i
+            return True
+
+        return False
 
     def get_tagged(self):
         i = []
-
-        def chk(j, slot):
+        for slot in self._slotnums:
+            j = self._items[slot]
             if j and j.tag:
                 i.append((j.tag, slot, j))
-
-        chk(self.head, 'a')
-        chk(self.neck, 'b')
-        chk(self.trunk, 'c')
-        chk(self.left, 'd')
-        chk(self.right, 'e')
-        chk(self.legs, 'f')
-        chk(self.feet, 'g')
-        chk(self.backpack1, 'h')
-        chk(self.backpack2, 'i')
 
         i.sort()
         return i
 
-    def drop(self, i):
-        if i == 'a':
-            i, self.head = self.head, None
-            return i
-        elif i == 'b':
-            i, self.neck = self.neck, None
-            return i
-        elif i == 'c':
-            i, self.trunk = self.trunk, None
-            return i
-        elif i == 'd':
-            i, self.left = self.left, None
-            return i
-        elif i == 'e':
-            i, self.right = self.right, None
-            return i
-        elif i == 'f':
-            i, self.legs = self.legs, None
-            return i
-        elif i == 'g':
-            i, self.feet = self.feet, None
-            return i
-        elif i == 'h':
-            i, self.backpack1 = self.backpack1, None
-            return i
-        elif i == 'i':
-            i, self.backpack2 = self.backpack2, None
-            return i
-        else:
-            return None
+    def drop(self, slot):
+        if slot in self._items:
+            ret = self._items[slot]
+            self._items[slot] = None
+            return ret
+        return None
 
     def check(self, slot):
-        if   slot == 'a': return self.head
-        elif slot == 'b': return self.neck
-        elif slot == 'c': return self.trunk
-        elif slot == 'd': return self.left
-        elif slot == 'e': return self.right
-        elif slot == 'f': return self.legs
-        elif slot == 'g': return self.feet
-        elif slot == 'h': return self.backpack1
-        elif slot == 'i': return self.backpack2
+        if slot in self._items:
+            return self._items[slot]
         return None
 
     class _iter:
         def __init__(self, i):
             self.inv = i
-            self.slot = 0
+            self.slot = -1
         def __iter__(self):
             return self
         def next(self):
             self.slot += 1
-            if self.slot == 1: return self.inv.head
-            elif self.slot == 2: return self.inv.neck
-            elif self.slot == 3: return self.inv.trunk
-            elif self.slot == 4: return self.inv.left
-            elif self.slot == 5: return self.inv.right
-            elif self.slot == 6: return self.inv.legs
-            elif self.slot == 7: return self.inv.feet
-            elif self.slot == 8: return self.inv.backpack1
-            elif self.slot == 9: return self.inv.backpack2
-            else: raise StopIteration()
+            if self.slot >= len(self.inv._slotnums):
+                raise StopIteration()
+            s = self.inv._slotnums[self.slot]
+            i = self.inv._items[s]
+            return (i, s)
 
     def __iter__(self):
         return self._iter(self)
 
     def purge(self, item):
-        if self.head == item: self.head = None
-        elif self.neck == item: self.neck = None
-        elif self.trunk == item: self.trunk = None
-        elif self.left == item: self.left = None
-        elif self.right == item: self.right = None
-        elif self.legs == item: self.legs = None
-        elif self.feet == item: self.feet = None
-        elif self.backpack1 == item: self.backpack1 = None
-        elif self.backpack2 == item: self.backpack2 = None
-
-    def get_lightradius(self):
-        return getattr(self.head,  'lightradius', 0) + \
-               getattr(self.neck,  'lightradius', 0) + \
-               getattr(self.legs,  'lightradius', 0) + \
-               getattr(self.right, 'lightradius', 0) + \
-               getattr(self.trunk, 'lightradius', 0)
-
-    def get_attack(self):
-        return getattr(self.right, 'attack', 0) + \
-               getattr(self.left, 'attack', 0) + \
-               getattr(self.feet, 'attack', 0)
-
-    def get_defence(self):
-        return getattr(self.head, 'defence', 0) + \
-               getattr(self.left, 'defence', 0) + \
-               getattr(self.trunk, 'defence', 0) + \
-               getattr(self.legs, 'defence', 0) + \
-               getattr(self.feet, 'defence', 0)
-
-    def get_heatbonus(self):
-        return getattr(self.trunk, 'heatbonus', 0) + \
-               getattr(self.legs, 'heatbonus', 0)
-
-    def get_confattack(self):
-        return getattr(self.right, 'confattack', None) or \
-               getattr(self.left, 'confattack', None)
-
-    def get_psyimmune(self):
-        return getattr(self.head, 'psyimmune', None) or \
-               getattr(self.right, 'psyimmune', None) or \
-               getattr(self.left, 'psyimmune', None)
-
-    def get_camorange(self):
-        l = (getattr(self.trunk, 'camorange', None),
-             getattr(self.feet, 'camorange', None),
-             getattr(self.neck, 'camorange', None))
-        l = [q for q in l if q]
-        if len(l) == 0: return None
-        return min(l)
-
-    def get_repelrange(self):
-        l = (getattr(self.trunk, 'repelrange', None),
-             getattr(self.left, 'repelrange', None))
-        l = [q for q in l if q]
-        if len(l) == 0: return None
-        return max(l)
-
-    def get_fires(self):
-        return getattr(self.right, 'fires', None)
-
-    def get_glueimmune(self):
-        return getattr(self.left, 'glueimmune', None)
-
-    def get_digspeed(self):
-        return getattr(self.head, 'digbonus', 0)
+        for k,v in self._items:
+            if v == item:
+                self._items[k] = None
 
 
 ##################################################
@@ -798,11 +698,11 @@ class Achievements:
         self.colors = 0
         self.bonus_colors = 0
 
-    def finish(self, world):
-        self.add('plev%d' % world.plev, 'Reached player level %d' % world.plev)
-        self.add('dlev%d' % world.dlev, 'Reached dungeon level %d' % world.dlev)
+    def finish(self, plev, dlev, moon, reason):
+        self.add('plev%d' % plev, 'Reached player level %d' % plev)
+        self.add('dlev%d' % dlev, 'Reached dungeon level %d' % dlev)
 
-        moonstr = moon.phase_string(world.moon)
+        moonstr = moon.phase_string(moon)
         self.add('moon_%s' % moonstr, 'Played on a %s moon' % moonstr)
 
         if len(self.killed_monsters) == 0:
@@ -812,7 +712,6 @@ class Achievements:
             if killbucket > 0:
                 self.add('%dkills' % killbucket, 'Killed at least %d monsters' % killbucket, weight=10*killbucket)
 
-        reason = world.stats.health.reason
         self.add('dead_%s' % reason, 'Killed by %s' % reason)
 
         if len(self.shrines) >= 3:
@@ -941,14 +840,14 @@ class Achievements:
             self.add('6color', 'Drank colored liquid 6 times or more', weight=44)
 
 
-    def descend(self, world):
-        if world.dlev >= world.plev+5:
+    def descend(self, plev, dlev, branch):
+        if dlev >= plev+5:
             self.add('tourist', 'Dived to a very deep dungeon', weight=50, once=True)
 
-        elif world.dlev >= world.plev+2:
+        elif dlev >= plev+2:
             self.add('small_tourist', 'Dived to a deep dungeon', weight=15, once=True)
 
-        self.branches.add(world.branch)
+        self.branches.add(branch)
 
     def questdone(self, branch):
         if branch == 'q':
@@ -963,7 +862,7 @@ class Achievements:
     def mondone(self):
         self.extinguished += 1
 
-    def mondeath(self, world, mon, is_rad=False, is_explode=False, is_poison=False):
+    def mondeath(self, plev, dlev, mon, is_rad=False, is_explode=False, is_poison=False):
         if mon.inanimate:
             return
 
@@ -971,23 +870,21 @@ class Achievements:
             self.killed_molds += 1
             return
 
-        if mon.level >= world.plev+5:
+        if mon.level >= plev+5:
             self.add('stealth', 'Killed a monster massively out of depth', weight=50)
-        elif mon.level >= world.plev+2:
+        elif mon.level >= plev+2:
             self.add('small_stealth', 'Killed a monster out of depth', weight=10)
 
         if is_poison:
             self.ebola += 1
         else:
-            self.killed_monsters.append((mon.level * mon.pointsfac, mon.branch, mon.name, world.dlev, world.plev))
+            self.killed_monsters.append((mon.level * mon.pointsfac, mon.branch, mon.name, dlev, plev))
 
         if is_rad:
             self.radkilled += 1
 
         if is_explode:
             self.explodekilled += 1
-
-
 
 
     def pray(self, shrine):
@@ -1058,45 +955,18 @@ class QuestInfo:
         self.gifts = gifts
 
 
-
-class World:
-
-    def __init__(self, config):
-
-        self.featmap = {}
-        self.exit = None
-        self.itemap = {}
-        self.monmap = {}
-
-        self.px = None
-        self.py = None
-        self.w = None
-        self.h = None
-        self.tcodmap = None
-        self.done = False
-        self.dead = False
-        self.ckeys = None
-        self.vkeys = None
+class Player:
+    def __init__(self):
 
         self.stats = Stats()
-        self.msg = Messages()
-        self.coef = Coeffs()
         self.inv = Inventory()
-        self.itemstock = ItemStock()
-        self.monsterstock = MonsterStock()
-        self.featstock = FeatureStock()
-        self.vaultstock = VaultStock()
         self.achievements = Achievements()
 
-        self.dlev = 1
+        self.done = False
+        self.dead = False
+
         self.plev = 1
 
-        self.branch = None
-        self.moon = None
-        self.did_moon_message = False
-        self.t = 0
-        self.oldt = -1
-        self.tagorder = 1
         self.sleeping = 0
         self.forcedsleep = False
         self.forced2sleep = False
@@ -1109,34 +979,77 @@ class World:
         self.glued = 0
         self.onfire = 0
 
-        self.doppelpoint = None
-        self.doppeltime = 0
-
         self.s_grace = 0
         self.b_grace = 0
         self.v_grace = 0
-
-        self.celautostock = CelAutoStock()
-
-        self.floorpath = None
 
         self.resource = None
         self.resource_buildup = 0
         self.resource_timeout = 0
 
+        self.tagorder = 1
         self.monsters_in_view = []
+        self.new_visibles = False
+
+
+class Dungeon:
+    def __init__(self):
+
+        self.w = None
+        self.h = None
+
+        self.featmap = {}
+        self.itemap = {}
+        self.monmap = {}
+        self.exit = None
+
+        self.dlev = 1
+
+        self.px = None
+        self.py = None
+
+        self.tcodmap = None
+
+        self.coef = Coeffs()
+        self.itemstock = ItemStock()
+        self.monsterstock = MonsterStock()
+        self.featstock = FeatureStock()
+        self.vaultstock = VaultStock()
+        self.celautostock = CelAutoStock()
+
+        self.branch = None
+        self.moon = None
+
+        self.doppelpoint = None
+        self.doppeltime = 0
+
+        self.floorpath = None
+
+
+
+class World:
+
+    def __init__(self, config):
+
+        self.p = Player()
+        self.d = Dungeon()
+
+        self.ckeys = None
+        self.vkeys = None
+
+        self.msg = Messages()
+
+        self.did_moon_message = False
+        self.t = 0
+        self.oldt = -1
 
         self._seed = None
         self._inputs = []
 
         self.save_disabled = False
 
-        self.sparkleinterp = [ math.sin(x/math.pi)**2 for x in xrange(10) ]
-
         self.config = config
         self.last_played_themesound = 0
-
-        self.new_visibles = False
 
         ### 
 
@@ -1177,10 +1090,155 @@ class World:
         self.neighbors = None
 
 
+    def health(self): return self.p.stats.health
+    def sleep(self):  return self.p.stats.sleep
+    def tired(self):  return self.p.stats.tired
+    def hunger(self): return self.p.stats.hunger
+    def thirst(self): return self.p.stats.thirst
+    def warmth(self): return self.p.stats.warmth
+
+    def generate_and_take_item(self, itemname):
+        self.p.inv.take(self.d.itemstock.find(itemname))
+
+    ##
+
+    def try_feature(self, x, y, att, deflt=None):
+        if (x,y) not in self.d.featmap:
+            return deflt
+        return getattr(self.d.featmap[(x, y)], att, deflt)
+
+
+    ##
+
+    def get_inv_attr(self, slots, attr, default=None):
+        ix = [ getattr(self.p.inv, slot) for slot in slots ]
+        return [ getattr(i, attr, default) for i in ix ]
+
+    def get_fires(self):
+        return self.get_inv_attr(['right'], 'fires')[0]
+
+    def get_glueimmune(self):
+        return self.get_inv_attr(['left'], 'glueimmune')[0]
+
+    def get_digspeed(self):
+        return self.get_inv_attr(['head'], 'digbonus')[0]
+
+    def get_springy(self):
+        return (self.get_inv_attr(['feet'], 'springy')[0] or 
+                (self.p.resource_timeout and self.p.resource == 'y'))
+
+    def get_heatbonus(self):
+        return sum(self.get_inv_attr(['trunk', 'legs'], 'heatbonus', 0))
+
+    def get_radimmune(self):
+        return (self.get_inv_attr(['trunk'], 'radimmune')[0] or
+                (self.p.resource_timeout and self.p.resource == 'b'))
+
+    def get_explodeimmune(self):
+        return (self.get_inv_attr(['trunk'], 'explodeimmune')[0] or
+                (self.p.resource_timeout and self.p.resource == 'b'))
+
+    def get_confattack(self):
+        for tmp in self.get_inv_attr(['right', 'left'], 'confattack'):
+            if tmp:
+                return tmp
+        return None
+
+    def get_psyimmune(self):
+        return any(self.get_inv_attr(['head', 'right', 'left'], 'psyimmune'))
+
+    def get_repelrange(self):
+        return max(self.get_inv_attr(['trunk', 'left'], 'repelrange', 0))
+
+    def get_telepathyrange(self):
+        tmp = max(self.get_inv_attr(['head'], 'telepathyrange', 0))
+
+        if self.p.resource_timeout and self.p.resource == 'p':
+            tmp = max(self.d.coef.purple_telerange, tmp)
+
+        return tmp
+
+
+    def get_camorange(self, monrange):
+        tmp = min(self.get_inv_attr(['trunk', 'feet', 'neck'], 
+                                    'camorange', monrange))
+
+        if self.p.resource_timeout and self.p.resource == 'p':
+            tmp = min(self.d.coef.purple_camorange, tmp)
+
+        if self.p.b_grace:
+            rang = 12 - int(9 * (float(self.p.b_grace) / 
+                                 self.d.coef.b_graceduration))
+            tmp = min(rang, tmp)
+
+        return tmp
+
+    def get_attack(self):
+        if self.p.resource_timeout and self.p.resource == 'g':
+            baseattack = self.d.coef.green_attack
+        else:
+            baseattack = self.d.coef.unarmedattack
+
+        return max(sum(self.get_inv_attr(['right', 'left', 'feet'], 
+                                         'attack', 0),
+                       baseattack))
+
+    def get_defence(self):
+        tmp = max(sum(self.get_inv_attr(['head', 'left', 'trunk', 
+                                         'legs', 'feet'], 'defence', 0)),
+                  self.d.coef.unarmeddefence)
+
+        if self.p.glued:
+            tmp /= self.d.coef.gluedefencepenalty
+        return tmp
+
+    def get_lightradius(self, default):
+
+        if self.p.resource_timeout and self.p.resource == 'y':
+            ret = self.d.coef.yellow_lightradius
+        else:
+            tmp = sum(self.get_inv_attr(['head', 'neck', 'legs', 'right', 'trunk'],
+                                        'lightradius', 0))
+            ret = min(max(tmp + (default or 0), 2), 15)
+
+        if self.p.blind:
+            ret /= 2
+
+        if self.p.b_grace:
+            n = int(15 * (float(self.p.b_grace) / self.d.coef.b_graceduration))
+            ret = max(ret, n)
+
+        if self.d.moon == moon.NEW:
+            ret += 1
+        elif self.d.moon == moon.FULL:
+            ret -= 2
+
+        ret += self.try_feature(self.px, self.py, 'lightbonus', 0)
+
+        return max(ret, 1)
+
+    ### 
+
+    def filter_inv(self, func1, func2):
+        ret = False
+        for i,slot in self.p.inv:
+            if i:
+                f1ret = func1(i, slot)
+                if f1ret:
+                    ret = True
+                    done, purge = func2(i, f1ret)
+                    if purge:
+                        self.p.inv.drop(slot)
+                    if done:
+                        break
+        return ret
+
+    # XXX 
+
 
     def makegrid(self, w_, h_):
 
-        self.w = w_
+        self.d.w = w_
         self.h = h_
 
         dg.grid_init(w_, h_)
@@ -1208,10 +1266,10 @@ class World:
       
 
     def make_map(self):
-        self.tcodmap = libtcod.map_new(self.w, self.h)
+        self.tcodmap = libtcod.map_new(self.d.w, self.h)
         libtcod.map_clear(self.tcodmap)
 
-        for x in xrange(self.w):
+        for x in xrange(self.d.w):
             for y in xrange(self.h):
                 if dg.grid_is_walk(x, y):
                     v = True
@@ -1353,7 +1411,7 @@ class World:
         y = None
 
         if v.anywhere:
-            x = dg.random_n(self.w - v.w)
+            x = dg.random_n(self.d.w - v.w)
             y = dg.random_n(self.h - v.h)
 
         else:
@@ -1363,7 +1421,7 @@ class World:
                 x0 = d[0] - v.anchor[0]
                 y0 = d[1] - v.anchor[1]
 
-                if x0 < 0 or y0 < 0 or x0 + v.w >= self.w or y0 + v.h >= self.h:
+                if x0 < 0 or y0 < 0 or x0 + v.w >= self.d.w or y0 + v.h >= self.h:
                     continue
 
                 x = x0
@@ -1459,12 +1517,6 @@ class World:
 
 
 
-    def try_feature(self, x, y, att, deflt=None):
-        if (x,y) not in self.featmap:
-                return deflt
-        return getattr(self.featmap[(x, y)], att, deflt)
-
-
     def make_paths(self):
         #log.log('  making path')
         if self.floorpath:
@@ -1477,7 +1529,7 @@ class World:
                 return 1.0
             return 0.0
 
-        self.floorpath = libtcod.path_new_using_function(self.w, self.h, floor_callback, self, 1.0)
+        self.floorpath = libtcod.path_new_using_function(self.d.w, self.h, floor_callback, self, 1.0)
 
     def make_monsters(self):
 
@@ -1627,11 +1679,11 @@ class World:
 
     def generate_inv(self):
         if self.moon == moon.FULL:
-            self.inv.take(self.itemstock.find("miner's lamp"))
+            self.generate_and_take_item("miner's lamp")
         else:
-            self.inv.take(self.itemstock.find('lamp'))
+            self.generate_and_take_item('lamp')
             
-        self.inv.take(self.itemstock.find('pickaxe'))
+        self.generate_and_take_item('pickaxe')
 
 
         pl = [k for k in self.neighbors[(self.px,self.py)] if dg.grid_is_walk(k[0], k[1])] + [(self.px,self.py)]
@@ -1646,9 +1698,9 @@ class World:
 
     def move(self, _dx, _dy, do_spring=True):
 
-        if self.glued > 0:
-            self.glued -= 1
-            if self.glued == 0:
+        if self.p.glued > 0:
+            self.p.glued -= 1
+            if self.p.glued == 0:
                 self.msg.m('You dislodge yourself from the glue.')
                 if (self.px, self.py) in self.featmap and \
                    self.featmap[(self.px, self.py)] == self.featstock.f['^']:
@@ -1661,7 +1713,7 @@ class World:
         dx = _dx + self.px
         dy = _dy + self.py
 
-        if dg.grid_is_walk(dx,dy) and dx >= 0 and dx < self.w and dy < self.h:
+        if dg.grid_is_walk(dx,dy) and dx >= 0 and dx < self.d.w and dy < self.h:
 
             if (dx, dy) in self.monmap:
                 self.fight(self.monmap[(dx, dy)], True)
@@ -1681,24 +1733,19 @@ class World:
                 if sign:
                     self.msg.m('You see an engraving: ' + sign)
 
-                if self.onfire > 0:
+                if self.p.onfire > 0:
                     self.seed_celauto(self.px, self.py, self.celautostock.FIRE)
                     self.set_feature(self.px, self.py, '"')
 
-                if self.try_feature(self.px, self.py, 'sticky') and not self.inv.get_glueimmune():
+                if self.try_feature(self.px, self.py, 'sticky') and not self.get_glueimmune():
                     self.msg.m('You just stepped in some glue!', True)
-                    self.glued = max(int(dg.random_gauss(*self.coef.glueduration)), 1)
+                    self.p.glued = max(int(dg.random_gauss(*self.coef.glueduration)), 1)
 
 
         else:
             return
 
-        is_springy = False
-
-        if self.inv.feet and self.inv.feet.springy:
-            is_springy = True
-        elif self.resource_timeout and self.resource == 'y':
-            is_springy = True
+        is_springy = self.get_springy()
 
         if do_spring and is_springy:
             self.move(_dx, _dy, do_spring=False)
@@ -1706,41 +1753,20 @@ class World:
 
         self.tick()
 
-    def tick(self):
-        self.stats.tired.dec(self.coef.movetired)
-        self.stats.sleep.dec(self.coef.movesleep)
-        self.stats.thirst.dec(self.coef.movethirst)
-        self.stats.hunger.dec(self.coef.movehunger)
-
-        if self.try_feature(self.px, self.py, 'warm'):
-            self.stats.warmth.inc(self.coef.watercold)
-        elif dg.grid_is_water(self.px, self.py):
-            self.stats.warmth.dec(self.coef.watercold)
-        else:
-            self.stats.warmth.inc(self.inv.get_heatbonus())
-
-        if self.b_grace > 0: self.b_grace -= 1
-        if self.v_grace > 0: self.v_grace -= 1
-        if self.s_grace > 0: self.s_grace -= 1
-
-        if self.resource_timeout > 0: 
-            if self.resource == 'r':
-                self.stats.health.inc(self.coef.regeneration)
-                self.stats.warmth.inc(self.coef.regeneration)
-                self.stats.hunger.inc(self.coef.regeneration)
-
-            self.resource_timeout -= 1
-            if self.resource_timeout == 0: self.resource = None
-
-        
-
-        self.tick_checkstats()
-        self.t += 1
 
     def tick_checkstats(self):
 
-        for i in self.inv:
-            if i and i.liveexplode > 0:
+        self.t += 1
+
+        def is_destruct(i, slot): 
+            if i.liveexplode > 0:
+                return 1
+            if i.selfdestruct > 0 and slot not in ('h','i'):
+                return 2
+            return False
+
+        def do_destruct(i, n):
+            if n == 1:
                 i.liveexplode -= 1
                 if i.liveexplode == 0:
                     if i.summon:
@@ -1751,176 +1777,173 @@ class World:
                         self.paste_celauto(self.px, self.py, self.celautostock.SWAMPGAS)
                     else:
                         self.explode(self.px, self.py, i.radius)
-                    self.inv.purge(i)
+                    return False, True
 
-            elif i and i.selfdestruct > 0 and \
-                 i != self.inv.backpack1 and i != self.inv.backpack2:
+            elif n == 2:
                 i.selfdestruct -= 1
-                #print '-', i.selfdestruct, i.name
                 if i.selfdestruct == 0:
                     self.msg.m('Your ' + i.name + ' falls apart!', True)
-                    self.inv.purge(i)
+                    return False, True
+            return False, False
+
+        self.filter_inv(is_destruct, do_destruct)
+
 
         fdmg = self.try_feature(self.px, self.py, 'fire')
         if fdmg > 0:
-            self.stats.health.dec(fdmg, "fire", self.config.sound)
-            self.onfire = max(self.coef.burnduration, self.onfire)
-        elif self.onfire > 0:
-            if self.cooling == 0:
-                self.stats.health.dec(self.coef.burndamage, "fire", self.config.sound)
-            self.onfire -= 1
+            self.health().dec(fdmg, "fire", self.config.sound)
+            self.p.onfire = max(self.coef.burnduration, self.p.onfire)
+        elif self.p.onfire > 0:
+            if self.p.cooling == 0:
+                self.health().dec(self.coef.burndamage, "fire", self.config.sound)
+            self.p.onfire -= 1
 
-        if self.cooling > 0:
-            self.cooling -= 1
-            if self.cooling == 0:
+        if self.p.cooling > 0:
+            self.p.cooling -= 1
+            if self.p.cooling == 0:
                 self.msg.m("Your layer of cold mud dries up.")
 
         if self.doppeltime > 0:
             self.doppeltime -= 1
 
-        if self.dead: return
+        if self.p.resource_timeout > 0: 
+            if self.p.resource == 'r':
+                self.health().inc(self.coef.regeneration)
+                self.warmth().inc(self.coef.regeneration)
+                self.hunger().inc(self.coef.regeneration)
+
+            self.p.resource_timeout -= 1
+            if self.p.resource_timeout == 0: self.p.resource = None
+
+        if self.p.dead: return
+
+        if self.try_feature(self.px, self.py, 'warm'):
+            self.warmth().inc(self.coef.watercold)
+        elif dg.grid_is_water(self.px, self.py):
+            self.warmth().dec(self.coef.watercold)
+        else:
+            self.warmth().inc(self.get_heatbonus())
 
         p = self.try_feature(self.px, self.py, 'queasy')
         if p:
             self.msg.m('You feel queasy.', True)
-            self.stats.thirst.dec(p)
-            self.stats.hunger.dec(p)
+            self.thirst().dec(p)
+            self.hunger().dec(p)
 
-        if self.stats.warmth.x <= -3.0:
+        if self.warmth().x <= -3.0:
             self.msg.m("Being so cold makes you sick!", True)
-            self.stats.health.dec(self.coef.colddamage, "cold", self.config.sound)
-            if self.resting: self.resting = False
-            if self.digging: self.digging = None
+            self.health().dec(self.coef.colddamage, "cold", self.config.sound)
+            if self.p.resting: self.p.resting = False
+            if self.p.digging: self.p.digging = None
 
-        if self.stats.thirst.x <= -3.0:
+        if self.thirst().x <= -3.0:
             self.msg.m('You desperately need something to drink!', True)
-            self.stats.health.dec(self.coef.thirstdamage, "thirst", self.config.sound)
-            if self.resting: self.resting = False
-            if self.digging: self.digging = None
+            self.health().dec(self.coef.thirstdamage, "thirst", self.config.sound)
+            if self.p.resting: self.p.resting = False
+            if self.p.digging: self.p.digging = None
 
-        if self.stats.hunger.x <= -3.0:
+        if self.hunger().x <= -3.0:
             self.msg.m('You desperately need something to eat!', True)
-            self.stats.health.dec(self.coef.hungerdamage, "hunger", self.config.sound)
-            if self.resting: self.resting = False
-            if self.digging: self.digging = None
+            self.health().dec(self.coef.hungerdamage, "hunger", self.config.sound)
+            if self.p.resting: self.p.resting = False
+            if self.p.digging: self.p.digging = None
 
         p = self.try_feature(self.px, self.py, 'poison')
         if p:
             self.msg.m('You feel very sick!', True)
-            self.stats.health.dec(p, 
+            self.health().dec(p, 
                                   'black mold' if self.featmap[(self.px,self.py)].pois2 else 'Ebola infection', 
                                   self.config.sound)
 
-        if self.stats.health.x <= -3.0:
-            self.dead = True
+        if self.health().x <= -3.0:
+            self.p.dead = True
             return
 
-        if self.stats.tired.x <= -3.0:
+        if self.tired().x <= -3.0:
             self.msg.m('You pass out from exhaustion!', True)
             self.start_sleep(force=True, quick=True)
             return
 
-        if self.stats.sleep.x <= -3.0:
+        if self.sleep().x <= -3.0:
             self.msg.m('You pass out from lack of sleep!', True)
             self.start_sleep(force=True)
             return
 
 
+    def tick(self):
+        self.tired().dec(self.coef.movetired)
+        self.sleep().dec(self.coef.movesleep)
+        self.thirst().dec(self.coef.movethirst)
+        self.hunger().dec(self.coef.movehunger)
 
-    def rest(self):
-        self.stats.tired.inc(self.coef.resttired)
-        self.stats.sleep.dec(self.coef.restsleep)
-        self.stats.thirst.dec(self.coef.restthirst)
-        self.stats.hunger.dec(self.coef.resthunger)
-
-        if self.try_feature(self.px, self.py, 'warm'):
-            self.stats.warmth.inc(self.coef.watercold)
-        elif dg.grid_is_water(self.px, self.py):
-            self.stats.warmth.dec(self.coef.watercold)
-        else:
-            self.stats.warmth.inc(self.inv.get_heatbonus())
-
-        if self.resource_timeout > 0: 
-            if self.resource == 'r':
-                self.stats.health.inc(self.coef.regeneration)
-                self.stats.warmth.inc(self.coef.regeneration)
-                self.stats.hunger.inc(self.coef.regeneration)
-
-            self.resource_timeout -= 1
-            if self.resource_timeout == 0: self.resource = None
-
-        self.tick_checkstats()
-        self.t += 1
-
-    def sleep(self):
-        self.stats.tired.inc(self.coef.sleeptired)
-        self.stats.sleep.inc(self.coef.sleepsleep)
-        self.stats.thirst.dec(self.coef.sleepthirst)
-        self.stats.hunger.dec(self.coef.sleephunger)
-
-        if self.try_feature(self.px, self.py, 'warm'):
-            self.stats.warmth.inc(self.coef.watercold)
-        elif dg.grid_is_water(self.px, self.py):
-            self.stats.warmth.dec(self.coef.watercold)
-        else:
-            self.stats.warmth.inc(self.inv.get_heatbonus())
-
-        if self.healingsleep:
-            self.stats.health.inc(self.coef.healingsleep)
-
-        if self.resource_timeout > 0: 
-            if self.resource == 'r':
-                self.stats.health.inc(self.coef.regeneration)
-                self.stats.warmth.inc(self.coef.regeneration)
-                self.stats.hunger.inc(self.coef.regeneration)
-
-            self.resource_timeout -= 1
-            if self.resource_timeout == 0: self.resource = None
+        if self.p.b_grace > 0: self.p.b_grace -= 1
+        if self.p.v_grace > 0: self.p.v_grace -= 1
+        if self.p.s_grace > 0: self.p.s_grace -= 1
 
         self.tick_checkstats()
 
-        if self.sleeping > 0:
-            self.sleeping -= 1
 
-            if self.sleeping == 0:
-                self.forcedsleep = False
-                self.forced2sleep = False
-                self.healingsleep = False
-        self.t += 1
+    def do_rest(self):
+        self.tired().inc(self.coef.resttired)
+        self.sleep().dec(self.coef.restsleep)
+        self.thirst().dec(self.coef.restthirst)
+        self.hunger().dec(self.coef.resthunger)
+
+        self.tick_checkstats()
+
+
+    def do_sleep(self):
+        self.tired().inc(self.coef.sleeptired)
+        self.sleep().inc(self.coef.sleepsleep)
+        self.thirst().dec(self.coef.sleepthirst)
+        self.hunger().dec(self.coef.sleephunger)
+
+        if self.p.healingsleep:
+            self.health().inc(self.coef.healingsleep)
+
+        if self.p.sleeping > 0:
+            self.p.sleeping -= 1
+
+            if self.p.sleeping == 0:
+                self.p.forcedsleep = False
+                self.p.forced2sleep = False
+                self.p.healingsleep = False
+
+        self.tick_checkstats()
 
 
     def start_sleep(self, force = False, quick = False,
                     realforced = False, realforced2 = False):
-        if not force and self.stats.sleep.x > -2.0:
+        if not force and self.sleep().x > -2.0:
             self.msg.m('You don\'t feel like sleeping yet.')
             return
 
         if quick:
-            self.sleeping = int(dg.random_gauss(*self.coef.quicksleeptime))
+            self.p.sleeping = int(dg.random_gauss(*self.coef.quicksleeptime))
         else:
             if not realforced2:
                 self.msg.m('You fall asleep.')
-            self.sleeping = int(dg.random_gauss(*self.coef.sleeptime))
+            self.p.sleeping = int(dg.random_gauss(*self.coef.sleeptime))
 
-        self.digging = None
-        self.resting = False
+        self.p.digging = None
+        self.p.resting = False
 
         if realforced:
-            self.forcedsleep = True
+            self.p.forcedsleep = True
         elif realforced2:
-            self.forced2sleep = True
+            self.p.forced2sleep = True
 
     def start_rest(self):
         self.msg.m('You start resting.')
-        self.resting = True
+        self.p.resting = True
 
         
     def colordrink(self, fount):
-        if self.resource and (self.resource != fount):
+        if self.p.resource and (self.p.resource != fount):
             self.msg.m('You feel confused.')
-            self.resource = None
-            self.resource_timeout = 0
-            self.resource_buildup = 0
+            self.p.resource = None
+            self.p.resource_timeout = 0
+            self.p.resource_buildup = 0
             return
 
         if fount == 'r': self.msg.m('You drink something red.')
@@ -1928,45 +1951,45 @@ class World:
         elif fount == 'y': self.msg.m('You drink something yellow.')
         elif fount == 'b': self.msg.m('You drink something blue.')
         elif fount == 'p': self.msg.m('You drink something purple.')
-        self.resource = fount
+        self.p.resource = fount
 
         bonus = False
         
-        if self.resource_timeout:
-            self.resource_timeout += (self.coef.resource_timeouts[fount]/6)
+        if self.p.resource_timeout:
+            self.p.resource_timeout += (self.coef.resource_timeouts[fount]/6)
         else:
-            self.resource_buildup += 1
+            self.p.resource_buildup += 1
 
-            if self.resource_buildup >= 6:
-                if self.resource == 'r':
+            if self.p.resource_buildup >= 6:
+                if self.p.resource == 'r':
                     self.msg.m('You gain superhuman regeneration power!', True)
-                elif self.resource == 'g':
+                elif self.p.resource == 'g':
                     self.msg.m('Hulk Smash! You gain superhuman strength.', True)
-                elif self.resource == 'y':
+                elif self.p.resource == 'y':
                     self.msg.m('You gain superhuman speed and vision!', True)
-                elif self.resource == 'b':
+                elif self.p.resource == 'b':
                     self.msg.m('You are now immune to explosions and radiation!', True)
-                elif self.resource == 'p':
+                elif self.p.resource == 'p':
                     self.msg.m('You gain telepathy and superhuman stealth!', True)
 
                 bonus = True
-                self.resource_buildup = 0
-                self.resource_timeout = self.coef.resource_timeouts[fount]
+                self.p.resource_buildup = 0
+                self.p.resource_timeout = self.coef.resource_timeouts[fount]
 
-        self.achievements.resource_use(fount, bonus)
+        self.p.achievements.resource_use(fount, bonus)
 
 
     def drink(self):
 
         if self.try_feature(self.px, self.py, 'healingfountain'):
-            nn = min(3.0 - self.stats.health.x, self.stats.hunger.x + 3.0)
+            nn = min(3.0 - self.health().x, self.hunger().x + 3.0)
             if nn <= 0:
                 self.msg.m('Nothing happens.')
                 return
 
             self.msg.m('You drink from the eternal fountain.')
-            self.stats.health.inc(nn)
-            self.stats.hunger.dec(nn)
+            self.health().inc(nn)
+            self.hunger().dec(nn)
             return
 
         fount = self.try_feature(self.px, self.py, 'resource')
@@ -1979,16 +2002,16 @@ class World:
             self.msg.m('There is no water here you could drink.')
             return
 
-        if self.v_grace:
+        if self.p.v_grace:
             self.msg.m('Your religion prohibits drinking from the floor.')
             return
 
-        self.stats.thirst.inc(6)
+        self.thirst().inc(6)
 
         x = abs(dg.random_gauss(0, 0.7))
         tmp = x - self.coef.waterpois
         if tmp > 0:
-            self.stats.health.dec(tmp, "unclean water", self.config.sound)
+            self.health().dec(tmp, "unclean water", self.config.sound)
             if tmp > 0.2:
                 self.msg.m('This water has a bad smell.')
         else:
@@ -2004,23 +2027,26 @@ class World:
         a = self.featmap[(self.px, self.py)]
 
         if a.bb_shrine:
-            for i in self.inv:
-                if i and i.corpse:
-                    self.msg.m("Ba'al-Zebub accepts your sacrifice!")
-                    self.inv.purge(i)
 
-                    i2 = self.itemstock.generate(self.dlev)
-                    if i2:
-                        self.set_item(self.px, self.py, [i2])
-                    return
+            def bb_shrine_func(i, n):
+                self.msg.m("Ba'al-Zebub accepts your sacrifice!")
+
+                i2 = self.itemstock.generate(self.dlev)
+                if i2:
+                    self.set_item(self.px, self.py, [i2])
+                return False, True
+
+            if self.filter_inv((lambda (i,slot): i.corpse), bb_shrine_func):
+                return
+
             self.msg.m("Ba'al-Zebub needs to be sated with blood!!")
             return
 
         if a.s_shrine:
-            if self.b_grace or self.v_grace:
+            if self.p.b_grace or self.p.v_grace:
                 self.msg.m("You don't believe in Shiva.")
                 return
-            if self.s_grace > self.coef.s_graceduration - self.coef.s_praytimeout:
+            if self.p.s_grace > self.coef.s_graceduration - self.coef.s_praytimeout:
                 self.msg.m('Nothing happens.')
                 return
 
@@ -2028,32 +2054,32 @@ class World:
             decc = self.coef.shivadecstat
             ss = ss[dg.random_n(len(ss))]
 
-            if ss == 'h': self.stats.hunger.dec(decc)
-            elif ss == 'w': self.stats.warmth.dec(decc)
-            elif ss == 'p': self.stats.health.dec(decc, 'the grace of Shiva', self.config.sound)
+            if ss == 'h': self.hunger().dec(decc)
+            elif ss == 'w': self.warmth().dec(decc)
+            elif ss == 'p': self.health().dec(decc, 'the grace of Shiva', self.config.sound)
 
             self.msg.m('You pray to Shiva.')
             self.wish('Shiva grants you a wish.')
-            self.s_grace = self.coef.s_graceduration
+            self.p.s_grace = self.coef.s_graceduration
             self.tick()
-            self.achievements.pray('s')
+            self.p.achievements.pray('s')
 
         elif a.b_shrine:
-            if self.s_grace or self.v_grace:
+            if self.p.s_grace or self.p.v_grace:
                 self.msg.m("You don't believe in Brahma.")
                 return
             self.msg.m('As a follower of Brahma, you are now forbidden hand-to-hand combat.')
             self.msg.m('You feel enlightened.')
-            self.b_grace = self.coef.b_graceduration
+            self.p.b_grace = self.coef.b_graceduration
             self.tick()
-            self.achievements.pray('b')
+            self.p.achievements.pray('b')
 
         elif a.v_shrine:
-            if self.s_grace or self.b_grace:
+            if self.p.s_grace or self.p.b_grace:
                 self.msg.m("You don't believe in Vishnu.")
                 return
 
-            if self.v_grace > self.coef.v_graceduration - self.coef.v_praytimeout:
+            if self.p.v_grace > self.coef.v_graceduration - self.coef.v_praytimeout:
                 self.msg.m('Nothing happens.')
                 return
 
@@ -2062,22 +2088,25 @@ class World:
             self.msg.m('You meditate on the virtues of Vishnu.')
             self.start_sleep(force=True, realforced2=True)
 
-            self.stats.health.inc(6.0)
-            self.stats.sleep.inc(6.0)
-            self.stats.tired.inc(6.0)
-            self.stats.hunger.inc(6.0)
-            self.stats.thirst.inc(6.0)
-            self.stats.warmth.inc(6.0)
-            self.v_grace = self.coef.v_graceduration
+            self.health().inc(6.0)
+            self.sleep().inc(6.0)
+            self.tired().inc(6.0)
+            self.hunger().inc(6.0)
+            self.thirst().inc(6.0)
+            self.warmth().inc(6.0)
+            self.p.v_grace = self.coef.v_graceduration
             self.tick()
-            self.achievements.pray('v')
+            self.p.achievements.pray('v')
 
         elif a.special == 'kali':
-            for i in self.inv:
-                if i and i.special == 'kali':
-                    self.msg.m('You return the Eye to Kali.', True)
-                    self.victory(msg=('winkali', 'Returned the Eye of Kali'))
-                    return
+
+            def kalifunc(i, n):
+                self.msg.m('You return the Eye to Kali.', True)
+                self.victory(msg=('winkali', 'Returned the Eye of Kali'))
+                return True, False
+
+            if self.filter_inv((lambda (i,slot): i.special == 'kali'), kalifunc):
+                return
 
             self.msg.m('Kali is silent. Perhaps she requires an offering?', True)
 
@@ -2119,12 +2148,12 @@ class World:
 
 
     def showinv(self):
-        return self.inv.draw(self.w, self.h, self.dlev, self.plev)
+        return self.p.inv.draw(self.d.w, self.h, self.dlev, self.p.plev)
 
 
     def showinv_apply(self):
-        slot = self.inv.draw(self.w, self.h, self.dlev, self.plev)
-        i = self.inv.drop(slot)
+        slot = self.p.inv.draw(self.d.w, self.h, self.dlev, self.p.plev)
+        i = self.p.inv.drop(slot)
         if not i:
             if slot in 'abcdefghi':
                 self.msg.m('You have no item in that slot.')
@@ -2132,7 +2161,7 @@ class World:
 
         if not i.applies:
             self.msg.m('This item cannot be applied.')
-            self.inv.take(i, slot)
+            self.p.inv.take(i, slot)
             return
 
         self.apply_from_inv_aux(i)
@@ -2140,7 +2169,7 @@ class World:
 
     def tagged_apply(self):
 
-        iss = self.inv.get_tagged()
+        iss = self.p.inv.get_tagged()
 
         if len(iss) == 0:
             self.msg.m("Tag an item from your inventory to use this command.")
@@ -2152,7 +2181,7 @@ class World:
         if not i:
             return
 
-        i = self.inv.drop(iss[c][1])
+        i = self.p.inv.drop(iss[c][1])
 
         self.apply_from_inv_aux(i)
 
@@ -2181,32 +2210,37 @@ class World:
         i = items[c]
         did_scavenge = False
 
-        for ii in self.inv:
-            if ii and ii.name == i.name:
-                if ii.stackrange and ii.count < ii.stackrange:
-                    n = min(ii.stackrange - ii.count, i.count)
-                    ii.count += n
-                    i.count -= n
+        def takepred(i, slot):
+            if ii.stackrange and ii.count < ii.stackrange:
+                return 1
+            elif i.ammo > 0 and ii.ammo and ii.ammo < ii.ammochance[1]:
+                return 2
+            return False
 
-                    self.msg.m('You now have ' + str(ii) + '.')
-                    did_scavenge = True
+        def takefunc(ii, whc):
+            if whc == 1:
+                n = min(ii.stackrange - ii.count, i.count)
+                ii.count += n
+                i.count -= n
 
-                    if i.count == 0:
-                        if self.delete_item(items, c, self.px, self.py):
-                            break
+                self.msg.m('You now have ' + str(ii) + '.')
 
-                elif i.ammo > 0 and ii.ammo and ii.ammo < ii.ammochance[1]:
-                    n = min(ii.ammochance[1] - ii.ammo, i.ammo)
-                    ii.ammo += n
-                    i.ammo -= n
-                    self.msg.m("You find some ammo for your " + ii.name + '.')
-                    did_scavenge = True
+                if i.count == 0:
+                    if self.delete_item(items, c, self.px, self.py):
+                        return True, False
 
-        if did_scavenge:
+            elif whc == 2:
+                n = min(ii.ammochance[1] - ii.ammo, i.ammo)
+                ii.ammo += n
+                i.ammo -= n
+                self.msg.m("You find some ammo for your " + ii.name + '.')
+            return False, False
+
+        if self.filter_inv(takepred, takefunc):
             self.tick()
             return
 
-        ok = self.inv.take(i)
+        ok = self.p.inv.take(i)
         if ok:
             self.msg.m('You take ' + str(i) + '.')
             self.delete_item(items, c, self.px, self.py)
@@ -2220,16 +2254,16 @@ class World:
         i2 = self.apply(i)
 
         if i2 == -1:
-            self.inv.take(i)
+            self.p.inv.take(i)
             return
 
         if i2:
-            self.inv.take(i2)
+            self.p.inv.take(i2)
         else:
             if i.count > 0:
                 i.count -= 1
             if i.count > 0:
-                self.inv.take(i)
+                self.p.inv.take(i)
 
         self.tick()
 
@@ -2265,13 +2299,13 @@ class World:
         if takestuff and len(flooritems) == 1:
             slot = 'j'
         else:
-            slot = self.inv.draw(self.w, self.h, self.dlev, self.plev, floor=floorstuff)
+            slot = self.p.inv.draw(self.d.w, self.h, self.dlev, self.p.plev, floor=floorstuff)
 
         i = None
         if slot in flooritems:
             i = items[flooritems[slot]]
         else:
-            i = self.inv.check(slot)
+            i = self.p.inv.check(slot)
 
         if not i:
             if slot in 'abcdefghi':
@@ -2319,10 +2353,11 @@ class World:
             if i.slot in 'abcdefg' and slot in 'hi':
                 do_x = True
 
-            elif slot in 'abcdefg' and \
-                    (not self.inv.backpack1 or self.inv.backpack1.slot == slot or \
-                     not self.inv.backpack2 or self.inv.backpack2.slot == slot):
-                do_x = True
+            elif slot in 'abcdefg':
+                backpk1 = self.p.inv.check('h')
+                backpk2 = self.p.inv.check('i')
+                if not backpk1 or backpk1.slot == slot or not backpk2 or backpk2.slot == slot:
+                    do_x = True
 
             if do_x:
                 s.append('x) swap this item with item in equipment')
@@ -2336,14 +2371,14 @@ class World:
             choices += 'x'
 
         self.draw()
-        cc = draw_window(s, self.w, self.h)
+        cc = draw_window(s, self.d.w, self.h)
 
         if cc not in choices:
             return
 
         if cc == 'a' and i.applies:
             if slot not in flooritems:
-                i = self.inv.drop(slot)
+                i = self.p.inv.drop(slot)
 
             if slot in flooritems:
                 px = self.px
@@ -2371,20 +2406,20 @@ class World:
                     ss.append('Slot that needs to be free to use this item: ' + self.slot_to_name(inew.slot))
 
             self.draw()
-            draw_window(ss, self.w, self.h)
+            draw_window(ss, self.d.w, self.h)
 
         elif cc == 'd':
-            i = self.inv.drop(slot)
+            i = self.p.inv.drop(slot)
             self.set_item(self.px, self.py, [i])
             self.tick()
 
         elif cc == 'q':
 
-            if draw_window(['','Really destroy ' + str(i) +'? (Y/N)', ''], self.w, self.h) in ('y','Y'):
+            if draw_window(['','Really destroy ' + str(i) +'? (Y/N)', ''], self.d.w, self.h) in ('y','Y'):
                 if slot in flooritems:
                     self.delete_item(items, flooritems[slot], self.px, self.py)
                 else:
-                    self.inv.drop(slot)
+                    self.p.inv.drop(slot)
                 self.tick()
 
         elif cc == 'f':
@@ -2395,7 +2430,7 @@ class World:
 
             if nx >= 0:
                 if slot not in flooritems:
-                    i = self.inv.drop(slot)
+                    i = self.p.inv.drop(slot)
 
                 self.msg.m('You throw ' + str(i) + '.')
 
@@ -2408,43 +2443,43 @@ class World:
 
         elif cc == 'x':
             if slot in flooritems:
-                item2 = self.inv.drop(i.slot)
-                ok = self.inv.take(i)
+                item2 = self.p.inv.drop(i.slot)
+                ok = self.p.inv.take(i)
                 if ok:
                     self.delete_item(items, flooritems[slot], self.px, self.py)
 
                     if item2:
-                        if not self.inv.take(item2):
+                        if not self.p.inv.take(item2):
                             self.set_item(self.px, self.py, [item2])
 
                 elif item2:
-                    self.inv.take(item2)
+                    self.p.inv.take(item2)
 
             else:
                 if slot != i.slot:
-                    i = self.inv.drop(slot)
-                    item2 = self.inv.drop(i.slot)
-                    self.inv.take(i)
+                    i = self.p.inv.drop(slot)
+                    item2 = self.p.inv.drop(i.slot)
+                    self.p.inv.take(i)
                     if item2:
-                        self.inv.take(item2)
+                        self.p.inv.take(item2)
 
                 else:
                     slt2 = None
-                    if self.inv.backpack1 and self.inv.backpack1.slot == slot:
+                    if self.p.inv.backpack1 and self.p.inv.backpack1.slot == slot:
                         slt2 = 'h'
-                    elif self.inv.backpack2 and self.inv.backpack2.slot == slot:
+                    elif self.p.inv.backpack2 and self.p.inv.backpack2.slot == slot:
                         slt2 = 'i'
 
                     if slt2:
-                        i = self.inv.drop(slot)
-                        item2 = self.inv.drop(slt2)
-                        self.inv.take(item2)
-                        self.inv.take(i)
+                        i = self.p.inv.drop(slot)
+                        item2 = self.p.inv.drop(slt2)
+                        self.p.inv.take(item2)
+                        self.p.inv.take(i)
                     else:
-                        if not self.inv.backpack1:
-                            self.inv.backpack1 = self.inv.drop(slot)
-                        elif not self.inv.backpack2:
-                            self.inv.backpack2 = self.inv.drop(slot)
+                        if not self.p.inv.backpack1:
+                            self.p.inv.backpack1 = self.p.inv.drop(slot)
+                        elif not self.p.inv.backpack2:
+                            self.p.inv.backpack2 = self.p.inv.drop(slot)
 
             self.tick()
 
@@ -2457,30 +2492,30 @@ class World:
         if not item.applies:
             return item
 
-        if item.applies_in_slot and self.inv.check(item.slot) is not None:
+        if item.applies_in_slot and self.p.inv.check(item.slot) is not None:
             self.msg.m("You can only use this item if it's in the " + self.slot_to_name(item.slot) + ' slot.', True)
             return item
 
         if item.converts:
             inew = self.itemstock.get(item.converts)
 
-            if self.inv.check(inew.slot) is not None:
+            if self.p.inv.check(inew.slot) is not None:
                 self.msg.m('Your ' + self.slot_to_name(inew.slot) + ' slot needs to be free to use this.')
                 return item
 
-            self.inv.take(inew)
+            self.p.inv.take(inew)
             s = str(inew)
             s = s[0].upper() + s[1:]
             self.msg.m(s + ' is now in your ' + self.slot_to_name(inew.slot) + ' slot!', True)
 
-            self.achievements.use(item)
+            self.p.achievements.use(item)
             return None
 
         elif item.craft:
 
             newi = None
 
-            for i2 in self.inv:
+            for i2 in self.p.inv:
                 if i2 and i2.craft:
                     if item.craft[0] in i2.craft[1]:
                         newi = self.itemstock.get(i2.craft[1][item.craft[0]])
@@ -2494,78 +2529,78 @@ class World:
                 self.msg.m('You have nothing you can combine with this item.')
                 return item
 
-            self.inv.purge(i2)
-            self.achievements.craft_use(newi)
+            self.p.inv.purge(i2)
+            self.p.achievements.craft_use(newi)
             self.msg.m('Using %s and %s you have crafted %s!' % (item, i2, newi))
             return newi
 
         elif item.digging:
-            k = draw_window(['Dig in which direction?'], self.w, self.h, True)
+            k = draw_window(['Dig in which direction?'], self.d.w, self.h, True)
 
-            digspeed = self.inv.get_digspeed() + 0.1
+            digspeed = self.get_digspeed() + 0.1
 
-            self.digging = None
-            if k == 'h': self.digging = (self.px - 1, self.py, digspeed)
-            elif k == 'j': self.digging = (self.px, self.py + 1, digspeed)
-            elif k == 'k': self.digging = (self.px, self.py - 1, digspeed)
-            elif k == 'l': self.digging = (self.px + 1, self.py, digspeed)
+            self.p.digging = None
+            if k == 'h': self.p.digging = (self.px - 1, self.py, digspeed)
+            elif k == 'j': self.p.digging = (self.px, self.py + 1, digspeed)
+            elif k == 'k': self.p.digging = (self.px, self.py - 1, digspeed)
+            elif k == 'l': self.p.digging = (self.px + 1, self.py, digspeed)
             else:
                 return -1 #item
 
-            if self.digging[0] < 0 or self.digging[0] >= self.w:
-                self.digging = None
+            if self.p.digging[0] < 0 or self.p.digging[0] >= self.d.w:
+                self.p.digging = None
                 return item
 
-            if self.digging[1] < 0 or self.digging[1] >= self.h:
-                self.digging = None
+            if self.p.digging[1] < 0 or self.p.digging[1] >= self.h:
+                self.p.digging = None
 
-            if not self.digging:
+            if not self.p.digging:
                 return item
 
-            if dg.grid_is_walk(self.digging[0], self.digging[1]):
+            if dg.grid_is_walk(self.p.digging[0], self.p.digging[1]):
                 self.msg.m('There is nothing to dig there.')
-                self.digging = None
+                self.p.digging = None
             else:
                 self.msg.m("You start hacking at the wall.")
-                self.achievements.use(item)
+                self.p.achievements.use(item)
 
         elif item.healing:
 
-            if self.v_grace:
+            if self.p.v_grace:
                 self.msg.m('Your religion prohibits taking medicine.')
                 return item
 
             if item.bonus < 0:
                 self.msg.m('This pill makes your eyes pop out of their sockets!', True)
-                self.stats.tired.dec(max(dg.random_gauss(*item.healing), 0))
-                self.stats.sleep.dec(max(dg.random_gauss(*item.healing), 0))
+                self.tired().dec(max(dg.random_gauss(*item.healing), 0))
+                self.sleep().dec(max(dg.random_gauss(*item.healing), 0))
             else:
                 self.msg.m('Eating this pill makes you dizzy.')
-                self.stats.health.inc(max(dg.random_gauss(*item.healing), 0))
-                self.stats.hunger.dec(max(dg.random_gauss(*item.healing), 0))
-                self.stats.sleep.dec(max(dg.random_gauss(*item.healing), 0))
+                self.health().inc(max(dg.random_gauss(*item.healing), 0))
+                self.hunger().dec(max(dg.random_gauss(*item.healing), 0))
+                self.sleep().dec(max(dg.random_gauss(*item.healing), 0))
 
-            self.achievements.use(item)
+            self.p.achievements.use(item)
             return None
 
 
         elif item.healingsleep:
 
-            if self.v_grace:
+            if self.p.v_grace:
                 self.msg.m('Your religion prohibits taking medicine.')
                 return item
 
             if item.bonus < 0:
                 self.msg.m('You drift into a restless sleep!', True)
-                self.sleeping = max(dg.random_gauss(*item.healingsleep), 1)
-                self.forced2sleep = True
+                self.p.sleeping = max(dg.random_gauss(*item.healingsleep), 1)
+                self.p.forced2sleep = True
             else:
                 self.msg.m('You drift into a gentle sleep.')
-                self.sleeping = max(dg.random_gauss(*item.healingsleep), 1)
-                self.forced2sleep = True
-                self.healingsleep = True
+                self.p.sleeping = max(dg.random_gauss(*item.healingsleep), 1)
+                self.p.forced2sleep = True
+                self.p.healingsleep = True
 
-            self.achievements.use(item)
+            self.p.achievements.use(item)
 
             if item.count == 0:
                 return item
@@ -2573,57 +2608,57 @@ class World:
 
         elif item.food:
 
-            if self.v_grace:
+            if self.p.v_grace:
                 self.msg.m('Your religion prohibits eating unclean food.')
                 return item
 
             if item.bonus < 0:
                 self.msg.m('Yuck, eating this makes you vomit!', True)
-                self.stats.hunger.dec(max(dg.random_gauss(*item.food), 0))
+                self.hunger().dec(max(dg.random_gauss(*item.food), 0))
             else:
                 self.msg.m('Mm, yummy.')
-                self.stats.hunger.inc(max(dg.random_gauss(*item.food), 0))
+                self.hunger().inc(max(dg.random_gauss(*item.food), 0))
 
-            self.achievements.use(item)
+            self.p.achievements.use(item)
             return None
 
         elif item.booze:
 
-            if self.v_grace:
+            if self.p.v_grace:
                 self.msg.m('Your religion prohibits alcohol.')
                 return item
 
             if item.bonus < 0:
                 self.msg.m("This stuff is contaminated! You fear you're going blind!", True)
-                self.blind = True
+                self.p.blind = True
             else:
                 self.msg.m('Aaahh.')
-                self.stats.sleep.dec(max(dg.random_gauss(*self.coef.boozestrength), 0))
-                self.stats.warmth.inc(max(dg.random_gauss(*self.coef.boozestrength), 0))
+                self.sleep().dec(max(dg.random_gauss(*self.coef.boozestrength), 0))
+                self.warmth().inc(max(dg.random_gauss(*self.coef.boozestrength), 0))
 
-            self.achievements.use(item)
+            self.p.achievements.use(item)
             return None
 
         elif item.nodoz:
             
-            if self.v_grace:
+            if self.p.v_grace:
                 self.msg.m('Your religion prohibits eating pills.')
                 return item
 
             if item.bonus < 0:
                 self.msg.m('Your heart starts palpitating!', True)
-                self.stats.tired.x = min(-2.9, self.stats.tired.x)
+                self.tired().x = min(-2.9, self.tired().x)
             else:
-                n = self.stats.tired.x - (-2.9)
+                n = self.tired().x - (-2.9)
 
                 if n <= 0:
                     self.msg.m('Nothing happens.')
                 else:
                     self.msg.m('Wow, what a kick!')
-                    self.stats.sleep.inc(n)
-                    self.stats.tired.dec(n)
+                    self.sleep().inc(n)
+                    self.tired().dec(n)
 
-            self.achievements.use(item)
+            self.p.achievements.use(item)
             return None
 
         elif item.homing:
@@ -2644,10 +2679,10 @@ class World:
             else:
                 self.msg.m('You are at the spot. Look around.')
 
-            self.achievements.use(item)
+            self.p.achievements.use(item)
 
         elif item.sounding:
-            k = draw_window(['Check in which direction?'], self.w, self.h, True)
+            k = draw_window(['Check in which direction?'], self.d.w, self.h, True)
 
             s = None
             if k == 'h': s = (-1, 0)
@@ -2660,15 +2695,15 @@ class World:
             n = 0
             x = self.px
             y = self.py
-            while x >= 0 and y >= 0 and x < self.w and y < self.h:
+            while x >= 0 and y >= 0 and x < self.d.w and y < self.h:
                 x += s[0]
                 y += s[1]
                 if dg.grid_is_walk(x,y):
                     break
                 n += 1
 
-            draw_window(['Rock depth: ' + str(n)], self.w, self.h)
-            self.achievements.use(item)
+            draw_window(['Rock depth: ' + str(n)], self.d.w, self.h)
+            self.p.achievements.use(item)
 
         elif item.detector:
             s = []
@@ -2686,31 +2721,31 @@ class World:
                 s = s[:19]
                 s.append('(There is more information, but it does not fit on the screen)')
 
-            draw_window(s, self.w, self.h)
-            self.achievements.use(item)
+            draw_window(s, self.d.w, self.h)
+            self.p.achievements.use(item)
 
         elif item.cooling:
-            self.cooling = max(int(dg.random_gauss(*self.coef.coolingduration)), 1)
+            self.p.cooling = max(int(dg.random_gauss(*self.coef.coolingduration)), 1)
             self.msg.m("You cover yourself in cold mud.")
 
-            self.achievements.use(item)
+            self.p.achievements.use(item)
             return None
 
         elif item.wishing:
             self.wish()
 
-            self.achievements.use(item)
+            self.p.achievements.use(item)
             return None
 
         elif item.mapper:
-            self.mapping = item.mapper
+            self.p.mapping = item.mapper
 
             # HACK
-            for x in xrange(self.w):
+            for x in xrange(self.d.w):
                 for y in xrange(self.h):
                     dg.render_set_is_lit(x, y, True)
 
-            self.achievements.use(item)
+            self.p.achievements.use(item)
             return None
 
         elif item.jinni:
@@ -2723,7 +2758,7 @@ class World:
                 self.msg.m('Nothing happened.')
                 return None
 
-            jinni = Monster('Jinni', level=self.plev+1,
+            jinni = Monster('Jinni', level=self.p.plev+1,
                             attack=self.dlev*0.1,
                             defence=self.dlev*0.2,
                             range=max(self.dlev-1, 1),
@@ -2737,19 +2772,19 @@ class World:
             jinni.items = [self.itemstock.get('wishing')]
             self.monmap[q] = jinni
 
-            self.achievements.use(item)
+            self.p.achievements.use(item)
             return None
 
         elif item.digray:
             if item.digray[0] == 1:
-                for x in xrange(0, self.w):
+                for x in xrange(0, self.d.w):
                     self.convert_to_floor(x, self.py, False)
             if item.digray[1] == 1:
                 for y in xrange(0, self.h):
                     self.convert_to_floor(self.px, y, False)
             self.msg.m('The wand explodes in a brilliant white flash!')
 
-            self.achievements.use(item)
+            self.p.achievements.use(item)
             return None
 
         elif item.jumprange:
@@ -2757,7 +2792,7 @@ class World:
             self.px = x
             self.py = y
 
-            self.achievements.use(item)
+            self.p.achievements.use(item)
 
             if item.count is None:
                 return item
@@ -2776,7 +2811,7 @@ class World:
             self.set_feature(self.px, self.py, '^')
             self.msg.m('You spread the glue liberally on the floor.')
 
-            self.achievements.use(item)
+            self.p.achievements.use(item)
 
             if item.count is None:
                 return item
@@ -2785,19 +2820,19 @@ class World:
         elif item.ebola:
             self.msg.m('The Ebola virus is unleashed!')
             self.paste_celauto(self.px, self.py, self.celautostock.EBOLA)
-            self.achievements.use(item)
+            self.p.achievements.use(item)
             return None
 
         elif item.smoke:
             self.paste_celauto(self.px, self.py, self.celautostock.SMOKE)
-            self.achievements.use(item)
+            self.p.achievements.use(item)
             return item
 
         elif item.trapcloud:
             self.msg.m('You set the nanobots to work.')
             self.paste_celauto(self.px, self.py, self.celautostock.TRAPMAKER)
 
-            self.achievements.use(item)
+            self.p.achievements.use(item)
 
             if item.count is None:
                 return item
@@ -2809,7 +2844,7 @@ class World:
                 return item
 
             self.airfreshen(self.px, self.py, item.airfreshener)
-            self.achievements.use(item)
+            self.p.achievements.use(item)
 
             if item.ammo > 0:
                 item.ammo -= 1
@@ -2819,26 +2854,26 @@ class World:
             return item
 
         elif item.resource:
-            self.achievements.use(item)
+            self.p.achievements.use(item)
             self.colordrink(item.resource)
             return None
 
         elif item.summon:
             self.summon(self.px, self.py, item.summon[0], item.summon[1])
-            self.achievements.use(item)
+            self.p.achievements.use(item)
             return None
 
         elif item.switch_moon:
             self.moon = item.switch_moon
-            self.regen(self.w, self.h)
-            self.achievements.use(item)
+            self.regen(self.d.w, self.h)
+            self.p.achievements.use(item)
             self.msg.m('The local space-time continuum shifts slightly.', True)
             return None
 
         elif item.doppel:
             self.doppelpoint = (self.px, self.py)
             self.doppeltime = item.doppel
-            self.achievements.use(item)
+            self.p.achievements.use(item)
             self.msg.m('You activate the doppelganger.')
             return None
 
@@ -2875,7 +2910,7 @@ class World:
             else:
                 self.fight(self.monmap[(nx, ny)], True, item=item)
 
-            self.achievements.use(item)
+            self.p.achievements.use(item)
 
             if item.ammo == 0:
                 return None
@@ -2906,9 +2941,9 @@ class World:
             self.victory()
             return
 
-        self.regen(self.w, self.h)
+        self.regen(self.d.w, self.h)
         self.tick()
-        self.achievements.descend(self)
+        self.p.achievements.descend(self.p.plev, self.d.dlev, self.d.branch)
 
         if self.config.music_n >= 0:
             self.config.sound.set(self.config.music_n, rate=min(10, 2.0+(0.5*self.dlev)))
@@ -2916,7 +2951,7 @@ class World:
 
     def drop(self):
         slot = self.showinv()
-        i = self.inv.drop(slot)
+        i = self.p.inv.drop(slot)
         if not i:
             if slot in 'abcdefghi':
                 self.msg.m('There is no item in that slot.')
@@ -2975,7 +3010,7 @@ class World:
             else:
                 s.append('%c) %s' % (chr(97 + i), str(items[i])))
 
-        c = draw_window(s, self.w, self.h)
+        c = draw_window(s, self.d.w, self.h)
         c = ord(c) - 97
 
         if c < 0 or c >= len(items):
@@ -3028,13 +3063,13 @@ class World:
 
     def victory(self, msg=None):
         while 1:
-            c = draw_window(['Congratulations! You have won the game.', '', 'Press space to exit.'], self.w, self.h)
+            c = draw_window(['Congratulations! You have won the game.', '', 'Press space to exit.'], self.d.w, self.h)
             if c == ' ': break
 
-        self.stats.health.reason = 'winning'
-        self.done = True
-        self.dead = True
-        self.achievements.winner(msg)
+        self.health().reason = 'winning'
+        self.p.done = True
+        self.p.dead = True
+        self.p.achievements.winner(msg)
 
 
     def handle_mondeath(self, mon, do_drop=True, do_gain=True,
@@ -3043,9 +3078,16 @@ class World:
         if mon.inanimate:
             do_gain = False
 
-        if do_gain and mon.level > self.plev:
+        if do_gain:
+            self.p.achievements.mondeath(self.p.plev, self.d.dlev, mon, 
+                                         is_rad=is_rad, is_explode=is_explode)
+        elif is_poison:
+            self.p.achievements.mondeath(self.p.plev, self.d.dlev, mon, 
+                                         is_poison=True)
+
+        if do_gain and mon.level > self.p.plev:
             self.msg.m('You just gained level ' + str(mon.level) + '!', True)
-            self.plev = mon.level
+            self.p.plev = mon.level
 
         if do_drop:
             itemdrop = mon.items
@@ -3072,13 +3114,8 @@ class World:
 
         winner, exting = self.monsterstock.death(mon, self.moon)
 
-        if do_gain:
-            self.achievements.mondeath(self, mon, is_rad=is_rad, is_explode=is_explode)
-        elif is_poison:
-            self.achievements.mondeath(self, mon, is_poison=True)
-
         if exting:
-            self.achievements.mondone()
+            self.p.achievements.mondone()
 
         # Quests
         if self.branch in self.quests and sum(1 for m in self.monmap.itervalues() if not m.inanimate) == 1:
@@ -3090,7 +3127,7 @@ class World:
                 self.msg.m(msg, True)
 
             if questdone:
-                self.achievements.questdone(self.branch)
+                self.p.achievements.questdone(self.branch)
             else:
                 self.set_feature(mon.x, mon.y, '>')
 
@@ -3121,14 +3158,8 @@ class World:
 
         def func2(x, y):
             if x == self.px and y == self.py:
-                radimmune = False
-                if self.inv.trunk and self.inv.trunk.radimmune:
-                    radimmune = True
-                elif self.resource_timeout and self.resource == 'b':
-                    radimmune = True
-
-                if not radimmune:
-                    self.stats.health.dec(self.coef.raddamage, "radiation", self.config.sound)
+                if not self.get_radimmune():
+                    self.health().dec(self.coef.raddamage, "radiation", self.config.sound)
 
             if (x, y) in self.monmap:
                 mon = self.monmap[(x, y)]
@@ -3138,7 +3169,7 @@ class World:
                         self.handle_mondeath(mon, is_rad=True)
                         del self.monmap[(x, y)]
 
-        draw_blast2(x0, y0, self.w, self.h, rad, func1, func2)
+        draw_blast2(x0, y0, self.d.w, self.h, rad, func1, func2)
 
 
     def explode(self, x0, y0, rad):
@@ -3147,16 +3178,9 @@ class World:
 
         def f_explod(x, y):
             if x == self.px and y == self.py:
-
-                explimmune = False
-                if self.inv.trunk and self.inv.trunk.explodeimmune:
-                    explimmune = True
-                elif self.resource_timeout and self.resource == 'b':
-                    explimmune = True
-
-                if not explimmune:
-                    self.stats.health.dec(6.0, "explosion", self.config.sound)
-                    self.dead = True
+                if not self.get_explodeimmune():
+                    self.health().dec(6.0, "explosion", self.config.sound)
+                    self.p.dead = True
 
             if (x, y) in self.itemap:
                 for i in self.itemap[(x, y)]:
@@ -3194,12 +3218,12 @@ class World:
             f_explod(x, y)
 
             if (x,y) in self.featmap and self.featmap[(x,y)].explode:
-                draw_floodfill(x, y, self.w, self.h, func_ff)
+                draw_floodfill(x, y, self.d.w, self.h, func_ff)
 
             self.convert_to_floor(x, y, (dg.random_range(0, 5) == 0))
 
 
-        draw_blast(x0, y0, self.w, self.h, rad, func_r)
+        draw_blast(x0, y0, self.d.w, self.h, rad, func_r)
 
         for x, y, r, d in sorted(chains):
             self.explode(x, y, r)
@@ -3217,7 +3241,7 @@ class World:
         def func2(x, y):
             self.clear_celauto(x, y)
 
-        draw_blast2(x0, y0, self.w, self.h, rad, func1, func2, color=libtcod.yellow)
+        draw_blast2(x0, y0, self.d.w, self.h, rad, func1, func2, color=libtcod.yellow)
 
     def raise_dead(self, x0, y0, rad):
 
@@ -3232,7 +3256,7 @@ class World:
         def func2(x, y):
             self.filter_items(x, y, lambda i: (i.corpse, i.corpse), ret)
 
-        draw_blast2(x0, y0, self.w, self.h, rad, func1, func2, color=None)
+        draw_blast2(x0, y0, self.d.w, self.h, rad, func1, func2, color=None)
         return ret
 
 
@@ -3256,9 +3280,9 @@ class World:
                 self.msg.m('You push ' + sm)
                 return
             else:
-                self.stats.health.dec(6, sm, self.config.sound)
+                self.health().dec(6, sm, self.config.sound)
                 self.msg.m('You got squashed. What a silly way to die!')
-                self.dead = True
+                self.p.dead = True
                 return
 
         ##
@@ -3268,21 +3292,17 @@ class World:
         d = int(round(d))
 
         if player_move and item:
-            plev = min(max(self.plev - d + 1, 1), self.plev)
+            plev = min(max(self.p.plev - d + 1, 1), self.p.plev)
             attack = item.rangeattack
             #log.log('+', d, plev, attack)
 
         else:
-            if self.b_grace and player_move:
+            if self.p.b_grace and player_move:
                 self.msg.m('Your religion prohibits you from fighting.')
                 return
 
-            plev = self.plev
-            attack = max(self.inv.get_attack(), self.coef.unarmedattack)
-
-            if self.resource_timeout and self.resource == 'g':
-                attack = max(self.coef.green_attack, attack)
-
+            plev = self.p.plev
+            attack = self.get_attack()
 
         def roll(attack, leva, defence, levd):
             a = 0
@@ -3324,8 +3344,8 @@ class World:
                     ca = item.confattack
                     fires = item.fires
                 else:
-                    ca = self.inv.get_confattack()
-                    fires = self.inv.get_fires()
+                    ca = self.get_confattack()
+                    fires = self.get_fires()
 
                 if ca and dmg > 0 and not mon.confimmune:
                     if mon.visible or mon.visible_old:
@@ -3361,17 +3381,14 @@ class World:
             psy = False
 
             if d > 1 and mon.psyattack > 0:
-                if self.inv.get_psyimmune():
+                if self.get_psyimmune():
                     return
                 attack = mon.psyattack
                 defence = self.coef.unarmeddefence
                 psy = True
             else:
                 attack = mon.attack
-                defence = max(self.inv.get_defence(), self.coef.unarmeddefence)
-                if self.glued:
-                    defence /= self.coef.gluedefencepenalty
-
+                defence = self.get_defence()
 
             if attack == 0:
                 return
@@ -3395,31 +3412,31 @@ class World:
             elif mon.bloodsucker:
                 if dmg > 0:
                     self.msg.m('You feel weak!')
-                    self.stats.hunger.dec(mon.bloodsucker[0])
-                    self.stats.health.dec(mon.bloodsucker[0], sm, self.config.sound)
+                    self.hunger().dec(mon.bloodsucker[0])
+                    self.health().dec(mon.bloodsucker[0], sm, self.config.sound)
                     mon.fleetimeout = mon.bloodsucker[1]
 
             elif mon.hungerattack:
-                self.stats.hunger.dec(dmg)
+                self.hunger().dec(dmg)
 
             else:
-                self.stats.health.dec(dmg, sm, self.config.sound)
+                self.health().dec(dmg, sm, self.config.sound)
 
-            if self.resting:
+            if self.p.resting:
                 self.msg.m('You stop resting.')
-                self.resting = False
+                self.p.resting = False
 
-            if self.digging:
+            if self.p.digging:
                 self.msg.m('You stop digging.')
-                self.digging = None
+                self.p.digging = None
 
-            if self.sleeping and not self.forced2sleep:
-                self.sleeping = 0
-                self.forcedsleep = False
-                self.healingsleep = False
+            if self.p.sleeping and not self.p.forced2sleep:
+                self.p.sleeping = 0
+                self.p.forcedsleep = False
+                self.p.healingsleep = False
 
-            if self.stats.health.x <= -3.0:
-                self.dead = True
+            if self.health().x <= -3.0:
+                self.p.dead = True
 
 
     def look(self):
@@ -3469,7 +3486,7 @@ class World:
                 else:
                         s.append('You see a cave wall.')
 
-            k = draw_window(s, self.w, self.h, True)
+            k = draw_window(s, self.d.w, self.h, True)
 
             if   k == 'h': tx -= 1
             elif k == 'j': ty += 1
@@ -3491,7 +3508,7 @@ class World:
                 break
 
             if tx < 0: tx = 0
-            elif tx >= self.w: tx = self.w - 1
+            elif tx >= self.d.w: tx = self.d.w - 1
 
             if ty < 0: ty = 0
             elif ty >= self.h: ty = self.h - 1
@@ -3537,7 +3554,7 @@ class World:
                 tmsg = []
 
         k = draw_window(tmsg,
-                        self.w, self.h, True)
+                        self.d.w, self.h, True)
 
         poiok = (point[0] is not None)
         final_choice = False
@@ -3553,23 +3570,23 @@ class World:
             if poiok: point = (point[0], max(point[1]-1,0))
             else:     point = (self.px, max(self.py-range,0))
         elif k == 'l':
-            if poiok: point = (min(point[0]+1,self.w-1), point[1])
-            else:     point = (min(self.px+range,self.w-1), self.py)
+            if poiok: point = (min(point[0]+1,self.d.w-1), point[1])
+            else:     point = (min(self.px+range,self.d.w-1), self.py)
         elif k == 'y':
             if poiok: point = (max(point[0]-1,0), max(point[1]-1,0))
             else:     point = (max(self.px - int(range * 0.71), 0),
                                max(self.py - int(range * 0.71), 0))
         elif k == 'u':
-            if poiok: point = (min(point[0]+1,self.w-1), max(point[1]-1,0))
-            else:     point = (min(self.px + int(range * 0.71), self.w - 1),
+            if poiok: point = (min(point[0]+1,self.d.w-1), max(point[1]-1,0))
+            else:     point = (min(self.px + int(range * 0.71), self.d.w - 1),
                                max(self.py - int(range * 0.71), 0))
         elif k == 'b':
             if poiok: point = (max(point[0]-1,0), min(point[1]+1,self.h-1))
             else:     point = (max(self.px - int(range * 0.71), 0),
                                min(self.py + int(range * 0.71), self.h - 1))
         elif k == 'n':
-            if poiok:  point = (min(point[0]+1,self.w-1), min(point[1]+1,self.h-1))
-            else:      point = (min(self.px + int(range * 0.71), self.w - 1),
+            if poiok:  point = (min(point[0]+1,self.d.w-1), min(point[1]+1,self.h-1))
+            else:      point = (min(self.px + int(range * 0.71), self.d.w - 1),
                                 min(self.py + int(range * 0.71), self.h - 1))
         elif k == '.':
             if poiok is None:
@@ -3631,7 +3648,7 @@ class World:
 
 
     def show_messages(self):
-        self.msg.show_all(self.w, self.h)
+        self.msg.show_all(self.d.w, self.h)
 
 
     def wish(self, msg=None):
@@ -3639,9 +3656,9 @@ class World:
         while 1:
             if msg:
                 k = draw_window([msg, '', 'Wish for what? : ' + s],
-                                self.w, self.h)
+                                self.d.w, self.h)
             else:
-                k = draw_window(['Wish for what? : ' + s], self.w, self.h)
+                k = draw_window(['Wish for what? : ' + s], self.d.w, self.h)
 
             k = k.lower()
             if k in "abcdefghijklmnopqrstuvwxyz' -":
@@ -3654,7 +3671,7 @@ class World:
 
         i = self.itemstock.find(s)
 
-        self.achievements.wish()
+        self.p.achievements.wish()
 
         if not i:
             self.msg.m('Nothing happened!')
@@ -3675,11 +3692,10 @@ class World:
 
 
     def quit(self):
-        k = draw_window(["Really quit? Press 'y' if you are truly sure."], self.w, self.h)
+        k = draw_window(["Really quit? Press 'y' if you are truly sure."], self.d.w, self.h)
         if k == 'y':
-            self.stats.health.reason = 'quitting'
-            #self.done = True
-            self.dead = True
+            self.health().reason = 'quitting'
+            self.p.dead = True
 
 
     def show_help(self):
@@ -3709,7 +3725,7 @@ class World:
              " F9  : Toggle music.",
              " ?   : Show this help."
         ]
-        draw_window(s, self.w, self.h)
+        draw_window(s, self.d.w, self.h)
 
 
     def make_keymap(self):
@@ -3800,24 +3816,12 @@ class World:
             else:
                 return None, None
 
-        rang = mon.range
-
-        if self.b_grace:
-            rang = 12 - int(9 * (float(self.b_grace) / self.coef.b_graceduration))
-            rang = min(rang, mon.range)
-
-        camorange = self.inv.get_camorange()
-
-        if self.resource_timeout and self.resource == 'p':
-            camorange = min(self.coef.purple_camorange, camorange)
-
-        if camorange:
-            rang = min(rang, camorange)
+        rang = self.get_camorange(mon.range)
 
         if self.try_feature(x, y, 'confuse'):
             rang = 1
 
-        if dist > rang or mon.confused or (mon.sleepattack and self.sleeping):
+        if dist > rang or mon.confused or (mon.sleepattack and self.p.sleeping):
             mdx = x + dg.random_range(-1, 1)
             mdy = y + dg.random_range(-1, 1)
             if not dg.grid_is_walk(mdx, mdy):
@@ -3831,13 +3835,13 @@ class World:
             if mon.psyrange > 0 and dist <= mon.psyrange:
                 self.fight(mon, False)
 
-            repelrange = self.inv.get_repelrange()
+            repelrange = self.get_repelrange()
 
             if repelrange and dist <= repelrange and dist > 1:
                  return None, None
 
             if mon.heatseeking:
-                if (dg.grid_is_water(self.px, self.py) or self.cooling or mon.onfire):
+                if (dg.grid_is_water(self.px, self.py) or self.p.cooling or mon.onfire):
                     if mon.known_px is None or mon.known_py is None:
                         mon.known_px = mon.x
                         mon.known_py = mon.y
@@ -4052,7 +4056,7 @@ class World:
                 self.config.sound.play("wizard", mul=m)
 
 
-        d = (mon.level - self.plev)
+        d = (mon.level - self.p.plev)
         if d >= 2:
             ok = False
             if d == 2 and dg.random_range(0, 50) == 1:
@@ -4072,7 +4076,7 @@ class World:
 
 
     def paste_celauto(self, x, y, ca):
-        self.celautostock.paste(x, y, self.w, self.h, ca)
+        self.celautostock.paste(x, y, self.d.w, self.h, ca)
 
     def seed_celauto(self, x, y, ca):
         self.celautostock.seed(x, y, ca)
@@ -4166,10 +4170,10 @@ class World:
             if mon.static:
                 pass
 
-            elif (mon.visible or mon.visible_old) and not (mon.was_seen) and not self.mapping:
+            elif (mon.visible or mon.visible_old) and not (mon.was_seen) and not self.p.mapping:
                 mon.was_seen = True
                 self.msg.m('You see ' + str(mon) + '.')
-                m = max(0.25, min(3, 0.5 * (mon.level - self.plev)))
+                m = max(0.25, min(3, 0.5 * (mon.level - self.p.plev)))
                 self.config.sound.play("wobble", dur=m)
 
             elif not mon.visible:
@@ -4313,42 +4317,42 @@ class World:
 
     def draw_hud(self):
         statsgrace = None
-        if self.s_grace:
+        if self.p.s_grace:
             statsgrace = (chr(234),
-                          ((self.s_grace * 6) / self.coef.s_graceduration) + 1,
-                          (self.s_grace > self.coef.s_graceduration - self.coef.s_praytimeout))
+                          ((self.p.s_grace * 6) / self.coef.s_graceduration) + 1,
+                          (self.p.s_grace > self.coef.s_graceduration - self.coef.s_praytimeout))
 
-        elif self.v_grace:
+        elif self.p.v_grace:
             statsgrace = (chr(233),
-                          ((self.v_grace * 6) / self.coef.v_graceduration) + 1,
-                          (self.v_grace > self.coef.v_graceduration - self.coef.v_praytimeout))
+                          ((self.p.v_grace * 6) / self.coef.v_graceduration) + 1,
+                          (self.p.v_grace > self.coef.v_graceduration - self.coef.v_praytimeout))
 
-        elif self.b_grace:
+        elif self.p.b_grace:
             statsgrace = (chr(127),
-                          ((self.b_grace * 6) / self.coef.b_graceduration) + 1,
+                          ((self.p.b_grace * 6) / self.coef.b_graceduration) + 1,
                           False)
 
         statsresource = None
-        if self.resource:
-            if self.resource_timeout:
-                n = ((self.resource_timeout * 6) / self.coef.resource_timeouts[self.resource] + 1)
+        if self.p.resource:
+            if self.p.resource_timeout:
+                n = ((self.p.resource_timeout * 6) / self.coef.resource_timeouts[self.p.resource] + 1)
             else:
-                n = self.resource_buildup
+                n = self.p.resource_buildup
 
-            statsresource = (self.resource, n,
-                             True if self.resource_timeout else False)
+            statsresource = (self.p.resource, n,
+                             True if self.p.resource_timeout else False)
 
         luck = -2
 
-        if self.px > self.w / 2:
+        if self.px > self.d.w / 2:
             self.stats.draw(0, 0, grace=statsgrace, resource=statsresource, luck=luck)
         else:
-            self.stats.draw(self.w - 14, 0, grace=statsgrace, resource=statsresource, luck=luck)
+            self.stats.draw(self.d.w - 14, 0, grace=statsgrace, resource=statsresource, luck=luck)
 
         if self.py > self.h / 2:
-            self.msg.draw(15, 0, self.w - 30, self.t)
+            self.msg.draw(15, 0, self.d.w - 30, self.t)
         else:
-            self.msg.draw(15, self.h - 3, self.w - 30, self.t)
+            self.msg.draw(15, self.h - 3, self.d.w - 30, self.t)
 
 
     ### 
@@ -4359,40 +4363,20 @@ class World:
         if self.oldt != self.t:
             withtime = True
 
-        if self.resource_timeout and self.resource == 'y':
-            lightradius = self.coef.yellow_lightradius
-        else:
-            lightradius = min(max(self.inv.get_lightradius() + (lightradius or 0), 2), 15)
-
-        if self.blind:
-            lightradius /= 2
-
-        if self.b_grace:
-            n = int(15 * (float(self.b_grace) / self.coef.b_graceduration))
-            lightradius = max(lightradius, n)
-
-        if self.moon == moon.NEW:
-            lightradius += 1
-        elif self.moon == moon.FULL:
-            lightradius -= 2
-
-        lightradius += self.try_feature(self.px, self.py, 'lightbonus', 0)
-
-        if lightradius < 1:
-            lightradius = 1
+        lightradius = self.get_lightradius(lightradius)
 
         did_mapping = False
-        if self.mapping > 0:
+        if self.p.mapping > 0:
             did_mapping = True
             if withtime:
-                self.mapping -= 1
+                self.p.mapping -= 1
 
-            if self.mapping > 0:
+            if self.p.mapping > 0:
                 lightradius = 25
 
             else:
                 # HACK
-                for x in xrange(self.w):
+                for x in xrange(self.d.w):
                     for y in xrange(self.h):
                         dg.render_set_is_lit(x, y, False)
 
@@ -4408,13 +4392,7 @@ class World:
         
         did_highlight = False
 
-
-        telerange = 0
-        if self.resource_timeout and self.resource == 'p':
-            telerange = self.coef.purple_telerange
-        elif self.inv.head and self.inv.head.telepathyrange:
-            telerange = self.inv.head.telepathyrange
-
+        telerange = self.get_telepathyrange()
 
         ###
 
@@ -4445,17 +4423,17 @@ class World:
 
 
         pc = '@'
-        if self.sleeping > 1 and (self.t & 1) == 1:
+        if self.p.sleeping > 1 and (self.t & 1) == 1:
             pc = '*'
-        elif self.resting and (self.t & 1) == 1:
+        elif self.p.resting and (self.t & 1) == 1:
             pc = '.'
-        elif self.digging and (self.t & 1) == 1:
+        elif self.p.digging and (self.t & 1) == 1:
             pc = '('
         else:
             pc = '@'
 
         pccol = libtcod.white
-        if self.onfire:
+        if self.p.onfire:
             pccol = libtcod.amber
         dg.render_push_skin(self.px, self.py, pccol, pc, libtcod.black, 0, False)
 
@@ -4536,7 +4514,7 @@ class World:
         dg.state_save('savefile.dat1')
 
         self.msg.m('Saved!')
-        self.done = True
+        self.p.done = True
 
 
     def load_bones(self):
@@ -4573,7 +4551,7 @@ class World:
         self.make_paths()
 
         # HACK
-        dg.neighbors_init(self.w, self.h)
+        dg.neighbors_init(self.d.w, self.h)
 
         return True
 
@@ -4595,7 +4573,7 @@ class World:
         except:
             pass
 
-        bones.append((self.plev, self.dlev, [i for i in self.inv if i is not None and i.liveexplode is None]))
+        bones.append((self.p.plev, self.dlev, [i for i in self.p.inv if i is not None and i.liveexplode is None]))
 
         for i in bones[-1][2]:
             i.tag = None
@@ -4610,8 +4588,8 @@ class World:
 
         # Save to highscore.
 
-        self.achievements.finish(self)
-
+        self.p.achievements.finish(self.p.plev, self.d.dlev,
+                                   self.d.moon, self.health().reason)
 
         conn = sqlite3.connect('highscore.db')
         c = conn.cursor()
@@ -4629,10 +4607,10 @@ class World:
         # only play one branch; playing several branches can
         # land you a score above the max.
 
-        score = self.plev * 5
+        score = self.p.plev * 5
         score += min(self.dlev, 21) * 5
 
-        for x in self.achievements.killed_monsters:
+        for x in self.p.achievements.killed_monsters:
             if x[1] in self.monsterstock.norms:
                 score += x[0] * self.monsterstock.norms[x[1]]
 
@@ -4649,7 +4627,7 @@ class World:
 
         gameid = c.lastrowid
 
-        for a in self.achievements:
+        for a in self.p.achievements:
             c.execute('insert into ' + tbl_achievements + '(achievement, game_id) values (?, ?)',
                       (a.tag, gameid))
 
@@ -4664,7 +4642,7 @@ class World:
         atotals = []
         achievements = []
 
-        for a in self.achievements:
+        for a in self.p.achievements:
             c.execute(('select sum(score >= %d),count(*) from ' % score) + \
                       (' %s join %s on (game_id = id)' % (tbl_games, tbl_achievements)) + \
                       ' where achievement = ?', (a.tag,))
@@ -4701,7 +4679,7 @@ class World:
         s.append('%cUpload your score to http://diggr.name? (Press Y or N)%c' % (libtcod.COLCTRL_3, libtcod.COLCTRL_1))
 
         while 1:
-            c = draw_window(s, self.w, self.h)
+            c = draw_window(s, self.d.w, self.h)
             if c == 'n' or c == 'N':
                 break
             elif c == 'y' or c == 'Y':
@@ -4717,17 +4695,17 @@ class World:
                                          'Most likely, you entered the wrong password.',
                                          '',
                                          'Try again? (Press Y or N)'],
-                                        self.w, self.h)
+                                        self.d.w, self.h)
                         if c == 'n' or c == 'N':
                             done = True
                 break
 
 
 
-        s[-1] = ('Press space to ' + ('exit.' if self.done else 'try again.'))
+        s[-1] = ('Press space to ' + ('exit.' if self.p.done else 'try again.'))
 
         while 1:
-            if draw_window(s, self.w, self.h) == ' ':
+            if draw_window(s, self.d.w, self.h) == ' ':
                 break
 
 
@@ -4746,7 +4724,7 @@ class World:
                              '',
                              "      If you don't have an account with that username, it will",
                              '      be created for you automatically.'],
-                            self.w, self.h)
+                            self.d.w, self.h)
 
             if k in string.letters or k in string.digits or k in '.-_':
                 username = username + k.lower()
@@ -4765,7 +4743,7 @@ class World:
                              '',
                              'NOTE: Your password will never be sent or stored in plaintext.',
                              '      Only a secure password hash will be used.'],
-                            self.w, self.h)
+                            self.d.w, self.h)
 
             if k in string.letters or k in string.digits or k in '_-':
                 password = password + k
@@ -4890,14 +4868,14 @@ def start_game(world, w, h, oldseed=None, oldbones=None):
 
 def check_autoplay(world):
 
-    if world.sleeping > 0:
-        if world.stats.sleep.x >= 3.0 and not world.forcedsleep and not world.forced2sleep:
+    if world.p.sleeping > 0:
+        if world.stats.sleep.x >= 3.0 and not world.p.forcedsleep and not world.p.forced2sleep:
             world.msg.m('You wake up.')
-            world.sleeping = 0
-            world.healingsleep = False
+            world.p.sleeping = 0
+            world.p.healingsleep = False
             return 1
         else:
-            world.sleep()
+            world.do_sleep()
             return -1
 
     if world.resting:
@@ -4911,7 +4889,7 @@ def check_autoplay(world):
             return 1
 
         else:
-            world.rest()
+            world.do_rest()
             return -1
 
     if world.digging:
@@ -4987,7 +4965,7 @@ def main(config, replay=None):
                 world.save()
             break
 
-        if world.done or world.dead:
+        if world.p.done or world.dead:
             break
 
         world.draw()
@@ -5002,7 +4980,7 @@ def main(config, replay=None):
             libtcod.console_flush()
 
 
-        if world.dead: break
+        if world.p.dead: break
 
         key = console_wait_for_keypress()
 
@@ -5014,7 +4992,7 @@ def main(config, replay=None):
 
 
 
-    if world.dead and not world.done:
+    if world.p.dead and not world.p.done:
         world.msg.m('You die.', True)
 
     if config.music_n >= 0:
@@ -5026,14 +5004,14 @@ def main(config, replay=None):
     libtcod.console_flush()
     libtcod.console_wait_for_keypress(True)
 
-    if replay is None and world.dead:
+    if replay is None and world.p.dead:
         world.form_highscore()
 
     #log.log('DONE')
     #log.f.close()
     #log.f = None
 
-    return world.done
+    return world.p.done
 
 
 #import cProfile
