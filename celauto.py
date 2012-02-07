@@ -67,7 +67,9 @@ class CelAutoStock:
             dg.celauto_make_rule(k, v.rule[0], v.rule[1], v.rule[2])
 
 
-    def paste(self, x, y, w, h, _ca):
+    def paste(self, xy, w, h, _ca):
+        x, y = xy
+
         ca = self.stock[_ca]
 
         x -= ca.anchor[0]

@@ -174,7 +174,7 @@ class Game:
             'u': self.move_upright,
             'b': self.move_downleft,
             'n': self.move_downright,
-            '.': self.rest,
+            '.': self.do_rest,
             's': self.start_sleep,
             'r': self.start_rest,
             'q': self.drink,
@@ -240,47 +240,47 @@ class Game:
     ##
 
     def get_inv_attr(self, slots, attr, default=None):
-        ix = [ getattr(self.p.inv, slot) for slot in slots ]
+        ix = [ self.p.inv._items[slot] for slot in slots ]
         return [ getattr(i, attr, default) for i in ix ]
 
     def get_fires(self):
-        return self.get_inv_attr(['right'], 'fires')[0]
+        return self.get_inv_attr(['e'], 'fires')[0]
 
     def get_glueimmune(self):
-        return self.get_inv_attr(['left'], 'glueimmune')[0]
+        return self.get_inv_attr(['d'], 'glueimmune')[0]
 
     def get_digspeed(self):
-        return self.get_inv_attr(['head'], 'digbonus')[0]
+        return self.get_inv_attr(['a'], 'digbonus')[0]
 
     def get_springy(self):
-        return (self.get_inv_attr(['feet'], 'springy')[0] or 
+        return (self.get_inv_attr(['g'], 'springy')[0] or 
                 (self.p.resource_timeout and self.p.resource == 'y'))
 
     def get_heatbonus(self):
-        return sum(self.get_inv_attr(['trunk', 'legs'], 'heatbonus', 0))
+        return sum(self.get_inv_attr(['c', 'f'], 'heatbonus', 0))
 
     def get_radimmune(self):
-        return (self.get_inv_attr(['trunk'], 'radimmune')[0] or
+        return (self.get_inv_attr(['c'], 'radimmune')[0] or
                 (self.p.resource_timeout and self.p.resource == 'b'))
 
     def get_explodeimmune(self):
-        return (self.get_inv_attr(['trunk'], 'explodeimmune')[0] or
+        return (self.get_inv_attr(['c'], 'explodeimmune')[0] or
                 (self.p.resource_timeout and self.p.resource == 'b'))
 
     def get_confattack(self):
-        for tmp in self.get_inv_attr(['right', 'left'], 'confattack'):
+        for tmp in self.get_inv_attr(['e', 'd'], 'confattack'):
             if tmp:
                 return tmp
         return None
 
     def get_psyimmune(self):
-        return any(self.get_inv_attr(['head', 'right', 'left'], 'psyimmune'))
+        return any(self.get_inv_attr(['a', 'e', 'd'], 'psyimmune'))
 
     def get_repelrange(self):
-        return max(self.get_inv_attr(['trunk', 'left'], 'repelrange', 0))
+        return max(self.get_inv_attr(['c', 'd'], 'repelrange', 0))
 
     def get_telepathyrange(self):
-        tmp = max(self.get_inv_attr(['head'], 'telepathyrange', 0))
+        tmp = max(self.get_inv_attr(['a'], 'telepathyrange', 0))
 
         if self.p.resource_timeout and self.p.resource == 'p':
             tmp = max(self.w.coef.purple_telerange, tmp)
@@ -289,7 +289,7 @@ class Game:
 
 
     def get_camorange(self, monrange):
-        tmp = min(self.get_inv_attr(['trunk', 'feet', 'neck'], 
+        tmp = min(self.get_inv_attr(['c', 'g', 'b'], 
                                     'camorange', monrange))
 
         if self.p.resource_timeout and self.p.resource == 'p':
@@ -308,13 +308,13 @@ class Game:
         else:
             baseattack = self.w.coef.unarmedattack
 
-        return max(sum(self.get_inv_attr(['right', 'left', 'feet'], 
+        return max(sum(self.get_inv_attr(['e', 'd', 'g'], 
                                          'attack', 0),
                        baseattack))
 
     def get_defence(self):
-        tmp = max(sum(self.get_inv_attr(['head', 'left', 'trunk', 
-                                         'legs', 'feet'], 'defence', 0)),
+        tmp = max(sum(self.get_inv_attr(['a', 'd', 'c', 
+                                         'f', 'g'], 'defence', 0)),
                   self.w.coef.unarmeddefence)
 
         if self.p.glued:
@@ -326,7 +326,7 @@ class Game:
         if self.p.resource_timeout and self.p.resource == 'y':
             ret = self.w.coef.yellow_lightradius
         else:
-            tmp = sum(self.get_inv_attr(['head', 'neck', 'legs', 'right', 'trunk'],
+            tmp = sum(self.get_inv_attr(['a', 'b', 'f', 'e', 'c'],
                                         'lightradius', 0))
             ret = min(max(tmp + (default or 0), 2), 15)
 
@@ -3918,34 +3918,34 @@ class Game:
                 self.do_sleep()
                 return -1
 
-        if self.resting:
+        if self.p.resting:
             if self.tired().x >= 3.0:
                 self.p.msg.m('You stop resting.')
-                self.resting = False
+                self.p.resting = False
                 return 1
 
             elif self.new_visibles:
-                self.resting = False
+                self.p.resting = False
                 return 1
 
             else:
                 self.do_rest()
                 return -1
 
-        if self.digging:
-            height = dg.grid_get_height(self.digging[0][0], self.digging[0][1])
+        if self.p.digging:
+            height = dg.grid_get_height(self.p.digging[0][0], self.p.digging[0][1])
 
             if height <= -10:
-                self.convert_to_floor(self.digging[0], False)
-                self.digging = None
+                self.convert_to_floor(self.p.digging[0], False)
+                self.p.digging = None
                 return 1
 
             elif self.new_visibles:
-                self.digging = None
+                self.p.digging = None
                 return 1
 
             else:
-                dg.grid_set_height(self.digging[0][0], self.digging[0][1], height - self.digging[2])
+                dg.grid_set_height(self.p.digging[0][0], self.p.digging[0][1], height - self.p.digging[2])
                 self.tick()
                 return -1
 
@@ -3991,7 +3991,7 @@ class Game:
             self.endgame(do_highscore)
             return False
 
-        key = console_wait_for_keypress()
+        key = dgsys.console_wait_for_keypress()
 
         if chr(key.c) in self.ckeys:
             self.ckeys[chr(key.c)]()
