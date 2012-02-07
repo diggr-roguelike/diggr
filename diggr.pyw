@@ -42,11 +42,6 @@ from celauto import *
 
 
 
-
-
-
-
-
 class Player:
     def __init__(self):
 
@@ -162,8 +157,67 @@ class Game:
                        'q': (libtcod.white,),
                        'qk': (libtcod.grey,) }
         
+        self.make_keymap()
+
+        ###
+
+    
+    ###
+
+    def make_keymap(self):
+        self.ckeys = {
+            'h': self.move_left,
+            'j': self.move_down,
+            'k': self.move_up,
+            'l': self.move_right,
+            'y': self.move_upleft,
+            'u': self.move_upright,
+            'b': self.move_downleft,
+            'n': self.move_downright,
+            '.': self.rest,
+            's': self.start_sleep,
+            'r': self.start_rest,
+            'q': self.drink,
+            'p': self.pray,
+            'a': self.showinv_apply,
+            'A': self.ground_apply,
+            'z': self.tagged_apply,
+            'i': self.showinv_interact,
+            '>': self.descend,
+            'd': self.drop,
+            ',': self.take,
+            '/': self.look,
+            'P': self.show_messages,
+            'Q': self.quit,
+            '?': self.show_help,
+            'S': self.save
+            }
+        self.vkeys = {
+            libtcod.KEY_KP4: self.move_left,
+            libtcod.KEY_KP6: self.move_right,
+            libtcod.KEY_KP8: self.move_up,
+            libtcod.KEY_KP2: self.move_down,
+            libtcod.KEY_KP7: self.move_upleft,
+            libtcod.KEY_KP9: self.move_upright,
+            libtcod.KEY_KP1: self.move_downleft,
+            libtcod.KEY_KP3: self.move_downright,
+
+            libtcod.KEY_LEFT: self.move_left,
+            libtcod.KEY_RIGHT: self.move_right,
+            libtcod.KEY_UP: self.move_up,
+            libtcod.KEY_DOWN: self.move_down,
+            libtcod.KEY_HOME: self.move_upleft,
+            libtcod.KEY_PAGEUP: self.move_upright,
+            libtcod.KEY_END: self.move_downleft,
+            libtcod.KEY_PAGEDOWN: self.move_downright,
+
+            libtcod.KEY_F11: self.toggle_fullscreen,
+            libtcod.KEY_F10: self.toggle_sound,
+            libtcod.KEY_F9: self.toggle_music
+            }
 
 
+    ##
 
     def health(self): return self.p.stats.health
     def sleep(self):  return self.p.stats.sleep
@@ -2783,60 +2837,6 @@ class Game:
         ]
         draw_window(s)
 
-
-    def make_keymap(self):
-        self.ckeys = {
-            'h': self.move_left,
-            'j': self.move_down,
-            'k': self.move_up,
-            'l': self.move_right,
-            'y': self.move_upleft,
-            'u': self.move_upright,
-            'b': self.move_downleft,
-            'n': self.move_downright,
-            '.': self.rest,
-            's': self.start_sleep,
-            'r': self.start_rest,
-            'q': self.drink,
-            'p': self.pray,
-            'a': self.showinv_apply,
-            'A': self.ground_apply,
-            'z': self.tagged_apply,
-            'i': self.showinv_interact,
-            '>': self.descend,
-            'd': self.drop,
-            ',': self.take,
-            '/': self.look,
-            'P': self.show_messages,
-            'Q': self.quit,
-            '?': self.show_help,
-            'S': self.save
-            }
-        self.vkeys = {
-            libtcod.KEY_KP4: self.move_left,
-            libtcod.KEY_KP6: self.move_right,
-            libtcod.KEY_KP8: self.move_up,
-            libtcod.KEY_KP2: self.move_down,
-            libtcod.KEY_KP7: self.move_upleft,
-            libtcod.KEY_KP9: self.move_upright,
-            libtcod.KEY_KP1: self.move_downleft,
-            libtcod.KEY_KP3: self.move_downright,
-
-            libtcod.KEY_LEFT: self.move_left,
-            libtcod.KEY_RIGHT: self.move_right,
-            libtcod.KEY_UP: self.move_up,
-            libtcod.KEY_DOWN: self.move_down,
-            libtcod.KEY_HOME: self.move_upleft,
-            libtcod.KEY_PAGEUP: self.move_upright,
-            libtcod.KEY_END: self.move_downleft,
-            libtcod.KEY_PAGEDOWN: self.move_downright,
-
-            libtcod.KEY_F11: self.toggle_fullscreen,
-            libtcod.KEY_F10: self.toggle_sound,
-            libtcod.KEY_F9: self.toggle_music
-            }
-
-
     def walk_monster(self, mon, dist, xy):
 
         if mon.moldspew and (self.w.t % mon.moldspew[2]) == 0:
@@ -3395,9 +3395,9 @@ class Game:
         luck = -2
 
         if self.d.pc[0] > self.d.w / 2:
-            self.stats.draw(0, 0, grace=statsgrace, resource=statsresource, luck=luck)
+            self.p.stats.draw(0, 0, grace=statsgrace, resource=statsresource, luck=luck)
         else:
-            self.stats.draw(self.d.w - 14, 0, grace=statsgrace, resource=statsresource, luck=luck)
+            self.p.stats.draw(self.d.w - 14, 0, grace=statsgrace, resource=statsresource, luck=luck)
 
         if self.d.pc[1] > self.d.h / 2:
             self.p.msg.draw(15, 0, self.d.w - 30, self.w.t)
@@ -3877,83 +3877,134 @@ class Game:
             self.config.music_n = self.config.sound.play("music", rate=min(10, 2.0+(0.5*self.d.dlev)))
             self.p.msg.m('Music ON.')
 
+    def start_game(self, w, h, oldseed=None, oldbones=None):
+
+        if oldseed or not self.load():
+            if oldseed:
+                self.w._seed = oldseed
+            else:
+                self.w._seed = int(time.time())
+
+            if oldbones is not None:
+                self.w.bones = oldbones
+            else:
+                self.load_bones()
+
+            #log.f = open('LOG.%d' % self._seed, 'a')
+
+            dg.random_init(self.w._seed)
+
+            dgsys._inputs = []
+
+            self.regen(w, h)
+            self.generate_inv()
+            self.p.msg.m("Kill all the monsters in the dungeon or reach dungeon level 26 to win the game.", True)
+            self.p.msg.m("Please press '?' to see help.")
+
+        if self.config.music_n != -1:
+            self.config.music_n = self.config.sound.play("music", 
+                                                         rate=min(10, 2.0+(0.5*self.d.dlev)))
+
+
+    def check_autoplay(self):
+
+        if self.p.sleeping > 0:
+            if self.sleep().x >= 3.0 and not self.p.forcedsleep and not self.p.forced2sleep:
+                self.p.msg.m('You wake up.')
+                self.p.sleeping = 0
+                self.p.healingsleep = False
+                return 1
+            else:
+                self.do_sleep()
+                return -1
+
+        if self.resting:
+            if self.tired().x >= 3.0:
+                self.p.msg.m('You stop resting.')
+                self.resting = False
+                return 1
+
+            elif self.new_visibles:
+                self.resting = False
+                return 1
+
+            else:
+                self.do_rest()
+                return -1
+
+        if self.digging:
+            height = dg.grid_get_height(self.digging[0][0], self.digging[0][1])
+
+            if height <= -10:
+                self.convert_to_floor(self.digging[0], False)
+                self.digging = None
+                return 1
+
+            elif self.new_visibles:
+                self.digging = None
+                return 1
+
+            else:
+                dg.grid_set_height(self.digging[0][0], self.digging[0][1], height - self.digging[2])
+                self.tick()
+                return -1
+
+        return 0
+
+
+    def endgame(self, do_highscore):
+        if self.p.dead and not self.p.done:
+            self.p.msg.m('You die.', True)
+
+        if config.music_n >= 0:
+            config.sound.stop(config.music_n)
+
+        self.w.oldt = self.w.t
+        self.p.msg.m('*** Press any key ***', True)
+        self.draw()
+        libtcod.console_flush()
+        libtcod.console_wait_for_keypress(True)
+
+        if do_highscore and self.p.dead:
+            self.form_highscore()
+
+
+    def mainloop(self, do_highscore):
+
+        if self.p.done or self.p.dead:
+            self.endgame(do_highscore)
+            return False
+
+        self.draw()
+        libtcod.console_flush()
+
+        r = self.check_autoplay()
+        if r == -1:
+            libtcod.console_check_for_keypress()
+            return True
+
+        elif r == 1:
+            self.draw()
+            libtcod.console_flush()
+
+        if self.p.dead:
+            self.endgame(do_highscore)
+            return False
+
+        key = console_wait_for_keypress()
+
+        if chr(key.c) in self.ckeys:
+            self.ckeys[chr(key.c)]()
+
+        elif key.vk in self.vkeys:
+            self.vkeys[key.vk]()
 
 
 
-def start_game(world, w, h, oldseed=None, oldbones=None):
 
-    if oldseed or not world.load():
-        if oldseed:
-            world.w._seed = oldseed
-        else:
-            world.w._seed = int(time.time())
-
-        if oldbones is not None:
-            world.w.bones = oldbones
-        else:
-            world.load_bones()
-
-        #log.f = open('LOG.%d' % world._seed, 'a')
-
-        dg.random_init(world.w._seed)
-
-        dgsys._inputs = []
-
-        world.regen(w, h)
-        world.generate_inv()
-        world.p.msg.m("Kill all the monsters in the dungeon or reach dungeon level 26 to win the game.", True)
-        world.p.msg.m("Please press '?' to see help.")
-
-def check_autoplay(world):
-
-    if world.p.sleeping > 0:
-        if world.stats.sleep.x >= 3.0 and not world.p.forcedsleep and not world.p.forced2sleep:
-            world.p.msg.m('You wake up.')
-            world.p.sleeping = 0
-            world.p.healingsleep = False
-            return 1
-        else:
-            world.do_sleep()
-            return -1
-
-    if world.resting:
-        if world.stats.tired.x >= 3.0:
-            world.p.msg.m('You stop resting.')
-            world.resting = False
-            return 1
-
-        elif world.new_visibles:
-            world.resting = False
-            return 1
-
-        else:
-            world.do_rest()
-            return -1
-
-    if world.digging:
-        height = dg.grid_get_height(world.digging[0][0], world.digging[0][1])
-
-        if height <= -10:
-            world.convert_to_floor(world.digging[0], False)
-            world.digging = None
-            return 1
-
-        elif world.new_visibles:
-            world.digging = None
-            return 1
-
-        else:
-            dg.grid_set_height(world.digging[0][0], world.digging[0][1], height - world.digging[2])
-            world.tick()
-            return -1
-
-    return 0
-
+######
 
 def main(config, replay=None):
-
-    #log.f = open('qqq1', 'a')
-    #log.log('START')
 
     oldseed = None
     oldbones = None
@@ -3968,28 +4019,20 @@ def main(config, replay=None):
     w = 80
     h = 25
 
-
-    #libtcod.sys_set_renderer(libtcod.RENDERER_SDL)
-
     config.load()
 
-    font = 'font.png' #'terminal10x16_gs_ro.png'
+    font = 'font.png'
     libtcod.console_set_custom_font(font, libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_ASCII_INROW)
     libtcod.console_init_root(w, h, 'Diggr', config.fullscreen, libtcod.RENDERER_SDL)
     libtcod.sys_set_fps(30)
-    #cons = libtcod.console_new(w, h)
-    #cons = None
 
-    world = Game(config)
-    world.make_keymap()
+    game = Game(config)
 
     if replay is not None:
-        world.save_disabled = True
+        game.save_disabled = True
 
-    start_game(world, w, h, oldseed=oldseed, oldbones=oldbones)
+    game.start_game(w, h, oldseed=oldseed, oldbones=oldbones)
 
-    if config.music_n != -1:
-        config.music_n = config.sound.play("music", rate=min(10, 2.0+(0.5*world.d.dlev)))
 
     while 1:
 
@@ -3999,56 +4042,15 @@ def main(config, replay=None):
                 # To make replays work.
                 dgsys._inputs.append((ord('S'), 0))
 
-                world.save()
+                game.save()
             break
 
-        if world.p.done or world.dead:
+        ok = game.mainloop(replay is None)
+
+        if not ok:
             break
 
-        world.draw()
-        libtcod.console_flush()
-
-        r = check_autoplay(world)
-        if r == -1:
-            libtcod.console_check_for_keypress()
-            continue
-        elif r == 1:
-            world.draw()
-            libtcod.console_flush()
-
-
-        if world.p.dead: break
-
-        key = console_wait_for_keypress()
-
-        if chr(key.c) in world.ckeys:
-            world.ckeys[chr(key.c)]()
-
-        elif key.vk in world.vkeys:
-            world.vkeys[key.vk]()
-
-
-
-    if world.p.dead and not world.p.done:
-        world.p.msg.m('You die.', True)
-
-    if config.music_n >= 0:
-        config.sound.stop(config.music_n)
-
-    world.w.oldt = world.w.t
-    world.p.msg.m('*** Press any key ***', True)
-    world.draw()
-    libtcod.console_flush()
-    libtcod.console_wait_for_keypress(True)
-
-    if replay is None and world.p.dead:
-        world.form_highscore()
-
-    #log.log('DONE')
-    #log.f.close()
-    #log.f = None
-
-    return world.p.done
+    return game.p.done
 
 
 #import cProfile
