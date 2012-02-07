@@ -785,9 +785,7 @@ class Game:
             elif self.d.moon in (moon.FIRST_QUARTER, moon.LAST_QUARTER):
                 gentype = -1
 
-            __tt = time.time()
             dg.grid_generate(gentype)
-            print '  regen 1', time.time() - __tt
 
         self.make_feats()
         self.make_paths()
@@ -806,7 +804,6 @@ class Game:
             dg.render_set_env(libtcod.darkest_blue, 0.4)
         else:
             dg.render_set_env(libtcod.white, 0)
-
 
 
     def generate_inv(self):
