@@ -2,668 +2,35 @@
 
 import math
 import os
-#import random
 import copy
 import time
 
 import cPickle
+import sqlite3
 
 import libtcodpy as libtcod
 
-import sqlite3
-
-import sounds
-import moon
-
 import libdiggrpy as dg
 
+import moon
 
-class Logger:
-    def __init__(self):
-        self.f = None
+from xy import *
 
-    def log(self, *x):
-        if self.f:
-            print >> self.f, ' '.join(str(i) for i in x)
-        else:
-            print ' '.join(str(i) for i in x)
+import dgsys
 
-# log = Logger()
 
-# random__ = random
+##
+##
+##
 
-# class random(object):
-#     @staticmethod
-#     def randint(*a):
-#         log.log('randint', a)
-#         return random__.randint(*a)
-#     @staticmethod
-#     def seed(*a):
-#         log.log('seed', a)
-#         return random__.seed(*a)
-#     @staticmethod
-#     def gauss(*a):
-#         log.log('gauss', a)
-#         return random__.gauss(*a)
-#     @staticmethod
-#     def uniform(*a):
-#         log.log('uniform', a)
-#         return random__.uniform(*a)
-#     @staticmethod
-#     def choice(*a):
-#         log.log('choice', a)
-#         return random__.choice(*a)
+from flair import *
 
+from coeffs import * 
 
-# B: large bird
-# d: small dinosaur
-# D: dinosaur
-# f: faerie
-# F: powerful faerie
-# G: Japanese giant reptile
-# h: humanoid
-# H: powerful human
-# k: knight, warrior or soldier
-# K: epic hero, demigod or deity
-# o: turtle, armadillo or porcupine
-# O: large turtle
-# q: quadruped mammal
-# Q: huge quadriped mammal
-# R: large reptile
-# S: large snake
-# u: urthian being
-# U: urthian megatherian
-# v: apparition, illusion or digital construct
-# V: powerful digital construct
-# w: worm
-# W: giant worm
-# x: insect, fungus or plant
-# X: huge insect or insectoid
-# y: undead
-# Y: elder undead
-# z: robot
-# Z: large robot
-
-
-# a: find the monolith
-# b: circle of cthulhu: sacrifice 5 monsters and craft the call of cthulhu
-# c: the graphite vault/maze, with root password inside (crystalline graphite, carbonized graphite)
-# d: none, but add vaults with colored fountains
-# e: eye of kali (from Conan), with statue of kali
-
-
-global _version
-_version = '12.02.05'
-
-global _inputs
-global _inputqueue
-_inputqueue = None
-
-global _inputdelay
-_inputdelay = 100
-
-
-class fakekey:
-    def __init__(self, c, vk):
-        self.c = c
-        self.vk = vk
-
-class Config:
-    def __init__(self, sound_enabled=True):
-        self.fullscreen = False
-        self.sound_enabled = True
-        self.music_enabled = True
-
-        self.sound = sounds.Engine(sound_enabled)
-        self.music_n = None
-
-        self.cfgfile = {}
-        self.load()
-    
-    def load(self):
-        try:
-            self.cfgfile = eval(open('diggr.cfg').read())
-        except:
-            pass
-
-        if 'fullscreen' in self.cfgfile:
-            self.fullscreen = bool(self.cfgfile['fullscreen'])
-
-        if 'sound' in self.cfgfile:
-            self.sound_enabled = bool(self.cfgfile['sound'])
-
-        if 'music' in self.cfgfile:
-            self.music_enabled = bool(self.cfgfile['music'])
-
-
-
-def console_wait_for_keypress():
-    global _inputqueue
-    global _inputdelay
-
-    if _inputqueue is not None:
-
-        if len(_inputqueue) == 0:
-            raise Exception('Malformed replay file.')
-
-        c, vk = _inputqueue[0]
-        _inputqueue = _inputqueue[1:]
-
-        if _inputdelay < 1000:
-            tmp = libtcod.console_check_for_keypress()
-        else:
-            tmp = libtcod.console_wait_for_keypress(False)
-
-        if tmp.vk == libtcod.KEY_RIGHT and _inputdelay > 20:
-            _inputdelay -= (20 if _inputdelay <= 200 else 200)
-        elif tmp.vk == libtcod.KEY_LEFT and _inputdelay < 1000:
-            _inputdelay += (20 if _inputdelay < 200 else 200)
-        elif tmp.c == 32: # space
-            _inputdelay = 1000
-
-        if _inputdelay < 1000:
-            libtcod.sys_sleep_milli(_inputdelay)
-
-        #log.log('  key:', (chr(c) if c > 31 else ''), c, vk)
-        return fakekey(c, vk)
-
-    k = libtcod.console_wait_for_keypress(False)
-    _inputs.append((k.c, k.vk))
-    #log.log('  key:', (chr(k.c) if k.c > 31 else ''), k.c, k.vk)
-    return k
-
-
-class Coeffs:
-    def __init__(self):
-        self.movetired = 0.01
-        self.movesleep = 0.005
-        self.movethirst = 0.005
-        self.movehunger = 0.0005
-
-        self.resttired = 0.03
-        self.restsleep = 0.005
-        self.restthirst = 0.005
-        self.resthunger = 0.0005
-
-        self.sleeptired = 0.06
-        self.sleepsleep = 0.01
-        self.sleepthirst = 0.005
-        self.sleephunger = 0.0005
-
-        self.sleeptime = (350, 50)
-        self.quicksleeptime = (50, 10)
-        self.waterpois = 0.85
-        self.watercold = 0.03
-
-        self.colddamage = 0.03
-        self.thirstdamage = 0.02
-        self.hungerdamage = 0.01
-        self.healingsleep = 0.02
-
-        self.unarmedattack = 0.1
-        self.unarmeddefence = 0.0
-
-        self.nummonsters = (8, 1)
-        self.monlevel = 0.75
-        self.numitems = (3, 1.5)
-        self.itemlevel = 0.75
-
-        self.boozestrength = (2, 0.5)
-        self.coolingduration = (50, 5)
-
-        self.glueduration = (10,1)
-        self.gluedefencepenalty = 3
-
-        self.shivadecstat = 3.5
-        self.s_graceduration = 1000
-        self.v_graceduration = 500
-        self.b_graceduration = 1500
-
-        self.s_praytimeout = 300
-        self.v_praytimeout = 150
-
-        self.raddamage = 3.0
-
-        self.regeneration = 0.01
-        self.green_attack = 12.0
-        self.yellow_lightradius = 18
-        self.purple_telerange = 12
-        self.purple_camorange = 3
-
-        self.moldchance = 2
-
-        self.burnduration = 8
-        self.burndamage = 0.76
-
-        self.resource_timeouts = {'r': 300,
-                                  'g': 400,
-                                  'y': 600,
-                                  'b': 400,
-                                  'p': 500}
-
-
-class Stat:
-    def __init__(self):
-        self.x = 3.0
-        self.reason = None
-
-    def dec(self, dx, reason=None, sound=None):
-        if reason and self.x > -3.0:
-            self.reason = reason
-        self.x -= dx
-        if self.x <= -3.0: self.x = -3.0
-
-        if sound:
-            sound.play("windnoise", dur=max(dx, 0.1))
-
-    def inc(self, dx):
-        self.x += dx
-        if self.x > 3.0: self.x = 3.0
-
-class Stats:
-    def __init__(self):
-        self.health = Stat()
-        self.sleep = Stat()
-        self.tired = Stat()
-        self.hunger = Stat()
-        self.thirst = Stat()
-        self.warmth = Stat()
-
-        libtcod.console_set_color_control(libtcod.COLCTRL_1, libtcod.white, libtcod.black)
-        libtcod.console_set_color_control(libtcod.COLCTRL_2, libtcod.darker_green, libtcod.black)
-        libtcod.console_set_color_control(libtcod.COLCTRL_3, libtcod.yellow, libtcod.black)
-        libtcod.console_set_color_control(libtcod.COLCTRL_4, libtcod.red, libtcod.black)
-        libtcod.console_set_color_control(libtcod.COLCTRL_5, libtcod.gray, libtcod.black)
-
-    def draw(self, x, y, grace=None, resource=None, luck=None):
-        s = "%cHealth: %c%s\n" \
-            "%cWarmth: %c%s\n" \
-            "%c Tired: %c%s\n" \
-            "%c Sleep: %c%s\n" \
-            "%cThirst: %c%s\n" \
-            "%cHunger: %c%s\n"
-
-        if grace:
-            s += "%c%cGrace: %c%s\n" % \
-                (libtcod.COLCTRL_1, grace[0],
-                 libtcod.COLCTRL_4 if grace[2] else libtcod.COLCTRL_3,
-                 chr(175) * min(grace[1], 6))
-
-        if resource:
-            rdefs = {'r': ("   Red", libtcod.red),
-                     'g': (" Green", libtcod.dark_green),
-                     'y': ("Yellow", libtcod.yellow),
-                     'b': ("  Blue", libtcod.blue),
-                     'p': ("Purple", libtcod.purple) }
-
-            ss, col = rdefs[resource[0]]
-            col2 = (col if resource[2] else libtcod.white) 
-            col = (max(col.r,1),max(col.g,1),max(col.b,1))
-            col2 = (max(col2.r,1),max(col2.g,1),max(col2.b,1))
-            s += "%c%c%c%c%s: %c%c%c%c%s\n" % \
-                (libtcod.COLCTRL_FORE_RGB, col[0], col[1], col[2], ss,
-                 libtcod.COLCTRL_FORE_RGB, col2[0], col2[1], col2[2],
-                 chr(175) * min(resource[1], 6))
-
-        if luck:
-            luck = max(-3, min(3, luck))
-            if luck < 0:
-                l = abs(luck)
-                s += "%c  Luck: %c%s%s\n" % \
-                    (libtcod.COLCTRL_1, libtcod.COLCTRL_4, (3 - l) * ' ', l * chr(18))
-            else:
-                s += "%c  Luck: %c   %s\n" % \
-                    (libtcod.COLCTRL_1, libtcod.COLCTRL_3, luck * chr(17))
-
-
-        def pr(x):
-            if x >= 2.0: return    '   +++'
-            elif x >= 1.0: return  '   ++'
-            elif x >= 0.0: return  '   +'
-            elif x >= -1.0: return '  -'
-            elif x >= -2.0: return ' --'
-            else: return           '---'
-
-        def cl(x):
-            if x >= 1.5: return libtcod.COLCTRL_2
-            elif x >= -0.5: return libtcod.COLCTRL_3
-            else: return libtcod.COLCTRL_4
-
-        h = self.health.x
-        d = self.warmth.x
-        t = self.tired.x
-        e = self.sleep.x
-        i = self.thirst.x
-        u = self.hunger.x
-
-        q = (libtcod.COLCTRL_1, cl(h), pr(h),
-             libtcod.COLCTRL_1, cl(d), pr(d),
-             libtcod.COLCTRL_1, cl(t), pr(t),
-             libtcod.COLCTRL_1, cl(e), pr(e),
-             libtcod.COLCTRL_1, cl(i), pr(i),
-             libtcod.COLCTRL_1, cl(u), pr(u))
-
-        libtcod.console_print(None, x, y, s % q)
-
-
-
-
-_kbdmap = {
-    libtcod.KEY_LEFT: 'h',
-    libtcod.KEY_RIGHT: 'l',
-    libtcod.KEY_UP: 'k',
-    libtcod.KEY_DOWN: 'j',
-    libtcod.KEY_HOME: 'y',
-    libtcod.KEY_PAGEUP: 'u',
-    libtcod.KEY_END: 'b',
-    libtcod.KEY_PAGEDOWN: 'n',
-    libtcod.KEY_KP4: 'h',
-    libtcod.KEY_KP6: 'l',
-    libtcod.KEY_KP8: 'k',
-    libtcod.KEY_KP2: 'j',
-    libtcod.KEY_KP7: 'y',
-    libtcod.KEY_KP9: 'u',
-    libtcod.KEY_KP1: 'b',
-    libtcod.KEY_KP3: 'n'
-}
-
-def draw_window(msg, do_mapping=False):
-
-    w = tcod.console_get_width()
-    h = tcod.console_get_height()
-
-    maxl = 0
-    for x in msg:
-        maxl = max(len(x), maxl)
-
-    l = len(msg)
-    s = '\n'.join(msg)
-    s = ('%c' % libtcod.COLCTRL_1) + s
-
-    x0 = max(w - maxl - 4, 0)
-    y0 = min(l + 2, h)
-    libtcod.console_set_default_background(None, libtcod.darkest_blue)
-    libtcod.console_rect(None, x0, 0, w - x0, y0, True, libtcod.BKGND_SET)
-    libtcod.console_print_rect(None, x0 + 2, 1, w - x0 - 2, y0 - 1, s)
-    libtcod.console_set_default_background(None, libtcod.black)
-
-    libtcod.console_flush()
-    k = console_wait_for_keypress()
-
-    libtcod.console_rect(None, x0, 0, w - x0, y0, True)
-    libtcod.console_flush()
-
-    if do_mapping:
-        if k.vk in _kbdmap: return _kbdmap[k.vk]
-
-    return chr(k.c)
-
-# XXY
-def draw_blast(xy, w, h, r, func):
-    x, y = xy
-
-    x0 = min(x - r, 0)
-    y0 = min(y - r, 0)
-    x1 = max(x + r + 1, w)
-    y1 = max(y + r + 1, h)
-    c = []
-    for xi in xrange(x0, x1):
-        for yi in xrange(y0, y1):
-            d = math.sqrt(math.pow(abs(yi - y),2) + math.pow(abs(xi - x),2))
-            if d <= r and xi >= 0 and xi < w and yi >= 0 and yi < h:
-                c.append((xi, yi))
-
-    def dr():
-        for c0 in c:
-            libtcod.console_put_char_ex(None, c0[0], c0[1], '*', fore, back)
-        libtcod.console_flush()
-        libtcod.sys_sleep_milli(100)
-
-    back = libtcod.darkest_red
-    fore = libtcod.yellow
-    dr()
-    fore = libtcod.color_lerp(fore, back, 0.5)
-    dr()
-    fore = libtcod.color_lerp(fore, back, 0.5)
-    dr()
-    for c0 in c:
-        func(c0)
-
-
-def draw_blast2(xy, w, h, r, func1, func2, color=libtcod.light_azure):
-    x,y = xy
-
-    x0 = min(x - r, 0)
-    y0 = min(y - r, 0)
-    x1 = max(x + r + 1, w)
-    y1 = max(y + r + 1, h)
-    c = []
-    for xi in xrange(x0, x1):
-        for yi in xrange(y0, y1):
-            d = math.sqrt(math.pow(abs(yi - y),2) + math.pow(abs(xi - x),2))
-            if d <= r and xi >= 0 and xi < w and yi >= 0 and yi < h:
-                if func1((xi, yi)):
-                    c.append((xi, yi))
-
-    def dr():
-        for c0 in c:
-            libtcod.console_put_char_ex(None, c0[0], c0[1], '*', fore, back)
-        libtcod.console_flush()
-        libtcod.sys_sleep_milli(100)
-
-    if color is not None:
-        back = libtcod.darkest_blue
-        fore = color
-        dr()
-        fore = libtcod.color_lerp(fore, back, 0.5)
-        dr()
-        fore = libtcod.color_lerp(fore, back, 0.5)
-        dr()
-
-    for c0 in c:
-        func2(c0)
-
-
-# XXY
-def draw_floodfill(xy, w, h, func):
-
-    procd = set()
-
-    toproc = set()
-    toproc.add(xy)
-
-    while 1:
-        x_, y_ = toproc.pop()
-
-        for xi in xrange(x_-1, x_+2):
-            for yi in xrange(y_-1, y_+2):
-
-                if xi < 0 or yi < 0 or xi >= w or yi >= h:
-                    continue
-
-                xyi = (xi, yi)
-
-                if xyi in procd:
-                    continue
-
-                procd.add(xyi)
-
-                if func(xyi):
-                    toproc.add(xyi)
-
-        if len(toproc) == 0:
-            break
-
-    def dr():
-        for c0 in procd:
-            libtcod.console_put_char_ex(None, c0[0], c0[1], '*', fore, back)
-        libtcod.console_flush()
-        libtcod.sys_sleep_milli(100)
-
-    back = libtcod.darkest_red
-    fore = libtcod.yellow
-    dr()
-    fore = libtcod.color_lerp(fore, back, 0.5)
-    dr()
-    fore = libtcod.color_lerp(fore, back, 0.5)
-    dr()
-
-
-
-class Messages:
-    def __init__(self):
-        self.strings = []
-
-    def draw(self, x, y, w, turn):
-        l = []
-        for v,m,z in self.strings[:3]:
-            if z[0] is None or z[0] >= turn:
-                l.append('%c%s' % (v or libtcod.COLCTRL_1, m))
-                z[0] = turn
-            else:
-                l.append('%c%s' % (libtcod.COLCTRL_5, m))
-
-        libtcod.console_print_rect(None, x, y, w, 3, '\n'.join(l))
-
-    def m(self, s, bold = None):
-        if len(self.strings) > 0 and s == self.strings[0][1]:
-            self.strings[0][2][0] = None
-            return
-
-        if bold:
-            self.strings.insert(0, (libtcod.COLCTRL_3, s, [None]))
-        else:
-            self.strings.insert(0, (None, s, [None]))
-        if len(self.strings) > 25:
-            self.strings.pop()
-
-    def show_all(self):
-        l = []
-        for v,m,z in self.strings[:24]:
-            if v:
-                l.append('%c%s' % (v,m))
-            elif len(l) == 0:
-                l.append('%c%s' % (libtcod.COLCTRL_1, m))
-            else:
-                l.append('%c%s' % (libtcod.COLCTRL_5, m))
-        draw_window(l)
-
-
-class Inventory:
-    def __init__(self):
-        self._items = {
-            'a': None,
-            'b': None,
-            'c': None,
-            'd': None,
-            'e': None,
-            'f': None,
-            'g': None,
-            'h': None,
-            'i': None }
-        self._slotnames = {
-            'a': 'head',
-            'b': 'neck',
-            'c': 'trunk',
-            'd': 'left hand',
-            'e': 'right hand',
-            'f': 'legs',
-            'g': 'feet',
-            'h': 'backpack 1',
-            'i': 'backpack 2'}
-        self._slotnums = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i']
-
-    def draw(self, dlev, plev, floor=None):
-
-        def fmt(slot):
-            nm = self._slotnames[slot]
-            nm = nm[0].upper() + nm[1:]
-            pad = ' '*(10-len(nm))
-            itm = ' -'
-            tmp = self._items[slot]
-            if tmp:
-                itm = str(tmp)
-            return "%c%c)%s %s:%c%s" % (libtcod.COLCTRL_5, 
-                                        slot, pad, nm,
-                                        libtcod.COLCTRL_1,
-                                        itm)
-
-        s = [fmt(slot) for slot in self._slotnums]
-
-        if floor:
-            s.extend(floor)
-
-        s.extend(["",
-                  "Character level: %d" % plev,
-                  "  Dungeon level: %d" % dlev])
-
-        return draw_window(s)
-
-    def take(self, i, slot=None):
-        if not slot:
-            slot = i.slot
-
-        if not self._items[slot]:
-            self._items[slot] = i
-            return True
-
-        elif not self._items['h']:
-            self._items['h'] = i
-            return True
-
-        elif not self._items['i']:
-            self._items['i'] = i
-            return True
-
-        return False
-
-    def get_tagged(self):
-        i = []
-        for slot in self._slotnums:
-            j = self._items[slot]
-            if j and j.tag:
-                i.append((j.tag, slot, j))
-
-        i.sort()
-        return i
-
-    def drop(self, slot):
-        if slot in self._items:
-            ret = self._items[slot]
-            self._items[slot] = None
-            return ret
-        return None
-
-    def check(self, slot):
-        if slot in self._items:
-            return self._items[slot]
-        return None
-
-    class _iter:
-        def __init__(self, i):
-            self.inv = i
-            self.slot = -1
-        def __iter__(self):
-            return self
-        def next(self):
-            self.slot += 1
-            if self.slot >= len(self.inv._slotnums):
-                raise StopIteration()
-            s = self.inv._slotnums[self.slot]
-            i = self.inv._items[s]
-            return (i, s)
-
-    def __iter__(self):
-        return self._iter(self)
-
-    def purge(self, item):
-        for k,v in self._items:
-            if v == item:
-                self._items[k] = None
-
-
-##################################################
-##################################################
+from stats import * 
+from messages import *
+from inventory import *
+from achievements import *
 
 from items import *
 from monsters import *
@@ -675,284 +42,6 @@ from celauto import *
 
 
 
-
-class Achieve:
-    def __init__(self, tag=None, desc=None, weight=0):
-        self.tag = tag
-        self.desc = desc
-        self.weight = weight
-
-
-class Achievements:
-    def __init__(self):
-        self.achs = []
-        self.killed_monsters = []
-        self.prayed = 0
-        self.shrines = set()
-        self.used = 0
-        self.wishes = 0
-        self.rangeattacks = 0
-        self.branches = set()
-        self.onlyonce = set()
-        self.extinguished = 0
-        self.healing = 0
-        self.booze = 0
-        self.food = 0
-        self.nodoz = 0
-        self.dowsing = 0
-        self.radkilled = 0
-        self.explodekilled = 0
-        self.digged = 0
-        self.crafted = 0
-        self.a_craft = 0
-        self.ebola = 0
-        self.killed_molds = 0
-        self.colors = 0
-        self.bonus_colors = 0
-
-    def finish(self, plev, dlev, moon, reason):
-        self.add('plev%d' % plev, 'Reached player level %d' % plev)
-        self.add('dlev%d' % dlev, 'Reached dungeon level %d' % dlev)
-
-        moonstr = moon.phase_string(moon)
-        self.add('moon_%s' % moonstr, 'Played on a %s moon' % moonstr)
-
-        if len(self.killed_monsters) == 0:
-            self.add('loser', 'Scored *no* kills')
-        else:
-            killbucket = ((len(self.killed_monsters) / 5) * 5)
-            if killbucket > 0:
-                self.add('%dkills' % killbucket, 'Killed at least %d monsters' % killbucket, weight=10*killbucket)
-
-        self.add('dead_%s' % reason, 'Killed by %s' % reason)
-
-        if len(self.shrines) >= 3:
-            self.add('3gods', 'Worshipped 3 gods', weight=60)
-        elif len(self.shrines) >= 2:
-            self.add('2gods', 'Worshipped 2 gods', weight=50)
-        elif len(self.shrines) >= 1:
-            self.add('religion', 'Worshipped a god')
-
-        praybucket = ((self.prayed / 3) * 3)
-        if praybucket > 0:
-            self.add('%dprayers' % praybucket, 'Prayed at least %d times' % praybucket, weight=10*praybucket)
-
-        usebucket = ((self.used / 20) * 20)
-        if usebucket > 0:
-            self.add('%duses' % usebucket, 'Used an item at least %d times' % usebucket, weight=10)
-
-        if self.wishes == 0:
-            self.add('nowish', 'Never wished for an item', weight=20)
-        else:
-            self.add('%dwish' % self.wishes, 'Wished for an item %d times' % self.wishes, weight=20)
-
-        if self.rangeattacks == 0:
-            self.add('nogun', 'Never used a firearm', weight=20)
-        else:
-            firebucket = ((self.rangeattacks / 10) * 10)
-            if firebucket > 0:
-                self.add('%dfires' % firebucket, 'Used a firearm at least %d times' % firebucket, weight=20)
-
-        nbranches = len(self.branches)
-
-        if 'q' in self.branches:
-            self.add('thunderdome', 'Visited the Rehabilitation Thunderdome', weight=26)
-            nbranches -= 1
-
-        if 'qk' in self.branches:
-            self.add('kalitemple', 'Visited the temple of Kali', weight=98)
-            nbranches -= 1
-
-        if nbranches <= 1:
-            self.add('onebranch', 'Visited only one dungeon branch', weight=15)
-        else:
-            self.add('%dbranch' % nbranches, 'Visited %d dungeon branches' % nbranches, weight=25)
-
-        if self.extinguished > 0:
-            self.add('%dxting' % self.extinguished, 'Extinguished %d monster species' % self.extinguished, weight=97)
-
-        if self.radkilled > 0:
-            radbucket = ((self.radkilled / 5) * 5)
-            if radbucket > 0:
-                self.add('%dnuked' % radbucket, 'Killed at least %d monsters with radiation' % radbucket, weight=45)
-            else:
-                self.add('nuked', 'Killed a monster with radiation', weight=35)
-
-        if self.explodekilled > 0:
-            explbucket = ((self.explodekilled / 5) * 5)
-            if explbucket > 0:
-                self.add('%dexploded' % explbucket, 'Exploded at least %d monsters' % explbucket, weight=33)
-
-        if self.ebola > 0:
-            ebolabucket = ((self.ebola / 5) * 5)
-            if ebolabucket > 0:
-                self.add('%debola' % ebolabucket, 'Killed at least %d monsters via Ebolavirus' % ebolabucket, weight=77)
-            else:
-                self.add('ebola', 'Killed a monster via Ebolavirus', weight=77)
-
-        if self.killed_molds > 0:
-            moldbucket = ((self.killed_molds / 10) * 10)
-            if moldbucket > 0:
-                self.add('%dmolds' % moldbucket, 'Cleaned up black mold over %d times' % moldbucket, weight=34)
-            else:
-                self.add('molds', 'Cleaned up black mold', weight=32)
-
-        if self.digged == 0:
-            self.add('nodig', 'Never used a pickaxe', weight=23)
-
-        if self.dowsing == 0:
-            self.add('norod', 'Never used a dowsing rod', weight=15)
-
-        foodbucket = ((self.food / 5) * 5)
-        boozebucket = ((self.booze / 5) * 5)
-        pillbucket = ((self.healing / 5) * 5)
-        nodozbucket = ((self.nodoz / 5) * 5)
-
-        if self.food == 0 and self.booze == 0 and self.healing == 0 and self.nodoz == 0:
-            self.add('teetotal', 'Never ate food, drank alcohol or used medicine', weight=9)
-        else:
-            if self.food == 0:
-                self.add('nofood', 'Never ate a mushroom', weight=7)
-            elif foodbucket > 0:
-                self.add('%dfood' % foodbucket, 'Dined on mushrooms at least %d times' % foodbucket, weight=5)
-
-            if self.booze == 0:
-                self.add('nobooze', 'Never drank alcohol', weight=7)
-            elif boozebucket > 0:
-                self.add('%dbooze' % boozebucket, 'Drank booze at least %d times' % boozebucket, weight=5)
-
-            if self.healing == 0:
-                self.add('nopill', 'Never used medicine', weight=7)
-            elif pillbucket > 0:
-                self.add('%dpill' % pillbucket, 'Swallowed a pill at least %d times' % pillbucket, weight=5)
-
-            if self.nodoz == 0:
-                self.add('nopep', 'Never used No-Doz pills', weight=7)
-            elif nodozbucket > 0:
-                self.add('%dpep' % nodozbucket, 'Used No-Doz pills at least %d times' % nodozbucket, weight=5)
-
-        if self.crafted > 0:
-            self.add('%dcraft' % self.crafted, 'Tried crafting %d times' % self.crafted, weight=15)
-
-        if self.a_craft > 0:
-            if self.a_craft == 1:
-                self.add('artifact', 'Crafted a powerful artifact', weight=88)
-            else:
-                self.add('%dafacts', 'Crafted %d powerful artifacts', weight=89)
-
-        if self.bonus_colors > 0:
-            if self.bonus_colors == 1:
-                self.add('colorwow', 'Used colored liquid for great success', weight=88)
-            else:
-                self.add('%dcolorwow' % self.bonus_colors, 'Used colored liquid for great success %d times' % self.bonus_colors, weight=89)
-
-        if self.colors < 6:
-            self.add('%dcolor' % self.colors, 'Drank colored liquid %d times' % self.colors, weight=4)
-        else:
-            self.add('6color', 'Drank colored liquid 6 times or more', weight=44)
-
-
-    def descend(self, plev, dlev, branch):
-        if dlev >= plev+5:
-            self.add('tourist', 'Dived to a very deep dungeon', weight=50, once=True)
-
-        elif dlev >= plev+2:
-            self.add('small_tourist', 'Dived to a deep dungeon', weight=15, once=True)
-
-        self.branches.add(branch)
-
-    def questdone(self, branch):
-        if branch == 'q':
-            self.add('thunderdome_win', 'Became a Thunderdome champion', weight=78)
-
-    def winner(self, msg=None):
-        if msg:
-            self.add(msg[0], msg[1], weight=99)
-
-        self.add('winner', ' =*= Won the game =*= ', weight=100)
-
-    def mondone(self):
-        self.extinguished += 1
-
-    def mondeath(self, plev, dlev, mon, is_rad=False, is_explode=False, is_poison=False):
-        if mon.inanimate:
-            return
-
-        if mon.is_mold:
-            self.killed_molds += 1
-            return
-
-        if mon.level >= plev+5:
-            self.add('stealth', 'Killed a monster massively out of depth', weight=50)
-        elif mon.level >= plev+2:
-            self.add('small_stealth', 'Killed a monster out of depth', weight=10)
-
-        if is_poison:
-            self.ebola += 1
-        else:
-            self.killed_monsters.append((mon.level * mon.pointsfac, mon.branch, mon.name, dlev, plev))
-
-        if is_rad:
-            self.radkilled += 1
-
-        if is_explode:
-            self.explodekilled += 1
-
-
-    def pray(self, shrine):
-        self.shrines.add(shrine)
-        self.prayed += 1
-
-    def craft_use(self, item):
-        self.crafted += 1
-        if not item.craft:
-            self.a_craft += 1
-
-    def resource_use(self, resource, bonus):
-        self.colors += 1
-        if bonus:
-            self.bonus_colors += 1
-
-    def use(self, item):
-        self.used += 1
-
-        if item.rangeattack or item.rangeexplode:
-            self.rangeattacks += 1
-
-        elif item.food:
-            self.food += 1
-        elif item.booze:
-            self.booze += 1
-        elif item.healing or item.healingsleep:
-            self.healing += 1
-        elif item.nodoz:
-            self.nodoz += 1
-        elif item.homing:
-            self.dowsing += 1
-        elif item.digging:
-            self.digged += 1
-
-        if item.switch_moon:
-            if item.switch_moon == moon.FULL:
-                self.add('full_m_prism', 'Used a prism of the Full Moon', weight=41)
-            elif item.switch_moon == moon.NEW:
-                self.add('new_m_prism', 'Used a prism of the New Moon', weight=41)
-
-
-    def wish(self):
-        self.wishes += 1
-
-    def __iter__(self):
-        return iter(self.achs)
-
-    def add(self, tag, desc, weight=0, once=False):
-        if once:
-            if tag in self.onlyonce:
-                return
-            else:
-                self.onlyonce.add(tag)
-
-        self.achs.append(Achieve(tag=tag, desc=desc, weight=weight))
 
 
 class QuestInfo:
@@ -1057,7 +146,6 @@ class World:
         self.oldt = -1
 
         self._seed = None
-        self._inputs = []
 
         self.save_disabled = False
 
@@ -1302,7 +390,6 @@ class World:
                 libtcod.map_set_properties(self.tcodmap, x, y, v, w)
 
 
-    # XXY
     def set_renderprops(self, xy):
 
         x, y = xy
@@ -1349,13 +436,11 @@ class World:
         dg.render_set_skin(x, y, fore, c, fore2, fore_i, is_terrain)
 
 
-    # XXY
     def unset_feature(self, xy):
         if xy in self.d.featmap:
             del self.d.featmap[xy]
             self.set_renderprops(xy)
 
-    # XXY
     def set_feature(self, xy, f_):
         x, y = xy
 
@@ -1408,7 +493,6 @@ class World:
 
 
 
-    # XXY
     def set_item(self, xy, itms):
         while 1:
             if not self.try_feature(xy, 'stairs'):
@@ -1431,28 +515,24 @@ class World:
 
 
     def paste_vault(self, v):
-        x = None
-        y = None
+        xy = (None, None)
 
         if v.anywhere:
-            x = dg.random_n(self.d.w - v.w)
-            y = dg.random_n(self.d.h - v.h)
+            xy = (dg.random_n(self.d.w - v.w), dg.random_n(self.d.h - v.h))
 
         else:
             for x in xrange(10):
                 d = dg.grid_one_of_floor()
 
-                x0 = d[0] - v.anchor[0]
-                y0 = d[1] - v.anchor[1]
+                xy0 = xy_sub(d, v.anchor)
 
-                if x0 < 0 or y0 < 0 or x0 + v.w >= self.d.w or y0 + v.h >= self.d.h:
+                if xy_outside(xy0, (v.w, v.h), 0, 0, self.d.w, self.d.h):
                     continue
 
-                x = x0
-                y = y0
+                xy = xy0
                 break
 
-        if x is None or y is None:
+        if xy_none(xy):
             return
 
         if v.message:
@@ -1469,17 +549,16 @@ class World:
                 if z is None:
                     continue
 
-                xx = x + xi
-                yy = y + yi
-                self.set_feature(xx, yy, z[0])
+                xxyy = xy_add(xy, (xi, yi))
+                self.set_feature(xxyy, z[0])
 
                 if len(z) >= 3:
                     if z[1] is True:
-                        dg.grid_add_nogen(xx, yy)
+                        dg.grid_add_nogen(xxyy[0], xxyy[1])
                     else:
                         itm = self.itemstock.get(z[1])
                         if itm:
-                            self.set_item(xx, yy, [itm])
+                            self.set_item(xxyy, [itm])
 
 
     def make_feats(self):
@@ -1509,35 +588,35 @@ class World:
 
         d = dg.grid_one_of_floor()
 
-        self.set_feature(d[0], d[1], '>')
+        self.set_feature(d, '>')
         self.d.exit = d
 
         dg.grid_add_nogen(d[0], d[1])
 
         if self.moon == moon.NEW:
             d = dg.grid_one_of_floor()
-            self.set_feature(d[0], d[1], 'bb')
+            self.set_feature(d, 'bb')
 
         elif self.moon == moon.FULL:
             d = dg.grid_one_of_floor()
-            self.set_feature(d[0], d[1], 'dd')
-            self.paste_celauto(d[0], d[1], self.celautostock.FERN)
+            self.set_feature(d, 'dd')
+            self.paste_celauto(d, self.celautostock.FERN)
 
         else:
             a = dg.random_range(-1, 1)
             d = dg.grid_one_of_floor()
             if a == -1:
-                self.set_feature(d[0], d[1], 's')
+                self.set_feature(d, 's')
             elif a == 0:
-                self.set_feature(d[0], d[1], 'b')
+                self.set_feature(d, 'b')
             elif a == 1:
-                self.set_feature(d[0], d[1], 'v')
+                self.set_feature(d, 'v')
 
         nfounts = int(round(dg.random_gauss(3, 1)))
 
         for tmp in xrange(nfounts):
             d = dg.grid_one_of_water()
-            self.set_feature(d[0], d[1], ['C','V','B','N','M'][dg.random_n(5)])
+            self.set_feature(d, ['C','V','B','N','M'][dg.random_n(5)])
 
 
 
@@ -1578,16 +657,15 @@ class World:
                           self.quests[self.branch].monlevels[1])
 
             while 1:
-                x, y = dg.grid_one_of_walk()
-                if (x, y) not in self.d.monmap: break
+                xy = dg.grid_one_of_walk()
+                if xy not in self.d.monmap: break
 
             m = self.monsterstock.generate(self.branch, lev, self.itemstock, self.moon)
             if m:
-                m.x = x
-                m.y = y
-                self.d.monmap[(x, y)] = m
+                m.xy = xy
+                self.d.monmap[xy] = m
 
-                dg.grid_add_nogen(x, y)
+                dg.grid_add_nogen(xy[0], xy[1])
 
                 if m.inanimate:
                     continue
@@ -1600,12 +678,11 @@ class World:
             return
 
         if dg.random_range(1, self.coef.moldchance) == 1:
-            x, y = dg.grid_one_of_floor()
+            xy = dg.grid_one_of_floor()
             m = self.monsterstock.generate('x', self.d.dlev, self.itemstock, self.moon)
             if m:
-                m.x = x
-                m.y = y
-                self.d.monmap[(x, y)] = m
+                m.xy = xy
+                self.d.monmap[xy] = m
 
 
     def make_items(self):
@@ -1619,10 +696,10 @@ class World:
         for i in xrange(n):
             lev = self.d.dlev + dg.random_gauss(0, self.coef.itemlevel)
             lev = max(int(round(lev)), 1)
-            x, y = dg.grid_one_of_walk()
+            xy = dg.grid_one_of_walk()
             item = self.itemstock.generate(lev)
             if item:
-                self.set_item(x, y, [item])
+                self.set_item(xy, [item])
 
         ## Quests
         if self.branch in self.quests:
@@ -1632,9 +709,9 @@ class World:
             if dl == self.d.dlev and len(itm) > 0:
                 itm2 = [copy.copy(i) for i in itm]
 
-                x, y = dg.grid_one_of_walk()
+                xy = dg.grid_one_of_walk()
 
-                self.set_item(x, y, itm2)
+                self.set_item(xy, itm2)
 
 
     def place(self):
@@ -1654,9 +731,8 @@ class World:
         for k in monn:
             dg.grid_add_nogen(k[0], k[1])
 
-        x, y = dg.grid_one_of_walk()
-        self.d.px = x
-        self.d.py = y
+        xy = dg.grid_one_of_walk()
+        self.d.pc = xy
 
         
     def regen(self, w_, h_):
@@ -1690,7 +766,7 @@ class World:
 
         for x in xrange(w_):
             for y in xrange(h_):
-                self.set_renderprops(x, y)
+                self.set_renderprops((x, y))
 
         if self.moon == moon.FULL:
             dg.render_set_env(libtcod.gray, 0.6)
@@ -1710,17 +786,16 @@ class World:
         self.generate_and_take_item('pickaxe')
 
 
-        pl = [k for k in self.neighbors[(self.d.px,self.d.py)] if dg.grid_is_walk(k[0], k[1])] + [(self.d.px,self.d.py)]
+        pl = [k for k in self.neighbors[self.d.pc] if dg.grid_is_walk(k[0], k[1])] + [self.d.pc]
 
         for x in xrange(9):
             k = pl[dg.random_n(len(pl))]
             i = self.itemstock.generate(1)
 
-            self.set_item(k[0], k[1], [i])
+            self.set_item(k, [i])
 
 
-
-    def move(self, _dx, _dy, do_spring=True):
+    def move(self, _dxy, do_spring=True):
 
         if self.p.glued > 0:
             self.p.glued -= 1
@@ -1733,32 +808,30 @@ class World:
                 self.tick()
                 return
 
-        dx = _dx + self.d.px
-        dy = _dy + self.d.py
+        dxy = xy_add(_dxy, self.d.pc)
 
-        if dg.grid_is_walk(dx,dy) and dx >= 0 and dx < self.d.w and dy < self.d.h:
+        if dg.grid_is_walk(dxy[0], dxy[1]) and not xy_out_wh(dxy, self.d.w, self.d.h):
 
-            if (dx, dy) in self.d.monmap:
-                self.fight(self.d.monmap[(dx, dy)], True)
+            if dxy in self.d.monmap:
+                self.fight(self.d.monmap[dxy], True)
                 self.tick()
                 return
             else:
-                self.d.px = dx
-                self.d.py = dy
+                self.d.pc = dxy
 
-                if (self.d.px, self.d.py) in self.d.itemap:
-                    if len(self.d.itemap[(self.d.px, self.d.py)]) > 1:
+                if self.d.pc in self.d.itemap:
+                    if len(self.d.itemap[self.d.pc]) > 1:
                         self.msg.m("You see several items here.")
                     else:
-                        self.msg.m("You see " + str(self.d.itemap[(self.d.px, self.d.py)][0]) + '.')
+                        self.msg.m("You see " + str(self.d.itemap[self.d.pc][0]) + '.')
 
                 sign = self.try_feature(self.d.pc, 'sign')
                 if sign:
                     self.msg.m('You see an engraving: ' + sign)
 
                 if self.p.onfire > 0:
-                    self.seed_celauto(self.d.px, self.d.py, self.celautostock.FIRE)
-                    self.set_feature(self.d.px, self.d.py, '"')
+                    self.seed_celauto(self.d.pc, self.celautostock.FIRE)
+                    self.set_feature(self.d.pc, '"')
 
                 if self.try_feature(self.d.pc, 'sticky') and not self.get_glueimmune():
                     self.msg.m('You just stepped in some glue!', True)
@@ -1771,7 +844,7 @@ class World:
         is_springy = self.get_springy()
 
         if do_spring and is_springy:
-            self.move(_dx, _dy, do_spring=False)
+            self.move(_dxy, do_spring=False)
             return
 
         self.tick()
@@ -1793,13 +866,13 @@ class World:
                 i.liveexplode -= 1
                 if i.liveexplode == 0:
                     if i.summon:
-                        self.summon(self.d.px, self.d.py, i.summon[0], i.summon[1])
+                        self.summon(self.d.pc, i.summon[0], i.summon[1])
                     elif i.radexplode:
-                        self.rayblast(self.d.px, self.d.py, i.radius)
+                        self.rayblast(self.d.pc, i.radius)
                     elif i.swampgas:
-                        self.paste_celauto(self.d.px, self.d.py, self.celautostock.SWAMPGAS)
+                        self.paste_celauto(self.d.pc, self.celautostock.SWAMPGAS)
                     else:
-                        self.explode(self.d.px, self.d.py, i.radius)
+                        self.explode(self.d.pc, i.radius)
                     return False, True
 
             elif n == 2:
@@ -1842,7 +915,7 @@ class World:
 
         if self.try_feature(self.d.pc, 'warm'):
             self.warmth().inc(self.coef.watercold)
-        elif dg.grid_is_water(self.d.px, self.d.py):
+        elif dg.grid_is_water(self.d.pc[0], self.d.pc[1]):
             self.warmth().dec(self.coef.watercold)
         else:
             self.warmth().inc(self.get_heatbonus())
@@ -2018,10 +1091,10 @@ class World:
         fount = self.try_feature(self.d.pc, 'resource')
         if fount:
             self.colordrink(fount)
-            self.unset_feature(self.d.px, self.d.py)
+            self.unset_feature(self.d.pc)
             return
             
-        if not dg.grid_is_water(self.d.px, self.d.py):
+        if not dg.grid_is_water(self.d.pc[0], self.d.pc[1]):
             self.msg.m('There is no water here you could drink.')
             return
 
@@ -2043,11 +1116,11 @@ class World:
         self.tick()
 
     def pray(self):
-        if (self.d.px,self.d.py) not in self.d.featmap:
+        if self.d.pc not in self.d.featmap:
             self.msg.m('You need to be standing at a shrine to pray.')
             return
 
-        a = self.d.featmap[(self.d.px, self.d.py)]
+        a = self.d.featmap[self.d.pc]
 
         if a.bb_shrine:
 
@@ -2056,7 +1129,7 @@ class World:
 
                 i2 = self.itemstock.generate(self.d.dlev)
                 if i2:
-                    self.set_item(self.d.px, self.d.py, [i2])
+                    self.set_item(self.d.pc, [i2])
                 return False, True
 
             if self.filter_inv((lambda (i,slot): i.corpse), bb_shrine_func):
@@ -2141,7 +1214,6 @@ class World:
             return
 
 
-    # XXY
     def convert_to_floor(self, xy, rubble):
         if self.try_feature(xy, 'permanent'):
             return
@@ -2152,7 +1224,9 @@ class World:
             self.set_feature(xy, '*')
 
 
-    def find_blink_targ(self, _x, _y, range):
+    def find_blink_targ(self, _xy, range):
+        _x, _y = _xy
+
         l = []
         for x in xrange(_x - range, _x + range + 1):
             for y in [_y - range, _x + range]:
@@ -2168,7 +1242,7 @@ class World:
             return _x, _y
 
         l = l[dg.random_n(len(l))]
-        return l[0], l[1]
+        return l
 
 
     def showinv(self):
@@ -2221,10 +1295,10 @@ class World:
         else: return 'backpack'
 
 
-    def delete_item(self, items, c, x, y):
+    def delete_item(self, items, c, xy):
         del items[c]
         if len(items) == 0:
-            del self.d.itemap[(x,y)]
+            del self.d.itemap[xy]
             return True
         return False
 
@@ -2250,7 +1324,7 @@ class World:
                 self.msg.m('You now have ' + str(ii) + '.')
 
                 if i.count == 0:
-                    if self.delete_item(items, c, self.d.px, self.d.py):
+                    if self.delete_item(items, c, self.d.pc):
                         return True, False
 
             elif whc == 2:
@@ -2267,7 +1341,7 @@ class World:
         ok = self.p.inv.take(i)
         if ok:
             self.msg.m('You take ' + str(i) + '.')
-            self.delete_item(items, c, self.d.px, self.d.py)
+            self.delete_item(items, c, self.d.pc)
         else:
             self.msg.m('You have no free inventory slot for ' + str(i) + '!')
 
@@ -2292,7 +1366,7 @@ class World:
         self.tick()
 
     def take(self):
-        if (self.d.px, self.d.py) not in self.d.itemap:
+        if self.d.pc not in self.d.itemap:
             self.msg.m('You see no item here to take.')
             return
 
@@ -2304,10 +1378,10 @@ class World:
         flooritems = {}
         items = []
 
-        if (self.d.px, self.d.py) in self.d.itemap:
+        if self.d.pc in self.d.itemap:
             floorstuff = ['','Items on the floor:','']
 
-            items = self.d.itemap[(self.d.px, self.d.py)]
+            items = self.d.itemap[self.d.pc]
             pad = ' ' * 12
 
             for i in xrange(len(items)):
@@ -2405,9 +1479,7 @@ class World:
                 i = self.p.inv.drop(slot)
 
             if slot in flooritems:
-                px = self.d.px
-                py = self.d.py
-                self.apply_from_ground_aux(i, px, py)
+                self.apply_from_ground_aux(i, self.d.pc)
             else:
                 self.apply_from_inv_aux(i)
 
@@ -2434,14 +1506,14 @@ class World:
 
         elif cc == 'd':
             i = self.p.inv.drop(slot)
-            self.set_item(self.d.px, self.d.py, [i])
+            self.set_item(self.d.pc, [i])
             self.tick()
 
         elif cc == 'q':
 
             if draw_window(['','Really destroy ' + str(i) +'? (Y/N)', '']) in ('y','Y'):
                 if slot in flooritems:
-                    self.delete_item(items, flooritems[slot], self.d.px, self.d.py)
+                    self.delete_item(items, flooritems[slot], self.d.pc)
                 else:
                     self.p.inv.drop(slot)
                 self.tick()
@@ -2458,10 +1530,10 @@ class World:
 
                 self.msg.m('You throw ' + str(i) + '.')
 
-                self.set_item(nx, ny, [i])
+                self.set_item(nxy, [i])
 
                 if slot in flooritems:
-                    self.delete_item(items, flooritems[slot], self.d.px, self.d.py)
+                    self.delete_item(items, flooritems[slot], self.d.pc)
 
                 self.tick()
 
@@ -2470,11 +1542,11 @@ class World:
                 item2 = self.p.inv.drop(i.slot)
                 ok = self.p.inv.take(i)
                 if ok:
-                    self.delete_item(items, flooritems[slot], self.d.px, self.d.py)
+                    self.delete_item(items, flooritems[slot], self.d.pc)
 
                     if item2:
                         if not self.p.inv.take(item2):
-                            self.set_item(self.d.px, self.d.py, [item2])
+                            self.set_item(self.d.pc, [item2])
 
                 elif item2:
                     self.p.inv.take(item2)
@@ -2564,24 +1636,18 @@ class World:
             digspeed = self.get_digspeed() + 0.1
 
             self.p.digging = None
-            if k == 'h': self.p.digging = (self.d.px - 1, self.d.py, digspeed)
-            elif k == 'j': self.p.digging = (self.d.px, self.d.py + 1, digspeed)
-            elif k == 'k': self.p.digging = (self.d.px, self.d.py - 1, digspeed)
-            elif k == 'l': self.p.digging = (self.d.px + 1, self.d.py, digspeed)
+            if k == 'h': self.p.digging = (xy_add(self.d.pc, (-1, 0)), digspeed)
+            elif k == 'j': self.p.digging = (xy_add(self.d.pc, (0, 1)), digspeed)
+            elif k == 'k': self.p.digging = (xy_add(self.d.pc, (0, -1)), digspeed)
+            elif k == 'l': self.p.digging = (xy_add(self.d.pc, (1, 0)), digspeed)
             else:
                 return -1 #item
 
-            if self.p.digging[0] < 0 or self.p.digging[0] >= self.d.w:
+            if xy_out_wh(self.p.digging[0], self.d.w, self.d.h):
                 self.p.digging = None
                 return item
 
-            if self.p.digging[1] < 0 or self.p.digging[1] >= self.d.h:
-                self.p.digging = None
-
-            if not self.p.digging:
-                return item
-
-            if dg.grid_is_walk(self.p.digging[0], self.p.digging[1]):
+            if dg.grid_is_walk(self.p.digging[0][0], self.p.digging[0][1]):
                 self.msg.m('There is nothing to dig there.')
                 self.p.digging = None
             else:
@@ -2686,8 +1752,8 @@ class World:
             return None
 
         elif item.homing:
-            d = math.sqrt(math.pow(abs(self.d.px - self.d.exit[0]), 2) +
-                          math.pow(abs(self.d.py - self.d.exit[1]), 2))
+            d = xy_dist(self.d.pc, self.d.exit)
+
             if d > 30:
                 self.msg.m('Cold as ice!')
             elif d > 20:
@@ -2717,12 +1783,10 @@ class World:
                 return -1 #item
 
             n = 0
-            x = self.d.px
-            y = self.d.py
-            while x >= 0 and y >= 0 and x < self.d.w and y < self.d.h:
-                x += s[0]
-                y += s[1]
-                if dg.grid_is_walk(x,y):
+            xy = self.d.pc
+            while not xy_out_wh(xy, self.d.w, self.d.h):
+                xy = xy_add(xy, s)
+                if dg.grid_is_walk(xy[0], xy[1]):
                     break
                 n += 1
 
@@ -2774,7 +1838,7 @@ class World:
 
         elif item.jinni:
             l = []
-            for ki in self.neighbors[(self.d.px,self.d.py)]:
+            for ki in self.neighbors[self.d.pc]:
                 if dg.grid_is_walk(ki[0], ki[1]) and ki not in self.d.monmap:
                     l.append(ki)
 
@@ -2791,8 +1855,7 @@ class World:
 
             self.msg.m('A malevolent spirit appears!')
             q = l[dg.random_n(len(l))]
-            jinni.x = q[0]
-            jinni.y = q[1]
+            jinni.xy = q
             jinni.items = [self.itemstock.get('wishing')]
             self.d.monmap[q] = jinni
 
@@ -2802,19 +1865,18 @@ class World:
         elif item.digray:
             if item.digray[0] == 1:
                 for x in xrange(0, self.d.w):
-                    self.convert_to_floor(x, self.d.py, False)
+                    self.convert_to_floor((x, self.d.pc[1]), False)
             if item.digray[1] == 1:
                 for y in xrange(0, self.d.h):
-                    self.convert_to_floor(self.d.px, y, False)
+                    self.convert_to_floor((self.d.pc[0], y), False)
             self.msg.m('The wand explodes in a brilliant white flash!')
 
             self.p.achievements.use(item)
             return None
 
         elif item.jumprange:
-            x, y = self.find_blink_targ(self.d.px, self.d.py, item.jumprange)
-            self.d.px = x
-            self.d.py = y
+            xy = self.find_blink_targ(self.d.pc, item.jumprange)
+            self.d.pc = xy
 
             self.p.achievements.use(item)
 
@@ -2823,15 +1885,15 @@ class World:
             return None
 
         elif item.makestrap:
-            if (self.d.px, self.d.py) in self.d.featmap:
+            if self.d.pc in self.d.featmap:
                 self.msg.m('Nothing happens.')
                 return item
 
-            if dg.grid_is_water(self.d.px, self.d.py):
+            if dg.grid_is_water(self.d.pc[0], self.d.pc[1]):
                 self.msg.m("That won't work while you're standing on water.")
                 return item
 
-            self.set_feature(self.d.px, self.d.py, '^')
+            self.set_feature(self.d.pc, '^')
             self.msg.m('You spread the glue liberally on the floor.')
 
             self.p.achievements.use(item)
@@ -2842,18 +1904,18 @@ class World:
 
         elif item.ebola:
             self.msg.m('The Ebola virus is unleashed!')
-            self.paste_celauto(self.d.px, self.d.py, self.celautostock.EBOLA)
+            self.paste_celauto(self.d.pc, self.celautostock.EBOLA)
             self.p.achievements.use(item)
             return None
 
         elif item.smoke:
-            self.paste_celauto(self.d.px, self.d.py, self.celautostock.SMOKE)
+            self.paste_celauto(self.d.pc, self.celautostock.SMOKE)
             self.p.achievements.use(item)
             return item
 
         elif item.trapcloud:
             self.msg.m('You set the nanobots to work.')
-            self.paste_celauto(self.d.px, self.d.py, self.celautostock.TRAPMAKER)
+            self.paste_celauto(self.d.pc, self.celautostock.TRAPMAKER)
 
             self.p.achievements.use(item)
 
@@ -2866,7 +1928,7 @@ class World:
                 self.msg.m("It's out of ammo!")
                 return item
 
-            self.airfreshen(self.d.px, self.d.py, item.airfreshener)
+            self.airfreshen(self.d.pc, item.airfreshener)
             self.p.achievements.use(item)
 
             if item.ammo > 0:
@@ -2882,7 +1944,7 @@ class World:
             return None
 
         elif item.summon:
-            self.summon(self.d.px, self.d.py, item.summon[0], item.summon[1])
+            self.summon(self.d.pc, item.summon[0], item.summon[1])
             self.p.achievements.use(item)
             return None
 
@@ -2894,7 +1956,7 @@ class World:
             return None
 
         elif item.doppel:
-            self.doppelpoint = (self.d.px, self.d.py)
+            self.doppelpoint = self.d.pc
             self.doppeltime = item.doppel
             self.p.achievements.use(item)
             self.msg.m('You activate the doppelganger.')
@@ -2910,28 +1972,28 @@ class World:
                 return item
 
             while 1:
-                nx, ny = self.target(item.range[1],
-                                     minrange=item.range[0],
-                                     monstop=item.straightline,
-                                     lightradius=item.lightradius)
-                if nx is not None:
+                nxy = self.target(item.range[1],
+                                  minrange=item.range[0],
+                                  monstop=item.straightline,
+                                  lightradius=item.lightradius)
+                if not xy_none(nxy):
                     break
             if nx < 0:
                 return -1 #item
 
-            if not item.rangeexplode and not item.fires and (nx, ny) not in self.d.monmap:
+            if not item.rangeexplode and not item.fires and nxy not in self.d.monmap:
                 return -1 #item
 
             if item.ammo > 0:
                 item.ammo -= 1
 
             if item.rangeexplode:
-                self.explode(nx, ny, item.radius)
+                self.explode(nxy, item.radius)
             elif item.fires:
-                self.seed_celauto(nx, ny, self.celautostock.FIRE)
-                self.set_feature(nx, ny, '"')
+                self.seed_celauto(nxy, self.celautostock.FIRE)
+                self.set_feature(nxy, '"')
             else:
-                self.fight(self.d.monmap[(nx, ny)], True, item=item)
+                self.fight(self.d.monmap[nxy], True, item=item)
 
             self.p.achievements.use(item)
 
@@ -2981,21 +2043,21 @@ class World:
             return
 
         self.msg.m('You drop ' + str(i) +'.')
-        self.set_item(self.d.px, self.d.py, [i])
+        self.set_item(self.d.pc, [i])
         self.tick()
 
 
-    def apply_from_ground_aux(self, i, px, py):
+    def apply_from_ground_aux(self, i, pc):
 
         def _purge():
             # The item might be deleted already by the time we get here.
-            if (px,py) not in self.d.itemap:
+            if pc not in self.d.itemap:
                 return
 
-            for ix in xrange(len(self.d.itemap[(px, py)])):
-                if id(self.d.itemap[(px, py)][ix]) == id(i):
+            for ix in xrange(len(self.d.itemap[pc])):
+                if id(self.d.itemap[pc][ix]) == id(i):
 
-                    self.delete_item(self.d.itemap[(px, py)], ix, px, py)
+                    self.delete_item(self.d.itemap[pc], ix, pc)
                     break
 
         i2 = self.apply(i)
@@ -3012,7 +2074,7 @@ class World:
 
         elif id(i2) != id(i):
             _purge()
-            self.set_item(px, py, [i2])
+            self.set_item(pc, [i2])
 
         self.tick()
 
@@ -3043,14 +2105,13 @@ class World:
         return i, c
 
     def ground_apply(self):
-        px = self.d.px
-        py = self.d.py
+        pc = self.d.pc
 
-        if (px, py) not in self.d.itemap:
+        if pc not in self.d.itemap:
             self.msg.m('There is no item here to apply.')
             return
 
-        items = self.d.itemap[(px, py)]
+        items = self.d.itemap[pc]
         items = [i for i in items if i.applies]
 
         if len(items) == 0:
@@ -3061,26 +2122,26 @@ class World:
         if not i:
             return
 
-        self.apply_from_ground_aux(i, px, py)
+        self.apply_from_ground_aux(i, pc)
 
 
     def filter_items(self, xy, func, ret):
-        if (x,y) not in self.d.itemap:
+        if xy not in self.d.itemap:
             return
 
         i2 = []
-        for i in self.d.itemap[(x,y)]:
+        for i in self.d.itemap[xy]:
             q1,q2 = func(i)
             if q1:
                 if ret is not None:
-                    ret.append((x,y,q2))
+                    ret.append((xy,q2))
             else:
                 i2.append(i)
 
         if len(i2) > 0:
-            self.d.itemap[(x,y)] = i2
+            self.d.itemap[xy] = i2
         else:
-            del self.d.itemap[(x,y)]
+            del self.d.itemap[xy]
 
 
 
@@ -3133,7 +2194,7 @@ class World:
                 itemdrop.append(corpse)
 
             if len(itemdrop) > 0:
-                self.set_item(mon.x, mon.y, itemdrop)
+                self.set_item(mon.xy, itemdrop)
 
         winner, exting = self.monsterstock.death(mon, self.moon)
 
@@ -3152,7 +2213,7 @@ class World:
             if questdone:
                 self.p.achievements.questdone(self.branch)
             else:
-                self.set_feature(mon.x, mon.y, '>')
+                self.set_feature(mon.xy, '>')
 
             qis = []
             for g in quest.gifts[self.d.dlev]:
@@ -3163,7 +2224,7 @@ class World:
                 if i:
                     qis.append(i)
 
-            self.set_item(mon.x, mon.y, qis)
+            self.set_item(mon.xy, qis)
 
             return
 
@@ -3197,7 +2258,6 @@ class World:
         draw_blast2(xy0, self.d.w, self.d.h, rad, func1, func2)
 
 
-    # XXY
     def explode(self, xy0, rad):
 
         chains = set()
@@ -3299,8 +2359,7 @@ class World:
 
         if mon.boulder:
             if player_move:
-                mon.bld_delta = (mon.x - self.d.px,
-                                 mon.y - self.d.py)
+                mon.bld_delta = xy_sub(mon.xy, self.d.pc)
 
                 if mon.bld_delta[0] < -1: mon.bld_delta = (-1, mon.bld_delta[1])
                 elif mon.bld_delta[0] > 1: mon.bld_delta = (1, mon.bld_delta[1])
@@ -3317,8 +2376,7 @@ class World:
 
         ##
 
-        d = math.sqrt(math.pow(abs(mon.x - self.d.px), 2) +
-                      math.pow(abs(mon.y - self.d.py), 2))
+        d = xy_dist(mon.xy, self.d.pc)
         d = int(round(d))
 
         if player_move and item:
@@ -3364,7 +2422,7 @@ class World:
                 if mon.visible or mon.visible_old:
                     self.msg.m('You killed ' + sm + '!')
                 self.handle_mondeath(mon)
-                del self.d.monmap[(mon.x, mon.y)]
+                del self.d.monmap[mon.xy]
             else:
 
                 ca = None
@@ -3400,8 +2458,7 @@ class World:
                     self.msg.m('You miss ' + sm + '.')
 
             if dmg > 0 and (mon.visible or mon.visible_old):
-                mon.known_px = self.d.px
-                mon.known_py = self.d.py
+                mon.known_pxy = self.d.pc
 
 
         else:
@@ -3470,15 +2527,14 @@ class World:
 
 
     def look(self):
-        tx = self.d.px
-        ty = self.d.py
+        txy = self.d.pc
 
         while 1:
-            seen = self.draw(tx, ty)
+            seen = self.draw(txy)
 
             s = []
 
-            if tx == self.d.px and ty == self.d.py:
+            if txy == self.d.pc:
                 s.append('This is you.')
                 s.append('')
 
@@ -3486,15 +2542,15 @@ class World:
                 s.append('You see nothing.')
 
             else:
-                if (tx, ty) in self.d.monmap:
-                    m = self.d.monmap[(tx, ty)]
+                if txy in self.d.monmap:
+                    m = self.d.monmap[txy]
                     s.append('You see ' + str(m) + ':')
                     s.append('')
                     s.extend(m.desc)
                     s.append('')
 
-                if (tx, ty) in self.d.itemap:
-                    i = self.d.itemap[(tx, ty)]
+                if txy in self.d.itemap:
+                    i = self.d.itemap[txy]
                     s.append('You see the following items:')
                     for ix in xrange(len(i)):
                         if ix > 5:
@@ -3503,12 +2559,12 @@ class World:
                         s.append(str(i[ix]))
                     s.append('')
 
-                if (tx, ty) in self.d.featmap:
-                    f = self.d.featmap[(tx, ty)]
+                if txy in self.d.featmap:
+                    f = self.d.featmap[txy]
                     s.append('You see ' + f.name + '.')
 
-                elif dg.grid_is_walk(tx, ty):
-                    if dg.grid_is_water(tx, ty):
+                elif dg.grid_is_walk(txy[0], txy[1]):
+                    if dg.grid_is_water(txy[0], txy[1]):
                         s.append('You see a water-covered floor.')
                     else:
                         s.append('You see a cave floor.')
@@ -3518,30 +2574,30 @@ class World:
 
             k = draw_window(s, True)
 
-            if   k == 'h': tx -= 1
-            elif k == 'j': ty += 1
-            elif k == 'k': ty -= 1
-            elif k == 'l': tx += 1
+            if   k == 'h': txy[0] -= 1
+            elif k == 'j': txy[1] += 1
+            elif k == 'k': txy[1] -= 1
+            elif k == 'l': txy[0] += 1
             elif k == 'y':
-                tx -= 1
-                ty -= 1
+                txy[0] -= 1
+                txy[1] -= 1
             elif k == 'u':
-                tx += 1
-                ty -= 1
+                txy[0] += 1
+                txy[1] -= 1
             elif k == 'b':
-                tx -= 1
-                ty += 1
+                txy[0] -= 1
+                txy[1] += 1
             elif k == 'n':
-                tx += 1
-                ty += 1
+                txy[0] += 1
+                txy[1] += 1
             else:
                 break
 
-            if tx < 0: tx = 0
-            elif tx >= self.d.w: tx = self.d.w - 1
+            if txy[0] < 0: txy[0] = 0
+            elif txy[0] >= self.d.w: txy[0] = self.d.w - 1
 
-            if ty < 0: ty = 0
-            elif ty >= self.d.h: ty = self.d.h - 1
+            if txy[1] < 0: txy[1] = 0
+            elif txy[1] >= self.d.h: txy[1] = self.d.h - 1
 
 
     def _target(self, point, range, minrange=0, monstop=False, lightradius=None):
@@ -3551,11 +2607,10 @@ class World:
         #monx = None
         #mony = None
 
-        if point[0] is None:
+        if xy_none(point):
             for i in xrange(len(self.monsters_in_view)):
                 mon = self.monsters_in_view[i]
-                d = math.sqrt(math.pow(abs(self.d.px - mon.x), 2) +
-                              math.pow(abs(self.d.py - mon.y), 2))
+                d = xy_dist(self.d.pc, mon.xy)
 
                 #log.log(" #", mon.x, mon.y, d, range, minrange)
                 if d > range:
@@ -3567,7 +2622,7 @@ class World:
                 #log.log(" # ok")
                 #monx = mon.x
                 #mony = mon.y
-                point = (mon.x, mon.y)
+                point = mon.xy
 
                 del self.monsters_in_view[i]
                 self.monsters_in_view.append(mon)
@@ -3577,46 +2632,28 @@ class World:
                 "HJKL YUBN for directions, "
                 "<space> to choose and '.' to fire."]
 
-        if point[0] is not None:
-            self.draw(point[0], point[1], range=(minrange, range), 
+        if not xy_none(point):
+            self.draw(point, range=(minrange, range), 
                       lightradius=lightradius)
             if point[1] <= 2:
                 tmsg = []
 
         k = draw_window(tmsg, True)
 
-        poiok = (point[0] is not None)
+        #poiok = (not xy_none(point))
         final_choice = False
                            
+        
+        dpt = None
 
-        if k == 'h':
-            if poiok: point = (max(point[0]-1,0), point[1])
-            else:     point = (max(self.d.px-range,0), self.d.py)
-        elif k == 'j':
-            if poiok: point = (point[0], min(point[1]+1,self.d.h-1))
-            else:     point = (self.d.px, min(self.d.py+range, self.d.h-1))
-        elif k == 'k':
-            if poiok: point = (point[0], max(point[1]-1,0))
-            else:     point = (self.d.px, max(self.d.py-range,0))
-        elif k == 'l':
-            if poiok: point = (min(point[0]+1,self.d.w-1), point[1])
-            else:     point = (min(self.d.px+range,self.d.w-1), self.d.py)
-        elif k == 'y':
-            if poiok: point = (max(point[0]-1,0), max(point[1]-1,0))
-            else:     point = (max(self.d.px - int(range * 0.71), 0),
-                               max(self.d.py - int(range * 0.71), 0))
-        elif k == 'u':
-            if poiok: point = (min(point[0]+1,self.d.w-1), max(point[1]-1,0))
-            else:     point = (min(self.d.px + int(range * 0.71), self.d.w - 1),
-                               max(self.d.py - int(range * 0.71), 0))
-        elif k == 'b':
-            if poiok: point = (max(point[0]-1,0), min(point[1]+1,self.d.h-1))
-            else:     point = (max(self.d.px - int(range * 0.71), 0),
-                               min(self.d.py + int(range * 0.71), self.d.h - 1))
-        elif k == 'n':
-            if poiok:  point = (min(point[0]+1,self.d.w-1), min(point[1]+1,self.d.h-1))
-            else:      point = (min(self.d.px + int(range * 0.71), self.d.w - 1),
-                                min(self.d.py + int(range * 0.71), self.d.h - 1))
+        if k == 'h':   dpt = (-1, 0)
+        elif k == 'j': dpt = (0, 1)
+        elif k == 'k': dpt = (0, -1)
+        elif k == 'l': dpt = (1, 0)
+        elif k == 'y': dpt = (-1, -1)
+        elif k == 'u': dpt = (1, -1)
+        elif k == 'b': dpt = (-1, 1)
+        elif k == 'n': dpt = (1, 1)
         elif k == '.':
             if poiok is None:
                 return (None, None), False
@@ -3627,27 +2664,37 @@ class World:
         else:
             return (-1, -1), True
 
-        libtcod.line_init(self.d.px, self.d.py, point[0], point[1])
-        xx = None
-        yy = None
+        if dpt:
+            if not xy_none(point):
+                point = xy_add(point, dpt)
+            else:
+                if dpt[0] == 0 or dpt[1] == 0:
+                    dpt = (dpt[0] * range, dpt[1] * range)
+                else:
+                    dpt = (dpt[0] * int(range * 0.71), dpt[1] * int(range * 0.71))
+                point = xy_add(self.d.pc, dpt)
+
+            point = (max(0, min(point[0], self.d.w - 1)),
+                     max(0, min(point[1], self.d.h - 1)))
+
+        libtcod.line_init(self.d.pc[0], self.d.pc[1], point[0], point[1])
+        xxyy = (None, None)
+
         while 1:
             tmpxy = libtcod.line_step()
-            tmpx, tmpy = tmpxy
 
-            if tmpx is None:
+            if xy_none(tmpxy):
                 #return (xx, yy), True
                 break
 
-            if dg.grid_is_walk(tmpx, tmpy) or self.try_feature(tmpxy, 'shootable'):
+            if dg.grid_is_walk(tmpxy[0], tmpxy[1]) or self.try_feature(tmpxy, 'shootable'):
 
                 if minrange > 0:
-                    d = math.sqrt(math.pow(abs(tmpx - self.d.pc[0]), 2) +
-                                  math.pow(abs(tmpy - self.d.pc[1]), 2))
+                    d = xy_dist(tmpxy, self.d.pc)
                     if d < minrange:
                         continue
 
-                xx = tmpx
-                yy = tmpy
+                xxyy = tmpxy
 
                 if monstop and tmpxy in self.d.monmap:
                     #return (xx, yy), True
@@ -3657,9 +2704,9 @@ class World:
                 break
                 #return (xx, yy), True
 
-        if final_choice and xx == point[0] and yy == point[1]:
-            return (xx, yy), True
-        return (xx, yy), False
+        if final_choice and xxyy == point:
+            return xxyy, True
+        return xxyy, False
 
 
 
@@ -3706,17 +2753,17 @@ class World:
             self.msg.m('Nothing happened!')
         else:
             self.msg.m('Suddenly, ' + str(i) + ' appears at your feet!')
-            self.set_item(self.d.px, self.d.py, [i])
+            self.set_item(self.d.pc, [i])
 
 
-    def move_down(self): self.move(0, 1)
-    def move_up(self): self.move(0, -1)
-    def move_left(self): self.move(-1, 0)
-    def move_right(self): self.move(1, 0)
-    def move_upleft(self): self.move(-1, -1)
-    def move_upright(self): self.move(1, -1)
-    def move_downleft(self): self.move(-1, 1)
-    def move_downright(self): self.move(1, 1)
+    def move_down(self): self.move((0, 1))
+    def move_up(self): self.move((0, -1))
+    def move_left(self): self.move((-1, 0))
+    def move_right(self): self.move((1, 0))
+    def move_upleft(self): self.move((-1, -1))
+    def move_upright(self): self.move((1, -1))
+    def move_downleft(self): self.move((-1, 1))
+    def move_downright(self): self.move((1, 1))
 
 
 
@@ -3833,14 +2880,13 @@ class World:
 
         if mon.boulder:
             if mon.bld_delta:
-                ret =  (xy[0] + mon.bld_delta[0],
-                        xy[1] + mon.bld_delta[1])
+                ret = xy_add(xy, mon.bld_delta)
 
                 if not dg.grid_is_walk(ret[0], ret[1]):
                     mon.bld_delta = None
                     return (None, None)
                 else:
-                    return (ret[0], ret[1])
+                    return ret
             else:
                 return (None, None)
 
@@ -3850,11 +2896,12 @@ class World:
             rang = 1
 
         if dist > rang or mon.confused or (mon.sleepattack and self.p.sleeping):
-            mdx = xy[0] + dg.random_range(-1, 1)
-            mdy = xy[1] + dg.random_range(-1, 1)
-            if not dg.grid_is_walk(mdx, mdy):
-                mdx = None
-                mdy = None
+            mdxy = xy_add(xy, 
+                          (dg.random_range(-1, 1), 
+                           dg.random_range(-1, 1)))
+
+            if not dg.grid_is_walk(mdxy[0], mdxy[1]):
+                mdxy = (None, None)
             if mon.confused:
                 mon.confused -= 1
 
@@ -3866,11 +2913,11 @@ class World:
             repelrange = self.get_repelrange()
 
             if repelrange and dist <= repelrange and dist > 1:
-                 return None, None
+                 return (None, None)
 
             if mon.heatseeking:
                 if (dg.grid_is_water(self.d.pc[0], self.d.pc[1]) or self.p.cooling or mon.onfire):
-                    if mon.known_pxy[0] is None or mon.known_pxy[1] is None:
+                    if xy_none(mon.known_pxy):
                         mon.known_pxy = mon.xy
                 else:
                     mon.known_pxy = self.d.pc
@@ -3882,14 +2929,14 @@ class World:
 
             if mon.straightline:
                 libtcod.line_init(xy[0], xy[1], mon.known_pxy[0], mon.known_pxy[1])
-                mdx, mdy = libtcod.line_step()
+                mdxy = libtcod.line_step()
             else:
 
                 flee = False
 
                 if mon.blink_away and dist < 2.0:
-                    mdx, mdy = self.find_blink_targ(xy, mon.blink_away)
-                    return (mdx, mdy)
+                    mdxy = self.find_blink_targ(xy, mon.blink_away)
+                    return mdxy
 
                 elif mon.fleerange and dist <= mon.fleerange:
                     if math.fabs(dist - mon.fleerange) < 0.9:
@@ -3901,49 +2948,51 @@ class World:
                     mon.fleetimeout -= 1
 
                 if flee:
-                    mdx, mdy = (None, None)
+                    mdxy = (None, None)
                     for _xy in self.neighbors[xy]:
                         if dg.grid_is_walk(_xy[0], _xy[1]) and \
                            ((mon.known_pxy[0] >= xy[0] and _xy[0] < xy[0]) or \
                             (mon.known_pxy[0] <= xy[0] and _xy[0] > xy[0]) or \
                             (mon.known_pxy[1] <= xy[1] and _xy[1] > xy[1]) or \
                             (mon.known_pxy[1] >= xy[1] and _xy[1] < xy[1])):
-                            mdx, mdy = _xy
+                            mdxy = _xy
                             break
 
                 else:
-                    libtcod.path_compute(self.floorpath, x, y, mon.known_px, mon.known_py, rang*2)
-                    mdx, mdy = libtcod.path_walk(self.floorpath, True, rang*2)
+                    libtcod.path_compute(self.floorpath, 
+                                         xy[0], xy[1], 
+                                         mon.known_pxy[0], mon.known_pxy[1], 
+                                         rang*2)
+
+                    mdxy = libtcod.path_walk(self.floorpath, True, rang*2)
 
                     if mon.fast:
-                        mdx2, mdy2 = libtcod.path_walk(self.floorpath, True, rang*2)
-                        if mdx2 is not None and mdy2 is not None:
-                            mdx, mdy = mdx2, mdy2
+                        mdxy2 = libtcod.path_walk(self.floorpath, True, rang*2)
+                        if not xy_none(mdxy2):
+                            mdxy = mdxy2
                     
-                    if mdx is None or mdy is None:
-                        mdx = x + dg.random_range(-1, 1)
-                        mdy = y + dg.random_range(-1, 1)
-                        if not dg.grid_is_walk(mdx, mdy):
-                            mdx = None
-                            mdy = None
+                    if xy_none(mdxy):
+                        mdxy = xy_add(xy, (dg.random_range(-1, 1),
+                                           dg.random_range(-1, 1)))
 
+                        if not dg.grid_is_walk(mdxy[0], mdxy[1]):
+                            mdxy = (None, None)
 
 
         if mon.stoneeating:
-            if mdx is not None:
-                if self.try_feature(mdx, mdy, 'permanent'):
-                    return None, None
+            if not xy_none(mdxy):
+                if self.try_feature(mdxy, 'permanent'):
+                    return (None, None)
 
-                if not dg.grid_is_walk(mdx, mdy):
-                    self.convert_to_floor(mdx, mdy, True)
+                if not dg.grid_is_walk(mdxy[0], mdxy[1]):
+                    self.convert_to_floor(mdxy, True)
 
-        return mdx, mdy
+        return mdxy
 
     def process_monstep(self, mon):
-        mdx = mon.x
-        mdy = mon.y
+        mdxy = mon.xy
 
-        if self.try_feature(mdx, mdy, 'sticky') and not mon.flying:
+        if self.try_feature(mdxy, 'sticky') and not mon.flying:
             if mon.visible or mon.visible_old:
                 mn = str(mon)
                 mn = mn[0].upper() + mn[1:]
@@ -3964,7 +3013,7 @@ class World:
 
         return False
 
-    def summon(self, x, y, monname, n):
+    def summon(self, xy, monname, n):
         if monname is None:
             m = []
             for ii in xrange(n):
@@ -3978,10 +3027,8 @@ class World:
                 return []
 
         l = []
-        for ki in self.neighbors[(x,y)]:
-            if dg.grid_is_walk(ki[0], ki[1]) and \
-               ki not in self.d.monmap and \
-               (ki[0] != self.d.px or ki[1] != self.d.py):
+        for ki in self.neighbors[xy]:
+            if dg.grid_is_walk(ki[0], ki[1]) and ki not in self.d.monmap and ki != self.d.pc:
                 l.append(ki)
 
         ret = []
@@ -3989,12 +3036,11 @@ class World:
             if len(l) == 0:
                 return ret
             j = dg.random_n(len(l))
-            xx,yy = l[j]
+            xxyy = l[j]
             del l[j]
 
-            m[i].x = xx
-            m[i].y = yy
-            self.d.monmap[(xx, yy)] = m[i]
+            m[i].xy = xxyy
+            self.d.monmap[xxyy] = m[i]
             ret.append(m[i])
 
         return ret
@@ -4144,11 +3190,11 @@ class World:
 
     def process_world(self):
 
-        def cbon(x,y,ca):
-            self.celauto_on(x,y,ca)
+        def cbon(x, y, ca):
+            self.celauto_on((x,y),ca)
 
-        def cboff(x,y,ca):
-            self.celauto_off(x,y,ca)
+        def cboff(x, y, ca):
+            self.celauto_off((x,y),ca)
 
         self.celautostock.celauto_step(cbon, cboff)
 
@@ -4163,33 +3209,33 @@ class World:
                     i.liveexplode -= 1
                     if i.liveexplode == 0:
                         if i.summon:
-                            self.summon(k[0], k[1], i.summon[0], i.summon[1])
+                            self.summon(k, i.summon[0], i.summon[1])
                         elif i.radexplode:
-                            rblasts.append((k[0], k[1], i.radius))
+                            rblasts.append((k, i.radius))
                         elif i.swampgas:
-                            self.paste_celauto(self.d.px, self.d.py, self.celautostock.SWAMPGAS)
+                            self.paste_celauto(self.d.pc, self.celautostock.SWAMPGAS)
                         else:
-                            explodes.add((k[0], k[1], i.radius))
+                            explodes.add((k, i.radius))
 
                         delitems.append(k)
 
-        for x,y,r in rblasts:
-            self.rayblast(x, y, r)
+        for xy,r in rblasts:
+            self.rayblast(xy, r)
 
-        for ix,iy in delitems:
-            self.filter_items(ix, iy, lambda i: (i.liveexplode == 0, None), None)
+        for ixy in delitems:
+            self.filter_items(ixy, lambda i: (i.liveexplode == 0, None), None)
 
         summons = []
         raise_dead = []
 
-        for k,mon in sorted(self.d.monmap.iteritems()):
+        for xy,mon in sorted(self.d.monmap.iteritems()):
             #log.log('  tick:', k)
 
-            x, y = k
+            x, y = xy
             if mon.static:
                 dist = 0
             else:
-                dist = math.sqrt(math.pow(abs(self.d.px - x), 2) + math.pow(abs(self.d.py - y), 2))
+                dist = xy_dist(self.d.pc, xy)
 
             mon.do_move = None
 
@@ -4206,7 +3252,7 @@ class World:
                 self.monster_flavor_message(mon, dist)
 
 
-            p = self.try_feature(x, y, 'poison')
+            p = self.try_feature(xy, 'poison')
             if p and not mon.poisimmune:
                 mon.hp -= p
                 if mon.hp <= -3.0:
@@ -4216,12 +3262,12 @@ class World:
                         self.msg.m(smu + ' falls over and dies!')
 
                     self.handle_mondeath(mon, do_gain=False, 
-                                         is_poison=(False if self.try_feature(x, y, 'pois2') else True))
+                                         is_poison=(False if self.try_feature(xy, 'pois2') else True))
                     mon.do_die = True
                     mons.append(mon)
                     continue
 
-            p = self.try_feature(x, y, 'fire')
+            p = self.try_feature(xy, 'fire')
             if (p or mon.onfire) and not mon.fireimmune:
                 mon.hp -= (p or self.coef.burndamage)
                 if mon.hp <= -3.0:
@@ -4240,8 +3286,8 @@ class World:
 
                 else:
                     mon.onfire -= 1
-                    self.seed_celauto(x, y, self.celautostock.FIRE)
-                    self.set_feature(x, y, '"')
+                    self.seed_celauto(xy, self.celautostock.FIRE)
+                    self.set_feature(xy, '"')
 
 
 
@@ -4252,15 +3298,15 @@ class World:
                 continue
 
             if mon.raise_dead and (mon.visible or mon.static) and (self.t % mon.raise_dead[1]) == 0:
-                raise_dead.extend(self.raise_dead(mon.x, mon.y, mon.raise_dead[0]))
+                raise_dead.extend(self.raise_dead(mon.xy, mon.raise_dead[0]))
 
             mon.visible_old = mon.visible
             mon.visible = False
 
-            mdx, mdy = self.walk_monster(mon, dist, x, y)
+            mdxy = self.walk_monster(mon, dist, xy)
 
-            if mdx is not None:
-                if mdx == self.d.px and mdy == self.d.py:
+            if not xy_none(mdxy):
+                if mdxy == self.d.pc:
                     if mon.selfdestruct:
                         smu = str(mon)
                         smu = smu[0].upper() + smu[1:]
@@ -4270,7 +3316,7 @@ class World:
                     else:
                         self.fight(mon, False)
                 else:
-                    mon.do_move = (mdx, mdy)
+                    mon.do_move = mdxy
                     
                     if mon.do_move in self.d.monmap:
                         mon2 = self.d.monmap[mon.do_move]
@@ -4287,7 +3333,7 @@ class World:
             smu = smu[0].upper() + smu[1:]
 
             if mon.summon:
-                q = self.summon(k[0], k[1], mon.summon[0], 1)
+                q = self.summon(k, mon.summon[0], 1)
                 if len(q) > 0:
                     if not mon.static:
                         self.msg.m(smu + ' summons ' + str(q[0]) + '!')
@@ -4295,31 +3341,30 @@ class World:
                     mon.summon = None
 
             elif mon.summononce:
-                q = self.summon(k[0], k[1], None, mon.summononce[0])
+                q = self.summon(k, None, mon.summononce[0])
                 if len(q) > 0:
                     self.msg.m(smu + ' summons monsters!')
                     mon.summononce = None
 
 
 
-        for x,y,mon in raise_dead:
-            if dg.grid_is_walk(x,y) and (x,y) not in self.d.monmap and not (x == self.d.px and y == self.d.py):
+        for xy,mon in raise_dead:
+            if dg.grid_is_walk(xy[0], xy[1]) and xy not in self.d.monmap and xy != self.d.pc:
                 smu = str(mon)
                 smu = smu[0].upper() + smu[1:]
                 self.msg.m(smu + ' rises from the dead!')
                 mon.reset()
-                mon.x = x
-                mon.y = y
-                self.d.monmap[(x,y)] = mon
+                mon.xy = xy
+                self.d.monmap[xy] = mon
 
 
         for mon in mons:
             if mon.do_die:
-                if (mon.x, mon.y) in self.d.monmap:
-                    del self.d.monmap[(mon.x, mon.y)]
+                if mon.xy in self.d.monmap:
+                    del self.d.monmap[ymon.xy]
             elif mon.do_move:
-                mon.old_pos = (mon.x, mon.y)
-                del self.d.monmap[(mon.x, mon.y)]
+                mon.old_pos = mon.xy
+                del self.d.monmap[mon.xy]
 
         for mon in mons:
             if mon.do_die:
@@ -4329,15 +3374,14 @@ class World:
                 if mon.do_move in self.d.monmap:
                     mon.do_move = mon.old_pos
 
-                mon.x = mon.do_move[0]
-                mon.y = mon.do_move[1]
+                mon.xy = mon.do_move
                 self.d.monmap[mon.do_move] = mon
                 mon.do_move = None
 
                 self.process_monstep(mon)
 
-        for x, y, r in sorted(explodes):
-            self.explode(x, y, r)
+        for xy, r in sorted(explodes):
+            self.explode(xy, r)
 
 
 
@@ -4370,12 +3414,12 @@ class World:
 
         luck = -2
 
-        if self.d.px > self.d.w / 2:
+        if self.d.pc[0] > self.d.w / 2:
             self.stats.draw(0, 0, grace=statsgrace, resource=statsresource, luck=luck)
         else:
             self.stats.draw(self.d.w - 14, 0, grace=statsgrace, resource=statsresource, luck=luck)
 
-        if self.d.py > self.d.h / 2:
+        if self.d.pc[1] > self.d.h / 2:
             self.msg.draw(15, 0, self.d.w - 30, self.t)
         else:
             self.msg.draw(15, self.d.h - 3, self.d.w - 30, self.t)
@@ -4383,7 +3427,7 @@ class World:
 
     ### 
 
-    def draw(self, _hlx=1000, _hly=1000, range=(0,1000), lightradius=None):
+    def draw(self, _hlxy=(1000,1000), range=(0,1000), lightradius=None):
 
         withtime = False
         if self.oldt != self.t:
@@ -4412,7 +3456,7 @@ class World:
             self.monsters_in_view = []
 
         # hack, after process_world because confusing features may be created
-        if self.try_feature(self.d.px, self.d.py, 'confuse'):
+        if self.try_feature(self.d.pc, 'confuse'):
             lightradius = 1
 
         
@@ -4441,7 +3485,7 @@ class World:
             dg.render_push_skin(k[0], k[1], v.skin[1], v.skin[0], libtcod.black, 0, v.boulder)
 
             if telerange and not v.inanimate:
-                d = math.sqrt(math.pow(abs(self.d.px - k[0]),2) + math.pow(abs(self.d.py - k[1]),2))
+                d = xy_dist(self.d.pc, k)
 
                 if d <= telerange:
                     lit_mons.add(k)
@@ -4461,16 +3505,16 @@ class World:
         pccol = libtcod.white
         if self.p.onfire:
             pccol = libtcod.amber
-        dg.render_push_skin(self.d.px, self.d.py, pccol, pc, libtcod.black, 0, False)
+        dg.render_push_skin(self.d.pc[0], self.d.pc[1], pccol, pc, libtcod.black, 0, False)
 
         ###
 
-        did_highlight = dg.render_draw(self.tcodmap, self.t, self.d.px, self.d.py, 
-                                       _hlx, _hly, range[0], range[1], lightradius)
+        did_highlight = dg.render_draw(self.tcodmap, self.t, self.d.pc[0], self.d.pc[1], 
+                                       _hlxy[0], _hlxy[1], range[0], range[1], lightradius)
         
         ###
 
-        dg.render_pop_skin(self.d.px, self.d.py)
+        dg.render_pop_skin(self.d.pc[0], self.d.pc[1])
 
         self.new_visibles = False
 
@@ -4522,7 +3566,7 @@ class World:
           'dlev', 'plev', 't', 'oldt', 'tagorder', 'sleeping', 'resting', 'cooling', 'digging', 'blind',
           'mapping', 'glued', 'onfire', 's_grace', 'b_grace', 'v_grace', 'forcedsleep',
           'forced2sleep', 'healingsleep', 'doppelpoint', 'doppeltime',
-          '_seed', '_inputs', 'featstock', 'vaultstock',
+          '_seed', 'featstock', 'vaultstock',
           'achievements', 'bones', 'resource', 'resource_buildup', 'resource_timeout',
           'neighbors', 'moon', 'did_moon_message'
           ]
@@ -4530,6 +3574,8 @@ class World:
 
         for x in atts:
             state[x] = getattr(self, x)
+
+        state['_inputs'] = dgsys._inputs
 
         if 1: #try:
             f = open('savefile.dat0', 'w')
@@ -4570,8 +3616,8 @@ class World:
         #log.f = open('LOG.%d' % self._seed, 'a')
 
         dg.random_init(self._seed)
-        global _inputs
-        _inputs = self._inputs
+
+        dgsys._inputs = state['_inputs']
 
         self.make_map()
         self.make_paths()
@@ -4620,8 +3666,8 @@ class World:
         conn = sqlite3.connect('highscore.db')
         c = conn.cursor()
 
-        tbl_games = 'Games%s' % _version.replace('.', '')
-        tbl_achievements = 'Achievements%s' % _version.replace('.', '')
+        tbl_games = 'Games%s' % dgsys._version.replace('.', '')
+        tbl_achievements = 'Achievements%s' % dgsys._version.replace('.', '')
 
         c.execute('create table if not exists ' + tbl_games + \
                   ' (id INTEGER PRIMARY KEY, seed INTEGER, score INTEGER, bones BLOB, inputs BLOB)')
@@ -4644,7 +3690,7 @@ class World:
 
 
         bones = cPickle.dumps(self.bones)
-        inputs = cPickle.dumps(self._inputs)
+        inputs = cPickle.dumps(dgsys._inputs)
 
         c.execute('insert into ' + tbl_games + '(id, seed, score, bones, inputs) values (NULL, ?, ?, ?, ?)',
                   (self._seed, score,
@@ -4779,7 +3825,7 @@ class World:
                 break
 
         form = {'upload': '1',
-                'version': _version,
+                'version': dgsys._version,
                 'username': username,
                 'pwhash': hashlib.sha512(password).hexdigest(),
                 'seed': str(seed),
@@ -4881,8 +3927,8 @@ def start_game(world, w, h, oldseed=None, oldbones=None):
         #log.f = open('LOG.%d' % world._seed, 'a')
 
         dg.random_init(world._seed)
-        global _inputs
-        _inputs = world._inputs
+
+        dgsys._inputs = []
 
         world.regen(w, h)
         world.generate_inv()
@@ -4916,10 +3962,10 @@ def check_autoplay(world):
             return -1
 
     if world.digging:
-        height = dg.grid_get_height(world.digging[0], world.digging[1])
+        height = dg.grid_get_height(world.digging[0][0], world.digging[0][1])
 
         if height <= -10:
-            world.convert_to_floor(world.digging[0], world.digging[1], False)
+            world.convert_to_floor(world.digging[0], False)
             world.digging = None
             return 1
 
@@ -4928,7 +3974,7 @@ def check_autoplay(world):
             return 1
 
         else:
-            dg.grid_set_height(world.digging[0], world.digging[1], height - world.digging[2])
+            dg.grid_set_height(world.digging[0][0], world.digging[0][1], height - world.digging[2])
             world.tick()
             return -1
 
@@ -4948,8 +3994,7 @@ def main(config, replay=None):
         oldinputs = replay[1]
         oldbones = replay[2]
 
-        global _inputqueue
-        _inputqueue = oldinputs
+        dgsys._inputqueue = oldinputs
 
     w = 80
     h = 25
@@ -4983,7 +4028,7 @@ def main(config, replay=None):
             if replay is None:
                 # MEGATON-SIZED HACK!
                 # To make replays work.
-                _inputs.append((ord('S'), 0))
+                dgsys._inputs.append((ord('S'), 0))
 
                 world.save()
             break
@@ -5041,7 +4086,7 @@ def main(config, replay=None):
 #cProfile.run('main()')
 
 if __name__=='__main__':
-    config = Config()
+    config = dgsys.Config()
     while 1:
         if main(config):
             break

@@ -2,8 +2,6 @@
 from ctypes import *
 import os
 
-import libtcodpy
-
 
 if os.name == 'nt':
     _dg = CDLL('./libdiggr.dll')

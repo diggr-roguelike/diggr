@@ -96,7 +96,7 @@ def main():
     w = 80
     h = 25
 
-    diggr._inputs = []
+    diggr.dgsys._inputs = []
 
     font = 'font.png' #'terminal10x16_gs_ro.png'
     libtcod.console_set_custom_font(font, libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_ASCII_INROW)
@@ -140,8 +140,8 @@ def main():
     mode = 1
     achievement = None
 
-    tbl_games = 'Games%s' % diggr._version.replace('.', '')
-    tbl_achievements = 'Achievements%s' % diggr._version.replace('.', '')
+    tbl_games = 'Games%s' % diggr.dgsys._version.replace('.', '')
+    tbl_achievements = 'Achievements%s' % diggr.dgsys._version.replace('.', '')
 
 
 
@@ -307,9 +307,9 @@ def main():
                 diggr.main(diggr.Config(False),
                            replay=(seed,inputs,bones))
 
-                if len(diggr._inputqueue) != 0:
+                if len(diggr.dgsys._inputqueue) != 0:
                     raise Exception('Malformed replay file.')
-                diggr._inputqueue = None
+                diggr.dgsys._inputqueue = None
 
             elif k2 == 'b':
                 name = input_name()
