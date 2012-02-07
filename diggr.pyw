@@ -36,6 +36,7 @@ from items import *
 from monsters import *
 from features import *
 from vaults import *
+from quests import *
 from celauto import *
 
 
@@ -44,16 +45,6 @@ from celauto import *
 
 
 
-class QuestInfo:
-    def __init__(self, moncounts={}, monlevels=(1,12),
-                 itemcounts={}, dlevels=(1,12),
-                 messages={}, gifts=None):
-        self.moncounts = moncounts
-        self.monlevels = monlevels
-        self.itemcounts = itemcounts
-        self.dlevels = dlevels
-        self.messages = messages
-        self.gifts = gifts
 
 
 class Player:
@@ -62,6 +53,7 @@ class Player:
         self.stats = Stats()
         self.inv = Inventory()
         self.achievements = Achievements()
+        self.msg = Messages()
 
         self.done = False
         self.dead = False
@@ -89,8 +81,8 @@ class Player:
         self.resource_timeout = 0
 
         self.tagorder = 1
-        self.monsters_in_view = []
-        self.new_visibles = False
+
+        self.did_moon_message = False
 
 
 class Dungeon:
@@ -106,18 +98,7 @@ class Dungeon:
 
         self.dlev = 1
 
-        #self.px = None
-        #self.py = None
         self.pc = (None, None)
-
-        self.tcodmap = None
-
-        self.coef = Coeffs()
-        self.itemstock = ItemStock()
-        self.monsterstock = MonsterStock()
-        self.featstock = FeatureStock()
-        self.vaultstock = VaultStock()
-        self.celautostock = CelAutoStock()
 
         self.branch = None
         self.moon = None
@@ -125,27 +106,45 @@ class Dungeon:
         self.doppelpoint = None
         self.doppeltime = 0
 
-        self.floorpath = None
+        self.neighbors = None
 
 
 
 class World:
+    def __init__(self):
+
+        self.coef = Coeffs()
+        self.itemstock = ItemStock()
+        self.monsterstock = MonsterStock()
+        self.featstock = FeatureStock()
+        self.vaultstock = VaultStock()
+        self.queststock = QuestStock()
+
+        self.t = 0
+        self.oldt = -1
+
+        self._seed = None
+        self.bones = []
+
+
+class Game:
 
     def __init__(self, config):
 
         self.p = Player()
         self.d = Dungeon()
+        self.w = World()
 
         self.ckeys = None
         self.vkeys = None
 
-        self.msg = Messages()
+        self.tcodmap = None
+        self.floorpath = None
 
-        self.did_moon_message = False
-        self.t = 0
-        self.oldt = -1
+        self.celautostock = CelAutoStock()
 
-        self._seed = None
+        self.monsters_in_view = []
+        self.new_visibles = False
 
         self.save_disabled = False
 
@@ -163,32 +162,7 @@ class World:
                        'q': (libtcod.white,),
                        'qk': (libtcod.grey,) }
         
-        quest1 = QuestInfo(moncounts={3:1, 4:1, 5:2, 6:2, 7:3}, 
-                           monlevels=(3,8),
-                           itemcounts={3:1, 4:1, 5:1, 6:1, 7:1}, 
-                           dlevels=(3,7),
-                           messages={3: ['Victory! The Thunderdome grants you a gift!', 'An exit appears.'],
-                                     4: ['Victory! The Thunderdome grants you a gift!', 'An exit appears.'],
-                                     5: ['Victory! The Thunderdome grants you a gift!', 'An exit appears.'],
-                                     6: ['Victory! The Thunderdome grants you a gift!', 'An exit appears.'],
-                                     7: ['Total victory!', 'The Thunderdome grants you godlike powers!']}, 
-                           gifts={3: [None, None, None],
-                                  4: [None, None, None],
-                                  5: [None, None, None],
-                                  6: [None, None, None],
-                                  7: ['deusex']})
 
-        questkali = QuestInfo(moncounts={15:10},
-                              monlevels=(8,11),
-                              itemcounts={15:10},
-                              dlevels=(15,15),
-                              messages={15: []},
-                              gifts={15: []})
-        
-        self.quests = {'q': quest1,
-                       'qk': questkali}
-
-        self.neighbors = None
 
 
     def health(self): return self.p.stats.health
@@ -199,7 +173,7 @@ class World:
     def warmth(self): return self.p.stats.warmth
 
     def generate_and_take_item(self, itemname):
-        self.p.inv.take(self.d.itemstock.find(itemname))
+        self.p.inv.take(self.w.itemstock.find(itemname))
 
     ##
 
@@ -255,7 +229,7 @@ class World:
         tmp = max(self.get_inv_attr(['head'], 'telepathyrange', 0))
 
         if self.p.resource_timeout and self.p.resource == 'p':
-            tmp = max(self.d.coef.purple_telerange, tmp)
+            tmp = max(self.w.coef.purple_telerange, tmp)
 
         return tmp
 
@@ -265,20 +239,20 @@ class World:
                                     'camorange', monrange))
 
         if self.p.resource_timeout and self.p.resource == 'p':
-            tmp = min(self.d.coef.purple_camorange, tmp)
+            tmp = min(self.w.coef.purple_camorange, tmp)
 
         if self.p.b_grace:
             rang = 12 - int(9 * (float(self.p.b_grace) / 
-                                 self.d.coef.b_graceduration))
+                                 self.w.coef.b_graceduration))
             tmp = min(rang, tmp)
 
         return tmp
 
     def get_attack(self):
         if self.p.resource_timeout and self.p.resource == 'g':
-            baseattack = self.d.coef.green_attack
+            baseattack = self.w.coef.green_attack
         else:
-            baseattack = self.d.coef.unarmedattack
+            baseattack = self.w.coef.unarmedattack
 
         return max(sum(self.get_inv_attr(['right', 'left', 'feet'], 
                                          'attack', 0),
@@ -287,16 +261,16 @@ class World:
     def get_defence(self):
         tmp = max(sum(self.get_inv_attr(['head', 'left', 'trunk', 
                                          'legs', 'feet'], 'defence', 0)),
-                  self.d.coef.unarmeddefence)
+                  self.w.coef.unarmeddefence)
 
         if self.p.glued:
-            tmp /= self.d.coef.gluedefencepenalty
+            tmp /= self.w.coef.gluedefencepenalty
         return tmp
 
     def get_lightradius(self, default):
 
         if self.p.resource_timeout and self.p.resource == 'y':
-            ret = self.d.coef.yellow_lightradius
+            ret = self.w.coef.yellow_lightradius
         else:
             tmp = sum(self.get_inv_attr(['head', 'neck', 'legs', 'right', 'trunk'],
                                         'lightradius', 0))
@@ -306,7 +280,7 @@ class World:
             ret /= 2
 
         if self.p.b_grace:
-            n = int(15 * (float(self.p.b_grace) / self.d.coef.b_graceduration))
+            n = int(15 * (float(self.p.b_grace) / self.w.coef.b_graceduration))
             ret = max(ret, n)
 
         if self.d.moon == moon.NEW:
@@ -349,10 +323,10 @@ class World:
 
         self.d.featmap = {}
 
-        self.neighbors = {}
+        self.d.neighbors = {}
         for x in xrange(0, w_):
             for y in xrange(0, h_):
-                self.neighbors[(x,y)] = []
+                self.d.neighbors[(x,y)] = []
                 for xi in xrange(-1, 2):
                     for yi in xrange(-1, 2):
                         if xi == 0 and yi == 0:
@@ -363,7 +337,7 @@ class World:
                         if ki[0] < 0 or ki[0] >= w_ or ki[1] < 0 or ki[1] >= h_:
                             continue
 
-                        self.neighbors[(x,y)].append(ki)
+                        self.d.neighbors[(x,y)].append(ki)
 
         dg.neighbors_init(w_, h_)
         dg.render_init(w_, h_)
@@ -408,7 +382,7 @@ class World:
         else:
             dg.render_set_back(x, y, libtcod.black)
 
-        fore = self.theme[self.branch][0]
+        fore = self.theme[self.d.branch][0]
         fore2 = fore
         fore_i = 0
         is_terrain = False
@@ -464,7 +438,7 @@ class World:
             self.set_renderprops(xy)
             return
 
-        f = self.featstock.f[f_]
+        f = self.w.featstock.f[f_]
         w = f.walkable
         v = f.visible
 
@@ -507,7 +481,7 @@ class World:
                 if len(itms) == 0:
                     break
 
-            d = [ k for k in self.neighbors[xy] if dg.grid_is_walk(k[0], k[1]) ]
+            d = [ k for k in self.d.neighbors[xy] if dg.grid_is_walk(k[0], k[1]) ]
             if len(d) == 0:
                 iis.extend(itms)
                 return
@@ -537,7 +511,7 @@ class World:
 
         if v.message:
             for msg in reversed(v.message):
-                self.msg.m(msg, True)
+                self.p.msg.m(msg, True)
 
         for yi in xrange(v.h):
             for xi in xrange(v.w):
@@ -556,7 +530,7 @@ class World:
                     if z[1] is True:
                         dg.grid_add_nogen(xxyy[0], xxyy[1])
                     else:
-                        itm = self.itemstock.get(z[1])
+                        itm = self.w.itemstock.get(z[1])
                         if itm:
                             self.set_item(xxyy, [itm])
 
@@ -573,7 +547,7 @@ class World:
 
         oldvaults = set()
         while 1:
-            vault = self.vaultstock.get(self.branch, self.d.dlev, oldvaults)
+            vault = self.w.vaultstock.get(self.d.branch, self.d.dlev, oldvaults)
 
             if vault:
                 self.paste_vault(vault)
@@ -583,7 +557,7 @@ class World:
                 break
 
         # Quests
-        if self.branch in self.quests:
+        if self.w.queststock.get(self.d.branch):
             return
 
         d = dg.grid_one_of_floor()
@@ -593,11 +567,11 @@ class World:
 
         dg.grid_add_nogen(d[0], d[1])
 
-        if self.moon == moon.NEW:
+        if self.d.moon == moon.NEW:
             d = dg.grid_one_of_floor()
             self.set_feature(d, 'bb')
 
-        elif self.moon == moon.FULL:
+        elif self.d.moon == moon.FULL:
             d = dg.grid_one_of_floor()
             self.set_feature(d, 'dd')
             self.paste_celauto(d, self.celautostock.FERN)
@@ -636,31 +610,32 @@ class World:
 
     def make_monsters(self):
 
-        self.monsterstock.clear_gencount()
+        self.w.monsterstock.clear_gencount()
         self.d.monmap = {}
 
         # Quests
-        if self.branch in self.quests:
-            n = self.quests[self.branch].moncounts.get(self.d.dlev, 0)
+        quest = self.w.queststock.get(self.d.branch)
+
+        if quest:
+            n = quest.moncounts.get(self.d.dlev, 0)
 
         else:
-            n = int(max(dg.random_gauss(*self.coef.nummonsters), 1))
+            n = int(max(dg.random_gauss(*self.w.coef.nummonsters), 1))
 
         i = 0
         while i < n:
-            lev = self.d.dlev + dg.random_gauss(0, self.coef.monlevel)
+            lev = self.d.dlev + dg.random_gauss(0, self.w.coef.monlevel)
             lev = max(int(round(lev)), 1)
 
             # Quests
-            if self.branch in self.quests:
-                lev = min(max(lev, self.quests[self.branch].monlevels[0]), 
-                          self.quests[self.branch].monlevels[1])
+            if quest:
+                lev = min(max(lev, quest.monlevels[0]), quest.monlevels[1])
 
             while 1:
                 xy = dg.grid_one_of_walk()
                 if xy not in self.d.monmap: break
 
-            m = self.monsterstock.generate(self.branch, lev, self.itemstock, self.moon)
+            m = self.w.monsterstock.generate(self.d.branch, lev, self.w.itemstock, self.d.moon)
             if m:
                 m.xy = xy
                 self.d.monmap[xy] = m
@@ -674,12 +649,12 @@ class World:
 
 
         # Generate some mold.
-        if self.branch in self.quests:
+        if quest:
             return
 
-        if dg.random_range(1, self.coef.moldchance) == 1:
+        if dg.random_range(1, self.w.coef.moldchance) == 1:
             xy = dg.grid_one_of_floor()
-            m = self.monsterstock.generate('x', self.d.dlev, self.itemstock, self.moon)
+            m = self.w.monsterstock.generate('x', self.d.dlev, self.w.itemstock, self.d.moon)
             if m:
                 m.xy = xy
                 self.d.monmap[xy] = m
@@ -688,24 +663,26 @@ class World:
     def make_items(self):
 
         ## Quests
-        if self.branch in self.quests:
-            n = self.quests[self.branch].itemcounts.get(self.d.dlev, 0)
+        quest = self.w.queststock.get(self.d.branch)
+
+        if quest:
+            n = quest.itemcounts.get(self.d.dlev, 0)
         else:
-            n = int(max(dg.random_gauss(self.coef.numitems[0] + self.d.dlev, self.coef.numitems[1]), 1))
+            n = int(max(dg.random_gauss(self.w.coef.numitems[0] + self.d.dlev, self.w.coef.numitems[1]), 1))
 
         for i in xrange(n):
-            lev = self.d.dlev + dg.random_gauss(0, self.coef.itemlevel)
+            lev = self.d.dlev + dg.random_gauss(0, self.w.coef.itemlevel)
             lev = max(int(round(lev)), 1)
             xy = dg.grid_one_of_walk()
-            item = self.itemstock.generate(lev)
+            item = self.w.itemstock.generate(lev)
             if item:
                 self.set_item(xy, [item])
 
         ## Quests
-        if self.branch in self.quests:
+        if quest:
             return
 
-        for pl,dl,itm in self.bones:
+        for pl,dl,itm in self.w.bones:
             if dl == self.d.dlev and len(itm) > 0:
                 itm2 = [copy.copy(i) for i in itm]
 
@@ -724,7 +701,7 @@ class World:
         for x in xrange(3):
             monn2 = set()
             for k in monn:
-                for ki in self.neighbors[k]:
+                for ki in self.d.neighbors[k]:
                     monn2.add(ki)
             monn.update(monn2)
 
@@ -736,22 +713,22 @@ class World:
 
         
     def regen(self, w_, h_):
-        if self.branch is None:
-            self.branch = ['a', 'b', 'c', 'd', 'e'][dg.random_n(5)]
+        if self.d.branch is None:
+            self.d.branch = ['a', 'b', 'c', 'd', 'e'][dg.random_n(5)]
 
-        if self.moon is None:
-            m = moon.phase(self._seed)
-            self.moon = m['phase']
+        if self.d.moon is None:
+            m = moon.phase(self.w._seed)
+            self.d.moon = m['phase']
 
         self.makegrid(w_, h_)
 
         # Quests
-        if self.branch not in self.quests:
+        if not self.w.queststock.get(self.d.branch):
             gentype = 0
 
-            if self.moon in (moon.NEW, moon.FULL):
+            if self.d.moon in (moon.NEW, moon.FULL):
                 gentype = 1
-            elif self.moon in (moon.FIRST_QUARTER, moon.LAST_QUARTER):
+            elif self.d.moon in (moon.FIRST_QUARTER, moon.LAST_QUARTER):
                 gentype = -1
 
             dg.grid_generate(gentype)
@@ -768,9 +745,9 @@ class World:
             for y in xrange(h_):
                 self.set_renderprops((x, y))
 
-        if self.moon == moon.FULL:
+        if self.d.moon == moon.FULL:
             dg.render_set_env(libtcod.gray, 0.6)
-        elif self.moon == moon.NEW:
+        elif self.d.moon == moon.NEW:
             dg.render_set_env(libtcod.darkest_blue, 0.4)
         else:
             dg.render_set_env(libtcod.white, 0)
@@ -778,7 +755,7 @@ class World:
 
 
     def generate_inv(self):
-        if self.moon == moon.FULL:
+        if self.d.moon == moon.FULL:
             self.generate_and_take_item("miner's lamp")
         else:
             self.generate_and_take_item('lamp')
@@ -786,11 +763,11 @@ class World:
         self.generate_and_take_item('pickaxe')
 
 
-        pl = [k for k in self.neighbors[self.d.pc] if dg.grid_is_walk(k[0], k[1])] + [self.d.pc]
+        pl = [k for k in self.d.neighbors[self.d.pc] if dg.grid_is_walk(k[0], k[1])] + [self.d.pc]
 
         for x in xrange(9):
             k = pl[dg.random_n(len(pl))]
-            i = self.itemstock.generate(1)
+            i = self.w.itemstock.generate(1)
 
             self.set_item(k, [i])
 
@@ -800,11 +777,11 @@ class World:
         if self.p.glued > 0:
             self.p.glued -= 1
             if self.p.glued == 0:
-                self.msg.m('You dislodge yourself from the glue.')
+                self.p.msg.m('You dislodge yourself from the glue.')
                 if self.try_feature(self.d.pc, 'sticky'):
                     self.unset_feature(self.d.pc)
             else:
-                self.msg.m('You are stuck in the glue!')
+                self.p.msg.m('You are stuck in the glue!')
                 self.tick()
                 return
 
@@ -821,21 +798,21 @@ class World:
 
                 if self.d.pc in self.d.itemap:
                     if len(self.d.itemap[self.d.pc]) > 1:
-                        self.msg.m("You see several items here.")
+                        self.p.msg.m("You see several items here.")
                     else:
-                        self.msg.m("You see " + str(self.d.itemap[self.d.pc][0]) + '.')
+                        self.p.msg.m("You see " + str(self.d.itemap[self.d.pc][0]) + '.')
 
                 sign = self.try_feature(self.d.pc, 'sign')
                 if sign:
-                    self.msg.m('You see an engraving: ' + sign)
+                    self.p.msg.m('You see an engraving: ' + sign)
 
                 if self.p.onfire > 0:
                     self.seed_celauto(self.d.pc, self.celautostock.FIRE)
                     self.set_feature(self.d.pc, '"')
 
                 if self.try_feature(self.d.pc, 'sticky') and not self.get_glueimmune():
-                    self.msg.m('You just stepped in some glue!', True)
-                    self.p.glued = max(int(dg.random_gauss(*self.coef.glueduration)), 1)
+                    self.p.msg.m('You just stepped in some glue!', True)
+                    self.p.glued = max(int(dg.random_gauss(*self.w.coef.glueduration)), 1)
 
 
         else:
@@ -852,7 +829,7 @@ class World:
 
     def tick_checkstats(self):
 
-        self.t += 1
+        self.w.t += 1
 
         def is_destruct(i, slot): 
             if i.liveexplode > 0:
@@ -878,7 +855,7 @@ class World:
             elif n == 2:
                 i.selfdestruct -= 1
                 if i.selfdestruct == 0:
-                    self.msg.m('Your ' + i.name + ' falls apart!', True)
+                    self.p.msg.m('Your ' + i.name + ' falls apart!', True)
                     return False, True
             return False, False
 
@@ -888,25 +865,25 @@ class World:
         fdmg = self.try_feature(self.d.pc, 'fire')
         if fdmg > 0:
             self.health().dec(fdmg, "fire", self.config.sound)
-            self.p.onfire = max(self.coef.burnduration, self.p.onfire)
+            self.p.onfire = max(self.w.coef.burnduration, self.p.onfire)
         elif self.p.onfire > 0:
             if self.p.cooling == 0:
-                self.health().dec(self.coef.burndamage, "fire", self.config.sound)
+                self.health().dec(self.w.coef.burndamage, "fire", self.config.sound)
             self.p.onfire -= 1
 
         if self.p.cooling > 0:
             self.p.cooling -= 1
             if self.p.cooling == 0:
-                self.msg.m("Your layer of cold mud dries up.")
+                self.p.msg.m("Your layer of cold mud dries up.")
 
-        if self.doppeltime > 0:
-            self.doppeltime -= 1
+        if self.d.doppeltime > 0:
+            self.d.doppeltime -= 1
 
         if self.p.resource_timeout > 0: 
             if self.p.resource == 'r':
-                self.health().inc(self.coef.regeneration)
-                self.warmth().inc(self.coef.regeneration)
-                self.hunger().inc(self.coef.regeneration)
+                self.health().inc(self.w.coef.regeneration)
+                self.warmth().inc(self.w.coef.regeneration)
+                self.hunger().inc(self.w.coef.regeneration)
 
             self.p.resource_timeout -= 1
             if self.p.resource_timeout == 0: self.p.resource = None
@@ -914,39 +891,39 @@ class World:
         if self.p.dead: return
 
         if self.try_feature(self.d.pc, 'warm'):
-            self.warmth().inc(self.coef.watercold)
+            self.warmth().inc(self.w.coef.watercold)
         elif dg.grid_is_water(self.d.pc[0], self.d.pc[1]):
-            self.warmth().dec(self.coef.watercold)
+            self.warmth().dec(self.w.coef.watercold)
         else:
             self.warmth().inc(self.get_heatbonus())
 
         p = self.try_feature(self.d.pc, 'queasy')
         if p:
-            self.msg.m('You feel queasy.', True)
+            self.p.msg.m('You feel queasy.', True)
             self.thirst().dec(p)
             self.hunger().dec(p)
 
         if self.warmth().x <= -3.0:
-            self.msg.m("Being so cold makes you sick!", True)
-            self.health().dec(self.coef.colddamage, "cold", self.config.sound)
+            self.p.msg.m("Being so cold makes you sick!", True)
+            self.health().dec(self.w.coef.colddamage, "cold", self.config.sound)
             if self.p.resting: self.p.resting = False
             if self.p.digging: self.p.digging = None
 
         if self.thirst().x <= -3.0:
-            self.msg.m('You desperately need something to drink!', True)
-            self.health().dec(self.coef.thirstdamage, "thirst", self.config.sound)
+            self.p.msg.m('You desperately need something to drink!', True)
+            self.health().dec(self.w.coef.thirstdamage, "thirst", self.config.sound)
             if self.p.resting: self.p.resting = False
             if self.p.digging: self.p.digging = None
 
         if self.hunger().x <= -3.0:
-            self.msg.m('You desperately need something to eat!', True)
-            self.health().dec(self.coef.hungerdamage, "hunger", self.config.sound)
+            self.p.msg.m('You desperately need something to eat!', True)
+            self.health().dec(self.w.coef.hungerdamage, "hunger", self.config.sound)
             if self.p.resting: self.p.resting = False
             if self.p.digging: self.p.digging = None
 
         p = self.try_feature(self.d.pc, 'poison')
         if p:
-            self.msg.m('You feel very sick!', True)
+            self.p.msg.m('You feel very sick!', True)
             self.health().dec(p, 
                               'black mold' if self.try_feature(self.d.pc, 'pois2') else 'Ebola infection', 
                               self.config.sound)
@@ -956,21 +933,21 @@ class World:
             return
 
         if self.tired().x <= -3.0:
-            self.msg.m('You pass out from exhaustion!', True)
+            self.p.msg.m('You pass out from exhaustion!', True)
             self.start_sleep(force=True, quick=True)
             return
 
         if self.sleep().x <= -3.0:
-            self.msg.m('You pass out from lack of sleep!', True)
+            self.p.msg.m('You pass out from lack of sleep!', True)
             self.start_sleep(force=True)
             return
 
 
     def tick(self):
-        self.tired().dec(self.coef.movetired)
-        self.sleep().dec(self.coef.movesleep)
-        self.thirst().dec(self.coef.movethirst)
-        self.hunger().dec(self.coef.movehunger)
+        self.tired().dec(self.w.coef.movetired)
+        self.sleep().dec(self.w.coef.movesleep)
+        self.thirst().dec(self.w.coef.movethirst)
+        self.hunger().dec(self.w.coef.movehunger)
 
         if self.p.b_grace > 0: self.p.b_grace -= 1
         if self.p.v_grace > 0: self.p.v_grace -= 1
@@ -980,22 +957,22 @@ class World:
 
 
     def do_rest(self):
-        self.tired().inc(self.coef.resttired)
-        self.sleep().dec(self.coef.restsleep)
-        self.thirst().dec(self.coef.restthirst)
-        self.hunger().dec(self.coef.resthunger)
+        self.tired().inc(self.w.coef.resttired)
+        self.sleep().dec(self.w.coef.restsleep)
+        self.thirst().dec(self.w.coef.restthirst)
+        self.hunger().dec(self.w.coef.resthunger)
 
         self.tick_checkstats()
 
 
     def do_sleep(self):
-        self.tired().inc(self.coef.sleeptired)
-        self.sleep().inc(self.coef.sleepsleep)
-        self.thirst().dec(self.coef.sleepthirst)
-        self.hunger().dec(self.coef.sleephunger)
+        self.tired().inc(self.w.coef.sleeptired)
+        self.sleep().inc(self.w.coef.sleepsleep)
+        self.thirst().dec(self.w.coef.sleepthirst)
+        self.hunger().dec(self.w.coef.sleephunger)
 
         if self.p.healingsleep:
-            self.health().inc(self.coef.healingsleep)
+            self.health().inc(self.w.coef.healingsleep)
 
         if self.p.sleeping > 0:
             self.p.sleeping -= 1
@@ -1011,15 +988,15 @@ class World:
     def start_sleep(self, force = False, quick = False,
                     realforced = False, realforced2 = False):
         if not force and self.sleep().x > -2.0:
-            self.msg.m('You don\'t feel like sleeping yet.')
+            self.p.msg.m('You don\'t feel like sleeping yet.')
             return
 
         if quick:
-            self.p.sleeping = int(dg.random_gauss(*self.coef.quicksleeptime))
+            self.p.sleeping = int(dg.random_gauss(*self.w.coef.quicksleeptime))
         else:
             if not realforced2:
-                self.msg.m('You fall asleep.')
-            self.p.sleeping = int(dg.random_gauss(*self.coef.sleeptime))
+                self.p.msg.m('You fall asleep.')
+            self.p.sleeping = int(dg.random_gauss(*self.w.coef.sleeptime))
 
         self.p.digging = None
         self.p.resting = False
@@ -1030,47 +1007,47 @@ class World:
             self.p.forced2sleep = True
 
     def start_rest(self):
-        self.msg.m('You start resting.')
+        self.p.msg.m('You start resting.')
         self.p.resting = True
 
         
     def colordrink(self, fount):
         if self.p.resource and (self.p.resource != fount):
-            self.msg.m('You feel confused.')
+            self.p.msg.m('You feel confused.')
             self.p.resource = None
             self.p.resource_timeout = 0
             self.p.resource_buildup = 0
             return
 
-        if fount == 'r': self.msg.m('You drink something red.')
-        elif fount == 'g': self.msg.m('You drink something green.')
-        elif fount == 'y': self.msg.m('You drink something yellow.')
-        elif fount == 'b': self.msg.m('You drink something blue.')
-        elif fount == 'p': self.msg.m('You drink something purple.')
+        if fount == 'r': self.p.msg.m('You drink something red.')
+        elif fount == 'g': self.p.msg.m('You drink something green.')
+        elif fount == 'y': self.p.msg.m('You drink something yellow.')
+        elif fount == 'b': self.p.msg.m('You drink something blue.')
+        elif fount == 'p': self.p.msg.m('You drink something purple.')
         self.p.resource = fount
 
         bonus = False
         
         if self.p.resource_timeout:
-            self.p.resource_timeout += (self.coef.resource_timeouts[fount]/6)
+            self.p.resource_timeout += (self.w.coef.resource_timeouts[fount]/6)
         else:
             self.p.resource_buildup += 1
 
             if self.p.resource_buildup >= 6:
                 if self.p.resource == 'r':
-                    self.msg.m('You gain superhuman regeneration power!', True)
+                    self.p.msg.m('You gain superhuman regeneration power!', True)
                 elif self.p.resource == 'g':
-                    self.msg.m('Hulk Smash! You gain superhuman strength.', True)
+                    self.p.msg.m('Hulk Smash! You gain superhuman strength.', True)
                 elif self.p.resource == 'y':
-                    self.msg.m('You gain superhuman speed and vision!', True)
+                    self.p.msg.m('You gain superhuman speed and vision!', True)
                 elif self.p.resource == 'b':
-                    self.msg.m('You are now immune to explosions and radiation!', True)
+                    self.p.msg.m('You are now immune to explosions and radiation!', True)
                 elif self.p.resource == 'p':
-                    self.msg.m('You gain telepathy and superhuman stealth!', True)
+                    self.p.msg.m('You gain telepathy and superhuman stealth!', True)
 
                 bonus = True
                 self.p.resource_buildup = 0
-                self.p.resource_timeout = self.coef.resource_timeouts[fount]
+                self.p.resource_timeout = self.w.coef.resource_timeouts[fount]
 
         self.p.achievements.resource_use(fount, bonus)
 
@@ -1080,10 +1057,10 @@ class World:
         if self.try_feature(self.d.pc, 'healingfountain'):
             nn = min(3.0 - self.health().x, self.hunger().x + 3.0)
             if nn <= 0:
-                self.msg.m('Nothing happens.')
+                self.p.msg.m('Nothing happens.')
                 return
 
-            self.msg.m('You drink from the eternal fountain.')
+            self.p.msg.m('You drink from the eternal fountain.')
             self.health().inc(nn)
             self.hunger().dec(nn)
             return
@@ -1095,29 +1072,29 @@ class World:
             return
             
         if not dg.grid_is_water(self.d.pc[0], self.d.pc[1]):
-            self.msg.m('There is no water here you could drink.')
+            self.p.msg.m('There is no water here you could drink.')
             return
 
         if self.p.v_grace:
-            self.msg.m('Your religion prohibits drinking from the floor.')
+            self.p.msg.m('Your religion prohibits drinking from the floor.')
             return
 
         self.thirst().inc(6)
 
         x = abs(dg.random_gauss(0, 0.7))
-        tmp = x - self.coef.waterpois
+        tmp = x - self.w.coef.waterpois
         if tmp > 0:
             self.health().dec(tmp, "unclean water", self.config.sound)
             if tmp > 0.2:
-                self.msg.m('This water has a bad smell.')
+                self.p.msg.m('This water has a bad smell.')
         else:
-            self.msg.m('You drink from the puddle.')
+            self.p.msg.m('You drink from the puddle.')
 
         self.tick()
 
     def pray(self):
         if self.d.pc not in self.d.featmap:
-            self.msg.m('You need to be standing at a shrine to pray.')
+            self.p.msg.m('You need to be standing at a shrine to pray.')
             return
 
         a = self.d.featmap[self.d.pc]
@@ -1125,9 +1102,9 @@ class World:
         if a.bb_shrine:
 
             def bb_shrine_func(i, n):
-                self.msg.m("Ba'al-Zebub accepts your sacrifice!")
+                self.p.msg.m("Ba'al-Zebub accepts your sacrifice!")
 
-                i2 = self.itemstock.generate(self.d.dlev)
+                i2 = self.w.itemstock.generate(self.d.dlev)
                 if i2:
                     self.set_item(self.d.pc, [i2])
                 return False, True
@@ -1135,53 +1112,53 @@ class World:
             if self.filter_inv((lambda (i,slot): i.corpse), bb_shrine_func):
                 return
 
-            self.msg.m("Ba'al-Zebub needs to be sated with blood!!")
+            self.p.msg.m("Ba'al-Zebub needs to be sated with blood!!")
             return
 
         if a.s_shrine:
             if self.p.b_grace or self.p.v_grace:
-                self.msg.m("You don't believe in Shiva.")
+                self.p.msg.m("You don't believe in Shiva.")
                 return
-            if self.p.s_grace > self.coef.s_graceduration - self.coef.s_praytimeout:
-                self.msg.m('Nothing happens.')
+            if self.p.s_grace > self.w.coef.s_graceduration - self.w.coef.s_praytimeout:
+                self.p.msg.m('Nothing happens.')
                 return
 
             ss = "hwp"
-            decc = self.coef.shivadecstat
+            decc = self.w.coef.shivadecstat
             ss = ss[dg.random_n(len(ss))]
 
             if ss == 'h': self.hunger().dec(decc)
             elif ss == 'w': self.warmth().dec(decc)
             elif ss == 'p': self.health().dec(decc, 'the grace of Shiva', self.config.sound)
 
-            self.msg.m('You pray to Shiva.')
+            self.p.msg.m('You pray to Shiva.')
             self.wish('Shiva grants you a wish.')
-            self.p.s_grace = self.coef.s_graceduration
+            self.p.s_grace = self.w.coef.s_graceduration
             self.tick()
             self.p.achievements.pray('s')
 
         elif a.b_shrine:
             if self.p.s_grace or self.p.v_grace:
-                self.msg.m("You don't believe in Brahma.")
+                self.p.msg.m("You don't believe in Brahma.")
                 return
-            self.msg.m('As a follower of Brahma, you are now forbidden hand-to-hand combat.')
-            self.msg.m('You feel enlightened.')
-            self.p.b_grace = self.coef.b_graceduration
+            self.p.msg.m('As a follower of Brahma, you are now forbidden hand-to-hand combat.')
+            self.p.msg.m('You feel enlightened.')
+            self.p.b_grace = self.w.coef.b_graceduration
             self.tick()
             self.p.achievements.pray('b')
 
         elif a.v_shrine:
             if self.p.s_grace or self.p.b_grace:
-                self.msg.m("You don't believe in Vishnu.")
+                self.p.msg.m("You don't believe in Vishnu.")
                 return
 
-            if self.p.v_grace > self.coef.v_graceduration - self.coef.v_praytimeout:
-                self.msg.m('Nothing happens.')
+            if self.p.v_grace > self.w.coef.v_graceduration - self.w.coef.v_praytimeout:
+                self.p.msg.m('Nothing happens.')
                 return
 
-            self.msg.m('As a follower of Vishnu, you are now forbidden '
+            self.p.msg.m('As a follower of Vishnu, you are now forbidden '
                        'medicine, alcohol and unclean food.')
-            self.msg.m('You meditate on the virtues of Vishnu.')
+            self.p.msg.m('You meditate on the virtues of Vishnu.')
             self.start_sleep(force=True, realforced2=True)
 
             self.health().inc(6.0)
@@ -1190,27 +1167,27 @@ class World:
             self.hunger().inc(6.0)
             self.thirst().inc(6.0)
             self.warmth().inc(6.0)
-            self.p.v_grace = self.coef.v_graceduration
+            self.p.v_grace = self.w.coef.v_graceduration
             self.tick()
             self.p.achievements.pray('v')
 
         elif a.special == 'kali':
 
             def kalifunc(i, n):
-                self.msg.m('You return the Eye to Kali.', True)
+                self.p.msg.m('You return the Eye to Kali.', True)
                 self.victory(msg=('winkali', 'Returned the Eye of Kali'))
                 return True, False
 
             if self.filter_inv((lambda (i,slot): i.special == 'kali'), kalifunc):
                 return
 
-            self.msg.m('Kali is silent. Perhaps she requires an offering?', True)
+            self.p.msg.m('Kali is silent. Perhaps she requires an offering?', True)
 
         elif a.special == 'monolith':
             self.victory(msg=('winmono', 'Rubbed the Monolith'))
 
         else:
-            self.msg.m('You need to be standing at a shrine to pray.')
+            self.p.msg.m('You need to be standing at a shrine to pray.')
             return
 
 
@@ -1254,11 +1231,11 @@ class World:
         i = self.p.inv.drop(slot)
         if not i:
             if slot in 'abcdefghi':
-                self.msg.m('You have no item in that slot.')
+                self.p.msg.m('You have no item in that slot.')
             return
 
         if not i.applies:
-            self.msg.m('This item cannot be applied.')
+            self.p.msg.m('This item cannot be applied.')
             self.p.inv.take(i, slot)
             return
 
@@ -1270,7 +1247,7 @@ class World:
         iss = self.p.inv.get_tagged()
 
         if len(iss) == 0:
-            self.msg.m("Tag an item from your inventory to use this command.")
+            self.p.msg.m("Tag an item from your inventory to use this command.")
             return
 
         items = [i[2] for i in iss]
@@ -1321,7 +1298,7 @@ class World:
                 ii.count += n
                 i.count -= n
 
-                self.msg.m('You now have ' + str(ii) + '.')
+                self.p.msg.m('You now have ' + str(ii) + '.')
 
                 if i.count == 0:
                     if self.delete_item(items, c, self.d.pc):
@@ -1331,7 +1308,7 @@ class World:
                 n = min(ii.ammochance[1] - ii.ammo, i.ammo)
                 ii.ammo += n
                 i.ammo -= n
-                self.msg.m("You find some ammo for your " + ii.name + '.')
+                self.p.msg.m("You find some ammo for your " + ii.name + '.')
             return False, False
 
         if self.filter_inv(takepred, takefunc):
@@ -1340,10 +1317,10 @@ class World:
 
         ok = self.p.inv.take(i)
         if ok:
-            self.msg.m('You take ' + str(i) + '.')
+            self.p.msg.m('You take ' + str(i) + '.')
             self.delete_item(items, c, self.d.pc)
         else:
-            self.msg.m('You have no free inventory slot for ' + str(i) + '!')
+            self.p.msg.m('You have no free inventory slot for ' + str(i) + '!')
 
         self.tick()
 
@@ -1367,7 +1344,7 @@ class World:
 
     def take(self):
         if self.d.pc not in self.d.itemap:
-            self.msg.m('You see no item here to take.')
+            self.p.msg.m('You see no item here to take.')
             return
 
         self.showinv_interact(takestuff=True)
@@ -1407,7 +1384,7 @@ class World:
 
         if not i:
             if slot in 'abcdefghi':
-                self.msg.m('You have no item in that slot.')
+                self.p.msg.m('You have no item in that slot.')
             return
 
         if takestuff and slot in flooritems:
@@ -1485,8 +1462,8 @@ class World:
 
         elif cc == 'z':
             if not i.tag and i.applies:
-                i.tag = self.tagorder
-                self.tagorder += 1
+                i.tag = self.p.tagorder
+                self.p.tagorder += 1
 
             elif i.tag:
                 i.tag = None
@@ -1497,7 +1474,7 @@ class World:
             ss.append('Slot: ' + self.slot_to_name(i.slot))
 
             if i.converts:
-                inew = self.itemstock.get(i.converts)
+                inew = self.w.itemstock.get(i.converts)
                 if inew:
                     ss.append('Slot that needs to be free to use this item: ' + self.slot_to_name(inew.slot))
 
@@ -1528,7 +1505,7 @@ class World:
                 if slot not in flooritems:
                     i = self.p.inv.drop(slot)
 
-                self.msg.m('You throw ' + str(i) + '.')
+                self.p.msg.m('You throw ' + str(i) + '.')
 
                 self.set_item(nxy, [i])
 
@@ -1589,20 +1566,20 @@ class World:
             return item
 
         if item.applies_in_slot and self.p.inv.check(item.slot) is not None:
-            self.msg.m("You can only use this item if it's in the " + self.slot_to_name(item.slot) + ' slot.', True)
+            self.p.msg.m("You can only use this item if it's in the " + self.slot_to_name(item.slot) + ' slot.', True)
             return item
 
         if item.converts:
-            inew = self.itemstock.get(item.converts)
+            inew = self.w.itemstock.get(item.converts)
 
             if self.p.inv.check(inew.slot) is not None:
-                self.msg.m('Your ' + self.slot_to_name(inew.slot) + ' slot needs to be free to use this.')
+                self.p.msg.m('Your ' + self.slot_to_name(inew.slot) + ' slot needs to be free to use this.')
                 return item
 
             self.p.inv.take(inew)
             s = str(inew)
             s = s[0].upper() + s[1:]
-            self.msg.m(s + ' is now in your ' + self.slot_to_name(inew.slot) + ' slot!', True)
+            self.p.msg.m(s + ' is now in your ' + self.slot_to_name(inew.slot) + ' slot!', True)
 
             self.p.achievements.use(item)
             return None
@@ -1614,20 +1591,20 @@ class World:
             for i2 in self.p.inv:
                 if i2 and i2.craft:
                     if item.craft[0] in i2.craft[1]:
-                        newi = self.itemstock.get(i2.craft[1][item.craft[0]])
+                        newi = self.w.itemstock.get(i2.craft[1][item.craft[0]])
                         break
 
                     elif i2.craft[0] in item.craft[1]:
-                        newi = self.itemstock.get(item.craft[1][i2.craft[0]])
+                        newi = self.w.itemstock.get(item.craft[1][i2.craft[0]])
                         break
 
             if not newi:
-                self.msg.m('You have nothing you can combine with this item.')
+                self.p.msg.m('You have nothing you can combine with this item.')
                 return item
 
             self.p.inv.purge(i2)
             self.p.achievements.craft_use(newi)
-            self.msg.m('Using %s and %s you have crafted %s!' % (item, i2, newi))
+            self.p.msg.m('Using %s and %s you have crafted %s!' % (item, i2, newi))
             return newi
 
         elif item.digging:
@@ -1648,24 +1625,24 @@ class World:
                 return item
 
             if dg.grid_is_walk(self.p.digging[0][0], self.p.digging[0][1]):
-                self.msg.m('There is nothing to dig there.')
+                self.p.msg.m('There is nothing to dig there.')
                 self.p.digging = None
             else:
-                self.msg.m("You start hacking at the wall.")
+                self.p.msg.m("You start hacking at the wall.")
                 self.p.achievements.use(item)
 
         elif item.healing:
 
             if self.p.v_grace:
-                self.msg.m('Your religion prohibits taking medicine.')
+                self.p.msg.m('Your religion prohibits taking medicine.')
                 return item
 
             if item.bonus < 0:
-                self.msg.m('This pill makes your eyes pop out of their sockets!', True)
+                self.p.msg.m('This pill makes your eyes pop out of their sockets!', True)
                 self.tired().dec(max(dg.random_gauss(*item.healing), 0))
                 self.sleep().dec(max(dg.random_gauss(*item.healing), 0))
             else:
-                self.msg.m('Eating this pill makes you dizzy.')
+                self.p.msg.m('Eating this pill makes you dizzy.')
                 self.health().inc(max(dg.random_gauss(*item.healing), 0))
                 self.hunger().dec(max(dg.random_gauss(*item.healing), 0))
                 self.sleep().dec(max(dg.random_gauss(*item.healing), 0))
@@ -1677,15 +1654,15 @@ class World:
         elif item.healingsleep:
 
             if self.p.v_grace:
-                self.msg.m('Your religion prohibits taking medicine.')
+                self.p.msg.m('Your religion prohibits taking medicine.')
                 return item
 
             if item.bonus < 0:
-                self.msg.m('You drift into a restless sleep!', True)
+                self.p.msg.m('You drift into a restless sleep!', True)
                 self.p.sleeping = max(dg.random_gauss(*item.healingsleep), 1)
                 self.p.forced2sleep = True
             else:
-                self.msg.m('You drift into a gentle sleep.')
+                self.p.msg.m('You drift into a gentle sleep.')
                 self.p.sleeping = max(dg.random_gauss(*item.healingsleep), 1)
                 self.p.forced2sleep = True
                 self.p.healingsleep = True
@@ -1699,14 +1676,14 @@ class World:
         elif item.food:
 
             if self.p.v_grace:
-                self.msg.m('Your religion prohibits eating unclean food.')
+                self.p.msg.m('Your religion prohibits eating unclean food.')
                 return item
 
             if item.bonus < 0:
-                self.msg.m('Yuck, eating this makes you vomit!', True)
+                self.p.msg.m('Yuck, eating this makes you vomit!', True)
                 self.hunger().dec(max(dg.random_gauss(*item.food), 0))
             else:
-                self.msg.m('Mm, yummy.')
+                self.p.msg.m('Mm, yummy.')
                 self.hunger().inc(max(dg.random_gauss(*item.food), 0))
 
             self.p.achievements.use(item)
@@ -1715,16 +1692,16 @@ class World:
         elif item.booze:
 
             if self.p.v_grace:
-                self.msg.m('Your religion prohibits alcohol.')
+                self.p.msg.m('Your religion prohibits alcohol.')
                 return item
 
             if item.bonus < 0:
-                self.msg.m("This stuff is contaminated! You fear you're going blind!", True)
+                self.p.msg.m("This stuff is contaminated! You fear you're going blind!", True)
                 self.p.blind = True
             else:
-                self.msg.m('Aaahh.')
-                self.sleep().dec(max(dg.random_gauss(*self.coef.boozestrength), 0))
-                self.warmth().inc(max(dg.random_gauss(*self.coef.boozestrength), 0))
+                self.p.msg.m('Aaahh.')
+                self.sleep().dec(max(dg.random_gauss(*self.w.coef.boozestrength), 0))
+                self.warmth().inc(max(dg.random_gauss(*self.w.coef.boozestrength), 0))
 
             self.p.achievements.use(item)
             return None
@@ -1732,19 +1709,19 @@ class World:
         elif item.nodoz:
             
             if self.p.v_grace:
-                self.msg.m('Your religion prohibits eating pills.')
+                self.p.msg.m('Your religion prohibits eating pills.')
                 return item
 
             if item.bonus < 0:
-                self.msg.m('Your heart starts palpitating!', True)
+                self.p.msg.m('Your heart starts palpitating!', True)
                 self.tired().x = min(-2.9, self.tired().x)
             else:
                 n = self.tired().x - (-2.9)
 
                 if n <= 0:
-                    self.msg.m('Nothing happens.')
+                    self.p.msg.m('Nothing happens.')
                 else:
-                    self.msg.m('Wow, what a kick!')
+                    self.p.msg.m('Wow, what a kick!')
                     self.sleep().inc(n)
                     self.tired().dec(n)
 
@@ -1755,19 +1732,19 @@ class World:
             d = xy_dist(self.d.pc, self.d.exit)
 
             if d > 30:
-                self.msg.m('Cold as ice!')
+                self.p.msg.m('Cold as ice!')
             elif d > 20:
-                self.msg.m('Very cold!')
+                self.p.msg.m('Very cold!')
             elif d > 15:
-                self.msg.m('Cold!')
+                self.p.msg.m('Cold!')
             elif d > 10:
-                self.msg.m('Getting warmer...')
+                self.p.msg.m('Getting warmer...')
             elif d > 5:
-                self.msg.m('Warm and getting warmer!')
+                self.p.msg.m('Warm and getting warmer!')
             elif d > 3:
-                self.msg.m("This thing is buring!")
+                self.p.msg.m("This thing is buring!")
             else:
-                self.msg.m('You are at the spot. Look around.')
+                self.p.msg.m('You are at the spot. Look around.')
 
             self.p.achievements.use(item)
 
@@ -1813,8 +1790,8 @@ class World:
             self.p.achievements.use(item)
 
         elif item.cooling:
-            self.p.cooling = max(int(dg.random_gauss(*self.coef.coolingduration)), 1)
-            self.msg.m("You cover yourself in cold mud.")
+            self.p.cooling = max(int(dg.random_gauss(*self.w.coef.coolingduration)), 1)
+            self.p.msg.m("You cover yourself in cold mud.")
 
             self.p.achievements.use(item)
             return None
@@ -1838,12 +1815,12 @@ class World:
 
         elif item.jinni:
             l = []
-            for ki in self.neighbors[self.d.pc]:
+            for ki in self.d.neighbors[self.d.pc]:
                 if dg.grid_is_walk(ki[0], ki[1]) and ki not in self.d.monmap:
                     l.append(ki)
 
             if len(l) == 0:
-                self.msg.m('Nothing happened.')
+                self.p.msg.m('Nothing happened.')
                 return None
 
             jinni = Monster('Jinni', level=self.p.plev+1,
@@ -1853,10 +1830,10 @@ class World:
                             skin=('&', libtcod.yellow),
                             desc=['A supernatural fire fiend.'])
 
-            self.msg.m('A malevolent spirit appears!')
+            self.p.msg.m('A malevolent spirit appears!')
             q = l[dg.random_n(len(l))]
             jinni.xy = q
-            jinni.items = [self.itemstock.get('wishing')]
+            jinni.items = [self.w.itemstock.get('wishing')]
             self.d.monmap[q] = jinni
 
             self.p.achievements.use(item)
@@ -1869,7 +1846,7 @@ class World:
             if item.digray[1] == 1:
                 for y in xrange(0, self.d.h):
                     self.convert_to_floor((self.d.pc[0], y), False)
-            self.msg.m('The wand explodes in a brilliant white flash!')
+            self.p.msg.m('The wand explodes in a brilliant white flash!')
 
             self.p.achievements.use(item)
             return None
@@ -1886,15 +1863,15 @@ class World:
 
         elif item.makestrap:
             if self.d.pc in self.d.featmap:
-                self.msg.m('Nothing happens.')
+                self.p.msg.m('Nothing happens.')
                 return item
 
             if dg.grid_is_water(self.d.pc[0], self.d.pc[1]):
-                self.msg.m("That won't work while you're standing on water.")
+                self.p.msg.m("That won't work while you're standing on water.")
                 return item
 
             self.set_feature(self.d.pc, '^')
-            self.msg.m('You spread the glue liberally on the floor.')
+            self.p.msg.m('You spread the glue liberally on the floor.')
 
             self.p.achievements.use(item)
 
@@ -1903,7 +1880,7 @@ class World:
             return None
 
         elif item.ebola:
-            self.msg.m('The Ebola virus is unleashed!')
+            self.p.msg.m('The Ebola virus is unleashed!')
             self.paste_celauto(self.d.pc, self.celautostock.EBOLA)
             self.p.achievements.use(item)
             return None
@@ -1914,7 +1891,7 @@ class World:
             return item
 
         elif item.trapcloud:
-            self.msg.m('You set the nanobots to work.')
+            self.p.msg.m('You set the nanobots to work.')
             self.paste_celauto(self.d.pc, self.celautostock.TRAPMAKER)
 
             self.p.achievements.use(item)
@@ -1925,7 +1902,7 @@ class World:
 
         elif item.airfreshener:
             if item.ammo == 0:
-                self.msg.m("It's out of ammo!")
+                self.p.msg.m("It's out of ammo!")
                 return item
 
             self.airfreshen(self.d.pc, item.airfreshener)
@@ -1949,17 +1926,17 @@ class World:
             return None
 
         elif item.switch_moon:
-            self.moon = item.switch_moon
+            self.d.moon = item.switch_moon
             self.regen(self.d.w, self.d.h)
             self.p.achievements.use(item)
-            self.msg.m('The local space-time continuum shifts slightly.', True)
+            self.p.msg.m('The local space-time continuum shifts slightly.', True)
             return None
 
         elif item.doppel:
-            self.doppelpoint = self.d.pc
-            self.doppeltime = item.doppel
+            self.d.doppelpoint = self.d.pc
+            self.d.doppeltime = item.doppel
             self.p.achievements.use(item)
-            self.msg.m('You activate the doppelganger.')
+            self.p.msg.m('You activate the doppelganger.')
             return None
 
         elif item.winning:
@@ -1968,7 +1945,7 @@ class World:
                     
         elif item.rangeattack or item.rangeexplode or item.fires:
             if item.ammo == 0:
-                self.msg.m("It's out of ammo!")
+                self.p.msg.m("It's out of ammo!")
                 return item
 
             while 1:
@@ -2008,19 +1985,21 @@ class World:
 
         ss = self.try_feature(self.d.pc, 'stairs')
         if not ss:
-            self.msg.m('You can\'t descend, there is no hole here.')
+            self.p.msg.m('You can\'t descend, there is no hole here.')
             return
 
-        self.msg.m('You climb down the hole.')
+        self.p.msg.m('You climb down the hole.')
         self.d.dlev += ss
 
         b = self.try_feature(self.d.pc, 'branch')
         if b:
-            self.branch = b
+            self.d.branch = b
 
         # Quests
-        if b in self.quests:
-            self.d.dlev = self.quests[b].dlevels[0]
+        quest = self.w.queststock.get(b)
+
+        if quest:
+            self.d.dlev = quest.dlevels[0]
 
         if self.d.dlev >= 26:
             self.victory()
@@ -2039,10 +2018,10 @@ class World:
         i = self.p.inv.drop(slot)
         if not i:
             if slot in 'abcdefghi':
-                self.msg.m('There is no item in that slot.')
+                self.p.msg.m('There is no item in that slot.')
             return
 
-        self.msg.m('You drop ' + str(i) +'.')
+        self.p.msg.m('You drop ' + str(i) +'.')
         self.set_item(self.d.pc, [i])
         self.tick()
 
@@ -2108,14 +2087,14 @@ class World:
         pc = self.d.pc
 
         if pc not in self.d.itemap:
-            self.msg.m('There is no item here to apply.')
+            self.p.msg.m('There is no item here to apply.')
             return
 
         items = self.d.itemap[pc]
         items = [i for i in items if i.applies]
 
         if len(items) == 0:
-            self.msg.m('There is no item here to apply.')
+            self.p.msg.m('There is no item here to apply.')
             return
 
         i,c = self.pick_one_item(items)
@@ -2170,7 +2149,7 @@ class World:
                                          is_poison=True)
 
         if do_gain and mon.level > self.p.plev:
-            self.msg.m('You just gained level ' + str(mon.level) + '!', True)
+            self.p.msg.m('You just gained level ' + str(mon.level) + '!', True)
             self.p.plev = mon.level
 
         if do_drop:
@@ -2183,12 +2162,12 @@ class World:
 
             if self.try_feature(mon.xy, 'special') == 'cthulhu' and not is_noncorpse:
                 # HACK HACK!
-                itm = self.itemstock.get(['cthulhu_o1', 'cthulhu_o2', 'cthulhu_o3'][dg.random_n(3)])
+                itm = self.w.itemstock.get(['cthulhu_o1', 'cthulhu_o2', 'cthulhu_o3'][dg.random_n(3)])
                 if itm:
                     itemdrop = [itm]
 
-            elif self.moon == moon.NEW and not mon.itemdrop and not is_noncorpse:
-                corpse = self.itemstock.get('corpse')
+            elif self.d.moon == moon.NEW and not mon.itemdrop and not is_noncorpse:
+                corpse = self.w.itemstock.get('corpse')
                 corpse.corpse = mon
                 itemdrop = itemdrop[:]
                 itemdrop.append(corpse)
@@ -2196,31 +2175,32 @@ class World:
             if len(itemdrop) > 0:
                 self.set_item(mon.xy, itemdrop)
 
-        winner, exting = self.monsterstock.death(mon, self.moon)
+        winner, exting = self.w.monsterstock.death(mon, self.d.moon)
 
         if exting:
             self.p.achievements.mondone()
 
         # Quests
-        if self.branch in self.quests and sum(1 for m in self.d.monmap.itervalues() if not m.inanimate) == 1:
-            quest = self.quests[self.branch]
+        quest = self.w.queststock.get(self.d.branch)
+
+        if quest and sum(1 for m in self.d.monmap.itervalues() if not m.inanimate) == 1:
 
             questdone = (quest.dlevels[1] == self.d.dlev)
 
             for msg in quest.messages[self.d.dlev]:
-                self.msg.m(msg, True)
+                self.p.msg.m(msg, True)
 
             if questdone:
-                self.p.achievements.questdone(self.branch)
+                self.p.achievements.questdone(self.d.branch)
             else:
                 self.set_feature(mon.xy, '>')
 
             qis = []
             for g in quest.gifts[self.d.dlev]:
                 if g:
-                    i = self.itemstock.get(g)
+                    i = self.w.itemstock.get(g)
                 else:
-                    i = self.itemstock.generate(self.d.dlev)
+                    i = self.w.itemstock.generate(self.d.dlev)
                 if i:
                     qis.append(i)
 
@@ -2245,12 +2225,12 @@ class World:
         def func2(xy):
             if xy == self.d.pc:
                 if not self.get_radimmune():
-                    self.health().dec(self.coef.raddamage, "radiation", self.config.sound)
+                    self.health().dec(self.w.coef.raddamage, "radiation", self.config.sound)
 
             if xy in self.d.monmap:
                 mon = self.d.monmap[xy]
                 if not mon.radimmune:
-                    mon.hp -= self.coef.raddamage
+                    mon.hp -= self.w.coef.raddamage
                     if mon.hp <= -3.0:
                         self.handle_mondeath(mon, is_rad=True)
                         del self.d.monmap[xy]
@@ -2366,11 +2346,11 @@ class World:
                 if mon.bld_delta[1] < -1: mon.bld_delta = (mon.bld_delta[0], -1)
                 elif mon.bld_delta[1] > 1: mon.bld_delta = (mon.bld_delta[0], 1)
 
-                self.msg.m('You push ' + sm)
+                self.p.msg.m('You push ' + sm)
                 return
             else:
                 self.health().dec(6, sm, self.config.sound)
-                self.msg.m('You got squashed. What a silly way to die!')
+                self.p.msg.m('You got squashed. What a silly way to die!')
                 self.p.dead = True
                 return
 
@@ -2386,7 +2366,7 @@ class World:
 
         else:
             if self.p.b_grace and player_move:
-                self.msg.m('Your religion prohibits you from fighting.')
+                self.p.msg.m('Your religion prohibits you from fighting.')
                 return
 
             plev = self.p.plev
@@ -2408,7 +2388,7 @@ class World:
 
             defence = mon.defence
             if mon.glued:
-                defence /= self.coef.gluedefencepenalty
+                defence /= self.w.coef.gluedefencepenalty
 
             dmg = roll(attack, plev, defence, mon.level)
 
@@ -2420,7 +2400,7 @@ class World:
 
             if mon.hp <= -3.0:
                 if mon.visible or mon.visible_old:
-                    self.msg.m('You killed ' + sm + '!')
+                    self.p.msg.m('You killed ' + sm + '!')
                 self.handle_mondeath(mon)
                 del self.d.monmap[mon.xy]
             else:
@@ -2437,25 +2417,25 @@ class World:
 
                 if ca and dmg > 0 and not mon.confimmune:
                     if mon.visible or mon.visible_old:
-                        self.msg.m(smu + ' looks totally dazed!')
+                        self.p.msg.m(smu + ' looks totally dazed!')
                     mon.confused += int(max(dg.random_gauss(*ca), 1))
 
                 if fires and dmg > 0 and not mon.fireimmune:
-                    mon.onfire = max(self.coef.burnduration, mon.onfire)
+                    mon.onfire = max(self.w.coef.burnduration, mon.onfire)
 
                 if not (mon.visible or mon.visible_old):
                     pass
 
                 elif dmg > 4:
-                    self.msg.m('You mortally wound ' + sm + '!')
+                    self.p.msg.m('You mortally wound ' + sm + '!')
                 elif dmg > 2:
-                    self.msg.m('You seriously wound ' + sm + '.')
+                    self.p.msg.m('You seriously wound ' + sm + '.')
                 elif dmg > 0.5:
-                    self.msg.m('You wound ' + sm + '.')
+                    self.p.msg.m('You wound ' + sm + '.')
                 elif dmg > 0:
-                    self.msg.m('You barely wound ' + sm + '.')
+                    self.p.msg.m('You barely wound ' + sm + '.')
                 else:
-                    self.msg.m('You miss ' + sm + '.')
+                    self.p.msg.m('You miss ' + sm + '.')
 
             if dmg > 0 and (mon.visible or mon.visible_old):
                 mon.known_pxy = self.d.pc
@@ -2471,7 +2451,7 @@ class World:
                 if self.get_psyimmune():
                     return
                 attack = mon.psyattack
-                defence = self.coef.unarmeddefence
+                defence = self.w.coef.unarmeddefence
                 psy = True
             else:
                 attack = mon.attack
@@ -2484,21 +2464,21 @@ class World:
 
             if psy:
                 if dmg > 0:
-                    self.msg.m(smu + ' is attacking your brain!')
+                    self.p.msg.m(smu + ' is attacking your brain!')
             else:
                 if dmg > 0:
-                    self.msg.m(smu + ' hits!')
+                    self.p.msg.m(smu + ' hits!')
                 else:
-                    self.msg.m(smu + ' misses.')
+                    self.p.msg.m(smu + ' misses.')
 
             if mon.sleepattack:
                 if dmg > 0:
-                    self.msg.m('You fall asleep!')
+                    self.p.msg.m('You fall asleep!')
                     self.start_sleep(force=True, quick=True, realforced=True)
 
             elif mon.bloodsucker:
                 if dmg > 0:
-                    self.msg.m('You feel weak!')
+                    self.p.msg.m('You feel weak!')
                     self.hunger().dec(mon.bloodsucker[0])
                     self.health().dec(mon.bloodsucker[0], sm, self.config.sound)
                     mon.fleetimeout = mon.bloodsucker[1]
@@ -2510,11 +2490,11 @@ class World:
                 self.health().dec(dmg, sm, self.config.sound)
 
             if self.p.resting:
-                self.msg.m('You stop resting.')
+                self.p.msg.m('You stop resting.')
                 self.p.resting = False
 
             if self.p.digging:
-                self.msg.m('You stop digging.')
+                self.p.msg.m('You stop digging.')
                 self.p.digging = None
 
             if self.p.sleeping and not self.p.forced2sleep:
@@ -2725,7 +2705,7 @@ class World:
 
 
     def show_messages(self):
-        self.msg.show_all()
+        self.p.msg.show_all()
 
 
     def wish(self, msg=None):
@@ -2745,14 +2725,14 @@ class World:
             elif k in '\r\n':
                 break
 
-        i = self.itemstock.find(s)
+        i = self.w.itemstock.find(s)
 
         self.p.achievements.wish()
 
         if not i:
-            self.msg.m('Nothing happened!')
+            self.p.msg.m('Nothing happened!')
         else:
-            self.msg.m('Suddenly, ' + str(i) + ' appears at your feet!')
+            self.p.msg.m('Suddenly, ' + str(i) + ' appears at your feet!')
             self.set_item(self.d.pc, [i])
 
 
@@ -2859,15 +2839,15 @@ class World:
 
     def walk_monster(self, mon, dist, xy):
 
-        if mon.moldspew and (self.t % mon.moldspew[2]) == 0:
-            for ki in self.neighbors[xy]:
+        if mon.moldspew and (self.w.t % mon.moldspew[2]) == 0:
+            for ki in self.d.neighbors[xy]:
                 if dg.random_range(1, mon.moldspew[1]) == 1:
                     self.seed_celauto(ki, mon.moldspew[0])
 
         if mon.static:
             return (None, None)
 
-        if mon.slow and (self.t & 1) == 0:
+        if mon.slow and (self.w.t & 1) == 0:
             return (None, None)
 
         if mon.glued > 0:
@@ -2922,8 +2902,8 @@ class World:
                 else:
                     mon.known_pxy = self.d.pc
             else:
-                if self.doppeltime > 0:
-                    mon.known_pxy = self.doppelpoint
+                if self.d.doppeltime > 0:
+                    mon.known_pxy = self.d.doppelpoint
                 else:
                     mon.known_pxy = self.d.pc
 
@@ -2949,7 +2929,7 @@ class World:
 
                 if flee:
                     mdxy = (None, None)
-                    for _xy in self.neighbors[xy]:
+                    for _xy in self.d.neighbors[xy]:
                         if dg.grid_is_walk(_xy[0], _xy[1]) and \
                            ((mon.known_pxy[0] >= xy[0] and _xy[0] < xy[0]) or \
                             (mon.known_pxy[0] <= xy[0] and _xy[0] > xy[0]) or \
@@ -2996,8 +2976,8 @@ class World:
             if mon.visible or mon.visible_old:
                 mn = str(mon)
                 mn = mn[0].upper() + mn[1:]
-                self.msg.m(mn + ' gets stuck in some glue!')
-            mon.glued = max(int(dg.random_gauss(*self.coef.glueduration)), 1)
+                self.p.msg.m(mn + ' gets stuck in some glue!')
+            mon.glued = max(int(dg.random_gauss(*self.w.coef.glueduration)), 1)
 
 
     def monster_conflict(self, mon_attack, mon_defend):
@@ -3008,7 +2988,7 @@ class World:
                 if mon_defend.visible or mon_defend.visible_old:
                     sm = str(mon_attack)
                     smu = sm[0].upper() + sm[1:]
-                    self.msg.m(smu + ' squashes ' + str(mon_defend) + '!')
+                    self.p.msg.m(smu + ' squashes ' + str(mon_defend) + '!')
                 return True
 
         return False
@@ -3017,17 +2997,17 @@ class World:
         if monname is None:
             m = []
             for ii in xrange(n):
-                mmi = self.monsterstock.generate(self.branch, self.d.dlev, self.itemstock, self.moon)
+                mmi = self.w.monsterstock.generate(self.d.branch, self.d.dlev, self.w.itemstock, self.d.moon)
                 if mmi and not mmi.inanimate:
                     m.append(mmi)
 
         else:
-            m = self.monsterstock.find(monname, n, self.itemstock)
+            m = self.w.monsterstock.find(monname, n, self.w.itemstock)
             if len(m) == 0:
                 return []
 
         l = []
-        for ki in self.neighbors[xy]:
+        for ki in self.d.neighbors[xy]:
             if dg.grid_is_walk(ki[0], ki[1]) and ki not in self.d.monmap and ki != self.d.pc:
                 l.append(ki)
 
@@ -3047,10 +3027,10 @@ class World:
 
 
     def moon_message(self):
-        if self.did_moon_message:
+        if self.p.did_moon_message:
             return
 
-        if len(self.msg.strings) > 0 and self.msg.strings[0][2][0] and (self.t - self.msg.strings[0][2][0]) > 9:
+        if len(self.p.msg.strings) > 0 and self.p.msg.strings[0][2][0] and (self.w.t - self.p.msg.strings[0][2][0]) > 9:
             d = {moon.NEW:  'New moon tonight. A perfect night for evil and the dark arts.',
                  moon.FULL: 'Full moon tonight. The lunatics are out in droves.',
                  moon.FIRST_QUARTER: 'First quarter moon tonight. Watch out for the UFOs.',
@@ -3060,8 +3040,8 @@ class World:
                  moon.WANING_CRESCENT: "Tonight's moon is waning crescent.",
                  moon.WANING_GIBBOUS: "Tonight's moon is waning gibbous."}
 
-            self.msg.m(d[self.moon], True)
-            self.did_moon_message = True
+            self.p.msg.m(d[self.d.moon], True)
+            self.p.did_moon_message = True
 
 
     def monster_flavor_message(self, mon, dist):
@@ -3069,59 +3049,59 @@ class World:
             m = max(0.1, min(1.0, 1.0 - (dist/50)))
 
             if flavor == 'air':
-                self.msg.m('You hear the hissing of air.')
+                self.p.msg.m('You hear the hissing of air.')
                 self.config.sound.play("air", mul=m)
 
             elif flavor == 'animal':
-                self.msg.m('You hear the sounds of a restless animal.')
+                self.p.msg.m('You hear the sounds of a restless animal.')
                 self.config.sound.play("hooves", mul=m)
 
             elif flavor == 'carnivore':
-                self.msg.m('You hear the roar of an animal.')
+                self.p.msg.m('You hear the roar of an animal.')
                 self.config.sound.play("roar", mul=m)
 
             elif flavor == 'digital':
-                self.msg.m('You hear the sounds of 8-bit music.')
+                self.p.msg.m('You hear the sounds of 8-bit music.')
                 self.config.sound.play("nintendo", mul=m)
 
             elif flavor == 'earthshake':
-                self.msg.m('You feel the earth shake.')
+                self.p.msg.m('You feel the earth shake.')
                 self.config.sound.play("quake", mul=m)
 
             elif flavor == 'faerie':
-                self.msg.m('You hear the tinkling of bells.')
+                self.p.msg.m('You hear the tinkling of bells.')
                 self.config.sound.play("bells", mul=m)
 
             elif flavor == 'flying':
-                self.msg.m('You hear the flapping of wings.')
+                self.p.msg.m('You hear the flapping of wings.')
                 self.config.sound.play("wings", mul=m)
 
             elif flavor == 'giant':
-                self.msg.m('You hear a loud rumble.')
+                self.p.msg.m('You hear a loud rumble.')
                 self.config.sound.play("boom", mul=m)
 
             elif flavor == 'humanwarrior':
-                self.msg.m('You hear the angry sounds of a foreign language.')
+                self.p.msg.m('You hear the angry sounds of a foreign language.')
                 self.config.sound.play("mutter", mul=m)
 
             elif flavor == 'humanweird':
-                self.msg.m('You hear somebody wildly gibber.')
+                self.p.msg.m('You hear somebody wildly gibber.')
                 self.config.sound.play("laugh", mul=m)
 
             elif flavor == 'robot':
-                self.msg.m('You hear the clanking of metal.')
+                self.p.msg.m('You hear the clanking of metal.')
                 self.config.sound.play("robot", mul=m)
 
             elif flavor == 'snake':
-                self.msg.m('You hear something slither.')
+                self.p.msg.m('You hear something slither.')
                 self.config.sound.play("slither", mul=m)
 
             elif flavor == 'weird':
-                self.msg.m('You faintly sense eldritch chanting.')
+                self.p.msg.m('You faintly sense eldritch chanting.')
                 self.config.sound.play("cthulhu", mul=m)
 
             elif flavor == 'wizard':
-                self.msg.m('You hear incantations of arcana.')
+                self.p.msg.m('You hear incantations of arcana.')
                 self.config.sound.play("wizard", mul=m)
 
 
@@ -3181,7 +3161,7 @@ class World:
 
         if ca.watertoggle is not None:
             dg.grid_set_water(x, y, False)
-        elif ca.featuretoggle and xy in self.d.featmap and self.d.featmap[xy] == self.featstock.f[ca.featuretoggle]:
+        elif ca.featuretoggle and xy in self.d.featmap and self.d.featmap[xy] == self.w.featstock.f[ca.featuretoggle]:
             self.unset_feature(xy)
 
         if ca.littoggle is not None and dg.grid_is_walk(x, y):
@@ -3244,7 +3224,7 @@ class World:
 
             elif (mon.visible or mon.visible_old) and not (mon.was_seen) and not self.p.mapping:
                 mon.was_seen = True
-                self.msg.m('You see ' + str(mon) + '.')
+                self.p.msg.m('You see ' + str(mon) + '.')
                 m = max(0.25, min(3, 0.5 * (mon.level - self.p.plev)))
                 self.config.sound.play("wobble", dur=m)
 
@@ -3259,7 +3239,7 @@ class World:
                     if mon.visible:
                         smu = str(mon)
                         smu = smu[0].upper() + smu[1:]
-                        self.msg.m(smu + ' falls over and dies!')
+                        self.p.msg.m(smu + ' falls over and dies!')
 
                     self.handle_mondeath(mon, do_gain=False, 
                                          is_poison=(False if self.try_feature(xy, 'pois2') else True))
@@ -3269,12 +3249,12 @@ class World:
 
             p = self.try_feature(xy, 'fire')
             if (p or mon.onfire) and not mon.fireimmune:
-                mon.hp -= (p or self.coef.burndamage)
+                mon.hp -= (p or self.w.coef.burndamage)
                 if mon.hp <= -3.0:
                     if mon.visible:
                         smu = str(mon)
                         smu = smu[0].upper() + smu[1:]
-                        self.msg.m(smu + ' burns ' + ('up.' if mon.boulder else 'to death!'))
+                        self.p.msg.m(smu + ' burns ' + ('up.' if mon.boulder else 'to death!'))
 
                     self.handle_mondeath(mon, do_gain=True)
                     mon.do_die = True
@@ -3282,7 +3262,7 @@ class World:
                     continue
 
                 elif p:
-                    mon.onfire = max(self.coef.burnduration, mon.onfire)
+                    mon.onfire = max(self.w.coef.burnduration, mon.onfire)
 
                 else:
                     mon.onfire -= 1
@@ -3293,11 +3273,11 @@ class World:
 
             msumm = (mon.summon or mon.summononce)
 
-            if msumm and (mon.visible or mon.static) and (self.t % msumm[1]) == 0:
+            if msumm and (mon.visible or mon.static) and (self.w.t % msumm[1]) == 0:
                 summons.append((k, mon))
                 continue
 
-            if mon.raise_dead and (mon.visible or mon.static) and (self.t % mon.raise_dead[1]) == 0:
+            if mon.raise_dead and (mon.visible or mon.static) and (self.w.t % mon.raise_dead[1]) == 0:
                 raise_dead.extend(self.raise_dead(mon.xy, mon.raise_dead[0]))
 
             mon.visible_old = mon.visible
@@ -3310,7 +3290,7 @@ class World:
                     if mon.selfdestruct:
                         smu = str(mon)
                         smu = smu[0].upper() + smu[1:]
-                        self.msg.m(smu + ' suddenly self-destructs!')
+                        self.p.msg.m(smu + ' suddenly self-destructs!')
                         self.handle_mondeath(mon, do_gain=False)
                         mon.do_die = True
                     else:
@@ -3336,14 +3316,14 @@ class World:
                 q = self.summon(k, mon.summon[0], 1)
                 if len(q) > 0:
                     if not mon.static:
-                        self.msg.m(smu + ' summons ' + str(q[0]) + '!')
+                        self.p.msg.m(smu + ' summons ' + str(q[0]) + '!')
                 else:
                     mon.summon = None
 
             elif mon.summononce:
                 q = self.summon(k, None, mon.summononce[0])
                 if len(q) > 0:
-                    self.msg.m(smu + ' summons monsters!')
+                    self.p.msg.m(smu + ' summons monsters!')
                     mon.summononce = None
 
 
@@ -3352,7 +3332,7 @@ class World:
             if dg.grid_is_walk(xy[0], xy[1]) and xy not in self.d.monmap and xy != self.d.pc:
                 smu = str(mon)
                 smu = smu[0].upper() + smu[1:]
-                self.msg.m(smu + ' rises from the dead!')
+                self.p.msg.m(smu + ' rises from the dead!')
                 mon.reset()
                 mon.xy = xy
                 self.d.monmap[xy] = mon
@@ -3389,23 +3369,23 @@ class World:
         statsgrace = None
         if self.p.s_grace:
             statsgrace = (chr(234),
-                          ((self.p.s_grace * 6) / self.coef.s_graceduration) + 1,
-                          (self.p.s_grace > self.coef.s_graceduration - self.coef.s_praytimeout))
+                          ((self.p.s_grace * 6) / self.w.coef.s_graceduration) + 1,
+                          (self.p.s_grace > self.w.coef.s_graceduration - self.w.coef.s_praytimeout))
 
         elif self.p.v_grace:
             statsgrace = (chr(233),
-                          ((self.p.v_grace * 6) / self.coef.v_graceduration) + 1,
-                          (self.p.v_grace > self.coef.v_graceduration - self.coef.v_praytimeout))
+                          ((self.p.v_grace * 6) / self.w.coef.v_graceduration) + 1,
+                          (self.p.v_grace > self.w.coef.v_graceduration - self.w.coef.v_praytimeout))
 
         elif self.p.b_grace:
             statsgrace = (chr(127),
-                          ((self.p.b_grace * 6) / self.coef.b_graceduration) + 1,
+                          ((self.p.b_grace * 6) / self.w.coef.b_graceduration) + 1,
                           False)
 
         statsresource = None
         if self.p.resource:
             if self.p.resource_timeout:
-                n = ((self.p.resource_timeout * 6) / self.coef.resource_timeouts[self.p.resource] + 1)
+                n = ((self.p.resource_timeout * 6) / self.w.coef.resource_timeouts[self.p.resource] + 1)
             else:
                 n = self.p.resource_buildup
 
@@ -3420,9 +3400,9 @@ class World:
             self.stats.draw(self.d.w - 14, 0, grace=statsgrace, resource=statsresource, luck=luck)
 
         if self.d.pc[1] > self.d.h / 2:
-            self.msg.draw(15, 0, self.d.w - 30, self.t)
+            self.p.msg.draw(15, 0, self.d.w - 30, self.w.t)
         else:
-            self.msg.draw(15, self.d.h - 3, self.d.w - 30, self.t)
+            self.p.msg.draw(15, self.d.h - 3, self.d.w - 30, self.w.t)
 
 
     ### 
@@ -3430,7 +3410,7 @@ class World:
     def draw(self, _hlxy=(1000,1000), range=(0,1000), lightradius=None):
 
         withtime = False
-        if self.oldt != self.t:
+        if self.w.oldt != self.w.t:
             withtime = True
 
         lightradius = self.get_lightradius(lightradius)
@@ -3475,8 +3455,8 @@ class World:
                 dg.render_push_skin(k[0], k[1], itm.skin[1], itm.skin[0], libtcod.black, 0, False)
 
 
-        if self.doppeltime > 0:
-            dg.render_push_skin(self.doppelpoint[0], self.doppelpoint[1],
+        if self.d.doppeltime > 0:
+            dg.render_push_skin(self.d.doppelpoint[0], self.d.doppelpoint[1],
                                 libtcod.white, '@', libtcod.black, 0, False)
 
         lit_mons = set()
@@ -3493,11 +3473,11 @@ class World:
 
 
         pc = '@'
-        if self.p.sleeping > 1 and (self.t & 1) == 1:
+        if self.p.sleeping > 1 and (self.w.t & 1) == 1:
             pc = '*'
-        elif self.p.resting and (self.t & 1) == 1:
+        elif self.p.resting and (self.w.t & 1) == 1:
             pc = '.'
-        elif self.p.digging and (self.t & 1) == 1:
+        elif self.p.digging and (self.w.t & 1) == 1:
             pc = '('
         else:
             pc = '@'
@@ -3509,7 +3489,7 @@ class World:
 
         ###
 
-        did_highlight = dg.render_draw(self.tcodmap, self.t, self.d.pc[0], self.d.pc[1], 
+        did_highlight = dg.render_draw(self.tcodmap, self.w.t, self.d.pc[0], self.d.pc[1], 
                                        _hlxy[0], _hlxy[1], range[0], range[1], lightradius)
         
         ###
@@ -3532,8 +3512,8 @@ class World:
                     self.new_visibles = True
 
 
-        if self.doppeltime > 0:
-            dg.render_pop_skin(self.doppelpoint[0], self.doppelpoint[1])
+        if self.d.doppeltime > 0:
+            dg.render_pop_skin(self.d.doppelpoint[0], self.d.doppelpoint[1])
 
         for k,v in sorted(self.d.itemap.iteritems()):
             dg.render_pop_skin(k[0], k[1])
@@ -3546,7 +3526,7 @@ class World:
         # hack
         if withtime:
             self.moon_message()
-            self.oldt = self.t
+            self.w.oldt = self.w.t
 
         return did_highlight
 
@@ -3554,22 +3534,11 @@ class World:
     def save(self):
         # HACK! For supporting replays of games that have been saved and then loaded.
         if self.save_disabled:
-            dg.random_init(self._seed)
+            dg.random_init(self.w._seed)
             return
 
-
         f = None
-        atts = [
-          'exit', 'itemap', 'monmap', 
-          'featmap', 'px', 'py', 'w', 'h',
-          'done', 'dead', 'stats', 'msg', 'coef', 'inv', 'itemstock', 'monsterstock', 'branch',
-          'dlev', 'plev', 't', 'oldt', 'tagorder', 'sleeping', 'resting', 'cooling', 'digging', 'blind',
-          'mapping', 'glued', 'onfire', 's_grace', 'b_grace', 'v_grace', 'forcedsleep',
-          'forced2sleep', 'healingsleep', 'doppelpoint', 'doppeltime',
-          '_seed', 'featstock', 'vaultstock',
-          'achievements', 'bones', 'resource', 'resource_buildup', 'resource_timeout',
-          'neighbors', 'moon', 'did_moon_message'
-          ]
+        atts = [ 'p', 'd', 'w' ]
         state = {}
 
         for x in atts:
@@ -3585,15 +3554,15 @@ class World:
 
         dg.state_save('savefile.dat1')
 
-        self.msg.m('Saved!')
+        self.p.msg.m('Saved!')
         self.p.done = True
 
 
     def load_bones(self):
-        self.bones = []
+        self.w.bones = []
         try:
             bf = open('bones', 'r')
-            self.bones = cPickle.load(bf)
+            self.w.bones = cPickle.load(bf)
         except:
             pass
 
@@ -3615,7 +3584,7 @@ class World:
 
         #log.f = open('LOG.%d' % self._seed, 'a')
 
-        dg.random_init(self._seed)
+        dg.random_init(self.w._seed)
 
         dgsys._inputs = state['_inputs']
 
@@ -3683,17 +3652,17 @@ class World:
         score += min(self.d.dlev, 21) * 5
 
         for x in self.p.achievements.killed_monsters:
-            if x[1] in self.monsterstock.norms:
-                score += x[0] * self.monsterstock.norms[x[1]]
+            if x[1] in self.w.monsterstock.norms:
+                score += x[0] * self.w.monsterstock.norms[x[1]]
 
         score = int(round(score))
 
 
-        bones = cPickle.dumps(self.bones)
+        bones = cPickle.dumps(self.w.bones)
         inputs = cPickle.dumps(dgsys._inputs)
 
         c.execute('insert into ' + tbl_games + '(id, seed, score, bones, inputs) values (NULL, ?, ?, ?, ?)',
-                  (self._seed, score,
+                  (self.w._seed, score,
                    sqlite3.Binary(bones),
                    sqlite3.Binary(inputs)))
 
@@ -3746,7 +3715,7 @@ class World:
             s.append('')
 
         s.append('-' * 50)
-        s.extend((x[1] for x in self.msg.strings[2:8]))
+        s.extend((x[1] for x in self.p.msg.strings[2:8]))
         s.append('')
         s.append('%cUpload your score to http://diggr.name? (Press Y or N)%c' % (libtcod.COLCTRL_3, libtcod.COLCTRL_1))
 
@@ -3759,7 +3728,7 @@ class World:
                 done = False
 
                 while not done:
-                    done = self.upload_score(self._seed, score, bones, inputs, achievements)
+                    done = self.upload_score(self.w._seed, score, bones, inputs, achievements)
 
                     if not done:
                         c = draw_window(['',
@@ -3890,10 +3859,10 @@ class World:
             if self.config.music_n >= 0:
                 self.config.sound.stop(self.config.music_n)
             self.config.music_n = -1
-            self.msg.m('Sound OFF.')
+            self.p.msg.m('Sound OFF.')
         else:
             self.config.music_n = self.config.sound.play("music", rate=min(10, 2.0+(0.5*self.d.dlev)))
-            self.msg.m('Sound ON.')
+            self.p.msg.m('Sound ON.')
 
     def toggle_music(self):
         # HACK
@@ -3903,10 +3872,10 @@ class World:
         if self.config.music_n >= 0:
             self.config.sound.stop(self.config.music_n)
             self.config.music_n = -1
-            self.msg.m('Music OFF.')
+            self.p.msg.m('Music OFF.')
         else:
             self.config.music_n = self.config.sound.play("music", rate=min(10, 2.0+(0.5*self.d.dlev)))
-            self.msg.m('Music ON.')
+            self.p.msg.m('Music ON.')
 
 
 
@@ -3915,31 +3884,31 @@ def start_game(world, w, h, oldseed=None, oldbones=None):
 
     if oldseed or not world.load():
         if oldseed:
-            world._seed = oldseed
+            world.w._seed = oldseed
         else:
-            world._seed = int(time.time())
+            world.w._seed = int(time.time())
 
         if oldbones is not None:
-            world.bones = oldbones
+            world.w.bones = oldbones
         else:
             world.load_bones()
 
         #log.f = open('LOG.%d' % world._seed, 'a')
 
-        dg.random_init(world._seed)
+        dg.random_init(world.w._seed)
 
         dgsys._inputs = []
 
         world.regen(w, h)
         world.generate_inv()
-        world.msg.m("Kill all the monsters in the dungeon or reach dungeon level 26 to win the game.", True)
-        world.msg.m("Please press '?' to see help.")
+        world.p.msg.m("Kill all the monsters in the dungeon or reach dungeon level 26 to win the game.", True)
+        world.p.msg.m("Please press '?' to see help.")
 
 def check_autoplay(world):
 
     if world.p.sleeping > 0:
         if world.stats.sleep.x >= 3.0 and not world.p.forcedsleep and not world.p.forced2sleep:
-            world.msg.m('You wake up.')
+            world.p.msg.m('You wake up.')
             world.p.sleeping = 0
             world.p.healingsleep = False
             return 1
@@ -3949,7 +3918,7 @@ def check_autoplay(world):
 
     if world.resting:
         if world.stats.tired.x >= 3.0:
-            world.msg.m('You stop resting.')
+            world.p.msg.m('You stop resting.')
             world.resting = False
             return 1
 
@@ -4011,7 +3980,7 @@ def main(config, replay=None):
     #cons = libtcod.console_new(w, h)
     #cons = None
 
-    world = World(config)
+    world = Game(config)
     world.make_keymap()
 
     if replay is not None:
@@ -4061,13 +4030,13 @@ def main(config, replay=None):
 
 
     if world.p.dead and not world.p.done:
-        world.msg.m('You die.', True)
+        world.p.msg.m('You die.', True)
 
     if config.music_n >= 0:
         config.sound.stop(config.music_n)
 
-    world.oldt = world.t
-    world.msg.m('*** Press any key ***', True)
+    world.w.oldt = world.w.t
+    world.p.msg.m('*** Press any key ***', True)
     world.draw()
     libtcod.console_flush()
     libtcod.console_wait_for_keypress(True)
