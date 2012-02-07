@@ -1,4 +1,5 @@
 
+import moon
 
 class Achieve:
     def __init__(self, tag=None, desc=None, weight=0):
@@ -34,11 +35,11 @@ class Achievements:
         self.colors = 0
         self.bonus_colors = 0
 
-    def finish(self, plev, dlev, moon, reason):
+    def finish(self, plev, dlev, moon_, reason):
         self.add('plev%d' % plev, 'Reached player level %d' % plev)
         self.add('dlev%d' % dlev, 'Reached dungeon level %d' % dlev)
 
-        moonstr = moon.phase_string(moon)
+        moonstr = moon.phase_string(moon_)
         self.add('moon_%s' % moonstr, 'Played on a %s moon' % moonstr)
 
         if len(self.killed_monsters) == 0:

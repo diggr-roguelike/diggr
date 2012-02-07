@@ -36,10 +36,10 @@ class Inventory:
             tmp = self._items[slot]
             if tmp:
                 itm = str(tmp)
-            return "%c%c)%s %s:%c%s" % (libtcod.COLCTRL_5, 
-                                        slot, pad, nm,
-                                        libtcod.COLCTRL_1,
-                                        itm)
+            return "%c%c)%s %s: %c%s" % (libtcod.COLCTRL_5, 
+                                         slot, pad, nm,
+                                         libtcod.COLCTRL_1,
+                                         itm)
 
         s = [fmt(slot) for slot in self._slotnums]
 
@@ -56,7 +56,7 @@ class Inventory:
         if not slot:
             slot = i.slot
 
-        if not self._items[slot]:
+        if slot in self._items and not self._items[slot]:
             self._items[slot] = i
             return True
 

@@ -309,8 +309,8 @@ class Game:
             baseattack = self.w.coef.unarmedattack
 
         return max(sum(self.get_inv_attr(['e', 'd', 'g'], 
-                                         'attack', 0),
-                       baseattack))
+                                         'attack', 0)),
+                   baseattack)
 
     def get_defence(self):
         tmp = max(sum(self.get_inv_attr(['a', 'd', 'c', 
@@ -785,8 +785,9 @@ class Game:
             elif self.d.moon in (moon.FIRST_QUARTER, moon.LAST_QUARTER):
                 gentype = -1
 
+            __tt = time.time()
             dg.grid_generate(gentype)
-
+            print '  regen 1', time.time() - __tt
 
         self.make_feats()
         self.make_paths()
@@ -1339,11 +1340,13 @@ class Game:
         i = items[c]
         did_scavenge = False
 
-        def takepred(i, slot):
-            if ii.stackrange and ii.count < ii.stackrange:
-                return 1
-            elif i.ammo > 0 and ii.ammo and ii.ammo < ii.ammochance[1]:
-                return 2
+        def takepred(ii, slot):
+            if ii.name == i.name:
+                if ii.stackrange and ii.count < ii.stackrange:
+                    print str(ii), ii.stackrange, ii.count
+                    return 1
+                elif i.ammo > 0 and ii.ammo and ii.ammo < ii.ammochance[1]:
+                    return 2
             return False
 
         def takefunc(ii, whc):
@@ -1551,11 +1554,11 @@ class Game:
 
         elif cc == 'f':
             while 1:
-                nx, ny = self.target(i.throwrange)
-                if nx is not None:
+                nxy = self.target(i.throwrange)
+                if not xy_none(nxy):
                     break
 
-            if nx >= 0:
+            if nxy[0] >= 0:
                 if slot not in flooritems:
                     i = self.p.inv.drop(slot)
 
@@ -1592,9 +1595,12 @@ class Game:
 
                 else:
                     slt2 = None
-                    if self.p.inv.backpack1 and self.p.inv.backpack1.slot == slot:
+                    backpack1 = self.p.inv.check('h')
+                    backpack2 = self.p.inv.check('i')
+
+                    if backpack1 and backpack1.slot == slot:
                         slt2 = 'h'
-                    elif self.p.inv.backpack2 and self.p.inv.backpack2.slot == slot:
+                    elif backpack2 and backpack2.slot == slot:
                         slt2 = 'i'
 
                     if slt2:
@@ -1603,10 +1609,10 @@ class Game:
                         self.p.inv.take(item2)
                         self.p.inv.take(i)
                     else:
-                        if not self.p.inv.backpack1:
-                            self.p.inv.backpack1 = self.p.inv.drop(slot)
-                        elif not self.p.inv.backpack2:
-                            self.p.inv.backpack2 = self.p.inv.drop(slot)
+                        if not backpack1:
+                            self.p.inv.take(self.p.inv.drop(slot), 'h')
+                        elif not backpack2:
+                            self.p.inv.take(self.p.inv.drop(slot), 'i')
 
             self.tick()
 
@@ -1642,7 +1648,7 @@ class Game:
 
             newi = None
 
-            for i2 in self.p.inv:
+            for i2,slot in self.p.inv:
                 if i2 and i2.craft:
                     if item.craft[0] in i2.craft[1]:
                         newi = self.w.itemstock.get(i2.craft[1][item.craft[0]])
@@ -2009,7 +2015,7 @@ class Game:
                                   lightradius=item.lightradius)
                 if not xy_none(nxy):
                     break
-            if nx < 0:
+            if nxy[0] < 0:
                 return -1 #item
 
             if not item.rangeexplode and not item.fires and nxy not in self.d.monmap:
@@ -2608,30 +2614,20 @@ class Game:
 
             k = draw_window(s, True)
 
-            if   k == 'h': txy[0] -= 1
-            elif k == 'j': txy[1] += 1
-            elif k == 'k': txy[1] -= 1
-            elif k == 'l': txy[0] += 1
-            elif k == 'y':
-                txy[0] -= 1
-                txy[1] -= 1
-            elif k == 'u':
-                txy[0] += 1
-                txy[1] -= 1
-            elif k == 'b':
-                txy[0] -= 1
-                txy[1] += 1
-            elif k == 'n':
-                txy[0] += 1
-                txy[1] += 1
+            if   k == 'h': txy = xy_add(txy, (-1, 0))
+            elif k == 'j': txy = xy_add(txy, (0, 1))
+            elif k == 'k': txy = xy_add(txy, (0, -1))
+            elif k == 'l': txy = xy_add(txy, (1, 0))
+            elif k == 'y': txy = xy_add(txy, (-1, -1))
+            elif k == 'u': txy = xy_add(txy, (1, -1))
+            elif k == 'b': txy = xy_add(txy, (-1, 1))
+            elif k == 'n': txy = xy_add(txy, (1, 1))
             else:
                 break
 
-            if txy[0] < 0: txy[0] = 0
-            elif txy[0] >= self.d.w: txy[0] = self.d.w - 1
+            txy = (max(0, min(txy[0], self.d.w - 1)),
+                   max(0, min(txy[1], self.d.h - 1)))
 
-            if txy[1] < 0: txy[1] = 0
-            elif txy[1] >= self.d.h: txy[1] = self.d.h - 1
 
 
     def _target(self, point, range, minrange=0, monstop=False, lightradius=None):
@@ -2689,7 +2685,7 @@ class Game:
         elif k == 'b': dpt = (-1, 1)
         elif k == 'n': dpt = (1, 1)
         elif k == '.':
-            if poiok is None:
+            if xy_none(point):
                 return (None, None), False
             else:
                 final_choice = True
@@ -3131,8 +3127,8 @@ class Game:
         self.celautostock.seed(xy, ca)
 
     def clear_celauto(self, xy):
-        def cboff(xy,ca):
-            self.celauto_off(xy,ca)
+        def cboff(x, y, ca):
+            self.celauto_off((x, y), ca)
         self.celautostock.clear(xy, cboff)
         
 
@@ -3341,7 +3337,7 @@ class Game:
         for mon in mons:
             if mon.do_die:
                 if mon.xy in self.d.monmap:
-                    del self.d.monmap[ymon.xy]
+                    del self.d.monmap[mon.xy]
             elif mon.do_move:
                 mon.old_pos = mon.xy
                 del self.d.monmap[mon.xy]
@@ -3571,10 +3567,13 @@ class Game:
         f = None
         state = None
 
+        print 'LOADING'
+
         try:
             f = open('savefile.dat0', 'r')
             state = cPickle.load(f)
         except:
+            print 'LOAD FAILED 1'
             return False
 
         for k,v in state.iteritems():
@@ -3594,6 +3593,7 @@ class Game:
         # HACK
         dg.neighbors_init(self.d.w, self.d.h)
 
+        print 'LOAD OK'
         return True
 
 
@@ -3614,7 +3614,7 @@ class Game:
         except:
             pass
 
-        bones.append((self.p.plev, self.d.dlev, [i for i in self.p.inv if i is not None and i.liveexplode is None]))
+        bones.append((self.p.plev, self.d.dlev, [i for i,slot in self.p.inv if i is not None and i.liveexplode is None]))
 
         for i in bones[-1][2]:
             i.tag = None
@@ -3970,6 +3970,7 @@ class Game:
 
 
     def mainloop(self, do_highscore):
+        __tt = time.time()
 
         if self.p.done or self.p.dead:
             self.endgame(do_highscore)
@@ -3991,7 +3992,10 @@ class Game:
             self.endgame(do_highscore)
             return False
 
+        print ' . ', time.time() - __tt
         key = dgsys.console_wait_for_keypress()
+
+        __tt = time.time()
 
         if chr(key.c) in self.ckeys:
             self.ckeys[chr(key.c)]()
@@ -3999,6 +4003,9 @@ class Game:
         elif key.vk in self.vkeys:
             self.vkeys[key.vk]()
 
+        print ' x ', time.time() - __tt
+
+        return True
 
 
 

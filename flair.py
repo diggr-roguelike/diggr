@@ -1,5 +1,6 @@
 
 import libtcodpy as libtcod
+import dgsys
 
 from xy import *
 
@@ -24,8 +25,8 @@ _kbdmap = {
 
 def draw_window(msg, do_mapping=False):
 
-    w = tcod.console_get_width()
-    h = tcod.console_get_height()
+    w = libtcod.console_get_width(None)
+    h = libtcod.console_get_height(None)
 
     maxl = 0
     for x in msg:
@@ -43,7 +44,7 @@ def draw_window(msg, do_mapping=False):
     libtcod.console_set_default_background(None, libtcod.black)
 
     libtcod.console_flush()
-    k = console_wait_for_keypress()
+    k = dgsys.console_wait_for_keypress()
 
     libtcod.console_rect(None, x0, 0, w - x0, y0, True)
     libtcod.console_flush()

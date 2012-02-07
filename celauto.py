@@ -88,11 +88,11 @@ class CelAutoStock:
 
                 dg.celauto_seed(x1, y1, _ca)
 
-    def seed(self, x, y, ca):
-        dg.celauto_seed(x, y, ca)
+    def seed(self, xy, ca):
+        dg.celauto_seed(xy[0], xy[1], ca)
 
-    def clear(self, x, y, funcoff):
-        dg.celauto_clear(x, y, funcoff)
+    def clear(self, xy, funcoff):
+        dg.celauto_clear(xy[0], xy[1], funcoff)
 
     def celauto_step(self, funcon, funcoff):
         dg.celauto_step(funcon, funcoff)
