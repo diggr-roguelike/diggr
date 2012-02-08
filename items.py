@@ -213,7 +213,7 @@ class ItemStock:
                             desc=['Uh-oh.'])
 
         self.pickaxe = Item("miner's pickaxe", slot='e', skin=('(', libtcod.gray),
-                            attack=2.0, rarity=8, applies=True, digging=True,
+                            attack=2.0, rarity=8, applies=True, digging=True, digbonus=0.1,
                             desc=['Ostensibly to be used as an aid in traversing the caves,',
                                   'this sporting item is a good makeshift weapon.'])
 
