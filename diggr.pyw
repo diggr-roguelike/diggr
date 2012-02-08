@@ -250,7 +250,7 @@ class Game:
         return self.get_inv_attr(['d'], 'glueimmune')[0]
 
     def get_digspeed(self):
-        return sum(self.get_inv_attr(['a', 'e'], 'digbonus', 0))
+        return sum(self.get_inv_attr(['a', 'e', 'h', 'i'], 'digbonus', 0))
 
     def get_springy(self):
         return (self.get_inv_attr(['g'], 'springy')[0] or 
@@ -1666,7 +1666,7 @@ class Game:
         elif item.digging:
             k = draw_window(['Dig in which direction?'], True)
 
-            digspeed = self.get_digspeed()
+            digspeed = self.get_digspeed() + item.digbonus
 
             self.p.digging = None
             if k == 'h': self.p.digging = (xy_add(self.d.pc, (-1, 0)), digspeed)
@@ -3941,7 +3941,7 @@ class Game:
                 return 1
 
             else:
-                dg.grid_set_height(self.p.digging[0][0], self.p.digging[0][1], height - self.p.digging[2])
+                dg.grid_set_height(self.p.digging[0][0], self.p.digging[0][1], height - self.p.digging[1])
                 self.tick()
                 return -1
 
