@@ -1340,7 +1340,6 @@ class Game:
         def takepred(ii, slot):
             if ii.name == i.name:
                 if ii.stackrange and ii.count < ii.stackrange:
-                    print str(ii), ii.stackrange, ii.count
                     return 1
                 elif i.ammo > 0 and ii.ammo and ii.ammo < ii.ammochance[1]:
                     return 2
@@ -3267,7 +3266,7 @@ class Game:
             msumm = (mon.summon or mon.summononce)
 
             if msumm and (mon.visible or mon.static) and (self.w.t % msumm[1]) == 0:
-                summons.append((k, mon))
+                summons.append((xy, mon))
                 continue
 
             if mon.raise_dead and (mon.visible or mon.static) and (self.w.t % mon.raise_dead[1]) == 0:
