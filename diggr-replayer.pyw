@@ -119,7 +119,7 @@ def main():
     def input_name():
         name = ''
         while 1:
-            k3 = diggr.draw_window(['Enter filename: ' + name], w, h)
+            k3 = diggr.draw_window(['Enter filename: ' + name])
             if k3 in '\n\r':
                 break
             elif k3 in string.ascii_letters or k3 in string.digits or k3 in '.':
@@ -191,7 +191,7 @@ def main():
         s.append('')
         s.append('*WARNING*: Only games from the _same_ version of Diggr will replay correctly!')
 
-        k = diggr.draw_window(s, w, h, True)
+        k = diggr.draw_window(s, True)
 
         if k == 'h':
             n -= limit
@@ -212,7 +212,7 @@ def main():
                  ' z : Load scores from another file on disk.',
                  ' q : Quit.'
                  '']
-            diggr.draw_window(s, w, h)
+            diggr.draw_window(s)
 
 
         elif k == 's':
@@ -245,7 +245,7 @@ def main():
                     qq += 1
                     choices2[chh] = aach
 
-                k2 = diggr.draw_window(s, w, h, True)
+                k2 = diggr.draw_window(s, True)
 
                 if k2 == 'h':
                     n2 -= limit
@@ -294,7 +294,7 @@ def main():
                 aach = ach_tag_to_text(aach)
                 s2.append('    %c%s%c: %s%c%d%c/%d' % (_c1, aach, _c5, '.'*max(0,50-len(aach)), _c1, place, _c5, total))
 
-            k2 = diggr.draw_window(s2, w, h, True)
+            k2 = diggr.draw_window(s2, True)
 
             if k2 == 'a':
                 c.execute('select seed, inputs, bones from %s where id = %d' % \
@@ -304,7 +304,7 @@ def main():
                 inputs = cPickle.loads(str(inputs))
                 bones = cPickle.loads(str(bones))
 
-                diggr.main(diggr.Config(False),
+                diggr.main(diggr.dgsys.Config({'sound':False}),
                            replay=(seed,inputs,bones))
 
                 if len(diggr.dgsys._inputqueue) != 0:
@@ -342,7 +342,7 @@ def main():
                     c2.close()
                     conn2.close()
                     diggr.draw_window(['Saved to "%s".' % name,
-                                       'Press any key to continue.'], w, h)
+                                       'Press any key to continue.'])
 
 
 
@@ -357,7 +357,7 @@ def main():
                     os.stat(name)
                 except:
                     diggr.draw_window(['File not found: "%s".' % name,
-                                       'Press any key to continue.'], w, h)
+                                       'Press any key to continue.'])
                     ok = False
 
                 if ok:

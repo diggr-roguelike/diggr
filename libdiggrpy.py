@@ -54,6 +54,8 @@ def render_set_back(x, y, back):
 def render_set_is_lit(x, y, is_lit):
     _dg.dg_render_set_is_lit(c_uint(x), c_uint(y), c_bool(is_lit))
 
+def render_set_is_transparent(x, y, is_transparent):
+    _dg.dg_render_set_is_transparent(c_uint(x), c_uint(y), c_bool(is_transparent))
 
 def render_push_skin(x, y, fore, c, fore2, fore_i, is_terrain):
     if type(c) == type(1):
@@ -84,10 +86,13 @@ def render_is_in_fov(x, y):
 
 _dg.dg_render_draw.restype = c_bool
 
-def render_draw(map, t, px, py, hlx, hly, rmin, rmax, lr):
-    return _dg.dg_render_draw(c_void_p(map), c_uint(t), c_uint(px), c_uint(py),
+def render_draw(t, px, py, hlx, hly, rmin, rmax, lr):
+    return _dg.dg_render_draw(c_uint(t), c_uint(px), c_uint(py),
                               c_uint(hlx), c_uint(hly), c_uint(rmin), c_uint(rmax),
                               c_uint(lr))
+
+def render_recompute_fov(x, y, rad):
+    _dg.dg_render_recompute_fov(c_uint(x), c_uint(y), c_uint(rad))
 
 def random_init(seed):
     _dg.dg_random_init(c_long(seed))

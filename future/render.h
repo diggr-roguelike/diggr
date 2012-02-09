@@ -78,8 +78,9 @@ struct Grid {
 	TCOD_color_t back;
 	unsigned int is_lit;
 	bool in_fov;
+        bool is_transparent;
 
-	gridpoint() : back(TCOD_black), is_lit(0), in_fov(false) {}
+	gridpoint() : back(TCOD_black), is_lit(0), in_fov(false), is_transparent(false) {}
     };
 
     unsigned int w;
@@ -90,13 +91,24 @@ struct Grid {
     TCOD_color_t env_color;
     double env_intensity;
 
-    Grid() : w(0), h(0), env_intensity(0) {}
+    TCOD_map_t tcodmap;
+
+
+    Grid() : w(0), h(0), env_intensity(0), tcodmap(TCOD_map_new(0, 0)) {}
+
+    ~Grid() {
+        TCOD_map_delete(tcodmap);
+    }
 
     void init(unsigned int _w, unsigned int _h) {
 	w = _w;
 	h = _h;
 	grid.clear();
 	grid.resize(w*h);
+
+        TCOD_map_delete(tcodmap);
+        tcodmap = TCOD_map_new(w, h);
+        TCOD_map_clear(tcodmap, false, false);
     }
 
     gridpoint& _get(unsigned int x, unsigned int y) {
@@ -120,6 +132,11 @@ struct Grid {
 	} else {
 	    ++il;
 	}
+    }
+
+    void set_transparent(unsigned int x, unsigned int y, bool t) {
+	_get(x,y).is_transparent = t;
+        TCOD_map_set_properties(tcodmap, x, y, t, t);
     }
 
     void push_skin(unsigned int x, unsigned int y,
@@ -161,7 +178,7 @@ struct Grid {
     }
 
 
-    bool draw(TCOD_map_t map, unsigned int t,
+    bool draw(unsigned int t,
 	      unsigned int px, unsigned int py,
 	      unsigned int hlx, unsigned int hly,
 	      unsigned int rangemin, unsigned int rangemax,
@@ -180,12 +197,12 @@ struct Grid {
 
 	bool ret = false;
 
-	TCOD_map_compute_fov(map, px, py, lightradius, true, FOV_SHADOW);
+	TCOD_map_compute_fov(tcodmap, px, py, lightradius, true, FOV_SHADOW);
 
 	for (int y = 0; y < h; ++y) {
 	    for (int x = 0; x < w; ++x) {
 
-		bool in_fov = TCOD_map_is_in_fov(map, x, y);
+		bool in_fov = TCOD_map_is_in_fov(tcodmap, x, y);
 
 		unsigned int tmpx = abs(x - px);
 		unsigned int tmpy = abs(y - py);
@@ -267,6 +284,25 @@ struct Grid {
 	return ret;
     }
 
+
+    void recompute_fov(unsigned int x, unsigned int y, unsigned int radius) {
+
+	TCOD_map_compute_fov(tcodmap, x, y, radius, false, FOV_SHADOW);
+
+	for (int y = 0; y < h; ++y) {
+	    for (int x = 0; x < w; ++x) {
+
+		bool in_fov = TCOD_map_is_in_fov(tcodmap, x, y);
+		gridpoint& gp = _get(x,y);
+
+                gp.in_fov = in_fov;
+            }
+        }
+    }
+
+
+
+
     inline void write(serialize::Sink& s) {
 	serialize::write(s, w);
 	serialize::write(s, h);
@@ -287,6 +323,7 @@ struct Grid {
             serialize::write(s, t.back);
             serialize::write(s, t.is_lit);
             serialize::write(s, t.in_fov);
+            serialize::write(s, t.is_transparent);
         }
     }
 
@@ -297,6 +334,10 @@ struct Grid {
 	serialize::read(s, env_intensity);
 
 	grid.resize(w*h);
+
+        TCOD_map_delete(tcodmap);
+        tcodmap = TCOD_map_new(w, h);
+        TCOD_map_clear(tcodmap, false, false);
 
 	for (size_t i = 0; i < grid.size(); ++i) {
 
@@ -319,6 +360,9 @@ struct Grid {
             serialize::read(s, p.back);
             serialize::read(s, p.is_lit);
             serialize::read(s, p.in_fov);
+            serialize::read(s, p.is_transparent);
+
+            TCOD_map_set_properties(tcodmap, i % w, i / w, p.is_transparent, p.is_transparent);
         }
     }
 

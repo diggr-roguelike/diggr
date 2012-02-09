@@ -15,13 +15,18 @@ class fakekey:
         self.vk = vk
 
 class Config:
-    def __init__(self, sound_enabled=True):
+    def __init__(self, cfg=None):
         self.fullscreen = False
-        self.sound_enabled = sound_enabled
+        self.sound_enabled = True
         self.music_enabled = True
 
-        self.cfgfile = {}
-        self.load()
+        if cfg is None:
+            self.cfgfile = {}
+            self.load()
+        else:
+            self.cfgfile = cfg
+
+        self._apply()
 
         self.sound = sounds.Engine(self.sound_enabled)
         self.music_n = None
@@ -33,6 +38,7 @@ class Config:
         except:
             pass
 
+    def _apply(self):
         if 'fullscreen' in self.cfgfile:
             self.fullscreen = bool(self.cfgfile['fullscreen'])
 
@@ -59,9 +65,11 @@ def console_wait_for_keypress():
             tmp = libtcod.console_wait_for_keypress(False)
 
         if tmp.vk == libtcod.KEY_RIGHT and _inputdelay > 20:
-            _inputdelay -= (20 if _inputdelay <= 200 else 200)
+            globals()['_inputdelay'] -= (20 if _inputdelay <= 200 else 200)
+
         elif tmp.vk == libtcod.KEY_LEFT and _inputdelay < 1000:
-            _inputdelay += (20 if _inputdelay < 200 else 200)
+            globals()['_inputdelay'] += (20 if _inputdelay < 200 else 200)
+
         elif tmp.c == 32: # space
             globals()['_inputdelay'] = 1000
 

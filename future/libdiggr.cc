@@ -125,13 +125,21 @@ extern "C" bool dg_render_is_in_fov(unsigned int x, unsigned int y) {
     return grender::get().is_in_fov(x, y);
 }
 
-extern "C" bool dg_render_draw(TCOD_map_t map, unsigned int t,
+extern "C" void dg_render_set_is_transparent(unsigned int x, unsigned int y, bool t) {
+    grender::get().set_transparent(x, y, t);
+}
+
+extern "C" bool dg_render_draw(unsigned int t,
 			       unsigned int px, unsigned int py, 
 			       unsigned int hlx, unsigned int hly,
 			       unsigned int rmin, unsigned int rmax,
 			       unsigned int lr) {
 
-    return grender::get().draw(map, t, px, py, hlx, hly, rmin, rmax, lr);
+    return grender::get().draw(t, px, py, hlx, hly, rmin, rmax, lr);
+}
+
+extern "C" void dg_render_recompute_fov(unsigned int x, unsigned int y, unsigned int rad) {
+    grender::get().recompute_fov(x, y, rad);
 }
 
 extern "C" void dg_random_init(long seed) {

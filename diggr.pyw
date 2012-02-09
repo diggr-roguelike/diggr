@@ -132,7 +132,6 @@ class Game:
         self.ckeys = None
         self.vkeys = None
 
-        self.tcodmap = None
         self.floorpath = None
 
         self.celautostock = CelAutoStock()
@@ -396,27 +395,6 @@ class Game:
         dg.render_init(w_, h_)
       
 
-    def make_map(self):
-        self.tcodmap = libtcod.map_new(self.d.w, self.d.h)
-        libtcod.map_clear(self.tcodmap)
-
-        for x in xrange(self.d.w):
-            for y in xrange(self.d.h):
-                if dg.grid_is_walk(x, y):
-                    v = True
-                    w = True
-                else:
-                    v = False
-                    w = False
-
-                if (x,y) in self.d.featmap:
-                    f = self.d.featmap[(x, y)]
-                    w = f.walkable
-                    v = f.visible
-
-                libtcod.map_set_properties(self.tcodmap, x, y, v, w)
-
-
     def set_renderprops(self, xy):
 
         x, y = xy
@@ -441,10 +419,12 @@ class Game:
         is_terrain = False
         c = ' '
 
+        walkable = dg.grid_is_walk(x, y)
+
         if feat and feat.skin:
             c, fore = feat.skin
 
-        elif dg.grid_is_walk(x, y):
+        elif walkable:
             if dg.grid_is_water(x, y):
                 c = 251
                 fore = libtcod.light_azure
@@ -461,6 +441,13 @@ class Game:
             is_terrain = True
 
         dg.render_set_skin(x, y, fore, c, fore2, fore_i, is_terrain)
+
+        ## 
+        if feat:
+            dg.render_set_is_transparent(x, y, feat.visible)
+        else:
+            dg.render_set_is_transparent(x, y, walkable)
+
 
 
     def unset_feature(self, xy):
@@ -480,12 +467,10 @@ class Game:
 
             if f_ is None:
                 dg.grid_set_walk(x, y, True)
-                libtcod.map_set_properties(self.tcodmap, x, y, True, True)
                 dg.grid_set_height(x, y, -10.0)
 
             else:
                 dg.grid_set_walk(x, y, False)
-                libtcod.map_set_properties(self.tcodmap, x, y, False, False)
                 dg.grid_set_height(x, y, 0.0)
 
             self.set_renderprops(xy)
@@ -494,8 +479,6 @@ class Game:
         f = self.w.featstock.f[f_]
         w = f.walkable
         v = f.visible
-
-        libtcod.map_set_properties(self.tcodmap, x, y, v, w)
 
         if f.nofeature:
             if xy in self.d.featmap:
@@ -514,7 +497,6 @@ class Game:
             dg.grid_set_water(x, y, True)
         elif f.water is not None:
             dg.grid_set_water(x, y, False)
-
 
         self.set_renderprops(xy)
 
@@ -790,7 +772,6 @@ class Game:
         self.make_paths()
         self.make_monsters()
         self.make_items()
-        self.make_map()
         self.place()
 
         for x in xrange(w_):
@@ -2271,11 +2252,10 @@ class Game:
 
         x0, y0 = xy0
 
-        libtcod.map_compute_fov(self.tcodmap, x0, y0, rad,
-                                False, libtcod.FOV_SHADOW)
+        dg.render_recompute_fov(x0, y0, rad)
 
         def func1(xy):
-            return libtcod.map_is_in_fov(self.tcodmap, xy[0], xy[1])
+            return dg.render_is_in_fov(xy[0], xy[1])
 
         def func2(xy):
             if xy == self.d.pc:
@@ -2355,11 +2335,10 @@ class Game:
 
         x0, y0 = xy0
 
-        libtcod.map_compute_fov(self.tcodmap, x0, y0, rad,
-                                False, libtcod.FOV_SHADOW)
+        dg.render_recompute_fov(x0, y0, rad)
 
         def func1(xy):
-            return libtcod.map_is_in_fov(self.tcodmap, xy[0], xy[1])
+            return dg.render_is_in_fov(xy[0], xy[1])
 
         def func2(xy):
             self.clear_celauto(xy)
@@ -2370,13 +2349,12 @@ class Game:
 
         x0, y0 = xy0
 
-        libtcod.map_compute_fov(self.tcodmap, x0, y0, rad,
-                                False, libtcod.FOV_SHADOW)
+        dg.render_recompute_fov(x0, y0, rad)
 
         ret = []
 
         def func1(xy):
-            return libtcod.map_is_in_fov(self.tcodmap, xy[0], xy[1])
+            return dg.render_is_in_fov(xy[0], xy[1])
 
         def func2(xy):
             self.filter_items(xy, lambda i: (i.corpse, i.corpse), ret)
@@ -3480,7 +3458,7 @@ class Game:
 
         ###
 
-        did_highlight = dg.render_draw(self.tcodmap, self.w.t, self.d.pc[0], self.d.pc[1], 
+        did_highlight = dg.render_draw(self.w.t, self.d.pc[0], self.d.pc[1], 
                                        _hlxy[0], _hlxy[1], range[0], range[1], lightradius)
         
         ###
@@ -3582,7 +3560,6 @@ class Game:
 
         dgsys._inputs = state['_inputs']
 
-        self.make_map()
         self.make_paths()
 
         # HACK
@@ -3768,8 +3745,8 @@ class Game:
         if self.p.dead and not self.p.done:
             self.p.msg.m('You die.', True)
 
-        if config.music_n >= 0:
-            config.sound.stop(config.music_n)
+        if self.config.music_n >= 0:
+            self.config.sound.stop(self.config.music_n)
 
         self.w.oldt = self.w.t
         self.p.msg.m('*** Press any key ***', True)

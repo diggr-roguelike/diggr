@@ -110,6 +110,6 @@ class Inventory:
         return self._iter(self)
 
     def purge(self, item):
-        for k,v in self._items:
+        for k,v in self._items.iteritems():
             if v == item:
                 self._items[k] = None
