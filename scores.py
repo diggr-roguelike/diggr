@@ -1,4 +1,6 @@
 
+import cPickle
+
 import sqlite3
 import string
 import httplib
@@ -6,6 +8,8 @@ import hashlib
 
 import dgsys
 import flair
+
+import libtcodpy as libtcod
 
 
 def form_highscore(score, seed, bones, achievements_, msgs, done):

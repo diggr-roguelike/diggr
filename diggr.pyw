@@ -3662,7 +3662,7 @@ class Game:
 
 
 
-    def end_game(self):
+    def form_highscore(self):
         
         self.save_bones()
 

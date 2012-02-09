@@ -20,7 +20,7 @@ add_subdirectory(future)
 
 SET(PY_SOURCES celauto.py features.py items.py monsters.py moon.py sounds.py vaults.py 
                achievements.py coeffs.py dgsys.py flair.py inventory.py 
-               messages.py quests.py stats.py xy.py libdiggrpy.py)
+               messages.py quests.py stats.py xy.py scores.py libdiggrpy.py)
 
 SET(OTHER_FILES font.png diggr.cfg README BUILD_INSTRUCTIONS GUIDE.txt)
 
