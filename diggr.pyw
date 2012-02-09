@@ -6,7 +6,6 @@ import copy
 import time
 
 import cPickle
-import sqlite3
 
 import libtcodpy as libtcod
 
@@ -17,7 +16,7 @@ import moon
 from xy import *
 
 import dgsys
-
+import scores
 
 ##
 ##
@@ -3593,7 +3592,7 @@ class Game:
         return True
 
 
-    def form_highscore(self):
+    def save_bones(self):
 
         # Clobber the savefile.
         try:
@@ -3622,218 +3621,6 @@ class Game:
             cPickle.dump(bones, bf)
         except:
             pass
-
-        # Save to highscore.
-
-        self.p.achievements.finish(self.p.plev, self.d.dlev,
-                                   self.d.moon, self.health().reason)
-
-        conn = sqlite3.connect('highscore.db')
-        c = conn.cursor()
-
-        tbl_games = 'Games%s' % dgsys._version.replace('.', '')
-        tbl_achievements = 'Achievements%s' % dgsys._version.replace('.', '')
-
-        c.execute('create table if not exists ' + tbl_games + \
-                  ' (id INTEGER PRIMARY KEY, seed INTEGER, score INTEGER, bones BLOB, inputs BLOB)')
-        c.execute('create table if not exists ' + tbl_achievements + \
-                  ' (achievement TEXT, game_id INTEGER)')
-
-        # Scores are normalized to about 1000 max points,
-        # regardless of which branch you play. (Provided you
-        # only play one branch; playing several branches can
-        # land you a score above the max.
-
-        score = self.p.plev * 5
-        score += min(self.d.dlev, 21) * 5
-
-        for x in self.p.achievements.killed_monsters:
-            if x[1] in self.w.monsterstock.norms:
-                score += x[0] * self.w.monsterstock.norms[x[1]]
-
-        score = int(round(score))
-
-
-        bones = cPickle.dumps(self.w.bones)
-        inputs = cPickle.dumps(dgsys._inputs)
-
-        c.execute('insert into ' + tbl_games + '(id, seed, score, bones, inputs) values (NULL, ?, ?, ?, ?)',
-                  (self.w._seed, score,
-                   sqlite3.Binary(bones),
-                   sqlite3.Binary(inputs)))
-
-        gameid = c.lastrowid
-
-        for a in self.p.achievements:
-            c.execute('insert into ' + tbl_achievements + '(achievement, game_id) values (?, ?)',
-                      (a.tag, gameid))
-
-        conn.commit()
-
-
-        # Show placements.
-
-        c.execute('select sum(score >= %d),count(*) from %s' % (score, tbl_games))
-        place, total = c.fetchone()
-
-        atotals = []
-        achievements = []
-
-        for a in self.p.achievements:
-            c.execute(('select sum(score >= %d),count(*) from ' % score) + \
-                      (' %s join %s on (game_id = id)' % (tbl_games, tbl_achievements)) + \
-                      ' where achievement = ?', (a.tag,))
-            p1,t1 = c.fetchone()
-            atotals.append((p1, 100 - a.weight, t1, a.desc))
-            achievements.append(a.tag)
-
-        c.close()
-        conn.close()
-
-        atotals.sort()
-
-        if len(atotals) >= 5:
-            atotals = atotals[:5]
-
-        s = []
-
-        s.append('%cYour score: %c%d%c.    (#%c%d%c of %d%s)' % \
-                (libtcod.COLCTRL_5, libtcod.COLCTRL_1, score, libtcod.COLCTRL_5,
-                 libtcod.COLCTRL_1, place, libtcod.COLCTRL_5, total, '!' if place == 1 else '.'))
-        s.append('')
-        s.append('Your achievements:')
-        s.append('')
-
-        for p1,w,t1,a in atotals:
-            s.append('%c%s%c:%s     #%c%d%c of %d%s' % (libtcod.COLCTRL_1, a, libtcod.COLCTRL_5,
-                     ' '*max(0, 50 - len(a)), libtcod.COLCTRL_1, p1,
-                     libtcod.COLCTRL_5, t1, '!' if p1 == 1 else '.'))
-            s.append('')
-
-        s.append('-' * 50)
-        s.extend((x[1] for x in self.p.msg.strings[2:8]))
-        s.append('')
-        s.append('%cUpload your score to http://diggr.name? (Press Y or N)%c' % (libtcod.COLCTRL_3, libtcod.COLCTRL_1))
-
-        while 1:
-            c = draw_window(s)
-            if c == 'n' or c == 'N':
-                break
-            elif c == 'y' or c == 'Y':
-
-                done = False
-
-                while not done:
-                    done = self.upload_score(self.w._seed, score, bones, inputs, achievements)
-
-                    if not done:
-                        c = draw_window(['',
-                                         'Uploading failed!',
-                                         'Most likely, you entered the wrong password.',
-                                         '',
-                                         'Try again? (Press Y or N)'])
-                        if c == 'n' or c == 'N':
-                            done = True
-                break
-
-
-
-        s[-1] = ('Press space to ' + ('exit.' if self.p.done else 'try again.'))
-
-        while 1:
-            if draw_window(s) == ' ':
-                break
-
-
-
-    def upload_score(self, seed, score, bones, inputs, achievements):
-
-        import string
-        import httplib
-        import hashlib
-
-        username = ''
-
-        while 1:
-            k = draw_window(['',
-                             'Enter username: ' + username,
-                             '',
-                             "      If you don't have an account with that username, it will",
-                             '      be created for you automatically.'])
-
-            if k in string.letters or k in string.digits or k in '.-_':
-                username = username + k.lower()
-            elif ord(k) == 8 or ord(k) == 127:
-                if len(username) > 0:
-                    username = username[:-1]
-            elif k in '\r\n':
-                break
-
-        password = ''
-        stars = ''
-
-        while 1:
-            k = draw_window(['',
-                             'Enter password: ' + stars,
-                             '',
-                             'NOTE: Your password will never be sent or stored in plaintext.',
-                             '      Only a secure password hash will be used.'])
-
-            if k in string.letters or k in string.digits or k in '_-':
-                password = password + k
-                stars = stars + '*'
-            elif ord(k) == 8 or ord(k) == 127:
-                if len(password) > 0:
-                    password = password[:-1]
-                    stars = stars[:-1]
-            elif k in '\r\n':
-                break
-
-        form = {'upload': '1',
-                'version': dgsys._version,
-                'username': username,
-                'pwhash': hashlib.sha512(password).hexdigest(),
-                'seed': str(seed),
-                'score': str(score),
-                'bones': bones,
-                'inputs': inputs }
-
-        boundary = '----diggr-multipart-upload'
-        multipart = ''
-
-        def mpart(k,v):
-            ret = ''
-            ret += '--%s\r\n' % boundary
-            ret += 'Content-Disposition: form-data; name="%s"\r\n' % k
-            ret += '\r\n'
-            ret += v
-            ret += '\r\n'
-            return ret
-
-        for k,v in form.iteritems():
-            multipart += mpart(k, v)
-
-        for a in achievements:
-            multipart += mpart('ach', a)
-
-        multipart += '--%s--\r\n' % boundary
-        multipart += '\r\n'
-
-        hclient = httplib.HTTPConnection('diggr.name')
-        hclient.putrequest('POST', '/scripts/global-highscore.py')
-        hclient.putheader('content-type',
-                          'multipart/form-data; boundary=%s' % boundary)
-        hclient.putheader('content-length', str(len(multipart)))
-        hclient.endheaders()
-        hclient.send(multipart)
-
-        resp = hclient.getresponse()
-        r = resp.read()
-
-        if r == "OK\n":
-            return True
-        #print r
-        return False
 
 
 
@@ -3872,6 +3659,35 @@ class Game:
         else:
             self.config.music_n = self.config.sound.play("music", rate=min(10, 2.0+(0.5*self.d.dlev)))
             self.p.msg.m('Music ON.')
+
+
+
+    def end_game(self):
+        
+        self.save_bones()
+
+        self.p.achievements.finish(self.p.plev, self.d.dlev,
+                                   self.d.moon, self.health().reason)
+
+        # Scores are normalized to about 1000 max points,
+        # regardless of which branch you play. (Provided you
+        # only play one branch; playing several branches can
+        # land you a score above the max.
+
+        score = self.p.plev * 5
+        score += min(self.d.dlev, 21) * 5
+
+        for x in self.p.achievements.killed_monsters:
+            if x[1] in self.w.monsterstock.norms:
+                score += x[0] * self.w.monsterstock.norms[x[1]]
+
+        score = int(round(score))
+
+        scores.form_highscore(score, self.w._seed, self.w.bones, self.p.achievements, 
+                              self.p.msg.strings, self.p.done)
+
+        
+
 
     def start_game(self, w, h, oldseed=None, oldbones=None):
 
