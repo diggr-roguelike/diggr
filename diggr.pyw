@@ -144,6 +144,8 @@ class Game:
         self.config = config
         self.last_played_themesound = 0
 
+        self.quit_right_now = False
+
         ### 
 
         self.theme = { 'a': (libtcod.lime,),
@@ -188,7 +190,8 @@ class Game:
             'P': self.show_messages,
             'Q': self.quit,
             '?': self.show_help,
-            'S': self.save
+            'S': self.save,
+            chr(1): self.save_now
             }
         self.vkeys = {
             libtcod.KEY_KP4: self.move_left,
@@ -3514,8 +3517,6 @@ class Game:
         for x in atts:
             state[x] = getattr(self, x)
 
-        state['_inputs'] = dgsys._inputs
-
         if 1: #try:
             f = open('savefile.dat0', 'w')
             cPickle.dump(state, f)
@@ -3526,6 +3527,11 @@ class Game:
 
         self.p.msg.m('Saved!')
         self.p.done = True
+
+    def save_now(self):
+        self.save()
+        if not self.save_disabled:
+            self.quit_right_now = True
 
 
     def load_bones(self):
@@ -3558,8 +3564,6 @@ class Game:
         #log.f = open('LOG.%d' % self._seed, 'a')
 
         dg.random_init(self.w._seed)
-
-        dgsys._inputs = state['_inputs']
 
         self.make_paths()
 
@@ -3671,7 +3675,7 @@ class Game:
 
     def start_game(self, w, h, oldseed=None, oldbones=None):
 
-        dg.render_init(w_, h_, self.config.fontfile, "Diggr", self.config.fullscreen)
+        dg.render_init(w, h, self.config.fontfile, "Diggr", self.config.fullscreen)
 
         if oldseed or not self.load():
             if oldseed:
@@ -3687,8 +3691,6 @@ class Game:
             #log.f = open('LOG.%d' % self._seed, 'a')
 
             dg.random_init(self.w._seed)
-
-            dgsys._inputs = []
 
             self.regen(w, h)
             self.generate_inv()
@@ -3753,10 +3755,11 @@ class Game:
         if self.config.music_n >= 0:
             self.config.sound.stop(self.config.music_n)
 
-        self.w.oldt = self.w.t
-        self.p.msg.m('*** Press any key ***', True)
-        self.draw()
-        dg.render_wait_for_anykey()
+        if not self.quit_right_now:
+            self.w.oldt = self.w.t
+            self.p.msg.m('*** Press any key ***', True)
+            self.draw()
+            dg.render_wait_for_anykey()
 
         if do_highscore and self.p.dead:
             self.form_highscore()
@@ -3788,8 +3791,8 @@ class Game:
 
         __tt = time.time()
 
-        if chr(key.c) in self.ckeys:
-            self.ckeys[chr(key.c)]()
+        if key.c in self.ckeys:
+            self.ckeys[key.c]()
 
         elif key.vk in self.vkeys:
             self.vkeys[key.vk]()
@@ -3828,15 +3831,6 @@ def main(config, replay=None):
 
 
     while 1:
-
-        if dg.render_window_is_closed():
-            if replay is None:
-                # MEGATON-SIZED HACK!
-                # To make replays work.
-                dgsys._inputs.append((ord('S'), 0))
-
-                game.save()
-            break
 
         ok = game.mainloop(replay is None)
 

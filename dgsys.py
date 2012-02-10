@@ -1,18 +1,12 @@
 
-import libtcodpy as libtcod
+import libdiggrpy as dg
 
 import sounds
 
 _version = '12.02.05'
-_inputs = []
 _inputqueue = None
-_inputdelay = 100
+_inputdelay = 500
 
-
-class fakekey:
-    def __init__(self, c, vk):
-        self.c = c
-        self.vk = vk
 
 class Config:
     def __init__(self, cfg=None):
@@ -53,6 +47,12 @@ class Config:
             self.fontfile = str(self.cfgfile['fontfile'])
 
 
+class keypress:
+    def __init__(self, vk, c):
+        self.c = c
+        self.vk = vk
+
+
 def console_wait_for_keypress():
 
     if _inputqueue is not None:
@@ -60,28 +60,10 @@ def console_wait_for_keypress():
         if len(_inputqueue) == 0:
             raise Exception('Malformed replay file.')
 
-        c, vk = _inputqueue.pop(0)
+        vk, c = _inputqueue.pop(0)
+        dg.render_skip_input(_inputdelay)
+        return keypress(vk, c)
 
-        if _inputdelay < 1000:
-            tmp = libtcod.console_check_for_keypress()
-        else:
-            tmp = libtcod.console_wait_for_keypress(False)
 
-        if tmp.vk == libtcod.KEY_RIGHT and _inputdelay > 20:
-            globals()['_inputdelay'] -= (20 if _inputdelay <= 200 else 200)
-
-        elif tmp.vk == libtcod.KEY_LEFT and _inputdelay < 1000:
-            globals()['_inputdelay'] += (20 if _inputdelay < 200 else 200)
-
-        elif tmp.c == 32: # space
-            globals()['_inputdelay'] = 1000
-
-        if _inputdelay < 1000:
-            libtcod.sys_sleep_milli(_inputdelay)
-
-        return fakekey(c, vk)
-
-    k = libtcod.console_wait_for_keypress(False)
-    _inputs.append((k.c, k.vk))
-
-    return k
+    vk, c = dg.render_wait_for_key()
+    return keypress(vk, c)

@@ -83,6 +83,12 @@ struct Grid {
 	gridpoint() : back(TCOD_black), is_lit(0), in_fov(false), is_transparent(false) {}
     };
 
+    struct keypress {
+        int vk;
+        char c;
+        keypress(int _vk=0, char _c=0) : vk(_vk), c(_c) {}
+    };
+
     unsigned int w;
     unsigned int h;
 
@@ -97,6 +103,8 @@ struct Grid {
     std::string title;
     bool fullscreen;
     bool has_console;
+
+    std::vector<keypress> keylog;
 
 
     Grid() : w(0), h(0), env_intensity(0), 
@@ -118,8 +126,8 @@ struct Grid {
             w = _w;
             h = _h;
 
-            grid.resize(w*h);
             grid.clear();
+            grid.resize(w*h);
 
             TCOD_map_delete(tcodmap);
             tcodmap = TCOD_map_new(w, h);
@@ -166,8 +174,8 @@ struct Grid {
     }
 
     void clear() {
-        grid.resize(w*h);
         grid.clear();
+        grid.resize(w*h);
         TCOD_map_clear(tcodmap, false, false);
     }
 
@@ -342,17 +350,48 @@ struct Grid {
 	    }
 	}
 
-        TCOD_console_flush();
-    
 	return ret;
     }
 
     void wait_for_anykey() {
+        TCOD_console_flush();
         TCOD_sys_wait_for_event(TCOD_EVENT_KEY_PRESS, NULL, NULL, true);
     }
 
-    void skip_input() {
+    void skip_input(unsigned int delay=0) {
+        TCOD_console_flush();
+
+        if (delay != 0) {
+            TCOD_sys_sleep_milli(delay);
+        }
+
         TCOD_sys_check_for_event(TCOD_EVENT_KEY_PRESS, NULL, NULL);
+    }
+
+    keypress wait_for_key() {
+        TCOD_console_flush();
+
+        if (TCOD_console_is_window_closed()) {
+            keypress ret(0, 1);
+            keylog.push_back(ret);
+            return ret;
+        }
+
+
+        TCOD_key_t ktmp;
+
+        while (1) {
+            TCOD_sys_wait_for_event(TCOD_EVENT_KEY_PRESS, &ktmp, NULL, false);
+            if (ktmp.vk == TCODK_SHIFT ||
+                ktmp.vk == TCODK_ALT ||
+                ktmp.vk == TCODK_CONTROL)
+                continue;
+            break;
+        }
+
+        keypress ret(ktmp.vk, ktmp.c);
+        keylog.push_back(ret);
+        return ret;
     }
 
 
@@ -369,10 +408,6 @@ struct Grid {
                 gp.in_fov = in_fov;
             }
         }
-    }
-
-    bool window_is_closed() {
-        return TCOD_console_is_window_closed();
     }
 
 
@@ -405,6 +440,12 @@ struct Grid {
             serialize::write(s, t.in_fov);
             serialize::write(s, t.is_transparent);
         }
+
+	serialize::write(s, keylog.size());
+        for (const auto& k : keylog) {
+            serialize::write(s, k.vk);
+            serialize::write(s, k.c);
+        }
     }
 
     inline void read(serialize::Source& s) {
@@ -425,7 +466,6 @@ struct Grid {
         init(_w, _h, font, title, fullscreen);
 
 	for (size_t i = 0; i < grid.size(); ++i) {
-
 	    size_t sks;
             serialize::read(s, sks);
 
@@ -448,6 +488,17 @@ struct Grid {
             serialize::read(s, p.is_transparent);
 
             TCOD_map_set_properties(tcodmap, i % w, i / w, p.is_transparent, p.is_transparent);
+        }
+
+        size_t keylog_size;
+	serialize::read(s, keylog_size);
+
+        keylog.resize(keylog_size);
+
+        for (size_t i = 0; i < keylog_size; ++i) {
+            keypress& k = keylog[i];
+            serialize::read(s, k.vk);
+            serialize::read(s, k.c);
         }
     }
 

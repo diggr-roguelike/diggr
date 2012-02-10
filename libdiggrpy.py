@@ -51,13 +51,30 @@ def render_clear():
 def render_wait_for_anykey():
     _dg.dg_render_wait_for_anykey()
 
-def render_skip_input():
-    _dg.dg_render_skip_input()
+def render_skip_input(delay=0):
+    _dg.dg_render_skip_input(c_uint(delay))
 
-_dg.dg_render_window_is_closed.restype = c_bool
+def render_wait_for_key():
+    vk = c_int()
+    c = c_char()
+    _dg.dg_render_wait_for_key(byref(vk), byref(c))
+    return (vk.value, c.value)
 
-def render_window_is_closed():
-    return _dg.dg_render_window_is_closed()
+_dg.dg_render_get_keylog_size.restype = c_ulong
+
+def render_get_keylog_size():
+    return _dg.dg_render_get_keylog_size()
+
+_dg.dg_render_get_keylog_entry.restype = c_bool
+
+def render_get_keylog_entry(i):
+    vk = c_int()
+    c = c_char()
+    ret = _dg.dg_render_get_keylog_entry(c_ulong(i), byref(vk), byref(c))
+
+    if not ret:
+        return None
+    return (vk.value, c.value)
 
 def render_set_env(color, intensity):
     _dg.dg_render_set_env(c_ubyte(color.r), c_ubyte(color.g), c_ubyte(color.b), c_double(intensity))

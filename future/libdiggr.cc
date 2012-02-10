@@ -67,16 +67,33 @@ extern "C" void dg_render_clear() {
     grender::get().clear();
 }
 
-extern "C" bool dg_render_window_is_closed() {
-    return grender::get().window_is_closed();
-}
-
 extern "C" void dg_render_wait_for_anykey() {
     return grender::get().wait_for_anykey();
 }
 
-extern "C" void dg_render_skip_input() {
-    return grender::get().skip_input();
+extern "C" void dg_render_skip_input(unsigned int delay) {
+    return grender::get().skip_input(delay);
+}
+
+extern "C" void dg_render_wait_for_key(int* vk, char* c) {
+    grender::Grid::keypress k = grender::get().wait_for_key();
+    *vk = k.vk;
+    *c = k.c;
+}
+
+extern "C" unsigned long dg_render_get_keylog_size() {
+    return grender::get().keylog.size();
+}
+
+extern "C" bool dg_render_get_keylog_entry(unsigned long i, int* vk, char* c) {
+
+    if (i >= grender::get().keylog.size())
+        return false;
+
+    const grender::Grid::keypress& k = grender::get().keylog[i];
+    *vk = k.vk;
+    *c = k.c;
+    return true;
 }
 
 // python ctypes and/or libffi is severly broken. This is why struct are passed by each individual field.

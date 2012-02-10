@@ -52,7 +52,7 @@ def draw_window(msg, do_mapping=False):
     if do_mapping:
         if k.vk in _kbdmap: return _kbdmap[k.vk]
 
-    return chr(k.c)
+    return k.c
 
 def draw_blast(xy, w, h, r, func):
     x, y = xy

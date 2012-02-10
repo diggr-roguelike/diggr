@@ -10,6 +10,7 @@ import dgsys
 import flair
 
 import libtcodpy as libtcod
+import libdiggrpy as dg
 
 
 def form_highscore(score, seed, bones, achievements_, msgs, done):
@@ -28,9 +29,16 @@ def form_highscore(score, seed, bones, achievements_, msgs, done):
                   ' (achievement TEXT, game_id INTEGER)')
 
 
+    _inputs = []
+    inpsize = dg.render_get_keylog_size()
+    for x in xrange(inpsize):
+        k = dg.render_get_keylog_entry(x)
+        if not k:
+            raise Exception('Sanity error in reading keylog for highscore entry.')
+        _inputs.append(k)
 
     bones = cPickle.dumps(bones)
-    inputs = cPickle.dumps(dgsys._inputs)
+    inputs = cPickle.dumps(_inputs)
 
     c.execute('insert into ' + tbl_games + '(id, seed, score, bones, inputs) values (NULL, ?, ?, ?, ?)',
               (seed, score,
