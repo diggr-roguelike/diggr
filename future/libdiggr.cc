@@ -71,6 +71,14 @@ extern "C" bool dg_render_window_is_closed() {
     return grender::get().window_is_closed();
 }
 
+extern "C" void dg_render_wait_for_anykey() {
+    return grender::get().wait_for_anykey();
+}
+
+extern "C" void dg_render_skip_input() {
+    return grender::get().skip_input();
+}
+
 // python ctypes and/or libffi is severly broken. This is why struct are passed by each individual field.
 
 

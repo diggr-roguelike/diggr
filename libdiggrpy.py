@@ -48,6 +48,12 @@ def render_init(w, h, fontfile, title, fullscreen):
 def render_clear():
     _dg.dg_render_clear()
 
+def render_wait_for_anykey():
+    _dg.dg_render_wait_for_anykey()
+
+def render_skip_input():
+    _dg.dg_render_skip_input()
+
 _dg.dg_render_window_is_closed.restype = c_bool
 
 def render_window_is_closed():

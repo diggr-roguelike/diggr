@@ -3756,8 +3756,7 @@ class Game:
         self.w.oldt = self.w.t
         self.p.msg.m('*** Press any key ***', True)
         self.draw()
-        libtcod.console_flush()
-        libtcod.console_wait_for_keypress(True)
+        dg.render_wait_for_anykey()
 
         if do_highscore and self.p.dead:
             self.form_highscore()
@@ -3771,16 +3770,14 @@ class Game:
             return False
 
         self.draw()
-        libtcod.console_flush()
 
         r = self.check_autoplay()
         if r == -1:
-            libtcod.console_check_for_keypress()
+            dg.render_skip_input()
             return True
 
         elif r == 1:
             self.draw()
-            libtcod.console_flush()
 
         if self.p.dead:
             self.endgame(do_highscore)

@@ -341,8 +341,18 @@ struct Grid {
 		TCOD_console_put_char_ex(NULL, x, y, c, fore, back);
 	    }
 	}
+
+        TCOD_console_flush();
     
 	return ret;
+    }
+
+    void wait_for_anykey() {
+        TCOD_sys_wait_for_event(TCOD_EVENT_KEY_PRESS, NULL, NULL, true);
+    }
+
+    void skip_input() {
+        TCOD_sys_check_for_event(TCOD_EVENT_KEY_PRESS, NULL, NULL);
     }
 
 
