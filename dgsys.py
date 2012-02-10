@@ -19,6 +19,7 @@ class Config:
         self.fullscreen = False
         self.sound_enabled = True
         self.music_enabled = True
+        self.fontfile = "font.png"
 
         if cfg is None:
             self.cfgfile = {}
@@ -48,6 +49,8 @@ class Config:
         if 'music' in self.cfgfile:
             self.music_enabled = bool(self.cfgfile['music'])
 
+        if 'fontfile' in self.cfgfile:
+            self.fontfile = str(self.cfgfile['fontfile'])
 
 
 def console_wait_for_keypress():

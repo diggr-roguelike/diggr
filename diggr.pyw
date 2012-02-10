@@ -392,7 +392,8 @@ class Game:
                         self.d.neighbors[(x,y)].append(ki)
 
         dg.neighbors_init(w_, h_)
-        dg.render_init(w_, h_)
+        dg.render_clear()
+
       
 
     def set_renderprops(self, xy):
@@ -3607,7 +3608,9 @@ class Game:
             return
 
         self.config.fullscreen = not self.config.fullscreen
-        libtcod.console_set_fullscreen(self.config.fullscreen)
+
+        dg.render_init(self.d.w, self.d.h, self.config.fontfile, "Diggr", self.config.fullscreen)
+
 
 
     def toggle_sound(self):
@@ -3667,6 +3670,8 @@ class Game:
 
 
     def start_game(self, w, h, oldseed=None, oldbones=None):
+
+        dg.render_init(w_, h_, self.config.fontfile, "Diggr", self.config.fullscreen)
 
         if oldseed or not self.load():
             if oldseed:
@@ -3817,11 +3822,6 @@ def main(config, replay=None):
 
     config.load()
 
-    font = 'font.png'
-    libtcod.console_set_custom_font(font, libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_ASCII_INROW)
-    libtcod.console_init_root(w, h, 'Diggr', config.fullscreen, libtcod.RENDERER_SDL)
-    libtcod.sys_set_fps(30)
-
     game = Game(config)
 
     if replay is not None:
@@ -3832,7 +3832,7 @@ def main(config, replay=None):
 
     while 1:
 
-        if libtcod.console_is_window_closed():
+        if dg.render_window_is_closed():
             if replay is None:
                 # MEGATON-SIZED HACK!
                 # To make replays work.

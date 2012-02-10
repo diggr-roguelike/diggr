@@ -58,11 +58,20 @@ extern "C" void dg_state_load(const char* filename) {
 }
 
 
-extern "C" void dg_render_init(unsigned int w, unsigned int h) {
-    grender::get().init(w, h);
+extern "C" void dg_render_init(unsigned int w, unsigned int h, 
+                               const char* fontfile, const char* title, bool fullscreen) {
+    grender::get().init(w, h, fontfile, title, fullscreen);
 }
 
-// python ctypes and/or libffi is severly broken. This is why struct passed by each individual field.
+extern "C" void dg_render_clear() {
+    grender::get().clear();
+}
+
+extern "C" bool dg_render_window_is_closed() {
+    return grender::get().window_is_closed();
+}
+
+// python ctypes and/or libffi is severly broken. This is why struct are passed by each individual field.
 
 
 extern "C" void dg_render_set_env(uint8 r, uint8 g, uint8 b, double intensity) {

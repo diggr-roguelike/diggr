@@ -93,23 +93,84 @@ struct Grid {
 
     TCOD_map_t tcodmap;
 
+    std::string font;
+    std::string title;
+    bool fullscreen;
+    bool has_console;
 
-    Grid() : w(0), h(0), env_intensity(0), tcodmap(TCOD_map_new(0, 0)) {}
+
+    Grid() : w(0), h(0), env_intensity(0), 
+             tcodmap(TCOD_map_new(0, 0)), 
+             fullscreen(false), has_console(false)
+        {}
 
     ~Grid() {
         TCOD_map_delete(tcodmap);
     }
 
-    void init(unsigned int _w, unsigned int _h) {
-	w = _w;
-	h = _h;
-	grid.clear();
-	grid.resize(w*h);
+    void init(unsigned int _w, unsigned int _h, 
+              const std::string& _font, const std::string& _title, bool _fullscreen) {
 
-        TCOD_map_delete(tcodmap);
-        tcodmap = TCOD_map_new(w, h);
+        bool do_console = false;
+
+        if (w != _w || h != _h) {
+
+            w = _w;
+            h = _h;
+
+            grid.resize(w*h);
+            grid.clear();
+
+            TCOD_map_delete(tcodmap);
+            tcodmap = TCOD_map_new(w, h);
+            TCOD_map_clear(tcodmap, false, false);
+
+            do_console = true;
+        }
+
+        if (font != _font || !has_console || do_console) {
+
+            font = _font;
+            title = _title;
+            fullscreen = _fullscreen;
+
+            if (has_console) {
+                TCOD_console_delete(NULL);
+            }
+
+            TCOD_console_set_custom_font(font.c_str(), 
+                                         TCOD_FONT_TYPE_GREYSCALE | TCOD_FONT_LAYOUT_ASCII_INROW, 0, 0);
+            TCOD_console_init_root(w, h, title.c_str(), fullscreen, TCOD_RENDERER_SDL);
+            TCOD_sys_set_fps(30);
+            
+            TCOD_console_set_color_control(TCOD_COLCTRL_1, TCOD_white, TCOD_black);
+            TCOD_console_set_color_control(TCOD_COLCTRL_2, TCOD_darker_green, TCOD_black);
+            TCOD_console_set_color_control(TCOD_COLCTRL_3, TCOD_yellow, TCOD_black);
+            TCOD_console_set_color_control(TCOD_COLCTRL_4, TCOD_red, TCOD_black);
+            TCOD_console_set_color_control(TCOD_COLCTRL_5, TCOD_gray, TCOD_black);
+
+            has_console = true;
+
+            return;
+        }
+
+        if (fullscreen != _fullscreen) {
+            fullscreen = _fullscreen;
+            TCOD_console_set_fullscreen(fullscreen);
+        }
+
+        if (title != _title) {
+            title = _title;
+            TCOD_console_set_window_title(title.c_str());
+        }
+    }
+
+    void clear() {
+        grid.resize(w*h);
+        grid.clear();
         TCOD_map_clear(tcodmap, false, false);
     }
+
 
     gridpoint& _get(unsigned int x, unsigned int y) {
 	return grid[y*w+x];
@@ -300,12 +361,21 @@ struct Grid {
         }
     }
 
+    bool window_is_closed() {
+        return TCOD_console_is_window_closed();
+    }
 
 
+    //***  ***//
 
     inline void write(serialize::Sink& s) {
 	serialize::write(s, w);
 	serialize::write(s, h);
+
+        serialize::write(s, font);
+        serialize::write(s, title);
+        serialize::write(s, fullscreen);
+
 	serialize::write(s, env_color);
 	serialize::write(s, env_intensity);
 
@@ -328,16 +398,21 @@ struct Grid {
     }
 
     inline void read(serialize::Source& s) {
-	serialize::read(s, w);
-	serialize::read(s, h);
+        unsigned int _w;
+        unsigned int _h;
+
+        serialize::read(s, _w);
+        serialize::read(s, _h);
+
+        serialize::read(s, font);
+        serialize::read(s, title);
+        serialize::read(s, fullscreen);
+        has_console = false;
+
 	serialize::read(s, env_color);
 	serialize::read(s, env_intensity);
 
-	grid.resize(w*h);
-
-        TCOD_map_delete(tcodmap);
-        tcodmap = TCOD_map_new(w, h);
-        TCOD_map_clear(tcodmap, false, false);
+        init(_w, _h, font, title, fullscreen);
 
 	for (size_t i = 0; i < grid.size(); ++i) {
 
@@ -365,7 +440,6 @@ struct Grid {
             TCOD_map_set_properties(tcodmap, i % w, i / w, p.is_transparent, p.is_transparent);
         }
     }
-
 
 };
 

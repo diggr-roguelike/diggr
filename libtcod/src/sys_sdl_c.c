@@ -156,6 +156,10 @@ void TCOD_sys_load_font() {
 	bool hasTransparent=false;
 	int x,y;
 
+        if (charmap) {
+            SDL_FreeSurface(charmap);
+        }
+
 	charmap=TCOD_sys_load_image(TCOD_ctx.font_file);
 	if (charmap == NULL ) TCOD_fatal("SDL : cannot load %s",TCOD_ctx.font_file);
 	if ( (float)(charmap->w / TCOD_ctx.fontNbCharHoriz) != charmap->w / TCOD_ctx.fontNbCharHoriz

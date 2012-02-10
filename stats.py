@@ -28,12 +28,6 @@ class Stats:
         self.thirst = Stat()
         self.warmth = Stat()
 
-        libtcod.console_set_color_control(libtcod.COLCTRL_1, libtcod.white, libtcod.black)
-        libtcod.console_set_color_control(libtcod.COLCTRL_2, libtcod.darker_green, libtcod.black)
-        libtcod.console_set_color_control(libtcod.COLCTRL_3, libtcod.yellow, libtcod.black)
-        libtcod.console_set_color_control(libtcod.COLCTRL_4, libtcod.red, libtcod.black)
-        libtcod.console_set_color_control(libtcod.COLCTRL_5, libtcod.gray, libtcod.black)
-
     def draw(self, x, y, grace=None, resource=None, luck=None):
         s = "%cHealth: %c%s\n" \
             "%cWarmth: %c%s\n" \

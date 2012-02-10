@@ -42,8 +42,16 @@ def state_load(fn):
     _dg.dg_state_load(c_char_p(fn))
 
 
-def render_init(w, h):
-    _dg.dg_render_init(c_uint(w), c_uint(h))
+def render_init(w, h, fontfile, title, fullscreen):
+    _dg.dg_render_init(c_uint(w), c_uint(h), c_char_p(fontfile), c_char_p(title), c_bool(fullscreen))
+
+def render_clear():
+    _dg.dg_render_clear()
+
+_dg.dg_render_window_is_closed.restype = c_bool
+
+def render_window_is_closed():
+    return _dg.dg_render_window_is_closed()
 
 def render_set_env(color, intensity):
     _dg.dg_render_set_env(c_ubyte(color.r), c_ubyte(color.g), c_ubyte(color.b), c_double(intensity))
