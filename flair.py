@@ -1,5 +1,6 @@
 
 import libtcodpy as libtcod
+import libdiggrpy as dg
 import dgsys
 
 from xy import *
@@ -25,34 +26,13 @@ _kbdmap = {
 
 def draw_window(msg, do_mapping=False):
 
-    w = libtcod.console_get_width(None)
-    h = libtcod.console_get_height(None)
-
-    maxl = 0
-    for x in msg:
-        maxl = max(len(x), maxl)
-
-    l = len(msg)
-    s = '\n'.join(msg)
-    s = ('%c' % libtcod.COLCTRL_1) + s
-
-    x0 = max(w - maxl - 4, 0)
-    y0 = min(l + 2, h)
-    libtcod.console_set_default_background(None, libtcod.darkest_blue)
-    libtcod.console_rect(None, x0, 0, w - x0, y0, True, libtcod.BKGND_SET)
-    libtcod.console_print_rect(None, x0 + 2, 1, w - x0 - 2, y0 - 1, s)
-    libtcod.console_set_default_background(None, libtcod.black)
-
-    libtcod.console_flush()
-    k = dgsys.console_wait_for_keypress()
-
-    libtcod.console_rect(None, x0, 0, w - x0, y0, True)
-    libtcod.console_flush()
+    vk,c = dg.render_draw_window(msg)
 
     if do_mapping:
-        if k.vk in _kbdmap: return _kbdmap[k.vk]
+        if vk in _kbdmap: return _kbdmap[vk]
 
-    return k.c
+    return c
+
 
 def draw_blast(xy, w, h, r, func):
     x, y = xy

@@ -395,6 +395,49 @@ struct Grid {
     }
 
 
+    keypress draw_window(const std::vector<std::string>& msg) {
+        unsigned int _w = TCOD_console_get_width(NULL);
+        unsigned int _h = TCOD_console_get_height(NULL);
+
+        size_t maxl = 0;
+        std::string s;
+
+        for (const auto& l : msg) {
+            maxl = std::max(l.size(), maxl);
+
+            if (s.empty()) {
+                s += (char)TCOD_COLCTRL_1;
+            } else {
+                s += '\n';
+            }
+
+            s += l;
+        }
+
+        unsigned int l = msg.size();
+
+        unsigned int x0 = _w - maxl - 4;
+
+        if (maxl > _w || _w - maxl < 4)
+            x0 = 0;
+
+        unsigned int y0 = std::min(l + 2, _h);
+
+        TCOD_console_set_default_background(NULL, TCOD_darkest_blue);
+        TCOD_console_rect(NULL, x0, 0, _w - x0, y0, true, TCOD_BKGND_SET);
+        TCOD_console_print_rect(NULL, x0 + 2, 1, w - x0 - 2, y0 - 1, s.c_str());
+        TCOD_console_set_default_background(NULL, TCOD_black);
+
+        TCOD_console_flush();
+        keypress ret = wait_for_key();
+
+        TCOD_console_rect(NULL, x0, 0, w - x0, y0, true, TCOD_BKGND_DEFAULT);
+        TCOD_console_flush();
+
+        return ret;
+    }
+
+
     void recompute_fov(unsigned int x, unsigned int y, unsigned int radius) {
 
 	TCOD_map_compute_fov(tcodmap, x, y, radius, false, FOV_SHADOW);

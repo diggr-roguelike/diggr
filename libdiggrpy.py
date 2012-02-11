@@ -60,6 +60,19 @@ def render_wait_for_key():
     _dg.dg_render_wait_for_key(byref(vk), byref(c))
     return (vk.value, c.value)
 
+def render_draw_window(msg):
+    n = len(msg)
+    strp_t = c_char_p * n
+    strp = strp_t()
+
+    for i in xrange(n):
+        strp[i] = msg[i]
+
+    vk = c_int()
+    c = c_char()
+    _dg.dg_render_draw_window(strp, n, byref(vk), byref(c))
+    return (vk.value, c.value)
+
 _dg.dg_render_get_keylog_size.restype = c_ulong
 
 def render_get_keylog_size():

@@ -81,6 +81,16 @@ extern "C" void dg_render_wait_for_key(int* vk, char* c) {
     *c = k.c;
 }
 
+extern "C" void dg_render_draw_window(const char** _msg, size_t n, int* vk, char* c) {
+    std::vector<std::string> msg;
+    for (int i = 0; i < n; ++i) {
+        msg.push_back(_msg[i]);
+    }
+    grender::Grid::keypress k = grender::get().draw_window(msg);
+    *vk = k.vk;
+    *c = k.c;
+}
+
 extern "C" unsigned long dg_render_get_keylog_size() {
     return grender::get().keylog.size();
 }
