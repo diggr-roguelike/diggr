@@ -59,6 +59,39 @@ struct reader {
 };
 
 
+template <>
+struct writer<char> {
+    void write(Sink& s, const char& t) {
+        s << (int)t;
+    }
+};
+
+template <>
+struct writer<unsigned char> {
+    void write(Sink& s, const unsigned char& t) {
+        s << (int)t;
+    }
+};
+
+template <>
+struct reader<char> {
+    void read(Source& s, char& t) {
+        int i;
+        s >> i;
+        t = i;
+    }
+};
+
+template <>
+struct reader<unsigned char> {
+    void read(Source& s, unsigned char& t) {
+        int i;
+        s >> i;
+        t = i;
+    }
+};
+
+
 template <typename T1, typename T2>
 struct writer< std::pair<T1,T2> > {
     void write(Sink& s, const std::pair<T1,T2>& v) {

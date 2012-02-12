@@ -481,7 +481,7 @@ struct Grid {
         }
 
         for (const auto& xy : pts) {
-            f_do(x, y);
+            f_do(xy.first, xy.second);
         }
     }
 
