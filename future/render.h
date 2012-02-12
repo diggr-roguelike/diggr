@@ -438,18 +438,117 @@ struct Grid {
     }
 
 
-    void recompute_fov(unsigned int x, unsigned int y, unsigned int radius) {
+    template <typename FUNC1, typename FUNC2>
+    void _draw_circle(unsigned int x, unsigned int y, unsigned int r, 
+                      bool do_draw, TCOD_color_t fore, TCOD_color_t back, 
+                      FUNC1 f_chk, FUNC2 f_do) {
 
-	TCOD_map_compute_fov(tcodmap, x, y, radius, false, FOV_SHADOW);
+        unsigned int x0 = (x < r ? 0 : x - r);
+        unsigned int y0 = (y < r ? 0 : y - r);
+        unsigned int x1 = std::min(x + r + 1, w);
+        unsigned int y1 = std::min(y + r + 1, h);
 
-	for (int y = 0; y < h; ++y) {
-	    for (int x = 0; x < w; ++x) {
+        std::vector< std::pair<unsigned int, unsigned int> > pts;
 
-		bool in_fov = TCOD_map_is_in_fov(tcodmap, x, y);
-		gridpoint& gp = _get(x,y);
+        for (unsigned int _x = x0; _x < x1; ++_x) {
+            for (unsigned int _y = y0; _y < y1; ++_y) {
 
-                gp.in_fov = in_fov;
+                unsigned int tmpx = abs(x - _x);
+                unsigned int tmpy = abs(y - _y);
+                double d = sqrt(tmpx*tmpx + tmpy*tmpy);
+
+                if (d <= r && f_chk(_x, _y)) {
+                    pts.push_back(std::make_pair(_x, _y));
+                }
             }
+        }
+
+        if (do_draw) {
+        
+            std::vector<TCOD_color_t> cols;
+
+            cols.push_back(fore);
+            cols.push_back(TCOD_color_lerp(cols.back(), back, 0.5));
+            cols.push_back(TCOD_color_lerp(cols.back(), back, 0.5));
+
+            for (const auto& col : cols) {
+                for (const auto& xy : pts) {
+                    TCOD_console_put_char_ex(NULL, xy.first, xy.second, '*', col, back);
+                }
+                TCOD_console_flush();
+                TCOD_sys_sleep_milli(100);
+            }
+        }
+
+        for (const auto& xy : pts) {
+            f_do(x, y);
+        }
+    }
+
+
+    template <typename FUNC>
+    void draw_circle(unsigned int x, unsigned int y, unsigned int r, FUNC func) {
+
+        _draw_circle(x, y, r, 
+                     true, TCOD_yellow, TCOD_darkest_red, 
+                     [](unsigned int, unsigned int) { return true; },
+                     func);
+    }
+
+    template <typename FUNC>
+    void draw_fov_circle(unsigned int x, unsigned int y, unsigned int r, 
+                         bool do_draw, TCOD_color_t fore, FUNC func) {
+
+	TCOD_map_compute_fov(tcodmap, x, y, r, false, FOV_SHADOW);
+
+        _draw_circle(x, y, r, do_draw, fore, TCOD_darkest_blue,
+                     [this](unsigned int x, unsigned int y) { return TCOD_map_is_in_fov(tcodmap, x, y); },
+                     func);
+    }
+
+
+    template <typename FUNC>
+    void draw_floodfill(unsigned int x, unsigned int y, FUNC func) {
+
+        typedef std::pair<unsigned int, unsigned int> pt_t;
+
+        std::set<pt_t> procd;
+        std::set<pt_t> toproc;
+
+        toproc.insert(std::make_pair(x,y));
+
+        while (1) {
+
+            pt_t xy = *(toproc.begin());
+            toproc.erase(toproc.begin());
+
+            for (const auto& xyi : neighbors::get()(xy)) {
+
+                procd.insert(xyi);
+
+                if (func(xyi.first, xyi.second)) {
+                    toproc.insert(xyi);
+                }
+            }
+
+            if (toproc.empty()) {
+                break;
+            }
+        }
+
+        std::vector<TCOD_color_t> cols;
+        TCOD_color_t back = TCOD_darkest_red;
+
+        cols.push_back(TCOD_yellow);
+        cols.push_back(TCOD_color_lerp(cols.back(), back, 0.5));
+        cols.push_back(TCOD_color_lerp(cols.back(), back, 0.5));
+
+        for (const auto& col : cols) {
+            for (const auto& xy : procd) {
+                TCOD_console_put_char_ex(NULL, xy.first, xy.second, '*', col, back);
+            }
+            TCOD_console_flush();
+            TCOD_sys_sleep_milli(100);
         }
     }
 

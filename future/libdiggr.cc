@@ -182,8 +182,25 @@ extern "C" bool dg_render_draw(unsigned int t,
     return grender::get().draw(t, px, py, hlx, hly, rmin, rmax, lr);
 }
 
-extern "C" void dg_render_recompute_fov(unsigned int x, unsigned int y, unsigned int rad) {
-    grender::get().recompute_fov(x, y, rad);
+typedef void (*dg_draw_do_callback)(unsigned int, unsigned int);
+typedef bool (*dg_draw_check_callback)(unsigned int, unsigned int);
+
+extern "C" void dg_render_draw_circle(unsigned int x, unsigned int y, unsigned int r, dg_draw_do_callback func) {
+    grender::get().draw_circle(x, y, r, func);
+}
+
+extern "C" void dg_render_draw_fov_circle(unsigned int x, unsigned int y, unsigned int rad, 
+                                          bool do_draw, uint8 r, uint8 g, uint8 b,
+                                          dg_draw_do_callback func) {
+    TCOD_color_t color;
+    color.r = r;
+    color.g = g;
+    color.b = b;
+    grender::get().draw_fov_circle(x, y, rad, do_draw, color, func);
+}
+
+extern "C" void dg_render_draw_floodfill(unsigned int x, unsigned int y, dg_draw_check_callback func) {
+    grender::get().draw_floodfill(x, y, func);
 }
 
 extern "C" void dg_random_init(long seed) {

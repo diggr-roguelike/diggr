@@ -135,8 +135,22 @@ def render_draw(t, px, py, hlx, hly, rmin, rmax, lr):
                               c_uint(hlx), c_uint(hly), c_uint(rmin), c_uint(rmax),
                               c_uint(lr))
 
-def render_recompute_fov(x, y, rad):
-    _dg.dg_render_recompute_fov(c_uint(x), c_uint(y), c_uint(rad))
+DRAWDOFUNC = CFUNCTYPE(None, c_uint, c_uint)
+DRAWCHECKFUNC = CFUNCTYPE(c_bool, c_uint, c_uint)
+
+def render_draw_circle(x, y, r, func):
+    _dg.dg_render_draw_circle(c_uint(x), c_uint(y), c_uint(r), DRAWDOFUNC(func))
+
+def render_draw_fov_circle(x, y, rad, col, func):
+    if not col:
+        _dg.dg_render_draw_fov_circle(c_uint(x), c_uint(y), c_uint(rad), 
+                                      c_bool(False), c_ubyte(0), c_ubyte(0), c_ubyte(0), DRAWDOFUNC(func))
+    else:
+        _dg.dg_render_draw_fov_circle(c_uint(x), c_uint(y), c_uint(rad), 
+                                      c_bool(True), c_ubyte(col.r), c_ubyte(col.g), c_ubyte(col.b), DRAWDOFUNC(func))
+
+def render_draw_floodfill(x, y, func):
+    _dg.dg_render_draw_floodfill(c_uint(x), c_uint(y), DRAWCHECKFUNC(func))
 
 def random_init(seed):
     _dg.dg_random_init(c_long(seed))

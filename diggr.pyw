@@ -2256,12 +2256,9 @@ class Game:
 
         x0, y0 = xy0
 
-        dg.render_recompute_fov(x0, y0, rad)
+        def func(x, y):
+            xy = (x, y)
 
-        def func1(xy):
-            return dg.render_is_in_fov(xy[0], xy[1])
-
-        def func2(xy):
             if xy == self.d.pc:
                 if not self.get_radimmune():
                     self.health().dec(self.w.coef.raddamage, "radiation", self.config.sound)
@@ -2274,7 +2271,7 @@ class Game:
                         self.handle_mondeath(mon, is_rad=True)
                         del self.d.monmap[xy]
 
-        draw_blast2(xy0, self.d.w, self.d.h, rad, func1, func2)
+        dg.render_draw_fov_circle(x0, y0, rad, libtcod.light_azure, func)
 
 
     def explode(self, xy0, rad):
@@ -2307,7 +2304,8 @@ class Game:
                     del self.d.monmap[xy]
 
 
-        def func_ff(xy):
+        def func_ff(x, y):
+            xy = (x, y)
             f_explod(xy)
 
             is_gas = False
@@ -2318,17 +2316,17 @@ class Game:
             return is_gas
 
 
-        def func_r(xy):
-
+        def func_r(x, y):
+            xy = (x, y)
             f_explod(xy)
 
             if self.try_feature(xy, 'explode'):
-                draw_floodfill(xy, self.d.w, self.d.h, func_ff)
+                dg.render_draw_floodfill(x, y, func_ff)
 
             self.convert_to_floor(xy, (dg.random_range(0, 5) == 0))
 
 
-        draw_blast(xy0, self.d.w, self.d.h, rad, func_r)
+        dg.render_draw_circle(xy0[0], xy0[1], rad, func_r)
 
         for xy, r, d in sorted(chains):
             self.explode(xy, r)
@@ -2339,31 +2337,21 @@ class Game:
 
         x0, y0 = xy0
 
-        dg.render_recompute_fov(x0, y0, rad)
+        def func(x, y):
+            self.clear_celauto((x,y))
 
-        def func1(xy):
-            return dg.render_is_in_fov(xy[0], xy[1])
-
-        def func2(xy):
-            self.clear_celauto(xy)
-
-        draw_blast2(xy0, self.d.w, self.d.h, rad, func1, func2, color=libtcod.yellow)
+        dg.render_draw_fov_circle(x0, y0, rad, libtcod.yellow, func)
 
     def raise_dead(self, xy0, rad):
 
         x0, y0 = xy0
 
-        dg.render_recompute_fov(x0, y0, rad)
-
         ret = []
 
-        def func1(xy):
-            return dg.render_is_in_fov(xy[0], xy[1])
+        def func(x, y):
+            self.filter_items((x, y), lambda i: (i.corpse, i.corpse), ret)
 
-        def func2(xy):
-            self.filter_items(xy, lambda i: (i.corpse, i.corpse), ret)
-
-        draw_blast2(xy0, self.d.w, self.d.h, rad, func1, func2, color=None)
+        dg.render_draw_fov_circle(x0, y0, rad, None, func)
         return ret
 
 
