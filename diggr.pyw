@@ -3360,11 +3360,6 @@ class Game:
         else:
             self.p.stats.draw(self.d.w - 14, 0, grace=statsgrace, resource=statsresource, luck=luck)
 
-        if self.d.pc[1] > self.d.h / 2:
-            self.p.msg.draw(15, 0, self.d.w - 30, self.w.t)
-        else:
-            self.p.msg.draw(15, self.d.h - 3, self.d.w - 30, self.w.t)
-
 
     ### 
 

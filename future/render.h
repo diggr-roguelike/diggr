@@ -4,6 +4,8 @@
 #include <math.h>
 #include <stdlib.h>
 
+#include <list>
+
 #include "celauto.h"
 
 #include "libtcod.h"
@@ -89,6 +91,37 @@ struct Grid {
         keypress(int _vk=0, char _c=0) : vk(_vk), c(_c) {}
     };
 
+    struct message {
+        std::string text;
+        bool important;
+        unsigned int timestamp;
+
+        message(const std::string& t = "", bool i = false, unsigned int ts = 0) :
+            text(t), important(i), timestamp(ts) {}
+    };
+
+    struct hud_line {
+        std::string label;
+        TCOD_color_t labelcolor;
+        enum numtype_t { SIGNED, UNSIGNED };
+        numtype_t numtype;
+        int npips;
+        char pipstyle[2];
+        TCOD_color_t pipcolor[2];
+
+        hud_line(const std::string& l, TCOD_color_t lc,
+                 numtype_t nt, int np,
+                 char s[2],
+                 TCOD_color_t c[2]) : 
+            label(l), labelcolor(lc), numtype(nt), npips(np)
+            {
+                pipstyle[0] = s[0];
+                pipstyle[1] = s[1];
+                pipcolor[0] = c[0];
+                pipcolor[1] = c[1];
+            }
+    };
+
     unsigned int w;
     unsigned int h;
 
@@ -97,15 +130,153 @@ struct Grid {
     TCOD_color_t env_color;
     double env_intensity;
 
+    // transient, not saved in dump.
     TCOD_map_t tcodmap;
 
     std::string font;
     std::string title;
     bool fullscreen;
+
+    // transient, not saved in dump.
     bool has_console;
 
     std::vector<keypress> keylog;
 
+    std::list<message> messages;
+
+    // transient, not saved in dump.
+    std::vector<hud_line> hud_pips;
+
+
+private:
+
+    template <typename FUNC1, typename FUNC2>
+    void _draw_circle(unsigned int x, unsigned int y, unsigned int r, 
+                      bool do_draw, TCOD_color_t fore, TCOD_color_t back, 
+                      FUNC1 f_chk, FUNC2 f_do) {
+
+        unsigned int x0 = (x < r ? 0 : x - r);
+        unsigned int y0 = (y < r ? 0 : y - r);
+        unsigned int x1 = std::min(x + r + 1, w);
+        unsigned int y1 = std::min(y + r + 1, h);
+
+        std::vector< std::pair<unsigned int, unsigned int> > pts;
+
+        for (unsigned int _x = x0; _x < x1; ++_x) {
+            for (unsigned int _y = y0; _y < y1; ++_y) {
+
+                unsigned int tmpx = abs(x - _x);
+                unsigned int tmpy = abs(y - _y);
+                double d = sqrt(tmpx*tmpx + tmpy*tmpy);
+
+                if (d <= r && f_chk(_x, _y)) {
+                    pts.push_back(std::make_pair(_x, _y));
+                }
+            }
+        }
+
+        if (do_draw) {
+        
+            std::vector<TCOD_color_t> cols;
+
+            cols.push_back(fore);
+            cols.push_back(TCOD_color_lerp(cols.back(), back, 0.5));
+            cols.push_back(TCOD_color_lerp(cols.back(), back, 0.5));
+
+            for (const auto& col : cols) {
+                for (const auto& xy : pts) {
+                    TCOD_console_put_char_ex(NULL, xy.first, xy.second, '*', col, back);
+                }
+                TCOD_console_flush();
+                TCOD_sys_sleep_milli(100);
+            }
+        }
+
+        for (const auto& xy : pts) {
+            f_do(xy.first, xy.second);
+        }
+    }
+
+
+    void _draw_messages(unsigned int x, unsigned int y, unsigned int t) {
+
+        int i = 0;
+        std::string m;
+        auto li = messages.begin();
+
+        while (i < 3 && li != messages.end()) {
+
+            if (li != messages.begin())
+                m += '\n';
+
+            if (li->timestamp == 0 || li->timestamp >= t) {
+                m += (char)(li->important ? TCOD_COLCTRL_3 : TCOD_COLCTRL_1);
+                li->timestamp = t;
+
+            } else {
+                m += (char)TCOD_COLCTRL_5;
+            }
+
+            m += li->text;
+            ++i;
+            ++li;
+        }
+
+        TCOD_console_print_rect(NULL, x, y, TCOD_console_get_width(NULL) - 30, 3, m.c_str());
+    } 
+
+
+    void _draw_pipline(unsigned int x, unsigned int y, const hud_line& line) {
+
+        std::string l;
+
+        l += (char)TCOD_COLCTRL_FORE_RGB;
+        l += (char)line.labelcolor.r;
+        l += (char)line.labelcolor.g;
+        l += (char)line.labelcolor.b;
+        
+        if (line.label.size() < 6)
+            l += std::string(6 - line.label.size(), ' ');
+
+        l += line.label;
+        l += ": ";
+
+        if (line.numtype == hud_line::UNSIGNED) {
+            l += (char)TCOD_COLCTRL_FORE_RGB;
+            l += (char)line.pipcolor[0].r;
+            l += (char)line.pipcolor[0].g;
+            l += (char)line.pipcolor[0].b;
+            l += std::string(line.npips, line.pipstyle[0]);
+
+        } else {
+            if (line.npips < 0) {
+
+                l += (char)TCOD_COLCTRL_FORE_RGB;
+                l += (char)line.pipcolor[0].r;
+                l += (char)line.pipcolor[0].g;
+                l += (char)line.pipcolor[0].b;
+
+                if (line.npips > -3) {
+                    l += std::string(line.npips + 3, ' ');
+                }
+                l += std::string(-line.npips, line.pipstyle[0]);
+
+            } else {
+                l += (char)TCOD_COLCTRL_FORE_RGB;
+                l += (char)line.pipcolor[1].r;
+                l += (char)line.pipcolor[1].g;
+                l += (char)line.pipcolor[1].b;
+
+                l += "   ";
+                l += std::string(line.npips, line.pipstyle[1]);
+            }
+        }
+
+        TCOD_console_print(NULL, x, y, l.c_str());
+    }
+
+
+public:
 
     Grid() : w(0), h(0), env_intensity(0), 
              tcodmap(TCOD_map_new(0, 0)), 
@@ -251,7 +422,7 @@ struct Grid {
 	      unsigned int px, unsigned int py,
 	      unsigned int hlx, unsigned int hly,
 	      unsigned int rangemin, unsigned int rangemax,
-	      unsigned int lightradius) {
+	      unsigned int lightradius, bool do_hud) {
 
 	static double _sparkleinterp[10];
 	static bool did_init = false;
@@ -350,7 +521,34 @@ struct Grid {
 	    }
 	}
 
+        if (do_hud) {
+            unsigned int hl = 0;
+            unsigned int hpx = (px > w / 2 ? 0 : w - 14);
+
+            for (const auto& hudline : hud_pips) {
+                _draw_pipline(hpx, hl, hudline);
+                ++hl;
+            }
+
+            if (py > h / 2) {
+                _draw_messages(15, 0, t);
+            } else {
+                _draw_messages(15, h - 3, t);
+            }
+        }
+
+        hud_pips.clear();
+
 	return ret;
+    }
+
+    void push_hud_line(const std::string& label, TCOD_color_t labelcolor,
+                       bool signd, int npips,
+                       char style[2], TCOD_color_t color[2]) {
+
+        hud_pips.emplace_back(label, labelcolor, 
+                              (signd ? hud_line::SIGNED : hud_line::UNSIGNED), npips,
+                              style, color);
     }
 
     void wait_for_anykey() {
@@ -437,55 +635,6 @@ struct Grid {
         return ret;
     }
 
-
-    template <typename FUNC1, typename FUNC2>
-    void _draw_circle(unsigned int x, unsigned int y, unsigned int r, 
-                      bool do_draw, TCOD_color_t fore, TCOD_color_t back, 
-                      FUNC1 f_chk, FUNC2 f_do) {
-
-        unsigned int x0 = (x < r ? 0 : x - r);
-        unsigned int y0 = (y < r ? 0 : y - r);
-        unsigned int x1 = std::min(x + r + 1, w);
-        unsigned int y1 = std::min(y + r + 1, h);
-
-        std::vector< std::pair<unsigned int, unsigned int> > pts;
-
-        for (unsigned int _x = x0; _x < x1; ++_x) {
-            for (unsigned int _y = y0; _y < y1; ++_y) {
-
-                unsigned int tmpx = abs(x - _x);
-                unsigned int tmpy = abs(y - _y);
-                double d = sqrt(tmpx*tmpx + tmpy*tmpy);
-
-                if (d <= r && f_chk(_x, _y)) {
-                    pts.push_back(std::make_pair(_x, _y));
-                }
-            }
-        }
-
-        if (do_draw) {
-        
-            std::vector<TCOD_color_t> cols;
-
-            cols.push_back(fore);
-            cols.push_back(TCOD_color_lerp(cols.back(), back, 0.5));
-            cols.push_back(TCOD_color_lerp(cols.back(), back, 0.5));
-
-            for (const auto& col : cols) {
-                for (const auto& xy : pts) {
-                    TCOD_console_put_char_ex(NULL, xy.first, xy.second, '*', col, back);
-                }
-                TCOD_console_flush();
-                TCOD_sys_sleep_milli(100);
-            }
-        }
-
-        for (const auto& xy : pts) {
-            f_do(xy.first, xy.second);
-        }
-    }
-
-
     template <typename FUNC>
     void draw_circle(unsigned int x, unsigned int y, unsigned int r, FUNC func) {
 
@@ -552,6 +701,47 @@ struct Grid {
         }
     }
 
+    void do_message(const std::string& msg, bool important) {
+        if (!messages.empty()) {
+            message& m = messages.front();
+
+            if (m.text == msg) {
+                m.timestamp = 0;
+                return;
+            }
+        }
+
+        messages.emplace_front(msg, important, 0);
+    }
+
+    void draw_messages_window() {
+        unsigned int i = 0;
+        std::list<message>::const_iterator li = messages.begin();
+        std::vector<std::string> lines;
+
+        while (i < 24 && li != messages.end()) {
+            lines.emplace_back();
+            std::string& m = lines.back();
+
+            if (li != messages.begin())
+                m += '\n';
+
+            if (li->important) {
+                m += (char)TCOD_COLCTRL_3;
+            } else if (li == messages.begin()) {
+                m += (char)TCOD_COLCTRL_1;
+            } else {
+                m += (char)TCOD_COLCTRL_5;
+            }
+
+            m += li->text;
+            ++i;
+            ++li;
+        }
+
+        draw_window(lines);
+    }
+
 
     //***  ***//
 
@@ -587,6 +777,13 @@ struct Grid {
         for (const auto& k : keylog) {
             serialize::write(s, k.vk);
             serialize::write(s, k.c);
+        }
+
+        serialize::write(s, messages.size());
+        for (const auto& m : messages) {
+            serialize::write(s, m.text);
+            serialize::write(s, m.important);
+            serialize::write(s, m.timestamp);
         }
     }
 
@@ -641,6 +838,19 @@ struct Grid {
             keypress& k = keylog[i];
             serialize::read(s, k.vk);
             serialize::read(s, k.c);
+        }
+
+        size_t messages_size;
+        serialize::read(s, messages_size);
+
+        messages.clear();
+
+        for (size_t i = 0; i < messages_size; ++i) {
+            messages.emplace_back();
+            message& m = messages.back();
+            serialize::read(s, m.text);
+            serialize::read(s, m.important);
+            serialize::read(s, m.timestamp);
         }
     }
 

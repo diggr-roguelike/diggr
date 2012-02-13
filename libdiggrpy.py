@@ -130,10 +130,19 @@ def render_is_in_fov(x, y):
 
 _dg.dg_render_draw.restype = c_bool
 
-def render_draw(t, px, py, hlx, hly, rmin, rmax, lr):
+def render_draw(t, px, py, hlx, hly, rmin, rmax, lr, do_hud):
     return _dg.dg_render_draw(c_uint(t), c_uint(px), c_uint(py),
                               c_uint(hlx), c_uint(hly), c_uint(rmin), c_uint(rmax),
-                              c_uint(lr))
+                              c_uint(lr), c_bool(do_hud))
+
+def render_push_hud_line(label, labelcolor, signed, npips, style):
+    _dg.dg_render_push_hud_line(c_char_p(label), 
+                                c_ubyte(labelcolor.r), c_ubyte(labelcolor.g), c_ubyte(labelcolor.b), 
+                                c_bool(signed), c_int(npips),
+                                c_char(style[0][0]), 
+                                c_ubyte(style[0][1].r), c_ubyte(style[0][1].g), c_ubyte(style[0][1].b), 
+                                c_char(style[1][0]), 
+                                c_ubyte(style[1][1].r), c_ubyte(style[1][1].g), c_ubyte(style[1][1].b))
 
 DRAWDOFUNC = CFUNCTYPE(None, c_uint, c_uint)
 DRAWCHECKFUNC = CFUNCTYPE(c_bool, c_uint, c_uint)
@@ -151,6 +160,12 @@ def render_draw_fov_circle(x, y, rad, col, func):
 
 def render_draw_floodfill(x, y, func):
     _dg.dg_render_draw_floodfill(c_uint(x), c_uint(y), DRAWCHECKFUNC(func))
+
+def render_message(msg, important):
+    _dg.dg_render_message(c_char_p(msg), c_bool(important))
+
+def render_draw_messages_window():
+    _dg.dg_render_draw_messages_window()
 
 def random_init(seed):
     _dg.dg_random_init(c_long(seed))

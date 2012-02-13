@@ -177,9 +177,19 @@ extern "C" bool dg_render_draw(unsigned int t,
 			       unsigned int px, unsigned int py, 
 			       unsigned int hlx, unsigned int hly,
 			       unsigned int rmin, unsigned int rmax,
-			       unsigned int lr) {
+			       unsigned int lr, bool do_hud) {
 
-    return grender::get().draw(t, px, py, hlx, hly, rmin, rmax, lr);
+    return grender::get().draw(t, px, py, hlx, hly, rmin, rmax, lr, do_hud);
+}
+
+extern "C" void dg_render_push_hud_line(char* label, uint8 lr, uint8 lg, uint8 lb,
+                                        bool signd, int npips, 
+                                        char s1, uint8 r1, uint8 g1, uint8 b1,
+                                        char s2, uint8 r2, uint8 g2, uint8 b2) {
+
+    char style[2] = { s1, s2 };
+    TCOD_color_t cols[2] = { TCOD_color_RGB(r1, g1, b1), TCOD_color_RGB(r2, g2, b2) };
+    grender::get().push_hud_line(label, TCOD_color_RGB(lr, lg, lb), signd, npips, style, cols);
 }
 
 typedef void (*dg_draw_do_callback)(unsigned int, unsigned int);
@@ -201,6 +211,14 @@ extern "C" void dg_render_draw_fov_circle(unsigned int x, unsigned int y, unsign
 
 extern "C" void dg_render_draw_floodfill(unsigned int x, unsigned int y, dg_draw_check_callback func) {
     grender::get().draw_floodfill(x, y, func);
+}
+
+extern "C" void dg_render_message(char* msg, bool important) {
+    grender::get().do_message(msg, important);
+}
+
+extern "C" void dg_render_draw_messages_window() {
+    grender::get().draw_messages_window();
 }
 
 extern "C" void dg_random_init(long seed) {
