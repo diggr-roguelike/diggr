@@ -2991,7 +2991,7 @@ class Game:
         if self.p.did_moon_message:
             return
 
-        if len(self.p.msg.strings) > 0 and self.p.msg.strings[0][2][0] and (self.w.t - self.p.msg.strings[0][2][0]) > 9:
+        if self.w.t - self.p.msg.last_msg_t > 9:
             d = {moon.NEW:  'New moon tonight. A perfect night for evil and the dark arts.',
                  moon.FULL: 'Full moon tonight. The lunatics are out in droves.',
                  moon.FIRST_QUARTER: 'First quarter moon tonight. Watch out for the UFOs.',
@@ -3360,7 +3360,7 @@ class Game:
                                     False, 
                                     ((grace * 6) / duration) + 1,
                                     ((chr(175), libtcod.red if nt else libtcod.yellow),
-                                     ('', libtcod.white)))
+                                     (' ', libtcod.white)))
 
         if self.p.s_grace:
             do_rline(self.p.s_grace, self.w.coef.s_graceduration, self.w.coef.s_praytimeout, chr(234))
@@ -3369,7 +3369,7 @@ class Game:
             do_rline(self.p.v_grace, self.w.coef.v_graceduration, self.w.coef.v_praytimeout, chr(233))
 
         elif self.p.b_grace:
-            do_rline(self.p.b_grace, self.w.coef.b_graceduration, self.w.coef.b_praytimeout, chr(127))
+            do_rline(self.p.b_grace, self.w.coef.b_graceduration, 0, chr(127))
 
 
         if self.p.resource:
@@ -3388,7 +3388,7 @@ class Game:
 
             dg.render_push_hud_line(label, labelcolor, False, n, 
                                     ((chr(175), labelcolor if self.p.resource_timeout else libtcod.white),
-                                     ('', libtcod.white)))
+                                     (' ', libtcod.white)))
 
         dg.render_push_hud_line("Luck", libtcod.white, True, -2,
                                 ((chr(18), libtcod.red),
@@ -3519,6 +3519,7 @@ class Game:
         if withtime:
             self.moon_message()
             self.w.oldt = self.w.t
+            self.p.msg.t = self.w.t
 
         return did_highlight
 
@@ -3687,7 +3688,7 @@ class Game:
         score = int(round(score))
 
         scores.form_highscore(score, self.w._seed, self.w.bones, self.p.achievements, 
-                              self.p.msg.strings, self.p.done)
+                              self.health().reason, self.w.t, self.p.done)
 
         
 

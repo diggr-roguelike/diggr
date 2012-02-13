@@ -11,6 +11,7 @@
 #include "libtcod.h"
 
 #include <iostream>
+#include <sys/time.h>
 
 
 namespace serialize {
@@ -39,7 +40,7 @@ struct writer<TCOD_color_t> {
 namespace grender {
 
 
-/*
+
 struct benchmark {
     timeval ts;
     timeval te;
@@ -52,7 +53,7 @@ struct benchmark {
 	return (double)((te.tv_sec*1000000+te.tv_usec) - (ts.tv_sec*1000000+ts.tv_usec)) / 1e6;
     }
 };
-*/
+
 
 struct Grid {
 
@@ -678,6 +679,9 @@ public:
 
         toproc.insert(std::make_pair(x,y));
 
+        benchmark bm;
+        bm.start();
+
         while (1) {
 
             pt_t xy = *(toproc.begin());
@@ -696,6 +700,8 @@ public:
                 break;
             }
         }
+
+        std::cout << "++++++ " << bm.end() << std::endl;
 
         std::vector<TCOD_color_t> cols;
         TCOD_color_t back = TCOD_darkest_red;
@@ -731,12 +737,9 @@ public:
         std::list<message>::const_iterator li = messages.begin();
         std::vector<std::string> lines;
 
-        while (i < 24 && li != messages.end()) {
+        while (i < 23 && li != messages.end()) {
             lines.emplace_back();
             std::string& m = lines.back();
-
-            if (li != messages.begin())
-                m += '\n';
 
             if (li->important) {
                 m += (char)TCOD_COLCTRL_3;

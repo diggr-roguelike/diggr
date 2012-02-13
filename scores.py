@@ -13,7 +13,7 @@ import libtcodpy as libtcod
 import libdiggrpy as dg
 
 
-def form_highscore(score, seed, bones, achievements_, msgs, done):
+def form_highscore(score, seed, bones, achievements_, reason, turns, done):
 
     # Save to highscore.
 
@@ -75,8 +75,8 @@ def form_highscore(score, seed, bones, achievements_, msgs, done):
 
     atotals.sort()
 
-    if len(atotals) >= 5:
-        atotals = atotals[:5]
+    if len(atotals) >= 6:
+        atotals = atotals[:6]
 
     s = []
 
@@ -93,10 +93,12 @@ def form_highscore(score, seed, bones, achievements_, msgs, done):
                  libtcod.COLCTRL_5, t1, '!' if p1 == 1 else '.'))
         s.append('')
 
-    s.append('-' * 50)
-    s.extend((x[1] for x in msgs[2:8]))
+    s.append('-' * 78)
+    s.append('')
+    s.append('%cKilled by %s, after %d turns.%c' % (libtcod.COLCTRL_3, reason, turns, libtcod.COLCTRL_1))
     s.append('')
     s.append('%cUpload your score to http://diggr.name? (Press Y or N)%c' % (libtcod.COLCTRL_3, libtcod.COLCTRL_1))
+    s.append('')
 
     while 1:
         c = flair.draw_window(s)
