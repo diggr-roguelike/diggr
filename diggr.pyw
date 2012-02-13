@@ -3327,38 +3327,72 @@ class Game:
 
 
     def draw_hud(self):
-        statsgrace = None
+
+        def do_sline(label, x):
+            if x >= 2.0:    n = 3 
+            elif x >= 1.0:  n = 2
+            elif x >= 0.0:  n = 1
+            elif x >= -1.0: n = -1
+            elif x >= -2.0: n = -2
+            else:           n = -3
+
+            if x >= 1.5:    col = libtcod.darker_green
+            elif x >= -0.5: col = libtcod.yellow
+            else:           col = libtcod.red
+
+            dg.render_push_hud_line(label, libtcod.white, True, n,
+                                    (('-', col),
+                                     ('+', col)))
+
+        do_sline("Health", self.health().x)
+        do_sline("Warmth", self.warmth().x)
+        do_sline("Tired",  self.tired().x)
+        do_sline("Sleep",  self.sleep().x)
+        do_sline("Thirst", self.thirst().x)
+        do_sline("Hunger", self.hunger().x)
+
+        
+        def do_rline(grace, duration, timeout, char):
+            nt = (grace > duration - timeout)
+
+            dg.render_push_hud_line(char+'Grace', 
+                                    libtcod.white, 
+                                    False, 
+                                    ((grace * 6) / duration) + 1,
+                                    ((chr(175), libtcod.red if nt else libtcod.yellow),
+                                     ('', libtcod.white)))
+
         if self.p.s_grace:
-            statsgrace = (chr(234),
-                          ((self.p.s_grace * 6) / self.w.coef.s_graceduration) + 1,
-                          (self.p.s_grace > self.w.coef.s_graceduration - self.w.coef.s_praytimeout))
+            do_rline(self.p.s_grace, self.w.coef.s_graceduration, self.w.coef.s_praytimeout, chr(234))
 
         elif self.p.v_grace:
-            statsgrace = (chr(233),
-                          ((self.p.v_grace * 6) / self.w.coef.v_graceduration) + 1,
-                          (self.p.v_grace > self.w.coef.v_graceduration - self.w.coef.v_praytimeout))
+            do_rline(self.p.v_grace, self.w.coef.v_graceduration, self.w.coef.v_praytimeout, chr(233))
 
         elif self.p.b_grace:
-            statsgrace = (chr(127),
-                          ((self.p.b_grace * 6) / self.w.coef.b_graceduration) + 1,
-                          False)
+            do_rline(self.p.b_grace, self.w.coef.b_graceduration, self.w.coef.b_praytimeout, chr(127))
 
-        statsresource = None
+
         if self.p.resource:
             if self.p.resource_timeout:
                 n = ((self.p.resource_timeout * 6) / self.w.coef.resource_timeouts[self.p.resource] + 1)
             else:
                 n = self.p.resource_buildup
 
-            statsresource = (self.p.resource, n,
-                             True if self.p.resource_timeout else False)
+            labels = {'r': ("   Red", libtcod.red),
+                      'g': (" Green", libtcod.dark_green),
+                      'y': ("Yellow", libtcod.yellow),
+                      'b': ("  Blue", libtcod.blue),
+                      'p': ("Purple", libtcod.purple) }
 
-        luck = -2
+            label, labelcolor = labels[self.p.resource]
 
-        if self.d.pc[0] > self.d.w / 2:
-            self.p.stats.draw(0, 0, grace=statsgrace, resource=statsresource, luck=luck)
-        else:
-            self.p.stats.draw(self.d.w - 14, 0, grace=statsgrace, resource=statsresource, luck=luck)
+            dg.render_push_hud_line(label, labelcolor, False, n, 
+                                    ((chr(175), labelcolor if self.p.resource_timeout else libtcod.white),
+                                     ('', libtcod.white)))
+
+        dg.render_push_hud_line("Luck", libtcod.white, True, -2,
+                                ((chr(18), libtcod.red),
+                                 (chr(17), libtcod.yellow)))
 
 
     ### 
@@ -3444,9 +3478,14 @@ class Game:
         dg.render_push_skin(self.d.pc[0], self.d.pc[1], pccol, pc, libtcod.black, 0, False)
 
         ###
+        
+        do_hud = not did_mapping
+        if do_hud:
+            self.draw_hud()
 
         did_highlight = dg.render_draw(self.w.t, self.d.pc[0], self.d.pc[1], 
-                                       _hlxy[0], _hlxy[1], range[0], range[1], lightradius)
+                                       _hlxy[0], _hlxy[1], range[0], range[1], lightradius,
+                                       do_hud)
         
         ###
 
@@ -3475,9 +3514,6 @@ class Game:
             dg.render_pop_skin(k[0], k[1])
 
         ### 
-
-        if not did_mapping:
-            self.draw_hud()
 
         # hack
         if withtime:

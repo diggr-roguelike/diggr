@@ -119,6 +119,18 @@ struct Grid {
                 pipstyle[1] = s[1];
                 pipcolor[0] = c[0];
                 pipcolor[1] = c[1];
+
+                uint8 o1 = 1;
+
+                labelcolor.r = std::max(labelcolor.r, o1);
+                labelcolor.g = std::max(labelcolor.g, o1);
+                labelcolor.b = std::max(labelcolor.b, o1);
+                pipcolor[0].r = std::max(pipcolor[0].r, o1);
+                pipcolor[0].g = std::max(pipcolor[0].g, o1);
+                pipcolor[0].b = std::max(pipcolor[0].b, o1);
+                pipcolor[1].r = std::max(pipcolor[1].r, o1);
+                pipcolor[1].g = std::max(pipcolor[1].g, o1);
+                pipcolor[1].b = std::max(pipcolor[1].b, o1);
             }
     };
 
