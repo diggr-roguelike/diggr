@@ -649,28 +649,34 @@ public:
     }
 
     template <typename FUNC>
-    void draw_circle(unsigned int x, unsigned int y, unsigned int r, FUNC func) {
+    void draw_circle(unsigned int x, unsigned int y, unsigned int r, 
+                     bool do_draw, TCOD_color_t fore, TCOD_color_t back, 
+                     FUNC func) {
 
         _draw_circle(x, y, r, 
-                     true, TCOD_yellow, TCOD_darkest_red, 
+                     /*true, TCOD_yellow, TCOD_darkest_red, */
+                     do_draw, fore, back,
                      [](unsigned int, unsigned int) { return true; },
                      func);
     }
 
     template <typename FUNC>
     void draw_fov_circle(unsigned int x, unsigned int y, unsigned int r, 
-                         bool do_draw, TCOD_color_t fore, FUNC func) {
+                         bool do_draw, TCOD_color_t fore, TCOD_color_t back,
+                         FUNC func) {
 
 	TCOD_map_compute_fov(tcodmap, x, y, r, false, FOV_SHADOW);
 
-        _draw_circle(x, y, r, do_draw, fore, TCOD_darkest_blue,
+        _draw_circle(x, y, r, do_draw, fore, back, //TCOD_darkest_blue,
                      [this](unsigned int x, unsigned int y) { return TCOD_map_is_in_fov(tcodmap, x, y); },
                      func);
     }
 
 
     template <typename FUNC>
-    void draw_floodfill(unsigned int x, unsigned int y, FUNC func) {
+    void draw_floodfill(unsigned int x, unsigned int y, 
+                        bool do_draw, TCOD_color_t fore, TCOD_color_t back,
+                        FUNC func) {
 
         typedef std::pair<unsigned int, unsigned int> pt_t;
 
@@ -703,21 +709,56 @@ public:
 
         std::cout << "++++++ " << bm.end() << std::endl;
 
-        std::vector<TCOD_color_t> cols;
-        TCOD_color_t back = TCOD_darkest_red;
+        if (do_draw) {
+            std::vector<TCOD_color_t> cols;
+            //TCOD_color_t back = TCOD_darkest_red;
 
-        cols.push_back(TCOD_yellow);
-        cols.push_back(TCOD_color_lerp(cols.back(), back, 0.5));
-        cols.push_back(TCOD_color_lerp(cols.back(), back, 0.5));
+            cols.push_back(fore); //TCOD_yellow);
+            cols.push_back(TCOD_color_lerp(cols.back(), back, 0.5));
+            cols.push_back(TCOD_color_lerp(cols.back(), back, 0.5));
 
-        for (const auto& col : cols) {
-            for (const auto& xy : procd) {
-                TCOD_console_put_char_ex(NULL, xy.first, xy.second, '*', col, back);
+            for (const auto& col : cols) {
+                for (const auto& xy : procd) {
+                    TCOD_console_put_char_ex(NULL, xy.first, xy.second, '*', col, back);
+                }
+                TCOD_console_flush();
+                TCOD_sys_sleep_milli(100);
             }
-            TCOD_console_flush();
-            TCOD_sys_sleep_milli(100);
         }
     }
+
+    template <typename FUNC>
+    void draw_line(unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1, 
+                   bool do_draw, TCOD_color_t fore, TCOD_color_t back,
+                   FUNC func) {
+        
+        TCOD_line_init(x0, y0, x1, y1);
+
+        std::vector< std::pair<unsigned int, unsigned int> > pts;
+
+        unsigned int x = x0;
+        unsigned int y = y0;
+        while (1) {
+            if (!func(x, y))
+                break;
+
+            pts.push_back(std::make_pair(x, y));
+
+            bool ret = TCOD_line_step((int*)&x, (int*)&y);
+            if (ret)
+                break;
+        }
+
+        if (do_draw) {
+            for (const auto& xy : pts) {
+                TCOD_console_put_char_ex(NULL, xy.first, xy.second, '*', fore, back);
+                TCOD_console_flush();
+                TCOD_sys_sleep_milli(50);
+            }
+        }
+    }
+
+
 
     void do_message(const std::string& msg, bool important) {
         if (!messages.empty()) {

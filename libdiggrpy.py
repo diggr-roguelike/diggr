@@ -147,19 +147,53 @@ def render_push_hud_line(label, labelcolor, signed, npips, style):
 DRAWDOFUNC = CFUNCTYPE(None, c_uint, c_uint)
 DRAWCHECKFUNC = CFUNCTYPE(c_bool, c_uint, c_uint)
 
-def render_draw_circle(x, y, r, func):
-    _dg.dg_render_draw_circle(c_uint(x), c_uint(y), c_uint(r), DRAWDOFUNC(func))
-
-def render_draw_fov_circle(x, y, rad, col, func):
+def render_draw_circle(x, y, r, col, func):
     if not col:
-        _dg.dg_render_draw_fov_circle(c_uint(x), c_uint(y), c_uint(rad), 
-                                      c_bool(False), c_ubyte(0), c_ubyte(0), c_ubyte(0), DRAWDOFUNC(func))
+        _dg.dg_render_draw_circle(c_uint(x), c_uint(y), c_uint(r), c_bool(False),
+                                  c_ubyte(0), c_ubyte(0), c_ubyte(0),
+                                  c_ubyte(0), c_ubyte(0), c_ubyte(0),
+                                  DRAWDOFUNC(func))
     else:
-        _dg.dg_render_draw_fov_circle(c_uint(x), c_uint(y), c_uint(rad), 
-                                      c_bool(True), c_ubyte(col.r), c_ubyte(col.g), c_ubyte(col.b), DRAWDOFUNC(func))
+        _dg.dg_render_draw_circle(c_uint(x), c_uint(y), c_uint(r), c_bool(True),
+                                  c_ubyte(col[0].r), c_ubyte(col[0].g), c_ubyte(col[0].b),
+                                  c_ubyte(col[1].r), c_ubyte(col[1].g), c_ubyte(col[1].b),
+                                  DRAWDOFUNC(func))
 
-def render_draw_floodfill(x, y, func):
-    _dg.dg_render_draw_floodfill(c_uint(x), c_uint(y), DRAWCHECKFUNC(func))
+def render_draw_fov_circle(x, y, r, col, func):
+    if not col:
+        _dg.dg_render_draw_fov_circle(c_uint(x), c_uint(y), c_uint(r), c_bool(False),
+                                      c_ubyte(0), c_ubyte(0), c_ubyte(0),
+                                      c_ubyte(0), c_ubyte(0), c_ubyte(0),
+                                      DRAWDOFUNC(func))
+    else:
+        _dg.dg_render_draw_fov_circle(c_uint(x), c_uint(y), c_uint(r), c_bool(True),
+                                      c_ubyte(col[0].r), c_ubyte(col[0].g), c_ubyte(col[0].b),
+                                      c_ubyte(col[1].r), c_ubyte(col[1].g), c_ubyte(col[1].b),
+                                      DRAWDOFUNC(func))
+
+def render_draw_floodfill(x, y, col, func):
+    if not col:
+        _dg.dg_render_draw_floodfill(c_uint(x), c_uint(y), c_bool(False),
+                                     c_ubyte(0), c_ubyte(0), c_ubyte(0),
+                                     c_ubyte(0), c_ubyte(0), c_ubyte(0),
+                                     DRAWCHECKFUNC(func))
+    else:
+        _dg.dg_render_draw_floodfill(c_uint(x), c_uint(y), c_bool(True),
+                                     c_ubyte(col[0].r), c_ubyte(col[0].g), c_ubyte(col[0].b),
+                                     c_ubyte(col[1].r), c_ubyte(col[1].g), c_ubyte(col[1].b),
+                                     DRAWCHECKFUNC(func))
+
+def render_draw_line(x0, y0, x1, y1, col, func):
+    if not col:
+        _dg.dg_render_draw_line(c_uint(x0), c_uint(y0), c_uint(x1), c_uint(y1), c_bool(False),
+                                c_ubyte(0), c_ubyte(0), c_ubyte(0),
+                                c_ubyte(0), c_ubyte(0), c_ubyte(0),
+                                DRAWCHECKFUNC(func))
+    else:
+        _dg.dg_render_draw_line(c_uint(x0), c_uint(y0), c_uint(x1), c_uint(y1), c_bool(True),
+                                c_ubyte(col[0].r), c_ubyte(col[0].g), c_ubyte(col[0].b),
+                                c_ubyte(col[1].r), c_ubyte(col[1].g), c_ubyte(col[1].b),
+                                DRAWCHECKFUNC(func))
 
 def render_message(msg, important):
     _dg.dg_render_message(c_char_p(msg), c_bool(important))

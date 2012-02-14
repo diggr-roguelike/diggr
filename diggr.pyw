@@ -2001,6 +2001,10 @@ class Game:
             if not item.rangeexplode and not item.fires and nxy not in self.d.monmap:
                 return -1 #item
 
+            dg.render_draw_line(self.d.pc[0], self.d.pc[1], nxy[0], nxy[1], 
+                                (libtcod.gray, libtcod.darkest_gray), 
+                                lambda (x, y): return True)
+
             if item.ammo > 0:
                 item.ammo -= 1
 
@@ -2271,7 +2275,7 @@ class Game:
                         self.handle_mondeath(mon, is_rad=True)
                         del self.d.monmap[xy]
 
-        dg.render_draw_fov_circle(x0, y0, rad, libtcod.light_azure, func)
+        dg.render_draw_fov_circle(x0, y0, rad, (libtcod.light_azure, libtcod.darkest_blue), func)
 
 
     def explode(self, xy0, rad):
@@ -2321,12 +2325,12 @@ class Game:
             f_explod(xy)
 
             if self.try_feature(xy, 'explode'):
-                dg.render_draw_floodfill(x, y, func_ff)
+                dg.render_draw_floodfill(x, y, (libtcod.yellow, libtcod.darkest_red), func_ff)
 
             self.convert_to_floor(xy, (dg.random_range(0, 5) == 0))
 
 
-        dg.render_draw_circle(xy0[0], xy0[1], rad, func_r)
+        dg.render_draw_circle(xy0[0], xy0[1], rad, (libtcod.yellow, libtcod.darkest_red), func_r)
 
         for xy, r, d in sorted(chains):
             self.explode(xy, r)
@@ -2340,7 +2344,7 @@ class Game:
         def func(x, y):
             self.clear_celauto((x,y))
 
-        dg.render_draw_fov_circle(x0, y0, rad, libtcod.yellow, func)
+        dg.render_draw_fov_circle(x0, y0, rad, (libtcod.yellow, libtcod.darkest_blue), func)
 
     def raise_dead(self, xy0, rad):
 
@@ -2672,32 +2676,32 @@ class Game:
             point = (max(0, min(point[0], self.d.w - 1)),
                      max(0, min(point[1], self.d.h - 1)))
 
-        libtcod.line_init(self.d.pc[0], self.d.pc[1], point[0], point[1])
-        xxyy = (None, None)
 
-        while 1:
-            tmpxy = libtcod.line_step()
 
-            if xy_none(tmpxy):
-                #return (xx, yy), True
-                break
+        xxyy = [None, None]
 
-            if dg.grid_is_walk(tmpxy[0], tmpxy[1]) or self.try_feature(tmpxy, 'shootable'):
+        def check_target(x, y, ptref=xxyy):
+            if dg.grid_is_walk(x, y) or self.try_feature((x, y), 'shootable'):
 
                 if minrange > 0:
-                    d = xy_dist(tmpxy, self.d.pc)
+                    d = xy_dist((x, y), self.d.pc)
                     if d < minrange:
-                        continue
+                        return True
 
-                xxyy = tmpxy
+                ptref[0] = x
+                ptref[1] = y
 
-                if monstop and tmpxy in self.d.monmap:
-                    #return (xx, yy), True
-                    break
+                if monstop and (x, y) in self.d.monmap:
+                    return False
+                return True
 
             else:
-                break
-                #return (xx, yy), True
+                return False
+
+        dg.render_draw_line(self.d.pc[0], self.d.pc[1], point[0], point[1], 
+                            None, check_target)
+
+        xxyy = (xxyy[0], xxyy[1])
 
         if final_choice and xxyy == point:
             return xxyy, True
@@ -2869,8 +2873,18 @@ class Game:
                     mon.known_pxy = self.d.pc
 
             if mon.straightline:
-                libtcod.line_init(xy[0], xy[1], mon.known_pxy[0], mon.known_pxy[1])
-                mdxy = libtcod.line_step()
+
+                tmp = [xy[0], xy[1]]
+                def line_once(x, y, ref=tmp):
+                    tmp[0] = x
+                    tmp[1] = y
+                    if tmp[0] != xy[0] or tmp[1] != xy[1]:
+                        return False
+                    return True
+
+                dg.render_draw_line(xy[0], xy[1], mon.known_pxy[0], mon.known_pxy[1], None, line_once)
+                mdxy = (tmp[0], tmp[1])
+
             else:
 
                 flee = False
