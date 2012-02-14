@@ -98,16 +98,7 @@ def main():
 
     diggr.dgsys._inputs = []
 
-    font = 'font.png' #'terminal10x16_gs_ro.png'
-    libtcod.console_set_custom_font(font, libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_ASCII_INROW)
-    libtcod.console_init_root(w, h, 'Diggr game replayer tool', False, libtcod.RENDERER_SDL)
-    libtcod.sys_set_fps(30)
-
-    libtcod.console_set_color_control(libtcod.COLCTRL_1, libtcod.white, libtcod.black)
-    libtcod.console_set_color_control(libtcod.COLCTRL_2, libtcod.darker_green, libtcod.black)
-    libtcod.console_set_color_control(libtcod.COLCTRL_3, libtcod.yellow, libtcod.black)
-    libtcod.console_set_color_control(libtcod.COLCTRL_4, libtcod.red, libtcod.black)
-    libtcod.console_set_color_control(libtcod.COLCTRL_5, libtcod.gray, libtcod.black)
+    dg.render_iniw(w, h, 'font.png', "Diggr replayer tool", False)
 
     _c1 = libtcod.COLCTRL_1
     _c2 = libtcod.COLCTRL_2
@@ -146,8 +137,6 @@ def main():
 
 
     while 1:
-        if libtcod.console_is_window_closed():
-            break
 
         if mode == 1:
             if achievement:
@@ -191,7 +180,10 @@ def main():
         s.append('')
         s.append('*WARNING*: Only games from the _same_ version of Diggr will replay correctly!')
 
-        k = diggr.draw_window(s, True)
+        vk,k = diggr.draw_window(s, True)
+
+        if k == chr(1):
+            break
 
         if k == 'h':
             n -= limit
