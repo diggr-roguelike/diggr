@@ -2599,14 +2599,14 @@ class Game:
 
 
 
-    def _target(self, point, range, minrange=0, monstop=False, lightradius=None):
+    def _target(self, point, range, firstcall, minrange=0, monstop=False, lightradius=None):
 
         self.draw(range=(minrange, range), lightradius=lightradius)
 
         #monx = None
         #mony = None
 
-        if xy_none(point):
+        if xy_none(point) and firstcall:
             for i in xrange(len(self.monsters_in_view)):
                 mon = self.monsters_in_view[i]
                 d = xy_dist(self.d.pc, mon.xy)
@@ -2712,11 +2712,13 @@ class Game:
     def target(self, range, minrange=0, monstop=False, lightradius=None):
 
         point = (None, None)
+        firstcall = True
         while 1:
-            point, ok = self._target(point, range, 
+            point, ok = self._target(point, range, firstcall,
                                      minrange=minrange, 
                                      monstop=monstop, 
                                      lightradius=lightradius)
+            firstcall = False
 
             if ok:
                 return point
