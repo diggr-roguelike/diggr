@@ -75,8 +75,8 @@ def form_highscore(score, seed, bones, achievements_, reason, turns, done):
 
     atotals.sort()
 
-    if len(atotals) >= 6:
-        atotals = atotals[:6]
+    if len(atotals) >= 7:
+        atotals = atotals[:7]
 
     s = []
 
@@ -98,7 +98,6 @@ def form_highscore(score, seed, bones, achievements_, reason, turns, done):
     s.append('%cKilled by %s, after %d turns.%c' % (libtcod.COLCTRL_3, reason, turns, libtcod.COLCTRL_1))
     s.append('')
     s.append('%cUpload your score to http://diggr.name? (Press Y or N)%c' % (libtcod.COLCTRL_3, libtcod.COLCTRL_1))
-    s.append('')
 
     while 1:
         c = flair.draw_window(s)

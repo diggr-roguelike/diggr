@@ -58,6 +58,7 @@ struct reader {
     }
 };
 
+//////////////
 
 template <>
 struct writer<char> {
@@ -91,6 +92,40 @@ struct reader<unsigned char> {
     }
 };
 
+//////////////
+
+template <>
+struct writer<std::string> {
+    void write(Sink& s, const std::string& t) {
+        s << t.size();
+        for (char c : t) {
+            s.out << c;
+        }
+    }
+};
+
+template <>
+struct reader<std::string> {
+    void read(Source& s, std::string& t) {
+        size_t n;
+        s >> n;
+        t.clear();
+
+        s >> std::noskipws;
+        // Read the trailing newline.
+        char c;
+        s.inp >> c;
+
+        for (int i = 0; i < n; ++i) {
+            char c;
+            s.inp >> c;
+            t += c;
+        }
+        s >> std::skipws;
+    }
+};
+
+//////////////
 
 template <typename T1, typename T2>
 struct writer< std::pair<T1,T2> > {

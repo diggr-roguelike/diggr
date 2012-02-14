@@ -1145,7 +1145,7 @@ class Game:
                     self.set_item(self.d.pc, [i2])
                 return False, True
 
-            if self.filter_inv((lambda (i,slot): i.corpse), bb_shrine_func):
+            if self.filter_inv((lambda i,slot: i.corpse), bb_shrine_func):
                 return
 
             self.p.msg.m("Ba'al-Zebub needs to be sated with blood!!")
@@ -1214,7 +1214,7 @@ class Game:
                 self.victory(msg=('winkali', 'Returned the Eye of Kali'))
                 return True, False
 
-            if self.filter_inv((lambda (i,slot): i.special == 'kali'), kalifunc):
+            if self.filter_inv((lambda i,slot: i.special == 'kali'), kalifunc):
                 return
 
             self.p.msg.m('Kali is silent. Perhaps she requires an offering?', True)
@@ -2003,7 +2003,7 @@ class Game:
 
             dg.render_draw_line(self.d.pc[0], self.d.pc[1], nxy[0], nxy[1], 
                                 (libtcod.gray, libtcod.darkest_gray), 
-                                lambda (x, y): return True)
+                                lambda x, y: True)
 
             if item.ammo > 0:
                 item.ammo -= 1
