@@ -223,6 +223,9 @@ static TCOD_path_data_t *TCOD_path_new_intern(int w, int h) {
 	}
 	path->path=TCOD_list_new();
 	path->heap=TCOD_list_new();
+        path->map=NULL;
+        path->func=NULL;
+        path->user_data=NULL;
 	return path;
 }
 

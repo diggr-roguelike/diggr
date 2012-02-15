@@ -98,8 +98,11 @@ def render_set_back(x, y, back):
 def render_set_is_lit(x, y, is_lit):
     _dg.dg_render_set_is_lit(c_uint(x), c_uint(y), c_bool(is_lit))
 
-def render_set_is_transparent(x, y, is_transparent):
-    _dg.dg_render_set_is_transparent(c_uint(x), c_uint(y), c_bool(is_transparent))
+def render_set_is_viewblock(x, y, t):
+    _dg.dg_render_set_is_viewblock(c_uint(x), c_uint(y), c_bool(t))
+
+def render_set_is_walkblock(x, y, t):
+    _dg.dg_render_set_is_walkblock(c_uint(x), c_uint(y), c_bool(t))
 
 def render_push_skin(x, y, fore, c, fore2, fore_i, is_terrain):
     if type(c) == type(1):
@@ -200,6 +203,17 @@ def render_message(msg, important):
 
 def render_draw_messages_window():
     _dg.dg_render_draw_messages_window()
+
+_dg.dg_render_path_walk.restype = c_bool
+
+def render_path_walk(x0, y0, x1, y1, n, cutoff):
+    xo = c_uint()
+    yo = c_uint()
+    r = _dg.dg_render_path_walk(c_uint(x0), c_uint(y0), c_uint(x1), c_uint(y1),
+                                c_uint(n), c_uint(cutoff), byref(xo), byref(yo))
+    if not r.value:
+        return (None, None)
+    return (xo.value, yo.value)
 
 def random_init(seed):
     _dg.dg_random_init(c_long(seed))

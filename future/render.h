@@ -81,9 +81,11 @@ struct Grid {
 	TCOD_color_t back;
 	unsigned int is_lit;
 	bool in_fov;
-        bool is_transparent;
+        unsigned int is_viewblock;
+        unsigned int is_walkblock;
 
-	gridpoint() : back(TCOD_black), is_lit(0), in_fov(false), is_transparent(false) {}
+	gridpoint() : back(TCOD_black), is_lit(0), in_fov(false), 
+                      is_viewblock(0), is_walkblock(0) {}
     };
 
     struct keypress {
@@ -145,6 +147,7 @@ struct Grid {
 
     // transient, not saved in dump.
     TCOD_map_t tcodmap;
+    TCOD_path_t tcodpath;
 
     std::string font;
     std::string title;
@@ -293,11 +296,13 @@ public:
 
     Grid() : w(0), h(0), env_intensity(0), 
              tcodmap(TCOD_map_new(0, 0)), 
+             tcodpath(TCOD_path_new_using_map(tcodmap, 1.41)),
              fullscreen(false), has_console(false)
         {}
 
     ~Grid() {
         TCOD_map_delete(tcodmap);
+        TCOD_path_delete(tcodpath);
     }
 
     void init(unsigned int _w, unsigned int _h, 
@@ -316,6 +321,9 @@ public:
             TCOD_map_delete(tcodmap);
             tcodmap = TCOD_map_new(w, h);
             TCOD_map_clear(tcodmap, false, false);
+
+            TCOD_path_delete(tcodpath);
+            tcodpath = TCOD_path_new_using_map(tcodmap, 1.41);
 
             do_console = true;
         }
@@ -387,9 +395,28 @@ public:
 	}
     }
 
-    void set_transparent(unsigned int x, unsigned int y, bool t) {
-	_get(x,y).is_transparent = t;
-        TCOD_map_set_properties(tcodmap, x, y, t, t);
+    void set_viewblock(unsigned int x, unsigned int y, bool t) {
+	gridpoint& g = _get(x,y);
+
+        if (!t) {
+            if (g.is_viewblock > 0) --(g.is_viewblock);
+        } else {
+            ++(g.is_viewblock);
+        }
+
+        TCOD_map_set_properties(tcodmap, x, y, (g.is_viewblock == 0), (g.is_walkblock == 0));
+    }
+
+    void set_walkblock(unsigned int x, unsigned int y, bool t) {
+	gridpoint& g = _get(x,y);
+
+        if (!t) {
+            if (g.is_walkblock > 0) --(g.is_walkblock);
+        } else {
+            ++(g.is_walkblock);
+        }
+
+        TCOD_map_set_properties(tcodmap, x, y, 
     }
 
     void push_skin(unsigned int x, unsigned int y,
@@ -798,6 +825,19 @@ public:
         draw_window(lines);
     }
 
+    bool path_walk(unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1,
+                   unsigned int n, unsigned int cutoff, 
+                   unsigned int& xo, unsigned int& yo) {
+
+        TCOD_path_compute(tcodpath, x0, y0, x1, y1, cutoff, NULL);
+        
+        for (unsigned int i = 0; i < n; ++i) {
+            if (!TCOD_path_walk(tcodpath, &xo, &yo, true, cutoff))
+                return false;
+        }
+    }
+
+
 
     //***  ***//
 
@@ -826,7 +866,8 @@ public:
             serialize::write(s, t.back);
             serialize::write(s, t.is_lit);
             serialize::write(s, t.in_fov);
-            serialize::write(s, t.is_transparent);
+            serialize::write(s, t.is_viewblock);
+            serialize::write(s, t.is_walkblock);
         }
 
 	serialize::write(s, keylog.size());
@@ -880,9 +921,11 @@ public:
             serialize::read(s, p.back);
             serialize::read(s, p.is_lit);
             serialize::read(s, p.in_fov);
-            serialize::read(s, p.is_transparent);
+            serialize::read(s, p.is_viewblock);
+            serialize::read(s, p.is_walkblock);
 
-            TCOD_map_set_properties(tcodmap, i % w, i / w, p.is_transparent, p.is_transparent);
+            TCOD_map_set_properties(tcodmap, i % w, i / w, 
+                                    (g.is_viewblock == 0), (g.is_walkblock == 0));
         }
 
         size_t keylog_size;

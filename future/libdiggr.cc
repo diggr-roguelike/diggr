@@ -179,8 +179,12 @@ extern "C" bool dg_render_is_in_fov(unsigned int x, unsigned int y) {
     return grender::get().is_in_fov(x, y);
 }
 
-extern "C" void dg_render_set_is_transparent(unsigned int x, unsigned int y, bool t) {
-    grender::get().set_transparent(x, y, t);
+extern "C" void dg_render_set_is_viewblock(unsigned int x, unsigned int y, bool t) {
+    grender::get().set_is_viewblock(x, y, t);
+}
+
+extern "C" void dg_render_set_is_walkblock(unsigned int x, unsigned int y, bool t) {
+    grender::get().set_is_walkblock(x, y, t);
 }
 
 extern "C" bool dg_render_draw(unsigned int t,
@@ -261,6 +265,12 @@ extern "C" void dg_render_message(char* msg, bool important) {
 
 extern "C" void dg_render_draw_messages_window() {
     grender::get().draw_messages_window();
+}
+
+extern "C" bool dg_render_path_walk(unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1,
+                                    unsigned int n, unsigned int cutoff, 
+                                    unsigned int* xo, unsigned int* yo) {
+    return grender::get().path_walk(x0, y0, x1, y1, n, cutoff, *xo, *yo);
 }
 
 extern "C" void dg_random_init(long seed) {

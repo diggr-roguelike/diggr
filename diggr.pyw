@@ -448,9 +448,11 @@ class Game:
 
         ## 
         if feat:
-            dg.render_set_is_transparent(x, y, feat.visible)
+            dg.render_set_is_viewblock(x, y, not feat.visible)
+            dg.render_set_is_walkblock(x, y, not feat.walkable)
         else:
-            dg.render_set_is_transparent(x, y, walkable)
+            dg.render_set_is_viewblock(x, y, not walkable)
+            dg.render_set_is_walkblock(x, y, not walkable)
 
 
 
@@ -632,20 +634,21 @@ class Game:
             self.set_feature(d, ['C','V','B','N','M'][dg.random_n(5)])
 
 
+    def place_monster(self, xy, mon):
+        mon.xy = xy
+        self.d.monmap[xy] = mon
 
-    def make_paths(self):
-        #log.log('  making path')
-        if self.floorpath:
-            libtcod.path_delete(self.floorpath)
+        dg.render_set_is_walkblock(xy[0], xy[1], True)
+        if mon.large:
+            dg.render_set_is_viewblock(xy[0], xy[1], True)
 
-        def floor_callback(xfrom, yfrom, xto, yto, world):
-            if (xto, yto) in world.d.monmap:
-                return 0.0
-            elif dg.grid_is_walk(xto, yto):
-                return 1.0
-            return 0.0
+    def remove_monster(self, mon):
+        dg.render_set_is_walkblock(xy[0], xy[1], False)
+        if mon.large:
+            dg.render_set_is_viewblock(xy[0], xy[1], False)
+        
+        del self.d.monmap[mon.xy]
 
-        self.floorpath = libtcod.path_new_using_function(self.d.w, self.d.h, floor_callback, self, 1.0)
 
     def make_monsters(self):
 
@@ -676,9 +679,7 @@ class Game:
 
             m = self.w.monsterstock.generate(self.d.branch, lev, self.w.itemstock, self.d.moon)
             if m:
-                m.xy = xy
-                self.d.monmap[xy] = m
-
+                self.place_monster(xy, m)
                 dg.grid_add_nogen(xy[0], xy[1])
 
                 if m.inanimate:
@@ -695,8 +696,7 @@ class Game:
             xy = dg.grid_one_of_floor()
             m = self.w.monsterstock.generate('x', self.d.dlev, self.w.itemstock, self.d.moon)
             if m:
-                m.xy = xy
-                self.d.monmap[xy] = m
+                self.place_monster(xy, m)
 
 
     def make_items(self):
@@ -773,7 +773,6 @@ class Game:
             dg.grid_generate(gentype)
 
         self.make_feats()
-        self.make_paths()
         self.make_monsters()
         self.make_items()
         self.place()
@@ -1872,9 +1871,8 @@ class Game:
 
             self.p.msg.m('A malevolent spirit appears!')
             q = l[dg.random_n(len(l))]
-            jinni.xy = q
             jinni.items = [self.w.itemstock.get('wishing')]
-            self.d.monmap[q] = jinni
+            self.place_monster(q, jinni)
 
             self.p.achievements.use(item)
             return None
@@ -2273,7 +2271,7 @@ class Game:
                     mon.hp -= self.w.coef.raddamage
                     if mon.hp <= -3.0:
                         self.handle_mondeath(mon, is_rad=True)
-                        del self.d.monmap[xy]
+                        self.remove_monster(mon)
 
         dg.render_draw_fov_circle(x0, y0, rad, (libtcod.light_azure, libtcod.darkest_blue), func)
 
@@ -2305,7 +2303,7 @@ class Game:
                             chains.add((xy, i.radius, True))
                             break
 
-                    del self.d.monmap[xy]
+                    self.remove_monster(mon)
 
 
         def func_ff(x, y):
@@ -2431,7 +2429,7 @@ class Game:
                 if mon.visible or mon.visible_old:
                     self.p.msg.m('You killed ' + sm + '!')
                 self.handle_mondeath(mon)
-                del self.d.monmap[mon.xy]
+                self.remove_monster(mon)
             else:
 
                 ca = None
@@ -2996,8 +2994,7 @@ class Game:
             xxyy = l[j]
             del l[j]
 
-            m[i].xy = xxyy
-            self.d.monmap[xxyy] = m[i]
+            self.place_monster(xxyy, m[i])
             ret.append(m[i])
 
         return ret
@@ -3311,17 +3308,15 @@ class Game:
                 smu = smu[0].upper() + smu[1:]
                 self.p.msg.m(smu + ' rises from the dead!')
                 mon.reset()
-                mon.xy = xy
-                self.d.monmap[xy] = mon
-
+                self.place_monster(xy, mon)
 
         for mon in mons:
             if mon.do_die:
                 if mon.xy in self.d.monmap:
-                    del self.d.monmap[mon.xy]
+                    self.remove_monster(mon)
             elif mon.do_move:
                 mon.old_pos = mon.xy
-                del self.d.monmap[mon.xy]
+                self.remove_monster(mon)
 
         for mon in mons:
             if mon.do_die:
@@ -3331,8 +3326,7 @@ class Game:
                 if mon.do_move in self.d.monmap:
                     mon.do_move = mon.old_pos
 
-                mon.xy = mon.do_move
-                self.d.monmap[mon.do_move] = mon
+                self.place_monster(mon.do_move, mon)
                 mon.do_move = None
 
                 self.process_monstep(mon)
@@ -3600,8 +3594,6 @@ class Game:
         #log.f = open('LOG.%d' % self._seed, 'a')
 
         dg.random_init(self.w._seed)
-
-        self.make_paths()
 
         # HACK
         dg.neighbors_init(self.d.w, self.d.h)

@@ -33,7 +33,6 @@ typedef void *TCOD_path_t;
 
 TCODLIB_API TCOD_path_t TCOD_path_new_using_map(TCOD_map_t map, float diagonalCost);
 TCODLIB_API TCOD_path_t TCOD_path_new_using_function(int map_width, int map_height, TCOD_path_func_t func, void *user_data, float diagonalCost);
-
 TCODLIB_API bool TCOD_path_compute(TCOD_path_t path, int ox,int oy, int dx, int dy, int cutoff);
 TCODLIB_API bool TCOD_path_walk(TCOD_path_t path, int *x, int *y, bool recalculate_when_needed, int cutoff);
 TCODLIB_API bool TCOD_path_is_empty(TCOD_path_t path);
