@@ -32,6 +32,10 @@ ELSE()
 	target_link_libraries(${LIBDIGGR_NAME} png15_static SDL) 
 ENDIF()
 
+IF(MSVC OR MINGW)
+        set_property(TARGET ${LIBDIGGR_NAME} PROPERTY COMPILE_DEFINITIONS LIBTCOD_STATIC)
+ENDIF()
+
 IF(MINGW)
 	target_link_libraries(${LIBDIGGR_NAME} dxguid winmm)
 ENDIF()

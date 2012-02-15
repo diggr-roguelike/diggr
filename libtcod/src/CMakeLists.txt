@@ -57,6 +57,7 @@ IF(MSVC OR MINGW)
 	# Since we're exporting functions and clases, we use the "standard" macro combinations to do so under msvc.
 	# These turn them on for the right builds.
 	set_property(TARGET ${LIBTCOD_NAME} PROPERTY COMPILE_DEFINITIONS LIBTCOD_EXPORTS)
+        set_property(TARGET ${LIBTCOD_NAME_STATIC} PROPERTY COMPILE_DEFINITIONS LIBTCOD_STATIC)
 ENDIF()
 
 IF(MSVC)

@@ -124,7 +124,7 @@ typedef uint8 bool;
 #endif
 
 /* DLL export */
-#ifdef TCOD_WINDOWS
+#if defined(TCOD_WINDOWS) && !defined(LIBTCOD_STATIC)
 #ifdef LIBTCOD_EXPORTS
 #define TCODLIB_API __declspec(dllexport)
 #else
