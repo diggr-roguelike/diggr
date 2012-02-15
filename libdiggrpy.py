@@ -211,7 +211,7 @@ def render_path_walk(x0, y0, x1, y1, n, cutoff):
     yo = c_uint()
     r = _dg.dg_render_path_walk(c_uint(x0), c_uint(y0), c_uint(x1), c_uint(y1),
                                 c_uint(n), c_uint(cutoff), byref(xo), byref(yo))
-    if not r.value:
+    if not r:
         return (None, None)
     return (xo.value, yo.value)
 

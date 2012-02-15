@@ -829,12 +829,13 @@ public:
                    unsigned int n, unsigned int cutoff, 
                    unsigned int& xo, unsigned int& yo) {
 
-        TCOD_path_compute(tcodpath, x0, y0, x1, y1, cutoff);
-        
+        bool tmp = TCOD_path_compute(tcodpath, x0, y0, x1, y1, cutoff);
+
         for (unsigned int i = 0; i < n; ++i) {
             if (!TCOD_path_walk(tcodpath, (int*)&xo, (int*)&yo, true, cutoff))
                 return false;
         }
+        return true;
     }
 
 

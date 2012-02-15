@@ -132,11 +132,9 @@ class Game:
         self.ckeys = None
         self.vkeys = None
 
-        self.floorpath = None
-
         self.celautostock = CelAutoStock()
 
-        self.monsters_in_view = []
+        self.monsters_in_view = None
         self.new_visibles = False
 
         self.save_disabled = False
@@ -643,11 +641,12 @@ class Game:
             dg.render_set_is_viewblock(xy[0], xy[1], True)
 
     def remove_monster(self, mon):
+        xy = mon.xy
         dg.render_set_is_walkblock(xy[0], xy[1], False)
         if mon.large:
             dg.render_set_is_viewblock(xy[0], xy[1], False)
         
-        del self.d.monmap[mon.xy]
+        del self.d.monmap[xy]
 
 
     def make_monsters(self):
@@ -2609,7 +2608,6 @@ class Game:
                 mon = self.monsters_in_view[i]
                 d = xy_dist(self.d.pc, mon.xy)
 
-                #log.log(" #", mon.x, mon.y, d, range, minrange)
                 if d > range:
                     continue
 
@@ -2653,13 +2651,13 @@ class Game:
         elif k == 'n': dpt = (1, 1)
         elif k == '.':
             if xy_none(point):
-                return (None, None), False
+                return (None, None), False, False
             else:
                 final_choice = True
         elif k == ' ':
-            return (None, None), False
+            return (None, None), False, True
         else:
-            return (-1, -1), True
+            return (-1, -1), True, True
 
         if dpt:
             if not xy_none(point):
@@ -2702,8 +2700,8 @@ class Game:
         xxyy = (xxyy[0], xxyy[1])
 
         if final_choice and xxyy == point:
-            return xxyy, True
-        return xxyy, False
+            return xxyy, True, False
+        return xxyy, False, False
 
 
 
@@ -2712,11 +2710,10 @@ class Game:
         point = (None, None)
         firstcall = True
         while 1:
-            point, ok = self._target(point, range, firstcall,
-                                     minrange=minrange, 
-                                     monstop=monstop, 
-                                     lightradius=lightradius)
-            firstcall = False
+            point, ok, firstcall = self._target(point, range, firstcall,
+                                                minrange=minrange, 
+                                                monstop=monstop, 
+                                                lightradius=lightradius)
 
             if ok:
                 return point
@@ -2914,17 +2911,10 @@ class Game:
                             break
 
                 else:
-                    libtcod.path_compute(self.floorpath, 
-                                         xy[0], xy[1], 
-                                         mon.known_pxy[0], mon.known_pxy[1], 
-                                         rang*2)
-
-                    mdxy = libtcod.path_walk(self.floorpath, True, rang*2)
-
-                    if mon.fast:
-                        mdxy2 = libtcod.path_walk(self.floorpath, True, rang*2)
-                        if not xy_none(mdxy2):
-                            mdxy = mdxy2
+                    mdxy = dg.render_path_walk(xy[0], xy[1], 
+                                               mon.known_pxy[0], mon.known_pxy[1], 
+                                               2 if mon.fast else 1,
+                                               rang*2)
                     
                     if xy_none(mdxy):
                         mdxy = xy_add(xy, (dg.random_range(-1, 1),
@@ -3433,6 +3423,10 @@ class Game:
 
         if withtime:
             self.process_world()
+
+        do_m_i_v = False
+        if withtime or self.monsters_in_view is None:
+            do_m_i_v = True
             self.monsters_in_view = []
 
         # hack, after process_world because confusing features may be created
@@ -3508,7 +3502,7 @@ class Game:
             if k in lit_mons:
                 dg.render_set_is_lit(k[0], k[1], False)
 
-            if withtime and dg.render_is_in_fov(k[0], k[1]):
+            if do_m_i_v and dg.render_is_in_fov(k[0], k[1]):
                 self.monsters_in_view.append(v)
                 v.visible = True
 
