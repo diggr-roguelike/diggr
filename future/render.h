@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #include <list>
+#include <stdexcept>
 
 #include "celauto.h"
 
@@ -56,6 +57,9 @@ struct benchmark {
 
 
 struct Grid {
+
+    static const size_t replay_delay = 100;
+
 
     struct skin {
 	TCOD_color_t fore;
@@ -163,6 +167,9 @@ struct Grid {
     // transient, not saved in dump.
     std::vector<hud_line> hud_pips;
 
+    // transient, not saved in dump.
+    bool keylog_do_replay;
+    size_t keylog_index;
 
 private:
 
@@ -297,7 +304,8 @@ public:
     Grid() : w(0), h(0), env_intensity(0), 
              tcodmap(TCOD_map_new(0, 0)), 
              tcodpath(TCOD_path_new_using_map(tcodmap, 1.41)),
-             fullscreen(false), has_console(false)
+             fullscreen(false), has_console(false), 
+             keylog_do_replay(false), keylog_index(0)
         {}
 
     ~Grid() {
@@ -594,8 +602,18 @@ public:
                               style, color);
     }
 
+
+    //////
+
+
     void wait_for_anykey() {
         TCOD_console_flush();
+
+        if (keylog_do_replay) {
+            TCOD_sys_sleep_milli(replay_delay);
+            return;
+        }
+
         TCOD_sys_wait_for_event(TCOD_EVENT_KEY_PRESS, NULL, NULL, true);
     }
 
@@ -612,9 +630,20 @@ public:
     keypress wait_for_key() {
         TCOD_console_flush();
 
+        if (keylog_do_replay) {
+
+            if (keylog_index >= keylog.size())
+                throw std::runtime_error("Malformed replay file: premature end-of-keylog.");
+
+            TCOD_sys_sleep_milli(replay_delay);
+            std::cout << "  kkk " << keylog[keylog_index].vk << "," << (int)keylog[keylog_index].c << std::endl;
+            return keylog[keylog_index++];
+        }
+
         if (TCOD_console_is_window_closed()) {
             keypress ret(0, 1);
             keylog.push_back(ret);
+            std::cout << "  kkk " << ret.vk << "," << (int)ret.c << std::endl;
             return ret;
         }
 
@@ -632,8 +661,17 @@ public:
 
         keypress ret(ktmp.vk, ktmp.c);
         keylog.push_back(ret);
+        std::cout << "  kkk " << ret.vk << "," << (int)ret.c << std::endl;
         return ret;
     }
+
+    void push_replay_keypress(const keypress& kp) {
+        keylog.push_back(kp);
+        keylog_do_replay = true;
+    }
+
+
+    /////
 
 
     keypress draw_window(const std::vector<std::string>& msg) {

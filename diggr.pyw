@@ -3713,6 +3713,7 @@ class Game:
 
             #log.f = open('LOG.%d' % self._seed, 'a')
 
+            dg.render_clear_keylog()
             dg.random_init(self.w._seed)
 
             self.regen(w, h)
@@ -3838,7 +3839,8 @@ def main(config, replay=None):
         oldinputs = replay[1]
         oldbones = replay[2]
 
-        dgsys._inputqueue = oldinputs
+        for kp in oldinputs:
+            dg.render_push_replay_keypress(kp)
 
     w = 80
     h = 25

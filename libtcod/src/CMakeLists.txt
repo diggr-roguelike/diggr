@@ -48,7 +48,6 @@ ENDIF()
 set(LIBTCOD_NAME_STATIC ${LIBTCOD_NAME}_static)
 add_library(${LIBTCOD_NAME_STATIC} STATIC ${LIBTCOD_C_SRC})
 
-
 IF(MINGW)
 	target_link_libraries(${LIBTCOD_NAME} dxguid winmm)
 ENDIF()
@@ -63,6 +62,8 @@ ENDIF()
 IF(MSVC)
 	# Since libtcod pulls in DLLs that use the release CRT, force the linker to never try to cross match CRTs
 	set_property(TARGET ${LIBTCOD_NAME} PROPERTY LINK_FLAGS "/NODEFAULTLIB:MSVCRTD.lib ")
+ELSE()
+    SET_PROPERTY(TARGET ${LIBTCOD_NAME_STATIC} PROPERTY COMPILE_FLAGS -fPIC)
 ENDIF()
 
 set_property(TARGET ${LIBTCOD_NAME} PROPERTY DEBUG_POSTFIX "-debug")

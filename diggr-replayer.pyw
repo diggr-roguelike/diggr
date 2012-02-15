@@ -96,9 +96,7 @@ def main():
     w = 80
     h = 25
 
-    diggr.dgsys._inputs = []
-
-    dg.render_iniw(w, h, 'font.png', "Diggr replayer tool", False)
+    diggr.dg.render_init(w, h, 'font.png', "Diggr replayer tool", False)
 
     _c1 = libtcod.COLCTRL_1
     _c2 = libtcod.COLCTRL_2
@@ -180,7 +178,7 @@ def main():
         s.append('')
         s.append('*WARNING*: Only games from the _same_ version of Diggr will replay correctly!')
 
-        vk,k = diggr.draw_window(s, True)
+        k = diggr.draw_window(s, True)
 
         if k == chr(1):
             break
@@ -299,9 +297,8 @@ def main():
                 diggr.main(diggr.dgsys.Config({'sound':False}),
                            replay=(seed,inputs,bones))
 
-                if len(diggr.dgsys._inputqueue) != 0:
-                    raise Exception('Malformed replay file.')
-                diggr.dgsys._inputqueue = None
+                if diggr.dg.render_get_keylog_size() != 0:
+                    raise Exception('Malformed replay file: not all keypresses were processed.')
 
             elif k2 == 'b':
                 name = input_name()

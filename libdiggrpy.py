@@ -89,6 +89,12 @@ def render_get_keylog_entry(i):
         return None
     return (vk.value, c.value)
 
+def render_clear_keylog():
+    _dg.dg_render_clear_keylog()
+
+def render_push_replay_keypress(kp):
+    _dg.dg_render_push_replay_keypress(c_int(kp[0]), c_char(kp[1]))
+
 def render_set_env(color, intensity):
     _dg.dg_render_set_env(c_ubyte(color.r), c_ubyte(color.g), c_ubyte(color.b), c_double(intensity))
 

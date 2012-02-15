@@ -4,8 +4,6 @@ import libdiggrpy as dg
 import sounds
 
 _version = '12.02.05'
-_inputqueue = None
-_inputdelay = 500
 
 
 class Config:
@@ -54,16 +52,6 @@ class keypress:
 
 
 def console_wait_for_keypress():
-
-    if _inputqueue is not None:
-
-        if len(_inputqueue) == 0:
-            raise Exception('Malformed replay file.')
-
-        vk, c = _inputqueue.pop(0)
-        dg.render_skip_input(_inputdelay)
-        return keypress(vk, c)
-
 
     vk, c = dg.render_wait_for_key()
     return keypress(vk, c)

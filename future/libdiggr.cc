@@ -116,6 +116,14 @@ extern "C" bool dg_render_get_keylog_entry(unsigned long i, int* vk, char* c) {
     return true;
 }
 
+extern "C" void dg_render_clear_keylog() {
+    grender::get().keylog.clear();
+}
+
+extern "C" void dg_render_push_replay_keypress(int vk, char c) {
+    grender::get().push_replay_keypress(grender::Grid::keypress(vk, c));
+}
+
 // python ctypes and/or libffi is severly broken. This is why struct are passed by each individual field.
 
 
