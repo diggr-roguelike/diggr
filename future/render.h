@@ -336,10 +336,13 @@ public:
 
             if (has_console) {
                 TCOD_console_delete(NULL);
+            } else {
+                TCOD_sys_startup();
             }
 
             TCOD_console_set_custom_font(font.c_str(), 
-                                         TCOD_FONT_TYPE_GREYSCALE | TCOD_FONT_LAYOUT_ASCII_INROW, 0, 0);
+                                         TCOD_FONT_TYPE_GREYSCALE | TCOD_FONT_LAYOUT_ASCII_INROW, 
+                                         16, 16);
             TCOD_console_init_root(w, h, title.c_str(), fullscreen, TCOD_RENDERER_SDL);
             TCOD_sys_set_fps(30);
             
@@ -895,7 +898,6 @@ public:
         serialize::read(s, font);
         serialize::read(s, title);
         serialize::read(s, fullscreen);
-        has_console = false;
 
 	serialize::read(s, env_color);
 	serialize::read(s, env_intensity);

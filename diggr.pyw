@@ -3697,9 +3697,10 @@ class Game:
 
     def start_game(self, w, h, oldseed=None, oldbones=None):
 
-        dg.render_init(w, h, self.config.fontfile, "Diggr", self.config.fullscreen)
-
         if oldseed or not self.load():
+
+            dg.render_init(w, h, self.config.fontfile, "Diggr", self.config.fullscreen)
+
             if oldseed:
                 self.w._seed = oldseed
             else:

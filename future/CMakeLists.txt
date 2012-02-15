@@ -25,6 +25,18 @@ SET(LIBDIGGR_NAME diggr)
 add_library(${LIBDIGGR_NAME} SHARED ${LIBDIGGR_C_SRC})
 target_link_libraries(${LIBDIGGR_NAME} tcod_static)
 
+IF(UNIX AND NOT APPLE)
+	target_link_libraries(${LIBDIGGR_NAME} png15_static SDL m X11)
+
+ELSE()
+	target_link_libraries(${LIBDIGGR_NAME} png15_static SDL) 
+ENDIF()
+
+IF(MINGW)
+	target_link_libraries(${LIBDIGGR_NAME} dxguid winmm)
+ENDIF()
+
+
 
 INSTALL(TARGETS ${LIBSOUND_NAME} ${LIBDIGGR_NAME}
   RUNTIME DESTINATION ${INSTALL_DIR}
