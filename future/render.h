@@ -395,7 +395,7 @@ public:
 	}
     }
 
-    void set_viewblock(unsigned int x, unsigned int y, bool t) {
+    void set_is_viewblock(unsigned int x, unsigned int y, bool t) {
 	gridpoint& g = _get(x,y);
 
         if (!t) {
@@ -407,7 +407,7 @@ public:
         TCOD_map_set_properties(tcodmap, x, y, (g.is_viewblock == 0), (g.is_walkblock == 0));
     }
 
-    void set_walkblock(unsigned int x, unsigned int y, bool t) {
+    void set_is_walkblock(unsigned int x, unsigned int y, bool t) {
 	gridpoint& g = _get(x,y);
 
         if (!t) {
@@ -416,7 +416,7 @@ public:
             ++(g.is_walkblock);
         }
 
-        TCOD_map_set_properties(tcodmap, x, y, 
+        TCOD_map_set_properties(tcodmap, x, y, (g.is_viewblock == 0), (g.is_walkblock == 0));
     }
 
     void push_skin(unsigned int x, unsigned int y,
@@ -829,10 +829,10 @@ public:
                    unsigned int n, unsigned int cutoff, 
                    unsigned int& xo, unsigned int& yo) {
 
-        TCOD_path_compute(tcodpath, x0, y0, x1, y1, cutoff, NULL);
+        TCOD_path_compute(tcodpath, x0, y0, x1, y1, cutoff);
         
         for (unsigned int i = 0; i < n; ++i) {
-            if (!TCOD_path_walk(tcodpath, &xo, &yo, true, cutoff))
+            if (!TCOD_path_walk(tcodpath, (int*)&xo, (int*)&yo, true, cutoff))
                 return false;
         }
     }
@@ -925,7 +925,7 @@ public:
             serialize::read(s, p.is_walkblock);
 
             TCOD_map_set_properties(tcodmap, i % w, i / w, 
-                                    (g.is_viewblock == 0), (g.is_walkblock == 0));
+                                    (p.is_viewblock == 0), (p.is_walkblock == 0));
         }
 
         size_t keylog_size;
