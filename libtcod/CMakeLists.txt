@@ -38,6 +38,6 @@ add_subdirectory(dependencies/libpng-1.5.6)
 add_subdirectory(src)
 
 
-INSTALL(FILES libtcodpy.py 
+INSTALL(FILES tcod_colors.py 
   DESTINATION ${INSTALL_DIR}
 )

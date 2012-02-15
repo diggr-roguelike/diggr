@@ -8,10 +8,10 @@ setup(
         { "script": 'diggr.pyw', "icon_resources": [(1, "Rock-Collecting.ico")]},
         'diggr-replayer.pyw'],
   data_files=[('.', ['font.png', 
-                     'libtcod.dll', 'libsound.dll', 'libdiggr.dll',
+                     'libsound.dll', 'libdiggr.dll',
                      'diggr.cfg', 'GUIDE.txt'])],
   zipfile=None,
-  options={"py2exe": {"includes": ['libtcodpy'], 
+  options={"py2exe": {"includes": [], 
                       "optimize": 2, 
                       "bundle_files":2 } }
 )

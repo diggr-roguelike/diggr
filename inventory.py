@@ -1,5 +1,5 @@
 
-import libtcodpy as libtcod
+import tcod_colors as libtcod
 from flair import *
 
 class Inventory:

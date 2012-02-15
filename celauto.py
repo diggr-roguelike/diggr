@@ -1,4 +1,3 @@
-import libtcodpy as libtcod
 
 import libdiggrpy as dg
 
@@ -6,7 +5,7 @@ import libdiggrpy as dg
 
 
 class CelAuto:
-    def __init__(self, color=libtcod.light_blue,
+    def __init__(self, color=None,
                  rule="345/26/5", featuretoggle=None,
                  watertoggle=None, floorfeaturetoggle=None, littoggle=None,
                  pic=None, anchor=(0,0)):

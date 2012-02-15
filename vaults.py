@@ -1,4 +1,4 @@
-import libtcodpy as libtcod
+
 import libdiggrpy as dg
 
 

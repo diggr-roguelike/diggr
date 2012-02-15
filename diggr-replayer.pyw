@@ -5,7 +5,7 @@ import time
 import string
 import os
 
-import libtcodpy as libtcod
+import tcod_colors as libtcod
 
 import sqlite3
 

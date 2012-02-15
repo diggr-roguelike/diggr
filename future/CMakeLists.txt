@@ -23,7 +23,7 @@ SET(LIBDIGGR_C_SRC libdiggr.cc)
 SET(LIBDIGGR_NAME diggr)
 
 add_library(${LIBDIGGR_NAME} SHARED ${LIBDIGGR_C_SRC})
-target_link_libraries(${LIBDIGGR_NAME} tcod)
+target_link_libraries(${LIBDIGGR_NAME} tcod_static)
 
 
 INSTALL(TARGETS ${LIBSOUND_NAME} ${LIBDIGGR_NAME}

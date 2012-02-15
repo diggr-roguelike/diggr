@@ -1,5 +1,4 @@
 
-import libtcodpy as libtcod
 
 class Stat:
     def __init__(self):

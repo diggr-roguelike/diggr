@@ -1,4 +1,4 @@
-import libtcodpy as libtcod
+import tcod_colors as libtcod
 
 class Feature:
     def __init__(self, walkable=False, visible=False, skin=('=', libtcod.white),
