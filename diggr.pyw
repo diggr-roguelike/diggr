@@ -376,9 +376,9 @@ class Game:
     def luck(self): return self.p.stats.luck
     
     def biased_gauss(self, p, n):
-        luck = luck().x
+        luck = self.luck().x
         if luck == 0:
-            return dg.random_gauss(mean, stddev)
+            return dg.random_gauss(p[0], p[1])
 
         return dg.random_biased_gauss(p[0], p[1], luck, n)
 
@@ -387,7 +387,7 @@ class Game:
         return max(int(round(b)), m)
 
     def intcoeff_bias(self):
-        luck = luck().x
+        luck = self.luck().x
         if luck == 0:
             return 0
 
@@ -3755,7 +3755,9 @@ class Game:
 
             #log.f = open('LOG.%d' % self._seed, 'a')
 
-            dg.render_clear_keylog()
+            if not oldseed:
+                dg.render_clear_keylog()
+
             dg.random_init(self.w._seed)
 
             self.regen(w, h)

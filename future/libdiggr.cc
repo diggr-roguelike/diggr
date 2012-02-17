@@ -124,6 +124,10 @@ extern "C" void dg_render_push_replay_keypress(int vk, char c) {
     grender::get().push_replay_keypress(grender::Grid::keypress(vk, c));
 }
 
+extern "C" void dg_render_stop_keypress_replay() {
+    grender::get().stop_keypress_replay();
+}
+
 // python ctypes and/or libffi is severly broken. This is why struct are passed by each individual field.
 
 
@@ -306,7 +310,7 @@ extern "C" unsigned int dg_random_geometric(double p) {
 }
 
 extern "C" double dg_random_biased_gauss(double mean, double stddev, double bias, double factor) {
-    return rnd::get().biased_gauss(mean, stddev, bias, factor)
+    return rnd::get().biased_gauss(mean, stddev, bias, factor);
 }
 
 extern "C" void dg_grid_init(unsigned int w, unsigned int h) {

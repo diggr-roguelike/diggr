@@ -297,7 +297,7 @@ def main():
                 diggr.main(diggr.dgsys.Config({'sound':False}),
                            replay=(seed,inputs,bones))
 
-                if diggr.dg.render_get_keylog_size() != 0:
+                if not diggr.dg.render_stop_keypress_replay():
                     raise Exception('Malformed replay file: not all keypresses were processed.')
 
             elif k2 == 'b':

@@ -666,10 +666,20 @@ public:
     }
 
     void push_replay_keypress(const keypress& kp) {
+
+        if (!keylog_do_replay) {
+            keylog_do_replay = true;
+            keylog_index = keylog.size();
+        }
+
         keylog.push_back(kp);
-        keylog_do_replay = true;
     }
 
+    void stop_keypress_replay() {
+        if (keylog_index < keylog.size())
+            throw std::runtime_error("Malformed replay file: not all keypresses were consumed.");
+        keylog_do_replay = false;
+    }
 
     /////
 
