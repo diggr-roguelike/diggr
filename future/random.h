@@ -41,6 +41,15 @@ struct Generator {
     T n(T n_) {
         return range((unsigned int)0, n_-1);
     }
+
+    template <typename T>
+    T biased_gauss(T mean, T stddev, T bias, T factor) {
+        if (bias < 0)
+            factor = -factor;
+        mean += (stddev * factor * log((bias*bias) + 1.0));
+
+        return gauss(mean, stddev);
+    }
 };
 
 inline Generator& get() {

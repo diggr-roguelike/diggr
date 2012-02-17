@@ -363,8 +363,30 @@ class Game:
 
     ###
 
+    def luck(self): return self.p.stats.luck
+    
+    def biased_gauss(self, p, n):
+        luck = luck().x
+        if luck == 0:
+            return dg.random_gauss(mean, stddev)
 
-    # XXX 
+        return dg.random_biased_gauss(p[0], p[1], luck, n)
+
+    def biased_nat_gauss(self, p, n, m):
+        b = self.biased_gauss(p, n)
+        return max(int(round(b)), m)
+
+    def intcoeff_bias(self):
+        luck = luck().x
+        if luck == 0:
+            return 0
+
+        if luck < 0:
+            return -dg.random_geometric(1/(1.0-luck))
+        else:
+            return dg.random_geometric(1/(1.0+luck))
+
+    #
 
 
     def makegrid(self, w_, h_):
@@ -625,7 +647,7 @@ class Game:
             elif a == 1:
                 self.set_feature(d, 'v')
 
-        nfounts = int(round(dg.random_gauss(3, 1)))
+        nfounts = self.biased_nat_gauss(self.w.coef.numfounts, 1, 1)
 
         for tmp in xrange(nfounts):
             d = dg.grid_one_of_water()
@@ -661,12 +683,11 @@ class Game:
             n = quest.moncounts.get(self.d.dlev, 0)
 
         else:
-            n = int(max(dg.random_gauss(*self.w.coef.nummonsters), 1))
+            n = self.biased_nat_gauss(self.w.coef.nummonsters, -1, 1)
 
         i = 0
         while i < n:
-            lev = self.d.dlev + dg.random_gauss(0, self.w.coef.monlevel)
-            lev = max(int(round(lev)), 1)
+            lev = self.biased_nat_gauss((self.d.dlev, self.w.coef.monlevel), -1, 1)
 
             # Quests
             if quest:
@@ -706,11 +727,12 @@ class Game:
         if quest:
             n = quest.itemcounts.get(self.d.dlev, 0)
         else:
-            n = int(max(dg.random_gauss(self.w.coef.numitems[0] + self.d.dlev, self.w.coef.numitems[1]), 1))
+            n = self.biased_nat_gauss((self.w.coef.numitems[0] + self.d.dlev, 
+                                       self.w.coef.numitems[1]), 1, 1)
 
         for i in xrange(n):
-            lev = self.d.dlev + dg.random_gauss(0, self.w.coef.itemlevel)
-            lev = max(int(round(lev)), 1)
+            lev = self.biased_nat_gauss((self.d.dlev, self.w.coef.itemlevel), 1, 1)
+
             xy = dg.grid_one_of_walk()
             item = self.w.itemstock.generate(lev)
             if item:
@@ -846,8 +868,7 @@ class Game:
 
                 if self.try_feature(self.d.pc, 'sticky') and not self.get_glueimmune():
                     self.p.msg.m('You just stepped in some glue!', True)
-                    self.p.glued = max(int(dg.random_gauss(*self.w.coef.glueduration)), 1)
-
+                    self.p.glued = self.biased_nat_gauss(self.w.coef.glueduration, -1, 1)
 
         else:
             return
@@ -1026,11 +1047,11 @@ class Game:
             return
 
         if quick:
-            self.p.sleeping = int(dg.random_gauss(*self.w.coef.quicksleeptime))
+            self.p.sleeping = self.biased_nat_gauss(self.w.coef.quicksleeptime, -1, 0)
         else:
             if not realforced2:
                 self.p.msg.m('You fall asleep.')
-            self.p.sleeping = int(dg.random_gauss(*self.w.coef.sleeptime))
+            self.p.sleeping = self.biased_nat_gauss(self.w.coef.sleeptime, -1, 0)
 
         self.p.digging = None
         self.p.resting = False
@@ -1115,9 +1136,10 @@ class Game:
 
         self.thirst().inc(6)
 
-        x = abs(dg.random_gauss(0, 0.7))
+        x = self.biased_gauss(0, 0.7, -1)
         tmp = x - self.w.coef.waterpois
         if tmp > 0:
+            tmp /= 2
             self.health().dec(tmp, "unclean water", self.config.sound)
             if tmp > 0.2:
                 self.p.msg.m('This water has a bad smell.')
@@ -1677,13 +1699,13 @@ class Game:
 
             if item.bonus < 0:
                 self.p.msg.m('This pill makes your eyes pop out of their sockets!', True)
-                self.tired().dec(max(dg.random_gauss(*item.healing), 0))
-                self.sleep().dec(max(dg.random_gauss(*item.healing), 0))
+                self.tired().dec(max(self.biased_gauss(item.healing, -1), 0))
+                self.sleep().dec(max(self.biased_gauss(item.healing, -1), 0))
             else:
                 self.p.msg.m('Eating this pill makes you dizzy.')
-                self.health().inc(max(dg.random_gauss(*item.healing), 0))
-                self.hunger().dec(max(dg.random_gauss(*item.healing), 0))
-                self.sleep().dec(max(dg.random_gauss(*item.healing), 0))
+                self.health().inc(max(self.biased_gauss(item.healing, 1), 0))
+                self.hunger().dec(max(self.biased_gauss(item.healing, -1), 0))
+                self.sleep().dec(max(self.biased_gauss(item.healing, -1), 0))
 
             self.p.achievements.use(item)
             return None
@@ -1697,11 +1719,11 @@ class Game:
 
             if item.bonus < 0:
                 self.p.msg.m('You drift into a restless sleep!', True)
-                self.p.sleeping = max(dg.random_gauss(*item.healingsleep), 1)
+                self.p.sleeping = self.biased_nat_gauss(item.healingsleep, -1, 1)
                 self.p.forced2sleep = True
             else:
                 self.p.msg.m('You drift into a gentle sleep.')
-                self.p.sleeping = max(dg.random_gauss(*item.healingsleep), 1)
+                self.p.sleeping = self.biased_nat_gauss(item.healingsleep, 1, 1)
                 self.p.forced2sleep = True
                 self.p.healingsleep = True
 
@@ -1719,10 +1741,10 @@ class Game:
 
             if item.bonus < 0:
                 self.p.msg.m('Yuck, eating this makes you vomit!', True)
-                self.hunger().dec(max(dg.random_gauss(*item.food), 0))
+                self.hunger().dec(max(self.biased_gauss(item.food, -1), 0))
             else:
                 self.p.msg.m('Mm, yummy.')
-                self.hunger().inc(max(dg.random_gauss(*item.food), 0))
+                self.hunger().inc(max(self.biased_gauss(item.food, 1), 0))
 
             self.p.achievements.use(item)
             return None
@@ -1738,8 +1760,8 @@ class Game:
                 self.p.blind = True
             else:
                 self.p.msg.m('Aaahh.')
-                self.sleep().dec(max(dg.random_gauss(*self.w.coef.boozestrength), 0))
-                self.warmth().inc(max(dg.random_gauss(*self.w.coef.boozestrength), 0))
+                self.sleep().dec(max(self.biased_gauss(self.w.coef.boozestrength, -1), 0))
+                self.warmth().inc(max(self.biased_gauss(self.w.coef.boozestrength, 1), 0))
 
             self.p.achievements.use(item)
             return None
@@ -1828,7 +1850,7 @@ class Game:
             self.p.achievements.use(item)
 
         elif item.cooling:
-            self.p.cooling = max(int(dg.random_gauss(*self.w.coef.coolingduration)), 1)
+            self.p.cooling = self.biased_nat_gauss(self.w.coef.coolingduration, 1, 1)
             self.p.msg.m("You cover yourself in cold mud.")
 
             self.p.achievements.use(item)
@@ -2398,6 +2420,8 @@ class Game:
             plev = self.p.plev
             attack = self.get_attack()
 
+        plev = max(plev + self.intcoeff_bias(), 1)
+
         def roll(attack, leva, defence, levd):
             a = 0
             for x in xrange(leva):
@@ -2444,7 +2468,7 @@ class Game:
                 if ca and dmg > 0 and not mon.confimmune:
                     if mon.visible or mon.visible_old:
                         self.p.msg.m(smu + ' looks totally dazed!')
-                    mon.confused += int(max(dg.random_gauss(*ca), 1))
+                    mon.confused += self.biased_nat_gauss(ca, 1, 1)
 
                 if fires and dmg > 0 and not mon.fireimmune:
                     mon.onfire = max(self.w.coef.burnduration, mon.onfire)
@@ -2942,7 +2966,7 @@ class Game:
                 mn = str(mon)
                 mn = mn[0].upper() + mn[1:]
                 self.p.msg.m(mn + ' gets stuck in some glue!')
-            mon.glued = max(int(dg.random_gauss(*self.w.coef.glueduration)), 1)
+            mon.glued = self.biased_nat_gauss(self.w.coef.glueduration, 1, 1)
 
 
     def monster_conflict(self, mon_attack, mon_defend):
@@ -3390,9 +3414,17 @@ class Game:
                                     ((chr(175), labelcolor if self.p.resource_timeout else libtcod.white),
                                      (' ', libtcod.white)))
 
-        dg.render_push_hud_line("Luck", libtcod.white, True, -2,
-                                ((chr(18), libtcod.red),
-                                 (chr(17), libtcod.yellow)))
+        luck = self.luck().x
+
+        if luck != 0:
+            if luck < 0:
+                luck = -math.ceil(-luck)
+            else:
+                luck = math.ceil(luck)
+
+            dg.render_push_hud_line("Luck", libtcod.white, True, luck,
+                                    ((chr(18), libtcod.red),
+                                     (chr(17), libtcod.yellow)))
 
 
     ### 

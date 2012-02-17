@@ -244,11 +244,15 @@ _dg.dg_random_uniform.restype = c_double
 def random_uniform(a, b):
     return _dg.dg_random_uniform(c_double(a), c_double(b))
 
-_dg.dg_random_geometric = c_uint
+_dg.dg_random_geometric.restype = c_uint
 
 def random_geometric(p):
     return _dg.dg_random_geometric(c_double(p))
 
+_dg.dg_random_biased_gauss.restype = c_double
+
+def random_biased_gauss(m, s, b, f):
+    return _dg.dg_random_biased_gauss(m, s, b, f)
 
 def grid_init(w, h):
     _dg.dg_grid_init(c_uint(w), c_uint(h))

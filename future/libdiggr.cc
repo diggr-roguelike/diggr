@@ -305,6 +305,10 @@ extern "C" unsigned int dg_random_geometric(double p) {
     return rnd::get().geometric(p);
 }
 
+extern "C" double dg_random_biased_gauss(double mean, double stddev, double bias, double factor) {
+    return rnd::get().biased_gauss(mean, stddev, bias, factor)
+}
+
 extern "C" void dg_grid_init(unsigned int w, unsigned int h) {
     grid::get().init(w, h);
 }

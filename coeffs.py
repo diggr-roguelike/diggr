@@ -18,7 +18,7 @@ class Coeffs:
 
         self.sleeptime = (350, 50)
         self.quicksleeptime = (50, 10)
-        self.waterpois = 0.85
+        self.waterpois = 0.425
         self.watercold = 0.03
 
         self.colddamage = 0.03
@@ -60,6 +60,8 @@ class Coeffs:
 
         self.burnduration = 8
         self.burndamage = 0.76
+
+        self.numfounts = (3, 1)
 
         self.resource_timeouts = {'r': 300,
                                   'g': 400,

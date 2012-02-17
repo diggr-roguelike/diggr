@@ -1,8 +1,8 @@
 
 
 class Stat:
-    def __init__(self):
-        self.x = 3.0
+    def __init__(self, startx=3.0):
+        self.x = startx
         self.reason = None
 
     def dec(self, dx, reason=None, sound=None):
@@ -26,5 +26,5 @@ class Stats:
         self.hunger = Stat()
         self.thirst = Stat()
         self.warmth = Stat()
-
+        self.luck = Stat(0.0)
 
