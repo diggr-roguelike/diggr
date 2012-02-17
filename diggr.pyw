@@ -39,7 +39,17 @@ from quests import *
 from celauto import *
 
 
+# Manitou
+# Wendigo
+# Quetzalcoatl
 
+# Huitzilopochtli
+# Tlaloc
+# Kokopelli
+
+# Pachamama
+# Xibalba
+# Xbalanque
 
 class Player:
     def __init__(self):
