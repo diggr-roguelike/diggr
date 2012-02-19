@@ -1146,7 +1146,7 @@ class Game:
 
         self.thirst().inc(6)
 
-        x = self.biased_gauss(0, 0.7, -1)
+        x = self.biased_gauss((0, 0.7), -1)
         tmp = x - self.w.coef.waterpois
         if tmp > 0:
             tmp /= 2
@@ -3432,7 +3432,7 @@ class Game:
             else:
                 luck = math.ceil(luck)
 
-            dg.render_push_hud_line("Luck", libtcod.white, True, luck,
+            dg.render_push_hud_line("Luck", libtcod.white, True, int(luck),
                                     ((chr(18), libtcod.red),
                                      (chr(17), libtcod.yellow)))
 

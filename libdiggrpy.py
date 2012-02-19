@@ -255,7 +255,7 @@ def random_geometric(p):
 _dg.dg_random_biased_gauss.restype = c_double
 
 def random_biased_gauss(m, s, b, f):
-    return _dg.dg_random_biased_gauss(m, s, b, f)
+    return _dg.dg_random_biased_gauss(c_double(m), c_double(s), c_double(b), c_double(f))
 
 def grid_init(w, h):
     _dg.dg_grid_init(c_uint(w), c_uint(h))

@@ -274,7 +274,7 @@ class MonsterStock:
         self.add(Monster('Mammuthus primigenius', skin=('Q', libtcod.darker_amber),
                          branch='a', attack=3.0, defence=4.0, range=6, level=9, count=6,
                          no_a=True, flavor='giant', large=True,
-                         moon=newmoon_aligned, align='lg'
+                         moon=newmoon_aligned, align='lg',
                          desc=['Also known as the wooly mammoth.']))
 
         self.add(Monster('Tyrannosaurus rex', skin=('D', libtcod.light_lime), branch='a',

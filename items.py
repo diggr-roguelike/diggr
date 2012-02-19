@@ -992,7 +992,7 @@ class ItemStock:
                                  'with the spiritual energy of Tlaloc, the',
                                  'fearsome cthonic god of water and lightning.'])
 
-        self.kokopelli = Item('the winged sandals of Kokopelli', slot='g', skin=('[', libtcod.desaturated_peach), 
+        self.kokopelli = Item('the winged sandals of Kokopelli', slot='g', skin=('[', libtcod.desaturated_amber), 
                               defence=0.05, rarity=1, count=0, align='nn', springy=True,
                               desc=["The sandals said to have once belonged to Kokopelli,",
                                     'the trickster character of ancient legend.',
@@ -1005,7 +1005,7 @@ class ItemStock:
                               align='ng',
                               desc=['A sacred stone-age tool, once wielded by the priestesses',
                                     'of Pachamama, the Earth Mother goddess of the ancient',
-                                    'inhabitants of these caverns.'.
+                                    'inhabitants of these caverns.',
                                     'This hammer is made of precious obsidian and can',
                                     'be used to break apart even the toughest rocks.'])
 
