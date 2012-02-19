@@ -1686,7 +1686,7 @@ class MonsterStock:
                     m.gencount = 0
 
 
-    def find(self, idtag, n, itemstock):
+    def find(self, idtag, n, itemstock, luck):
         for v2 in self.monsters.itervalues():
             for v in v2.itervalues():
                 for m in v:
@@ -1703,11 +1703,11 @@ class MonsterStock:
                             mm = copy.copy(m)
                             if mm.itemdrop:
                                 if type(mm.itemdrop) == type(''):
-                                    item = itemstock.get(mm.itemdrop)
+                                    item = itemstock.get(mm.itemdrop, luck)
                                     if item:
                                         mm.items = [item]
                                 else:
-                                    item = [itemstock.get(ii) for ii in mm.itemdrop]
+                                    item = [itemstock.get(ii, luck) for ii in mm.itemdrop]
                                     mm.items = [ii for ii in item if ii]
                             l.append(mm)
 
@@ -1715,7 +1715,7 @@ class MonsterStock:
 
         return []
 
-    def generate(self, branch, level, itemstock, moon):
+    def generate(self, branch, level, itemstock, luck, moon):
 
         while level > 0 and level not in self.monsters[branch]:
             level -= 1
@@ -1755,11 +1755,11 @@ class MonsterStock:
 
         if m.itemdrop:
             if type(m.itemdrop) == type(''):
-                i = itemstock.get(m.itemdrop)
+                i = itemstock.get(m.itemdrop, luck)
                 if i:
                     m.items = [i]
             else:
-                item = [itemstock.get(ii) for ii in m.itemdrop]
+                item = [itemstock.get(ii, luck) for ii in m.itemdrop]
                 m.items = [ii for ii in item if ii]
 
         return m

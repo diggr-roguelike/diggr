@@ -236,7 +236,7 @@ class Game:
     def warmth(self): return self.p.stats.warmth
 
     def generate_and_take_item(self, itemname):
-        self.p.inv.take(self.w.itemstock.find(itemname))
+        self.p.inv.take(self.w.itemstock.find(itemname, self.luck()))
 
     ##
 
@@ -373,10 +373,10 @@ class Game:
 
     ###
 
-    def luck(self): return self.p.stats.luck
+    def luck(self): return self.p.stats.luck.x
     
     def biased_gauss(self, p, n):
-        luck = self.luck().x
+        luck = self.luck()
         if luck == 0:
             return dg.random_gauss(p[0], p[1])
 
@@ -387,7 +387,7 @@ class Game:
         return max(int(round(b)), m)
 
     def intcoeff_bias(self):
-        luck = self.luck().x
+        luck = self.luck()
         if luck == 0:
             return 0
 
@@ -601,7 +601,7 @@ class Game:
                     if z[1] is True:
                         dg.grid_add_nogen(xxyy[0], xxyy[1])
                     else:
-                        itm = self.w.itemstock.get(z[1])
+                        itm = self.w.itemstock.get(z[1], self.luck())
                         if itm:
                             self.set_item(xxyy, [itm])
 
@@ -707,7 +707,7 @@ class Game:
                 xy = dg.grid_one_of_walk()
                 if xy not in self.d.monmap: break
 
-            m = self.w.monsterstock.generate(self.d.branch, lev, self.w.itemstock, self.d.moon)
+            m = self.w.monsterstock.generate(self.d.branch, lev, self.w.itemstock, self.luck(), self.d.moon)
             if m:
                 self.place_monster(xy, m)
                 dg.grid_add_nogen(xy[0], xy[1])
@@ -722,9 +722,9 @@ class Game:
         if quest:
             return
 
-        if dg.random_range(1, self.w.coef.moldchance) == 1:
+        if self.biased_gauss((0, self.w.coef.moldchance[0]), 1) < self.w.coef.moldchance[1]:
             xy = dg.grid_one_of_floor()
-            m = self.w.monsterstock.generate('x', self.d.dlev, self.w.itemstock, self.d.moon)
+            m = self.w.monsterstock.generate('x', self.d.dlev, self.w.itemstock, self.luck(), self.d.moon)
             if m:
                 self.place_monster(xy, m)
 
@@ -744,7 +744,7 @@ class Game:
             lev = self.biased_nat_gauss((self.d.dlev, self.w.coef.itemlevel), 1, 1)
 
             xy = dg.grid_one_of_walk()
-            item = self.w.itemstock.generate(lev)
+            item = self.w.itemstock.generate(lev, self.luck())
             if item:
                 self.set_item(xy, [item])
 
@@ -833,7 +833,7 @@ class Game:
 
         for x in xrange(9):
             k = pl[dg.random_n(len(pl))]
-            i = self.w.itemstock.generate(1)
+            i = self.w.itemstock.generate(1, self.luck())
 
             self.set_item(k, [i])
 
@@ -1170,7 +1170,7 @@ class Game:
             def bb_shrine_func(i, n):
                 self.p.msg.m("Ba'al-Zebub accepts your sacrifice!")
 
-                i2 = self.w.itemstock.generate(self.d.dlev)
+                i2 = self.w.itemstock.generate(self.d.dlev, self.luck())
                 if i2:
                     self.set_item(self.d.pc, [i2])
                 return False, True
@@ -1541,7 +1541,7 @@ class Game:
             ss.append('Slot: ' + self.slot_to_name(i.slot))
 
             if i.converts:
-                inew = self.w.itemstock.get(i.converts)
+                inew = self.w.itemstock.get(i.converts, self.luck())
                 if inew:
                     ss.append('Slot that needs to be free to use this item: ' + self.slot_to_name(inew.slot))
 
@@ -1640,7 +1640,7 @@ class Game:
             return item
 
         if item.converts:
-            inew = self.w.itemstock.get(item.converts)
+            inew = self.w.itemstock.get(item.converts, self.luck())
 
             if self.p.inv.check(inew.slot) is not None:
                 self.p.msg.m('Your ' + self.slot_to_name(inew.slot) + ' slot needs to be free to use this.')
@@ -1661,11 +1661,11 @@ class Game:
             for i2,slot in self.p.inv:
                 if i2 and i2.craft:
                     if item.craft[0] in i2.craft[1]:
-                        newi = self.w.itemstock.get(i2.craft[1][item.craft[0]])
+                        newi = self.w.itemstock.get(i2.craft[1][item.craft[0]], self.luck())
                         break
 
                     elif i2.craft[0] in item.craft[1]:
-                        newi = self.w.itemstock.get(item.craft[1][i2.craft[0]])
+                        newi = self.w.itemstock.get(item.craft[1][i2.craft[0]], self.luck())
                         break
 
             if not newi:
@@ -1902,7 +1902,7 @@ class Game:
 
             self.p.msg.m('A malevolent spirit appears!')
             q = l[dg.random_n(len(l))]
-            jinni.items = [self.w.itemstock.get('wishing')]
+            jinni.items = [self.w.itemstock.get('wishing', self.luck())]
             self.place_monster(q, jinni)
 
             self.p.achievements.use(item)
@@ -2235,12 +2235,12 @@ class Game:
 
             if self.try_feature(mon.xy, 'special') == 'cthulhu' and not is_noncorpse:
                 # HACK HACK!
-                itm = self.w.itemstock.get(['cthulhu_o1', 'cthulhu_o2', 'cthulhu_o3'][dg.random_n(3)])
+                itm = self.w.itemstock.get(['cthulhu_o1', 'cthulhu_o2', 'cthulhu_o3'][dg.random_n(3)], self.luck())
                 if itm:
                     itemdrop = [itm]
 
             elif self.d.moon == moon.NEW and not mon.itemdrop and not is_noncorpse:
-                corpse = self.w.itemstock.get('corpse')
+                corpse = self.w.itemstock.get('corpse', self.luck())
                 corpse.corpse = mon
                 itemdrop = itemdrop[:]
                 itemdrop.append(corpse)
@@ -2271,9 +2271,9 @@ class Game:
             qis = []
             for g in quest.gifts[self.d.dlev]:
                 if g:
-                    i = self.w.itemstock.get(g)
+                    i = self.w.itemstock.get(g, self.luck())
                 else:
-                    i = self.w.itemstock.generate(self.d.dlev)
+                    i = self.w.itemstock.generate(self.d.dlev, self.luck())
                 if i:
                     qis.append(i)
 
@@ -2775,7 +2775,7 @@ class Game:
             elif k in '\r\n':
                 break
 
-        i = self.w.itemstock.find(s)
+        i = self.w.itemstock.find(s, self.luck())
 
         self.p.achievements.wish()
 
@@ -2996,12 +2996,12 @@ class Game:
         if monname is None:
             m = []
             for ii in xrange(n):
-                mmi = self.w.monsterstock.generate(self.d.branch, self.d.dlev, self.w.itemstock, self.d.moon)
+                mmi = self.w.monsterstock.generate(self.d.branch, self.d.dlev, self.w.itemstock, self.luck(), self.d.moon)
                 if mmi and not mmi.inanimate:
                     m.append(mmi)
 
         else:
-            m = self.w.monsterstock.find(monname, n, self.w.itemstock)
+            m = self.w.monsterstock.find(monname, n, self.w.itemstock, self.luck())
             if len(m) == 0:
                 return []
 
@@ -3424,7 +3424,7 @@ class Game:
                                     ((chr(175), labelcolor if self.p.resource_timeout else libtcod.white),
                                      (' ', libtcod.white)))
 
-        luck = self.luck().x
+        luck = self.luck()
 
         if luck != 0:
             if luck < 0:

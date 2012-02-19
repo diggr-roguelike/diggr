@@ -6,11 +6,11 @@ import moon
 
 
 class Item:
-    def __init__(self, name, slot='', bonus=0, count=None, ident=False,
+    def __init__(self, name, slot='', bonus=0, count=None, 
                  skin=('~', libtcod.yellow), lightradius=0, explodes=0,
                  applies=False, liveexplode=None, radius=0, attack=0,
                  defence=0, desc=None, throwable=False, throwrange=8, booze=False,
-                 cursedchance=0, range=None, ammochance=None, rangeattack=0,
+                 cursedchance=None, range=None, ammochance=None, rangeattack=0,
                  straightline=False, confattack=None, rarity=None, healing=None,
                  homing=False, cooling=False, digging=False, psyimmune=False,
                  rangeexplode=False, springy=False, detector=False,
@@ -30,7 +30,6 @@ class Item:
         self.bonus = bonus
         self.name = name
         self.count = count
-        self.ident = ident
         self.skin = skin
         self.lightradius = lightradius
         self.explodes = explodes
@@ -107,13 +106,7 @@ class Item:
 
 
     def __str__(self):
-        s = ''
-        if self.ident:
-            if self.bonus > 0:
-                s += 'blessed '
-            elif self.bonus < 0:
-                s += 'cursed '
-        s += self.name
+        s = self.name
 
         if self.hide_count:
             if self.count > 0:
@@ -140,9 +133,9 @@ class Item:
             s = s + ' {tagged}'
         return s
 
-    def postprocess(self):
+    def postprocess(self, luck):
         if self.cursedchance:
-            if dg.random_range(0, self.cursedchance) == 0:
+            if dg.random_biased_gauss(0, self.cursedchance[0], luck, 1) < self.cursedchance[1]:
                 self.bonus = -1
 
         if self.ammochance:
@@ -188,7 +181,7 @@ class ItemStock:
         self.gbomb = Item('gamma bomb$s', count=5, stackrange=5,
                           skin=('!', libtcod.azure), applies=True,
                           rarity=5, converts='litgbomb',
-                          desc=["An object that looks something like a grenade, "
+                          desc=["An object that looks something like a grenade, ",
                                 "but with a 'radiation sickness' sign painted on it."])
 
         self.litdynamite = Item('burning stick of dynamite',
@@ -227,7 +220,7 @@ class ItemStock:
                               desc=['A larger-than-life sword.'])
 
         self.booze = Item("potion$s of booze", slot='d', skin=('!', libtcod.green),
-                          booze=True, cursedchance=10, applies=True, stackrange=2,
+                          booze=True, cursedchance=(1,-1), applies=True, stackrange=2,
                           count=1, rarity=10,
                           desc=['Sweet, sweet aqua vitae.',
                                 'It helps keep one warm in these horrible caves.'])
@@ -242,22 +235,22 @@ class ItemStock:
 
         self.medpack = Item("magic pill$s", slot='d', skin=('%', libtcod.white),
                             rarity=13, applies=True, healing=(3, 0.5),
-                            cursedchance=7, stackrange=5, count=1,
+                            cursedchance=(1,-0.8), stackrange=5, count=1,
                             desc=['A big white pill with a large red cross drawn on one side.'])
 
         self.herbalmed = Item("herbal palliative$s", slot='d', skin=('%', libtcod.light_green),
                               rarity=13, applies=True, healingsleep=(150, 25.0),
-                              cursedchance=7, stackrange=5, count=1,
+                              cursedchance=(1,-0.8), stackrange=5, count=1,
                               desc=['A large, green grassy-smelling pill.'])
 
         self.mushrooms = Item("mushroom$s", slot='d', skin=('%', libtcod.light_orange),
                               rarity=20, applies=True, food=(3, 0.5),
-                              cursedchance=7, stackrange=3, count=1,
+                              cursedchance=(1,-0.8), stackrange=3, count=1,
                               desc=['A mushroom growing on the cave floor.'])
 
         self.nodoz = Item("No-Doz pep pill$s", slot='d', skin=('%', libtcod.light_red),
                           rarity=20, applies=True, nodoz=True,
-                          cursedchance=4, stackrange=7, count=1,
+                          cursedchance=(1,-0.5), stackrange=7, count=1,
                           desc=['An over-the-counter medicine that helps combat sleep deprivation.'])
 
         self.rpg = Item('RPG launcher', slot='e', skin=('(', libtcod.red),
@@ -1041,15 +1034,15 @@ class ItemStock:
                     self._randpool.append(i)
 
 
-    def get(self, item):
+    def get(self, item, luck):
         i = getattr(self, item, None)
         if i:
             r = copy.copy(i)
-            r.postprocess()
+            r.postprocess(luck)
             return r
         return None
 
-    def find(self, item):
+    def find(self, item, luck):
         if len(item) < 3:
             return None
 
@@ -1064,11 +1057,11 @@ class ItemStock:
         x = dg.random_n(len(l))
         item = l[x][1]
         r = copy.copy(item)
-        r.postprocess()
+        r.postprocess(luck)
         del self._randpool[l[x][0]]
         return r
 
-    def generate(self, level):
+    def generate(self, level, luck):
         if len(self._randpool) == 0:
             self.regenpool()
 
@@ -1077,7 +1070,7 @@ class ItemStock:
 
         item.gencount += 1
         r = copy.copy(item)
-        r.postprocess()
+        r.postprocess(luck)
 
         del self._randpool[i]
 

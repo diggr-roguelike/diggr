@@ -56,7 +56,7 @@ class Coeffs:
         self.purple_telerange = 12
         self.purple_camorange = 3
 
-        self.moldchance = 2
+        self.moldchance = (1, 0)
 
         self.burnduration = 8
         self.burndamage = 0.76
