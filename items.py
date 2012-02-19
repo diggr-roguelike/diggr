@@ -25,7 +25,7 @@ class Item:
                  trapcloud=False, glueimmune=False, craft=None, resource=None,
                  hide_count=False, swampgas=False, digbonus=0, airfreshener=None, 
                  corpse=None, switch_moon=None, doppel=None, nodoz=False,
-                 special=None, winning=None):
+                 special=None, winning=None, align=None):
         self.slot = slot
         self.bonus = bonus
         self.name = name
@@ -98,6 +98,7 @@ class Item:
         self.nodoz = nodoz
         self.special = special
         self.winning = winning
+        self.align = align
 
         self.corpse = corpse
         self.ammo = None
@@ -951,6 +952,75 @@ class ItemStock:
                              count=0, 
                              desc=["An eldritch medallion of R'lyeh.",
                                    "Ancient beyond measure and just as evil."])
+
+
+
+        ## Alignement artifacts.
+
+        self.manitou = Item('the spirit pendant of Manitou', slot='b',  skin=('~', libtcod.green),
+                            rarity=1, count=0, align='lg', lightradius=9,
+                            desc=["An ancient pendant, made of tree bark and buffalo sinew.",
+                                  "It is imbued with the spirit essence of Manitou."])
+
+        self.wendigo = Item('a cannibal corpse of Wendigo', slot='', skin=('%', libtcod.dark_gray),
+                            rarity=1, count=0, align='ce', 
+                            desc=["An atrocious shrunken head of some fang-toothed midget.",
+                                  "This horrible token is a secret mark worn by the",
+                                  "Wendigo cannibals."])
+
+        self.quetzalcoatl = Item('the feathered coat of Quetzalcoatl', slot='c', skin=('[', libtcod.light_green),
+                                 rarity=1, count=0, align='ln', defence=1.5,
+                                 desc=['A fanciful and complex body armor made of fine satin',
+                                       'and precious quetzal feathers.',
+                                       'It has been said that it once belonged to the earthly',
+                                       'manifestation of the Feathered Serpent himself.'])
+
+        self.huitzilopochtli = Item('the serpent staff of Huitzilopochtli', slot='d', skin=('/', libtcod.red),
+                                    rarity=1, count=0, align='le', 
+                                    psyimmune=True, attack=0.05,
+                                    desc=['A staff of fine jade, wielded by the high priests of',
+                                          'Huitzilopochtli while commiting horrific rites of',
+                                          'human sacrifice.',
+                                          'The suffering of thousands of dying human beings and',
+                                          'the iron will of Huitzilopochtli has imbued this staff',
+                                          'with protective powers, especially against psionic attacks.'])
+        
+        self.tlaloc = Item('the water stone of Tlaloc', slot='', skin=('*', libtcod.gray),
+                           rarity=1, count=0, align='cn',
+                           desc=["A stone washed up from the stygian depths",
+                                 "of the world's oceans, it has been imbued",
+                                 'with the spiritual energy of Tlaloc, the',
+                                 'fearsome cthonic god of water and lightning.'])
+
+        self.kokopelli = Item('the winged sandals of Kokopelli', slot='g', skin=('[', libtcod.desaturated_peach), 
+                              defence=0.05, rarity=1, count=0, align='nn', springy=True,
+                              desc=["The sandals said to have once belonged to Kokopelli,",
+                                    'the trickster character of ancient legend.',
+                                    'Kokopelli might have been a god, a hero or even an insectoid',
+                                    'monster; little is known of this ever-shifting and multifaceted',
+                                    'creature.'])
+
+        self.pachamama = Item('the stone hammer of Pachamama', slot='e', skin=('(', libtcod.gray),
+                              attack=2.5, rarity=1, count=0, applies=True, digging=True, digbonus=0.2,
+                              align='ng',
+                              desc=['A sacred stone-age tool, once wielded by the priestesses',
+                                    'of Pachamama, the Earth Mother goddess of the ancient',
+                                    'inhabitants of these caverns.'.
+                                    'This hammer is made of precious obsidian and can',
+                                    'be used to break apart even the toughest rocks.'])
+
+        self.xibalba = Item('the skull crown of Xibalba', slot='a', skin=('[', libtcod.gray),
+                            telepathyrange=4, rarity=1, count=0, align='ne',
+                            desc=['A crown made out of a human skull.',
+                                  'It is the mark of an officer in the ranks of the',
+                                  'demon horde of Xibalba.'])
+
+        self.xbalanque = Item('the leather breeches of Xbalanque', slot='f', 
+                              skin=('[', libtcod.celadon),
+                              count=0, rarity=1, defence=1.0, align='cg',
+                              desc=['A simple pair of leather breeches that is said',
+                                    'to have once belonged to Xbalanque, an epic',
+                                    'hero who had once defeated the Lords of Xibalba.'])
 
 
         self.regenpool()

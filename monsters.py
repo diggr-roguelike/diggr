@@ -15,7 +15,7 @@ class Monster:
                  flavor=None, idtag=None, static=False, moldspew=None, is_mold=False,
                  boulder=False, inanimate=False, large=False, moon=None, fleerange=None,
                  no_exting=False, raise_dead=None, bloodsucker=None, summononce=None,
-                 pointscontrib=1, pointsfac=1, fast=False, blink_away=None):
+                 pointscontrib=1, pointsfac=1, fast=False, blink_away=None, align=None):
         self.name = name
         self.skin = skin
         self.count = count
@@ -60,6 +60,7 @@ class Monster:
         self.pointsfac = pointsfac
         self.fast = fast
         self.blink_away = blink_away
+        self.align = align
 
         if not idtag:
             self.idtag = name
@@ -131,7 +132,7 @@ class MonsterStock:
         self.add(Monster('Meganeura monyi', skin=('X', libtcod.light_gray),
                          branch='a', attack=0.5, defence=1.7, range=5, level=2,
                          count=7, confimmune=True, no_a=True, flying=True, flavor='flying',
-                         moon=newmoon_aligned,
+                         moon=newmoon_aligned, align='nn',
                          desc=['One of the largest insects to have ever lived,',
                                'it is a relative of the modern-day dragonfly from',
                                'the Carboniferous period.',
@@ -140,7 +141,7 @@ class MonsterStock:
         self.add(Monster('Sus barbatus', skin=('q', libtcod.dark_sepia),
                          branch='a', attack=1.2, defence=0.6, range=4, level=2,
                          count=6, no_a=True, flavor='animal',
-                         moon=fullmoon_aligned,
+                         moon=fullmoon_aligned, align='cg',
                          desc=['(Also known as the bearded pig.)',
                                'A species of pig. It is characterized by its beard-like',
                                'facial hair. It is native to the tropics.']))
@@ -148,7 +149,7 @@ class MonsterStock:
         self.add(Monster('Dinornis giganteus', skin=('B', libtcod.light_sepia),
                          branch='a', attack=1.0, defence=0.5, range=7, level=2,
                          count=5, no_a=True, flavor='animal',
-                         moon=newmoon_aligned,
+                         moon=newmoon_aligned, align='nn',
                          desc=['(Also known as the giant moa.)',
                                'A gigantic flightless bird, like the modern-day',
                                'ostrich, only about twice as big.']))
@@ -156,7 +157,7 @@ class MonsterStock:
         self.add(Monster('Megatherium americanum', skin=('Q', libtcod.light_amber),
                          branch='a', attack=0.5, defence=3.5, range=5, level=3,
                          count=6, no_a=True, slow=True, flavor='animal', large=True,
-                         moon=fullmoon_aligned,
+                         moon=fullmoon_aligned, align='lg',
                          desc=['A gigantic ground sloth from the Pliocene period.',
                                'It was one of the largest land animals to ever live,',
                                'larger than the modern-day African elephant.']))
@@ -164,7 +165,7 @@ class MonsterStock:
         self.add(Monster('Argentavis magnificens', skin=('B', libtcod.dark_blue),
                          branch='a', attack=3.0, defence=0.3, range=17, level=3,
                          count=6, no_a=True, flying=True, flavor='flying',
-                         moon=newmoon_aligned,
+                         moon=newmoon_aligned, align='ln',
                          desc=['The largest flying bird to have ever lived.',
                                'A relative of the modern-day Andean condor,',
                                'this bird had a wingspan of 7 meters and weighed',
@@ -173,7 +174,7 @@ class MonsterStock:
         self.add(Monster('Bos primigenius', skin=('Q', libtcod.lightest_gray),
                          branch='a', attack=7.0, defence=1.0, range=10, level=3,
                          count=3, no_a=True, flavor='animal', 
-                         moon=fullmoon_aligned,
+                         moon=fullmoon_aligned, align='lg',
                          desc=['(Also known as the aurochs.)',
                                'This magnificent animal was the ancesor of modern-day',
                                'domestic cattle. It is much larger and stronger than any',
@@ -181,7 +182,7 @@ class MonsterStock:
 
         self.add(Monster('Crocodylus porosus', skin=('R', libtcod.green),
                          branch='a', attack=5.0, defence=3.0, range=9, level=4,
-                         moon=newmoon_aligned,
+                         moon=newmoon_aligned, align='ne',
                          count=7, no_a=True, slow=True, heatseeking=True, flavor='snake',
                          desc=['(Also known as the saltwater crocodile.)',
                                'The largest of all living reptiles.']))
@@ -189,7 +190,7 @@ class MonsterStock:
         self.add(Monster('Varanus komodoensis', skin=('R', libtcod.gray),
                          branch='a', attack=2.0, defence=2.0, range=9, level=4,
                          count=7, no_a=True, flavor='snake',
-                         moon=newmoon_aligned,
+                         moon=newmoon_aligned, align='ne',
                          desc=['(Also known as the Komodo dragon.)',
                                'Not as large as a crocodile, this truly huge',
                                'lizard is still a fearsome opponent.']))
@@ -198,7 +199,7 @@ class MonsterStock:
                          branch='a', attack=1.0, defence=24.0, explodeimmune=True,
                          range=10, confimmune=True, slow=True, level=5, count=4, no_a=True,
                          flavor='giant', large=True,
-                         moon=fullmoon_aligned,
+                         moon=fullmoon_aligned, align='ng',
                          desc=['The largest land turtle, ever.',
                                'Found in the Pleistoce perood, it is the size and weight',
                                'of your average SUV vehicle.']))
@@ -206,14 +207,14 @@ class MonsterStock:
         self.add(Monster('Gigantophis garstini', skin=('S', libtcod.green),
                          branch='a', attack=4.0, defence=1.0, range=20, level=5, count=9, no_a=True,
                          heatseeking=True, confimmune=True, flavor='snake',
-                         moon=newmoon_aligned,
+                         moon=newmoon_aligned, align='ln',
                          desc=['One of the largest snakes known, it is an almost',
                                '10 meter long ancient relative of the modern boa constrictor.']))
 
         self.add(Monster('Arctotherium bonariense', skin=('Q', libtcod.dark_sepia),
                          branch='a', attack=10.0, defence=2.0, range=10, level=6, count=3, no_a=True,
                          flavor='carnivore', large=True,
-                         moon=fullmoon_aligned,
+                         moon=fullmoon_aligned, align='le',
                          desc=['The most fearsome mammal to have ever lived, this bear',
                                'lived during the Pleistocene epoch.',
                                'It is more than twice the size of the modern-day grizzly bear.']))
@@ -221,7 +222,7 @@ class MonsterStock:
         self.add(Monster('Glyptodon perforatus', skin=('o', libtcod.brass),
                          branch='a', attack=0.2, defence=20.0, range=7, count=7, no_a=True,
                          explodeimmune=True, level=6, heatseeking=True, flavor='giant', large=True,
-                         moon=fullmoon_aligned,
+                         moon=fullmoon_aligned, align='ng',
                          desc=['A relative of the armadillo from the Pleistocene epoch.',
                                'Unlike the modern armadillos, this armored monstrocity is',
                                'the size and weight of a car.']))
@@ -229,21 +230,21 @@ class MonsterStock:
         self.add(Monster('Pteranodon longiceps', skin=('B', libtcod.lightest_lime),
                          branch='a', attack=3.0, defence=4.0, range=10, level=7, count=8,
                          no_a=True, flavor='flying', large=True,
-                         moon=newmoon_aligned,
+                         moon=newmoon_aligned, align='le',
                          desc=['A flying reptile that had a wingspan of over 6 meters!',
                                'It was a very common animal during the Cretaceous period.']))
 
         self.add(Monster('Hippopotamus gorgops', skin=('Q', libtcod.light_azure),
                          branch='a', attack=8.0, defence=2.0, range=4, level=7, count=5, no_a=True,
                          flavor='animal', large=True,
-                         moon=fullmoon_aligned,
+                         moon=fullmoon_aligned, align='ng',
                          desc=['This hippo from the Miocene period was much, much larger than',
                                'its modern-day living relatives.']))
 
         self.add(Monster('Velociraptor mongoliensis', skin=('d', libtcod.yellow),
                          branch='a', attack=1.5, defence=1.0, range=20, level=8, count=24,
                          no_a=True, summon=('Velociraptor mongoliensis', 4),
-                         flavor='animal',
+                         flavor='animal', align='ce',
                          desc=['A small theropod from the Cretaceous period.',
                                'It is about the size of a chicken and is covered with',
                                'bright, feathery plumage. It has a relatively large, ',
@@ -253,7 +254,7 @@ class MonsterStock:
         self.add(Monster('Titanoceratops ouranos', skin=('D', libtcod.sepia), branch='a',
                          attack=11.0, defence=4.0, range=3, level=8, count=8,
                          no_a=True, flavor='giant', large=True,
-                         moon=fullmoon_aligned,
+                         moon=fullmoon_aligned, align='cn',
                          desc=['The largest of many species of triceratops.',
                                'You recognize the familiar triceratops profile from',
                                'numerous film, cartoon and book descriptions of this',
@@ -262,7 +263,7 @@ class MonsterStock:
         self.add(Monster('Indricotherium transouralicum', skin=('Q', libtcod.sepia),
                          branch='a', attack=1.0, defence=6.0, range=7, level=9, count=6,
                          no_a=True, flavor='giant', large=True,
-                         moon=fullmoon_aligned,
+                         moon=fullmoon_aligned, align='cg',
                          desc=['Named after the mystical Indrik-Beast, this is the ',
                                'largest land mammal ever to have lived!',
                                'A relative of the rhinoceros, it looks like a ridiculously',
@@ -273,20 +274,20 @@ class MonsterStock:
         self.add(Monster('Mammuthus primigenius', skin=('Q', libtcod.darker_amber),
                          branch='a', attack=3.0, defence=4.0, range=6, level=9, count=6,
                          no_a=True, flavor='giant', large=True,
-                         moon=newmoon_aligned,
+                         moon=newmoon_aligned, align='lg'
                          desc=['Also known as the wooly mammoth.']))
 
         self.add(Monster('Tyrannosaurus rex', skin=('D', libtcod.light_lime), branch='a',
                          attack=15.0, defence=15.0, range=20, level=10, count=1, no_a=True,
                          confimmune=True, flavor='carnivore', large=True,
-                         moon=newmoon_aligned,
+                         moon=newmoon_aligned, align='ce',
                          desc=['The Tyrant Lizard King, in person. No introduction necessary.']))
 
         self.add(Monster('Sauroposeidon proteles', skin=('D', libtcod.light_azure), branch='a',
                          attack=1.0, defence=64.0, range=10, level=11, count=1, no_a=True,
                          slow=True, confimmune=True, explodeimmune=True, radimmune=True,
                          flavor='earthshake', large=True,
-                         moon=fullmoon_aligned,
+                         moon=fullmoon_aligned, align='cn',
                          desc=['The Earthshaker-Lizard. A sauropod so truly, veritably huge that',
                                'it might have indeed caused earthquakes merely by walking.',
                                "Also, the World's Largest Dinosaur.",
@@ -309,7 +310,7 @@ class MonsterStock:
 
         self.add(Monster('brownie', skin=('h', libtcod.light_red),
                          attack=1.5, defence=0.2, range=8, level=2, count=4, branch='b',
-                         flavor='faerie',
+                         flavor='faerie', align='lg',
                          moon=fullmoon_aligned,
                          desc=['Once a friendly house spirit, this small fey humanoid',
                                'has been driven to hate humanity after years of neglect',
@@ -317,7 +318,7 @@ class MonsterStock:
 
         self.add(Monster('pixie', skin=('h', libtcod.green),
                          attack=1.0, defence=0.7, range=6, level=2, count=4, branch='b',
-                         flavor='faerie',
+                         flavor='faerie', align='lg',
                          moon=fullmoon_aligned,
                          desc=['A magical creature that has been driven underground',
                                'by human pollution and habitat loss.']))
@@ -325,13 +326,13 @@ class MonsterStock:
         self.add(Monster('sprite', skin=('f', libtcod.light_lime),
                          attack=0.5, defence=0.9, range=8, level=2, count=3, branch='b',
                          poisimmune=True, flavor='faerie',
-                         moon=newmoon_aligned,
+                         moon=newmoon_aligned, align='le',
                          desc=['A ghost of a dead faerie.']))
 
         self.add(Monster('nematode', skin=('w', libtcod.yellow),
                          attack=0, psyattack=2.0, defence=0.1, range=30, psyrange=4,
                          level=3, count=5, branch='b', flavor='snake',
-                         moon=newmoon_aligned,
+                         moon=newmoon_aligned, align='ce',
                          desc=['A gigantic (5 meter long) yellow worm.',
                                'It has no visible eyes, but instead has a ',
                                'giant, bulging, pulsating brain.']))
@@ -339,7 +340,7 @@ class MonsterStock:
         self.add(Monster('shoggoth', skin=('x', libtcod.dark_sepia),
                          attack=0.7, psyattack=0.5, defence=0.6, range=5, psyrange=3, level=3,
                          count=3, branch='b', flavor='weird',
-                         moon=newmoon_aligned,
+                         moon=newmoon_aligned, align='cn',
                          desc=['A creature of a terrible servant race created by the',
                                'Elder Things. A shapeless congeries of protoplasmic',
                                'bubbles, faintly self-luminous.']))
@@ -356,14 +357,14 @@ class MonsterStock:
         self.add(Monster('satyr', skin=('h', libtcod.light_sepia),
                          attack=7.0, defence=0.01, range=5, level=4,
                          count=4, branch='b', flavor='weird',
-                         moon=fullmoon_aligned,
+                         moon=fullmoon_aligned, align='ce',
                          desc=["A savage worshipper of the Mad God Dionysus.",
                                 'He is completely naked and gibbering wildly.']))
 
         self.add(Monster('sylphid', skin=('f', libtcod.light_blue),
                          attack=1.4, defence=1.4, range=4, level=4,
                          count=4, psyattack=0.1, psyrange=10, branch='b',
-                         flavor='air',
+                         flavor='air', align='ln',
                          moon=fullmoon_aligned,
                          desc=['An air elemental. It takes the form of a beautiful',
                                'young woman.']))
@@ -371,8 +372,8 @@ class MonsterStock:
         self.add(Monster('chthonian', skin=('W', libtcod.dark_blue),
                          attack=4.0, psyattack=2.0, defence=1.0, range=8, psyrange=2,
                          level=5, count=4, straightline=True, stoneeating=True, branch='b',
-                         flavor='weird',
-                         moon=newmoon_aligned,
+                         flavor='weird', 
+                         moon=newmoon_aligned, align='ne',
                          desc=['An immense squid-like creature that burrows in the',
                                "dark, loathsome depths of the Earth's crust.",
                                'It is covered in slime and is accompanied by a faint',
@@ -381,14 +382,14 @@ class MonsterStock:
         self.add(Monster('gnophkeh', skin=('h', libtcod.gray),
                          attack=7.0, defence=1.0, range=18,
                          level=5, count=4, branch='b', flavor='weird',
-                         moon=newmoon_aligned,
+                         moon=newmoon_aligned, align='le',
                          desc=['A member of a race of disgusting, hairy cannibal humanoids.']))
 
         self.add(Monster('sleep faerie', skin=('f', libtcod.light_pink),
                          attack=1.0, defence=1.0, range=9, level=6, count=5,
                          sleepattack=True, flying=True, branch='b',
-                         flavor='faerie',
-                         moon=fullmoon_aligned,
+                         flavor='faerie', 
+                         moon=fullmoon_aligned, align='ng',
                          desc=["A tiny fay creature dressed in pink ballet clothes.",
                                "It looks adorable."]))
 
@@ -396,26 +397,26 @@ class MonsterStock:
                          attack=3.0, defence=2.0, range=20, level=6, count=5,
                          confimmune=True, flying=True, branch='b', fireimmune=True,
                          moon=fullmoon_aligned,
-                         flavor='faerie',
+                         flavor='faerie', align='ln',
                          desc=["A faery creature from the elemental plane of Aelfrice."]))
 
         self.add(Monster('leipreachan', skin=('f', libtcod.azure),
                          attack=2.5, defence=1.5, range=9, level=7, count=5,
-                         moon=fullmoon_aligned,
+                         moon=fullmoon_aligned, align='ng',
                          hungerattack=True, branch='b', flavor='faerie',
                          desc=['A fay creature in the form of a dirty, lecherous old man.']))
 
         self.add(Monster('black knight', skin=('k', libtcod.darker_grey),
                          attack=6.0, defence=4.5, range=8, level=7, count=6, branch='b',
-                         flavor='humanwarrior',
-                         moon=newmoon_aligned,
+                         flavor='humanwarrior', 
+                         moon=newmoon_aligned, align='cn',
                          desc=['An evil humanoid in black cast-iron armor.',
                                'He is armed with a longsword.']))
 
         self.add(Monster('frost giant', skin=('k', libtcod.lighter_sky),
                          attack=6.0, defence=4.5, range=8, level=8, count=5, branch='b',
                          flavor='giant', large=True,
-                         moon=fullmoon_aligned,
+                         moon=fullmoon_aligned, align='ne',
                          desc=['A humanoid about twice the size of a human.',
                                'He is an evil, emotionless immigrant from the dark',
                                'planes of Jotunheim.']))
@@ -425,7 +426,7 @@ class MonsterStock:
                          flying=True, explodeimmune=True, confimmune=True,
                          psyrange=8, psyattack=2.0, branch='b', no_a=True,
                          flavor='faerie', large=True,
-                         moon=fullmoon_aligned,
+                         moon=fullmoon_aligned, align='cg',
                          desc=['A faerie king.',
                                'He takes on the appearance of a 2 meter tall',
                                'handsome man, wearing a delicate crown.']))
@@ -434,7 +435,7 @@ class MonsterStock:
                          attack=7.0, defence=7.0, range=10, level=9, count=1,
                          confimmune=True, branch='b', no_a=True,
                          flavor='humanweird',
-                         moon=fullmoon_aligned,
+                         moon=fullmoon_aligned, align='cg',
                          desc=["A deformed beast-man. Half-devil on his father's side,"
                                'he is a resentful slave of Prospero.']))
 
@@ -444,7 +445,7 @@ class MonsterStock:
                          psyrange=2, psyattack=2.0, branch='b',
                          summon=('black knight', 2), no_a=True,
                          poisimmune=True, flavor=None, large=True,
-                         moon=fullmoon_aligned,
+                         moon=fullmoon_aligned, align='nn',
                          desc=["Self-styled royalty, self-styled wizard, self-styled",
                                'ruler of this dungeon.',
                                'He has instilled unthinking loyalty into his subjects',
@@ -456,7 +457,7 @@ class MonsterStock:
                          psyrange=20, psyattack=2.0, branch='b', fireimmune=True,
                          summon=('Prospero', 2), no_a=True, poisimmune=True,
                          flavor='weird', large=True,
-                         moon=newmoon_aligned,
+                         moon=newmoon_aligned, align='ce',
                          desc=['An Outer God: The Lurker at the Threshold, The Key and the Gate,',
                                'The Beyond One, Opener of the Way, The All-in-One',
                                'and the One-in-All.',
@@ -482,7 +483,7 @@ class MonsterStock:
         self.add(Monster('snorlax', skin=('v', libtcod.purple),
                          attack=1.0, defence=1.2, range=5, slow=True, level=2, count=5,
                          branch='c', flavor='digital',
-                         moon=fullmoon_aligned,
+                         moon=fullmoon_aligned, align='cg',
                          desc=['A 2 meter tall, enourmously obese creature of',
                                'some indeterminate cat-bear-dog race. It has',
                                'a pinkish-purple hide.']))
@@ -490,7 +491,7 @@ class MonsterStock:
         self.add(Monster('charizard', skin=('v', libtcod.green),
                          attack=1.0, defence=0.4, range=8, level=2, count=5,
                          branch='c', flavor='digital',
-                         moon=fullmoon_aligned,
+                         moon=fullmoon_aligned, align='ng',
                          desc=['A creature of indeterminate race, looking like',
                                'some sort of small dragonish flying reptile.',
                                'It is greenish in color.']))
@@ -498,7 +499,7 @@ class MonsterStock:
         self.add(Monster('squirtle', skin=('v', libtcod.light_blue),
                          attack=0.4, defence=1.0, range=6, level=2, count=7,
                          heatseeking=True, branch='c', flavor='digital',
-                         moon=fullmoon_aligned,
+                         moon=fullmoon_aligned, align='le',
                          desc=['A bluish creature of indeterminate race.',
                                'It looks like a cute turtle.']))
 
@@ -506,7 +507,7 @@ class MonsterStock:
                          attack=0.3, defence=0.2, range=7, level=3,
                          itemdrop='bomb', confimmune=True, count=7,
                          heatseeking=True, branch='c', flavor=None,
-                         moon=newmoon_aligned,
+                         moon=newmoon_aligned, align='cg',
                          desc=['A large plantlike carnivorous creature.',
                                'It has large bulbous appendages growing out of its stalk.',
                                'It looks like it is radiating heat from the inside.']))
@@ -515,14 +516,14 @@ class MonsterStock:
                          attack=1.0, defence=24.0, explodeimmune=True, range=10,
                          confimmune=True, slow=True, level=3, count=4, branch='c',
                          fireimmune=True, poisimmune=True, flavor='robot', 
-                         moon=newmoon_aligned,
+                         moon=newmoon_aligned, align='ng',
                          desc=['A remotely-controlled robot used for exploring the dungeon.']))
 
         self.add(Monster('memetic virus', skin=('v', libtcod.dark_gray),
                          attack=0.3, defence=0.3, explodeimmune=True, radimmune=True,
                          branch='c', fireimmune=True, poisimmune=True, flavor=None,
                          range=30, level=3, count=16, summon=('memetic virus', 5),
-                         moon=fullmoon_aligned,
+                         moon=fullmoon_aligned, align='nn',
                          desc=["It doesn't exist. It's a memetic virus."]))
 
         self.add(Monster('spore', skin=('x', libtcod.pink),
@@ -538,21 +539,21 @@ class MonsterStock:
                          attack=7.0, defence=7.0, range=5, level=4,
                          count=2, confimmune=True, radimmune=True, branch='c', fireimmune=True,
                          poisimmune=True, flavor='snake',
-                         moon=newmoon_aligned,
+                         moon=newmoon_aligned, align='ce',
                          desc=["A horrifying alien creature. It looks like a giant,",
                                "very evil insect. It is truly scary."]))
 
         self.add(Monster('cthulhumon', skin=('v', libtcod.gray),
                          attack=3.0, psyattack=2.0, defence=1.0, range=8, psyrange=8,
                          level=5, confimmune=True, count=4, branch='c', flavor='digital',
-                         moon=newmoon_aligned,
+                         moon=newmoon_aligned, align='le',
                          desc=['The other Pokemon nobody told you about.']))
 
         self.add(Monster('cyberdemon', skin=('Z', libtcod.red),
                          attack=7.0, defence=2.0, range=4, level=5, count=2,
                          explodeimmune=True, summon=('spore', 2), branch='c',
                          flavor='robot', large=True,
-                         moon=newmoon_aligned,
+                         moon=newmoon_aligned, align='ce',
                          desc=['A 3 meter tall hellish demon-robot hybrid.',
                                'Fleshy parts of its demonic body have rotted away,',
                                'to be replaced with crude stainless-steel robotic parts.']))
@@ -561,21 +562,21 @@ class MonsterStock:
                          attack=2.0, defence=4.5, explodeimmune=True, range=30,
                          level=6, count=4, straightline=True, stoneeating=True,
                          heatseeking=True, branch='c', flavor='giant', large=True,
-                         moon=fullmoon_aligned,
+                         moon=fullmoon_aligned, align='lg',
                          desc=['A giant worm. It is gray in color and has a skin made of something like granite.',
                                'It is about 15 meters in length.']))
 
         self.add(Monster('klingon', skin=('k', libtcod.brass),
                          attack=5.0, defence=0.5, range=5, level=6,
                          count=5, branch='c', flavor='humanwarrior',
-                         moon=fullmoon_aligned,
+                         moon=fullmoon_aligned, align='lg',
                          desc=["A member of a chivalrous warrior race of extraterrestrial aliens."]))
 
         self.add(Monster('autobot', skin=('z', libtcod.silver),
                          attack=1.5, defence=1.5, range=15, level=7,
                          itemdrop='bomb', confimmune=True, radimmune=True,
                          explodeimmune=True, count=7, branch='c', poisimmune=True,
-                         flavor='robot',
+                         flavor='robot', align='ln',
                          moon=fullmoon_aligned,
                          desc=['An extraterrestrial sentient robot from the planet',
                                'Cybertron. Powered by the energy source Nucleon,',
@@ -586,7 +587,7 @@ class MonsterStock:
                          itemdrop='radblob', confimmune=True, count=7,
                          radimmune=True, heatseeking=True, branch='c', fireimmune=True,
                          poisimmune=True, flavor='robot',
-                         moon=newmoon_aligned,
+                         moon=newmoon_aligned, 
                          desc=["The very first model in Cyberdine's robot-killer lineup.",
                                '(Brought to you by Skynet.)']))
 
@@ -595,7 +596,7 @@ class MonsterStock:
                          confimmune=True, radimmune=True, branch='c',
                          explodeimmune=True, count=7, summon=('autobot', 3),
                          poisimmune=True, flavor='robot',
-                         moon=newmoon_aligned,
+                         moon=newmoon_aligned, align='ne',
                          desc=['An extraterrestrial sentient robot from the planet',
                                'Cybertron. Powered by the energy source Nucleon,',
                                'he fights for intergalactic Evil.']))
@@ -603,7 +604,7 @@ class MonsterStock:
         self.add(Monster('triffid', skin=('x', libtcod.peach),
                          attack=2.0, defence=2.0, range=5, level=8, count=16,
                          itemdrop='triffidlarva', confimmune=True, branch='c',
-                         flavor=None,
+                         flavor=None, align='cn',
                          moon=fullmoon_aligned,
                          desc=['A carnivorous plant. It is a sneaky pest that is very',
                                'hard to get rid of.']))
@@ -613,7 +614,7 @@ class MonsterStock:
                          itemdrop='radblob', selfdestruct=True,
                          radimmune=True, explodeimmune=True, branch='c',
                          confimmune=True, count=16, flying=True, no_a=True,
-                         flavor='flying',
+                         flavor='flying', align='nn',
                          moon=fullmoon_aligned,
                          desc=['A bird-sized, moth-like creature.',
                                'It has a strange green glow.']))
@@ -623,14 +624,14 @@ class MonsterStock:
                          confimmune=True, explodeimmune=True, radimmune=True, flying=True,
                          no_a=True, count=2, level=9, branch='c', fireimmune=True,
                          poisimmune=True, flavor='digital', large=True,
-                         moon=newmoon_aligned,
+                         moon=newmoon_aligned, align='cn',
                          desc=["A manifestation of the powerful AI construct named 'Wintermute'."]))
 
         self.add(Monster('Voltron', skin=('Z', libtcod.white),
                          attack=6.0, defence=5.0, range=5, level=10, count=1, no_a=True,
                          explodeimmune=True, confimmune=True, branch='c', heatseeking=True,
                          fireimmune=True, poisimmune=True, flavor='robot', large=True,
-                         moon=fullmoon_aligned,
+                         moon=fullmoon_aligned, align='ln',
                          desc=['Defender of the Universe.']))
 
         self.add(Monster('Gojira-sama', skin=('G', libtcod.green),
@@ -638,7 +639,7 @@ class MonsterStock:
                          radimmune=True, explodeimmune=True, branch='c', no_a=True,
                          summon=('mosura-chan', 3), itemdrop=['gbomb', 'radsuit'],
                          flavor='earthshake', large=True,
-                         moon=newmoon_aligned,
+                         moon=newmoon_aligned, align='ne',
                          desc=['She really hates Japan after what they did',
                                'to the nuclear power plant.']))
 
@@ -660,19 +661,19 @@ class MonsterStock:
 
         self.add(Monster('armiger', skin=('k', libtcod.silver),
                          attack=2.0, defence=1.0, range=8, level=2,
-                         count=4, branch='d', flavor='humanwarrior',
+                         count=4, branch='d', flavor='humanwarrior', align='ng',
                          desc=['A member of the warrior caste.']))
 
         self.add(Monster('exultant', skin=('h', libtcod.gold),
                          attack=0.5, defence=0.5, range=8, level=2,
                          count=3, branch='d', summon=('armiger', 2),
-                         flavor='humanwarrior',
+                         flavor='humanwarrior', align='lg',
                          desc=['A member of the nobility caste.']))
 
         self.add(Monster('aquastor', skin=('v', libtcod.gray),
                          attack=1.5, defence=1.0, range=10, level=3, count=4,
                          hungerattack=True, branch='d', flying=True, poisimmune=True,
-                         flavor=None,
+                         flavor=None, align='lg',
                          moon=newmoon_aligned,
                          desc=['An entity formed by the power of a concentrated thought',
                                'and which assumed a physical form.']))
@@ -681,14 +682,14 @@ class MonsterStock:
                          attack=0.0, defence=2.0, range=8, level=3,
                          count=4, psyattack=1.5, psyrange=7, branch='d', flying=True,
                          fireimmune=True, poisimmune=True, flavor='faerie',
-                         moon=fullmoon_aligned,
+                         moon=fullmoon_aligned, align='ln',
                          desc=["A spirit-image of a living or dead person;",
                                "a shade or phantom look-alike of the human form."]))
 
         self.add(Monster('destrier', skin=('q', libtcod.dark_gray),
                          attack=2.5, defence=1.5, range=6, level=4, count=3,
                          branch='d', flavor='carnivore',
-                         moon=fullmoon_aligned,
+                         moon=fullmoon_aligned, align='nn',
                          desc=['A mount; A highly modified horse, possessing',
                                'clawed feet (for better traction) and large canine teeth.',
                                'It is carnivorous.']))
@@ -697,7 +698,7 @@ class MonsterStock:
                          attack=0.5, defence=1.0, range=10, level=4, count=3,
                          summon=('eidolon', 2), itemdrop='radblob',
                          branch='d', poisimmune=True, flavor='humanweird',
-                         moon=fullmoon_aligned,
+                         moon=fullmoon_aligned, align='ln',
                          desc=['In fact an extraterrestrial who disguises itself as an',
                                'urthly monster.']))
 
@@ -705,7 +706,7 @@ class MonsterStock:
                          attack=2.0, defence=1.0, range=5, level=5,
                          psyattack=1.5, psyrange=10,
                          count=4, branch='d', flavor='weird',
-                         moon=newmoon_aligned,
+                         moon=newmoon_aligned, align='ne',
                          desc=['A human from Ascia, the tyrannical empire ruled',
                                'by the evil Abaia. His mind is warped to the point',
                                'where he cannot any longer speak or understand any',
@@ -714,14 +715,14 @@ class MonsterStock:
         self.add(Monster('smilodon', skin=('Q', libtcod.dark_orange),
                          attack=2.5, defence=1.5, range=12, level=5, count=3,
                          branch='d', flavor='carnivore',
-                         moon=fullmoon_aligned,
+                         moon=fullmoon_aligned, align='nn',
                          desc=['An ancient genetically-engineered feline animal.',
                                'It looks somewhat like the familiar sabre-toothed tiger.']))
 
         self.add(Monster('alzabo', skin=('u', libtcod.darkest_red),
                          attack=2.0, defence=2.0, range=12, level=6, count=3,
                          branch='d', itemdrop='alzabobrain', flavor='carnivore',
-                         moon=newmoon_aligned,
+                         moon=newmoon_aligned, align='ce',
                          desc=[' "The red orbs of the alzabo were something more, neither',
                                '  the intelligence of humankind nor the the innocence of',
                                '  the brutes. So a fiend might look, I thought, when it had',
@@ -730,13 +731,13 @@ class MonsterStock:
         self.add(Monster('undine', skin=('u', libtcod.darkest_blue),
                          attack=0.7, defence=3.0, range=10, level=6, count=5,
                          sleepattack=True, branch='d', flavor='snake', large=True,
-                         moon=newmoon_aligned,
+                         moon=newmoon_aligned, align='ce',
                          desc=["A monstrous slave-servant of its megetherian overlords.",
                                'It looks like humongous, deformed mermaid.']))
 
         self.add(Monster('Scylla', skin=('U', libtcod.white),
                          attack=10, defence=10, range=15, level=7, count=1,
-                         branch='d', no_a=True, flavor='giant', large=True,
+                         branch='d', no_a=True, flavor='giant', large=True, align='le',
                          desc=['A megatherian: an evil, immortal, gigantic creature of',
                                'possibly extraterrestrial origin. They are hellbent on ruling',
                                'Urth. They are powerful enough and amoral enough to be',
@@ -744,7 +745,8 @@ class MonsterStock:
 
         self.add(Monster('Uroboros', skin=('U', libtcod.light_green),
                          attack=10, defence=10, range=15, level=8, count=1,
-                         branch='d', confimmune=True, no_a=True, flavor='giant', large=True,
+                         branch='d', confimmune=True, no_a=True, flavor='giant', large=True, 
+                         align='ne',
                          desc=['A megatherian: an evil, immortal, gigantic creature of',
                                'possibly extraterrestrial origin. They are hellbent on ruling',
                                'Urth. They are powerful enough and amoral enough to be',
@@ -753,7 +755,7 @@ class MonsterStock:
         self.add(Monster('Erebus', skin=('U', libtcod.light_pink),
                          attack=10, defence=10, range=15, level=9, count=1,
                          branch='d', confimmune=True, explodeimmune=True, no_a=True,
-                         fireimmune=True, flavor='giant', large=True,
+                         fireimmune=True, flavor='giant', large=True, align='cn',
                          desc=['A megatherian: an evil, immortal, gigantic creature of',
                                'possibly extraterrestrial origin. They are hellbent on ruling',
                                'Urth. They are powerful enough and amoral enough to be',
@@ -762,7 +764,7 @@ class MonsterStock:
         self.add(Monster('Arioch', skin=('U', libtcod.light_sky),
                          attack=10, defence=10, range=15, level=10, count=1, no_a=True,
                          branch='d', confimmune=True, explodeimmune=True, radimmune=True,
-                         fireimmune=True, flavor='earthshake', large=True,
+                         fireimmune=True, flavor='earthshake', large=True, align='le',
                          desc=['A megatherian: an evil, immortal, gigantic creature of',
                                'possibly extraterrestrial origin. They are hellbent on ruling',
                                'Urth. They are powerful enough and amoral enough to be',
@@ -771,8 +773,8 @@ class MonsterStock:
         self.add(Monster('Abaia', skin=('U', libtcod.grey),
                          attack=10, defence=10, range=15, level=11, count=1,
                          branch='d', confimmune=True, explodeimmune=True, radimmune=True,
-                         fireimmune=True, flavor='earthshake', large=True,
-                         summon=('undine', 3), no_a=True, itemdrop='gluegun',
+                         fireimmune=True, flavor='earthshake', large=True, 
+                         summon=('undine', 3), no_a=True, itemdrop='gluegun', align='cn',
                          desc=['A megatherian: an evil, immortal, gigantic creature of',
                                'possibly extraterrestrial origin. They are hellbent on ruling',
                                'Urth. They are powerful enough and amoral enough to be',
@@ -793,7 +795,7 @@ class MonsterStock:
         self.add(Monster('Aquilonian marshall', skin=('h', libtcod.dark_blue),
                          attack=0.5, defence=0.5, range=6, level=2, count=8,
                          summon=('Aquilonian marshall', 5), branch='e',
-                         flavor='humanwarrior',
+                         flavor='humanwarrior', align='ng',
                          moon=fullmoon_aligned,
                          desc=['A mercenary, sent from the Aquilonian cities on',
                                'the surface to partol these dangerous tunnels.']))
@@ -801,19 +803,19 @@ class MonsterStock:
         self.add(Monster('giant spider', skin=('X', libtcod.gray),
                          attack=0.7, defence=0.7, range=5, level=2, count=8,
                          branch='e', flavor='snake',
-                         moon=newmoon_aligned,
+                         moon=newmoon_aligned, align='nn',
                          desc=['A huge, very ugly and disturbing spider.']))
 
         self.add(Monster('Turanian nomad', skin=('h', libtcod.orange),
                          attack=1.3, defence=0.4, range=7, level=2, count=8,
                          branch='e', flavor='humanwarrior',
-                         moon=fullmoon_aligned,
+                         moon=fullmoon_aligned, align='cg',
                          desc=['A nomad from the boundless steppes of Turania.']))
 
         self.add(Monster('Cimmerian pirate', skin=('h', libtcod.red),
                          attack=1.2, defence=0.6, range=7, level=3, count=8,
                          branch='e', summon=('Cimmerian pirate', 4),
-                         flavor='humanwarrior',
+                         flavor='humanwarrior', align='cn',
                          moon=fullmoon_aligned,
                          desc=['A cruel-hearted Cimmerian tribesman, turned to piracy',
                                'in search of loot and women.',
@@ -823,13 +825,13 @@ class MonsterStock:
         self.add(Monster('giant serpent', skin=('S', libtcod.darkest_lime),
                          attack=1.8, defence=0.5, range=9, level=3, count=8,
                          branch='e', flavor='snake',
-                         moon=newmoon_aligned,
+                         moon=newmoon_aligned, align='nn',
                          desc=['A malevolent nag, a giant snake borne from the',
                                'unholy mixture of human and cobra seed.']))
 
         self.add(Monster('Hyperborean barbarian', skin=('h', libtcod.peach),
                          attack=2.2, defence=0.9, range=6, level=3, count=6,
-                         branch='e', flavor='humanwarrior',
+                         branch='e', flavor='humanwarrior', align='cg',
                          desc=['A barbarian who hails from one of the hearty tribes',
                                'of great frosty Hyperborea.']))
 
@@ -837,7 +839,7 @@ class MonsterStock:
                          attack=1.0, defence=1.0, range=8, level=4, count=6,
                          branch='e', summon=('giant serpent', 3),
                          flavor='wizard',
-                         moon=newmoon_aligned,
+                         moon=newmoon_aligned, align='ln',
                          desc=['Hailing from the banks of the river Stygs, he has',
                                'a swarthy complexion and sports a completely shaved head.',
                                'He is skilled in the arcane worship of the enigmatic',
@@ -846,41 +848,41 @@ class MonsterStock:
         self.add(Monster('giant slug', skin=('w', libtcod.purple),
                          attack=0.7, defence=2.8, range=4, level=4, count=10,
                          branch='e', summon=('giant slug', 2), flavor='snake',
-                         moon=newmoon_aligned,
+                         moon=newmoon_aligned, align='lg',
                          desc=['It is truly giant and truly disgusting.']))
 
         self.add(Monster('zombie', skin=('y', libtcod.silver),
                          attack=1.8, defence=2.9, range=3, level=4, count=10,
                          branch='e', poisimmune=True, flavor=None,
-                         moon=newmoon_aligned,
+                         moon=newmoon_aligned, align='ne',
                          desc=['A decomposed corpse brought back to unlife by',
                                'the darkest arts.']))
 
         self.add(Monster('Amazon warrior', skin=('h', libtcod.pink),
                          attack=1.8, defence=1.8, range=10, level=5, count=8,
                          branch='e', flavor='humanwarrior',
-                         moon=fullmoon_aligned,
+                         moon=fullmoon_aligned, align='ng',
                          desc=['She is a woman-warrior from the enigmatic Amazonian tribe.',
                                'She hates men.']))
 
         self.add(Monster('wolf', skin=('q', libtcod.silver),
                          attack=3.5, defence=3.0, range=7, level=5, count=10,
                          branch='e', flavor='animal',
-                         moon=fullmoon_aligned,
+                         moon=fullmoon_aligned, align='lg',
                          desc=['A man-eating wolf.']))
 
         self.add(Monster('Thulian price', skin=('h', libtcod.sky),
                          attack=1.0, defence=1.0, range=18, level=6, count=8,
                          branch='e', summon=('Amazon warrior', 1),
                          flavor='humanweird',
-                         moon=fullmoon_aligned,
+                         moon=fullmoon_aligned, align='ln',
                          desc=['Ultima Thule is the mystical land of fancy and dark legend.',
                                "You're not sure he is really from Thule, much less a real price."]))
 
         self.add(Monster('cannibal', skin=('h', libtcod.dark_purple),
                          attack=2.0, defence=2.0, range=15, level=6, count=8,
                          branch='e', flavor='humanweird',
-                         moon=newmoon_aligned,
+                         moon=newmoon_aligned, align='ce',
                          desc=['A deranged human who developed an unnatural, unholy',
                                'addiction to human flesh.']))
 
@@ -888,14 +890,14 @@ class MonsterStock:
                          attack=1.2, defence=1.2, range=15, level=7, count=6,
                          branch='e', summon=('cannibal', 2),
                          flavor='wizard',
-                         moon=newmoon_aligned,
+                         moon=newmoon_aligned, align='le',
                          desc=['Lemuria is the mythical island-empire of evil magicians',
                                'and demon-worshippers.']))
 
         self.add(Monster('apeman', skin=('h', libtcod.light_pink),
                          attack=2.5, defence=2.5, range=10, level=7, count=8,
                          branch='e', flavor='humanweird',
-                         moon=fullmoon_aligned,
+                         moon=fullmoon_aligned, align='lg',
                          desc=['Part human, part ape, if he has any intelligence, then his',
                                'gaze does not betray any, only pure malevolence.']))
 
@@ -903,7 +905,7 @@ class MonsterStock:
                          attack=1.2, defence=1.2, range=15, level=8, count=6,
                          branch='e', summon=('evil demon', 2),
                          flavor='wizard',
-                         moon=fullmoon_aligned,
+                         moon=fullmoon_aligned, align='le',
                          desc=['Atlantis is another evil island-empire, the competitor',
                                'to Lemuria in the dark art of demon-worship.']))
 
@@ -911,7 +913,7 @@ class MonsterStock:
                          attack=1.0, defence=1.6, range=10, level=8, count=6,
                          branch='e', summon=('wolf', 2), fireimmune=True, poisimmune=True,
                          flavor='wizard',
-                         moon=newmoon_aligned,
+                         moon=newmoon_aligned, align='ne',
                          desc=['Summoned from the depths of Infernus to commit',
                                'unspeakable deeds of evil and hatred.']))
 
@@ -919,14 +921,14 @@ class MonsterStock:
                          attack=2.0, defence=2.0, range=5, level=9, count=16,
                          itemdrop='cclarva', branch='e', poisimmune=True,
                          flavor='snake',
-                         moon=newmoon_aligned,
+                         moon=newmoon_aligned, align='ce',
                          desc=['A creature that looks like a maggot,',
                                'only a thousand times bigger.']))
 
         self.add(Monster('vampire', skin=('Y', libtcod.blue),
                          attack=2.5, defence=2.5, range=15, level=9, count=5,
                          branch='e', summon=('zombie', 1), poisimmune=True,
-                         flavor='air', 
+                         flavor='air', align='ne',
                          moon=newmoon_aligned,
                          desc=['One of the Elder Ones, the most ancient and powerful of',
                                'vampires.']))
@@ -934,7 +936,7 @@ class MonsterStock:
         self.add(Monster('Conan', skin=('K', libtcod.sepia),
                          attack=7.5, defence=5.5, range=8, level=10, count=1,
                          confimmune=True,  branch='e', no_a=True,
-                         flavor='humanwarrior', itemdrop='eyeofkali',
+                         flavor='humanwarrior', itemdrop='eyeofkali', align='cn',
                          desc=['A well-muscled adventurer,',
                                'he looks like he just stepped off a movie poster.',
                                "He hates competition."]))
@@ -943,7 +945,7 @@ class MonsterStock:
                          attack=7.5, defence=7.5, range=10, level=11, count=1,
                          explodeimmune=True, fireimmune=True, branch='e',
                          confimmune=True, summon=('Conan', 1), no_a=True, poisimmune=True,
-                         flavor='earthshake', large=True, itemdrop='excalibur',
+                         flavor='earthshake', large=True, itemdrop='excalibur', align='cn',
                          desc=['The most high god of all Cimmerians, Crom is the god',
                                'of valor and battle. He is a dark, vengeful and',
                                'judgemental god.']))
