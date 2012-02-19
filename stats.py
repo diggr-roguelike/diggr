@@ -26,5 +26,5 @@ class Stats:
         self.hunger = Stat()
         self.thirst = Stat()
         self.warmth = Stat()
-        self.luck = Stat(-3.0)
+        self.luck = Stat(0.0)
 

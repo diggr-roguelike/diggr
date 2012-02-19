@@ -84,6 +84,9 @@ class Player:
         self.resource_buildup = 0
         self.resource_timeout = 0
 
+        self.alignscores = { 'lg': 0, 'ln': 0, 'le': 0,
+                             'ng': 0, 'nn': 0, 'ne': 0,
+                             'cg': 0, 'cn': 0, 'ce': 0 }
         self.tagorder = 1
 
         self.did_moon_message = False
@@ -2217,6 +2220,10 @@ class Game:
         if do_gain:
             self.p.achievements.mondeath(self.p.plev, self.d.dlev, mon, 
                                          is_rad=is_rad, is_explode=is_explode)
+
+            if mon.align:
+                self.p.alignscores[mon.align] += mon.level
+
         elif is_poison:
             self.p.achievements.mondeath(self.p.plev, self.d.dlev, mon, 
                                          is_poison=True)
