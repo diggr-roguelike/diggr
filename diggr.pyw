@@ -376,8 +376,19 @@ class Game:
 
     ###
 
-    def luck(self): return self.p.stats.luck.x
-    
+    def luck(self):
+
+        ret = self.p.stats.luck.x
+
+        aligns = self.get_inv_attr(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'],
+                                   'align')
+
+        for a in aligns:
+            for ma,score in self.p.alignscores.iteritems():
+                ret += score * self.w.coefs.alignbonus[a][ma]
+
+        ret = max(-3, min(3, ret))
+
     def biased_gauss(self, p, n):
         luck = self.luck()
         if luck == 0:
@@ -401,6 +412,12 @@ class Game:
 
     #
 
+    def monname(self, mon):
+        aligns = self.get_inv_attr(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'],
+                                   'align')
+        return self.w.monsterstock.monname(mon, aligns)
+
+    #
 
     def makegrid(self, w_, h_):
 
@@ -1847,7 +1864,7 @@ class Game:
             s = []
             if item.detect_monsters:
                 s.append('You detect the following monsters:')
-                s.extend(sorted('  '+str(v) for v in self.d.monmap.itervalues()))
+                s.extend(sorted('  '+self.monname(v) for v in self.d.monmap.itervalues()))
                 s.append('')
 
             if item.detect_items:
@@ -2397,7 +2414,7 @@ class Game:
 
     def fight(self, mon, player_move, item=None):
 
-        sm = str(mon)
+        sm = self.monname(mon)
         smu = sm[0].upper() + sm[1:]
 
         ##
@@ -2591,7 +2608,7 @@ class Game:
             else:
                 if txy in self.d.monmap:
                     m = self.d.monmap[txy]
-                    s.append('You see ' + str(m) + ':')
+                    s.append('You see ' + self.monname(m) + ':')
                     s.append('')
                     s.extend(m.desc)
                     s.append('')
@@ -2980,7 +2997,7 @@ class Game:
 
         if self.try_feature(mdxy, 'sticky') and not mon.flying:
             if mon.visible or mon.visible_old:
-                mn = str(mon)
+                mn = self.monname(mon)
                 mn = mn[0].upper() + mn[1:]
                 self.p.msg.m(mn + ' gets stuck in some glue!')
             mon.glued = self.biased_nat_gauss(self.w.coef.glueduration, 1, 1)
@@ -2992,9 +3009,9 @@ class Game:
                 mon_attack.bld_delta = None
             else:
                 if mon_defend.visible or mon_defend.visible_old:
-                    sm = str(mon_attack)
+                    sm = self.monname(mon_attack)
                     smu = sm[0].upper() + sm[1:]
-                    self.p.msg.m(smu + ' squashes ' + str(mon_defend) + '!')
+                    self.p.msg.m(smu + ' squashes ' + self.monname(mon_defend) + '!')
                 return True
 
         return False
@@ -3229,7 +3246,7 @@ class Game:
 
             elif (mon.visible or mon.visible_old) and not (mon.was_seen) and not self.p.mapping:
                 mon.was_seen = True
-                self.p.msg.m('You see ' + str(mon) + '.')
+                self.p.msg.m('You see ' + self.monname(mon) + '.')
                 m = max(0.25, min(3, 0.5 * (mon.level - self.p.plev)))
                 self.config.sound.play("wobble", dur=m)
 
@@ -3242,7 +3259,7 @@ class Game:
                 mon.hp -= p
                 if mon.hp <= -3.0:
                     if mon.visible:
-                        smu = str(mon)
+                        smu = self.monname(mon)
                         smu = smu[0].upper() + smu[1:]
                         self.p.msg.m(smu + ' falls over and dies!')
 
@@ -3257,7 +3274,7 @@ class Game:
                 mon.hp -= (p or self.w.coef.burndamage)
                 if mon.hp <= -3.0:
                     if mon.visible:
-                        smu = str(mon)
+                        smu = self.monname(mon)
                         smu = smu[0].upper() + smu[1:]
                         self.p.msg.m(smu + ' burns ' + ('up.' if mon.boulder else 'to death!'))
 
@@ -3293,7 +3310,7 @@ class Game:
             if not xy_none(mdxy):
                 if mdxy == self.d.pc:
                     if mon.selfdestruct:
-                        smu = str(mon)
+                        smu = self.monname(mon)
                         smu = smu[0].upper() + smu[1:]
                         self.p.msg.m(smu + ' suddenly self-destructs!')
                         self.handle_mondeath(mon, do_gain=False)
@@ -3314,14 +3331,14 @@ class Game:
 
 
         for k,mon in summons:
-            smu = str(mon)
+            smu = self.monname(mon)
             smu = smu[0].upper() + smu[1:]
 
             if mon.summon:
                 q = self.summon(k, mon.summon[0], 1)
                 if len(q) > 0:
                     if not mon.static:
-                        self.p.msg.m(smu + ' summons ' + str(q[0]) + '!')
+                        self.p.msg.m(smu + ' summons ' + self.monname(q[0]) + '!')
                 else:
                     mon.summon = None
 
@@ -3335,7 +3352,7 @@ class Game:
 
         for xy,mon in raise_dead:
             if dg.grid_is_walk(xy[0], xy[1]) and xy not in self.d.monmap and xy != self.d.pc:
-                smu = str(mon)
+                smu = self.monname(mon)
                 smu = smu[0].upper() + smu[1:]
                 self.p.msg.m(smu + ' rises from the dead!')
                 mon.reset()

@@ -114,6 +114,32 @@ class MonsterStock:
         fullmoon_only    = (0, 0, 0, 0, 9, 0, 0, 0)
         quartermoon_only = (0, 0, 9, 0, 0, 0, 9, 0)
 
+        # Alignment tags
+
+        self.alignnames = {
+            'lg': 'Manitou',
+            'ce': 'Wendigo',
+            'ln': 'Quetzalcoatl', 
+            'le': 'Huitzilopochtli',
+            'cn': 'Tlaloc',
+            'nn': 'Kokopelli',
+            'ng': 'Pachamama',
+            'ne': 'Xibalba', 
+            'cg': 'Xbalanque'
+            }
+
+        self.alignopposites = {
+            'lg': 'ce',
+            'ng': 'ne',
+            'cg': 'le',
+            'ln': 'cn',
+            'nn': '',
+            'cn': 'ln',
+            'le': 'cg',
+            'ne': 'ng',
+            'ce': 'lg'
+            }
+
         # Megafauna dungeon branch
 
         self.add(Monster('Australopithecus afarensis', skin=('h', libtcod.sepia),
@@ -1666,6 +1692,13 @@ class MonsterStock:
         # HACK don't give too many points for cleaning up mold.
         #self.norms['x'] /= 2
 
+
+    def monname(self, mon, aligns):
+        ret = str(mon)
+        if mon.align in aligns or self.alignopposites[mon.align] in aligns:
+            ret += ' of '
+            ret += self.alignnames[mon.align]
+        return ret
 
     def add(self, mon):
         if mon.branch not in self.monsters:
