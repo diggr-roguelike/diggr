@@ -1695,7 +1695,7 @@ class MonsterStock:
 
     def monname(self, mon, aligns):
         ret = str(mon)
-        if mon.align in aligns or self.alignopposites[mon.align] in aligns:
+        if mon.align and (mon.align in aligns or self.alignopposites[mon.align] in aligns):
             ret += ' of '
             ret += self.alignnames[mon.align]
         return ret

@@ -384,10 +384,12 @@ class Game:
                                    'align')
 
         for a in aligns:
-            for ma,score in self.p.alignscores.iteritems():
-                ret += score * self.w.coefs.alignbonus[a][ma]
+            if a:
+                for ma,score in self.p.alignscores.iteritems():
+                    ret += score * self.w.coef.alignbonus[a][ma]
 
         ret = max(-3, min(3, ret))
+        return ret
 
     def biased_gauss(self, p, n):
         luck = self.luck()

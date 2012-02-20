@@ -3,7 +3,7 @@ import libdiggrpy as dg
 
 import sounds
 
-_version = '12.02.05'
+_version = '12.03.04'
 
 
 class Config:

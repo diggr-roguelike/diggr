@@ -773,6 +773,9 @@ public:
 
             for (const auto& xyi : neighbors::get()(xy)) {
 
+                if (procd.count(xyi) != 0) 
+                    continue;
+
                 procd.insert(xyi);
 
                 if (func(xyi.first, xyi.second)) {
