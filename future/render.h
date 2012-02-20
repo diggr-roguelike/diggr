@@ -406,25 +406,25 @@ public:
 	}
     }
 
-    void set_is_viewblock(unsigned int x, unsigned int y, bool t) {
+    void set_is_viewblock(unsigned int x, unsigned int y, bool t, unsigned int bit) {
 	gridpoint& g = _get(x,y);
 
-        if (!t) {
-            if (g.is_viewblock > 0) --(g.is_viewblock);
+        if (t) {
+            g.is_viewblock |= (1<<bit);
         } else {
-            ++(g.is_viewblock);
+            g.is_viewblock &= ~(1<<bit);
         }
 
         TCOD_map_set_properties(tcodmap, x, y, (g.is_viewblock == 0), (g.is_walkblock == 0));
     }
 
-    void set_is_walkblock(unsigned int x, unsigned int y, bool t) {
+    void set_is_walkblock(unsigned int x, unsigned int y, bool t, unsigned int bit) {
 	gridpoint& g = _get(x,y);
 
-        if (!t) {
-            if (g.is_walkblock > 0) --(g.is_walkblock);
+        if (t) {
+            g.is_walkblock |= (1<<bit);
         } else {
-            ++(g.is_walkblock);
+            g.is_walkblock &= ~(1<<bit);
         }
 
         TCOD_map_set_properties(tcodmap, x, y, (g.is_viewblock == 0), (g.is_walkblock == 0));

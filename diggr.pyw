@@ -500,11 +500,11 @@ class Game:
 
         ## 
         if feat:
-            dg.render_set_is_viewblock(x, y, not feat.visible)
-            dg.render_set_is_walkblock(x, y, not feat.walkable)
+            dg.render_set_is_viewblock(x, y, not feat.visible, 0)
+            dg.render_set_is_walkblock(x, y, not feat.walkable, 0)
         else:
-            dg.render_set_is_viewblock(x, y, not walkable)
-            dg.render_set_is_walkblock(x, y, not walkable)
+            dg.render_set_is_viewblock(x, y, not walkable, 0)
+            dg.render_set_is_walkblock(x, y, not walkable, 0)
 
 
 
@@ -690,15 +690,15 @@ class Game:
         mon.xy = xy
         self.d.monmap[xy] = mon
 
-        dg.render_set_is_walkblock(xy[0], xy[1], True)
+        dg.render_set_is_walkblock(xy[0], xy[1], True, 1)
         if mon.large:
-            dg.render_set_is_viewblock(xy[0], xy[1], True)
+            dg.render_set_is_viewblock(xy[0], xy[1], True, 1)
 
     def remove_monster(self, mon):
         xy = mon.xy
-        dg.render_set_is_walkblock(xy[0], xy[1], False)
+        dg.render_set_is_walkblock(xy[0], xy[1], False, 1)
         if mon.large:
-            dg.render_set_is_viewblock(xy[0], xy[1], False)
+            dg.render_set_is_viewblock(xy[0], xy[1], False, 1)
         
         del self.d.monmap[xy]
 
