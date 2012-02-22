@@ -3639,13 +3639,10 @@ class Game:
         f = None
         state = None
 
-        print 'LOADING'
-
         try:
             f = open('savefile.dat0', 'r')
             state = cPickle.load(f)
         except:
-            print 'LOAD FAILED 1'
             return False
 
         for k,v in state.iteritems():
@@ -3660,7 +3657,6 @@ class Game:
         # HACK
         dg.neighbors_init(self.d.w, self.d.h)
 
-        print 'LOAD OK'
         return True
 
 
@@ -3860,7 +3856,6 @@ class Game:
 
 
     def mainloop(self, do_highscore):
-        __tt = time.time()
 
         if self.p.done or self.p.dead:
             self.endgame(do_highscore)
@@ -3880,18 +3875,13 @@ class Game:
             self.endgame(do_highscore)
             return False
 
-        print ' . ', time.time() - __tt
         key = dgsys.console_wait_for_keypress()
-
-        __tt = time.time()
 
         if key.c in self.ckeys:
             self.ckeys[key.c]()
 
         elif key.vk in self.vkeys:
             self.vkeys[key.vk]()
-
-        print ' x ', time.time() - __tt
 
         return True
 

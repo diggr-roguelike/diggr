@@ -42,20 +42,6 @@ namespace grender {
 
 
 
-struct benchmark {
-    timeval ts;
-    timeval te;
-    benchmark() {}
-    void start() {
-	gettimeofday(&ts, NULL);
-    }
-    double end() {
-	gettimeofday(&te, NULL);
-	return (double)((te.tv_sec*1000000+te.tv_usec) - (ts.tv_sec*1000000+ts.tv_usec)) / 1e6;
-    }
-};
-
-
 struct Grid {
 
     static const size_t replay_delay = 100;
@@ -636,14 +622,12 @@ public:
                 throw std::runtime_error("Malformed replay file: premature end-of-keylog.");
 
             TCOD_sys_sleep_milli(replay_delay);
-            std::cout << "  kkk " << keylog[keylog_index].vk << "," << (int)keylog[keylog_index].c << std::endl;
             return keylog[keylog_index++];
         }
 
         if (TCOD_console_is_window_closed()) {
             keypress ret(0, 1);
             keylog.push_back(ret);
-            std::cout << "  kkk " << ret.vk << "," << (int)ret.c << std::endl;
             return ret;
         }
 
@@ -661,7 +645,6 @@ public:
 
         keypress ret(ktmp.vk, ktmp.c);
         keylog.push_back(ret);
-        std::cout << "  kkk " << ret.vk << "," << (int)ret.c << std::endl;
         return ret;
     }
 
@@ -763,9 +746,6 @@ public:
 
         toproc.insert(std::make_pair(x,y));
 
-        benchmark bm;
-        bm.start();
-
         while (1) {
 
             pt_t xy = *(toproc.begin());
@@ -787,8 +767,6 @@ public:
                 break;
             }
         }
-
-        std::cout << "++++++ " << bm.end() << std::endl;
 
         if (do_draw) {
             std::vector<TCOD_color_t> cols;

@@ -6,12 +6,6 @@
 #include "random.h"
 #include "grid.h"
 
-struct _mark {
-    grender::benchmark bm;
-    std::string func;
-    _mark(const std::string& s) : func(s) { bm.start(); }
-    ~_mark() { std::cout << "  " << func << " " << bm.end() << std::endl; }
-};
 
 extern "C" void dg_neighbors_init(unsigned int w, unsigned int h) {
     neighbors::get().init(w, h);
@@ -41,7 +35,6 @@ extern "C" void dg_celauto_clear(unsigned int x, unsigned int y, dg_celauto_call
 }
 
 extern "C" void dg_celauto_step(dg_celauto_callback cbon, dg_celauto_callback cboff) {
-    _mark __m(__func__);
     celauto::get().step(cbon, cboff);
 }
 
@@ -51,7 +44,6 @@ extern "C" void dg_celauto_get_state(unsigned int x, unsigned int y, size_t* id,
 
 
 extern "C" void dg_state_save(const char* filename) {
-    _mark __m(__func__);
     serialize::Sink s(filename);
     celauto::get().write(s);
     grender::get().write(s);
@@ -68,7 +60,6 @@ extern "C" void dg_state_load(const char* filename) {
 
 extern "C" void dg_render_init(unsigned int w, unsigned int h, 
                                const char* fontfile, const char* title, bool fullscreen) {
-    _mark __m(__func__);
     grender::get().init(w, h, fontfile, title, fullscreen);
 }
 
@@ -91,7 +82,6 @@ extern "C" void dg_render_wait_for_key(int* vk, char* c) {
 }
 
 extern "C" void dg_render_draw_window(const char** _msg, size_t n, int* vk, char* c) {
-    _mark __m(__func__);
     std::vector<std::string> msg;
     for (int i = 0; i < n; ++i) {
         msg.push_back(_msg[i]);
@@ -204,7 +194,6 @@ extern "C" bool dg_render_draw(unsigned int t,
 			       unsigned int hlx, unsigned int hly,
 			       unsigned int rmin, unsigned int rmax,
 			       unsigned int lr, bool do_hud) {
-    _mark __m(__func__);
     return grender::get().draw(t, px, py, hlx, hly, rmin, rmax, lr, do_hud);
 }
 
@@ -264,7 +253,7 @@ extern "C" void dg_render_draw_line(unsigned int x0, unsigned int y0,
                                     uint8 rf, uint8 gf, uint8 bf,
                                     uint8 rb, uint8 gb, uint8 bb,
                                     dg_draw_check_callback func) {
-    _mark __m(__func__);
+
     TCOD_color_t fore = TCOD_color_RGB(rf, gf, bf);
     TCOD_color_t back = TCOD_color_RGB(rb, gb, bb);
 
