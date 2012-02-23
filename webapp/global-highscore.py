@@ -13,7 +13,7 @@ import os
 import time
 
 
-DEFAULT_VERSION = '12.03.04'
+DEFAULT_VERSION = '12.02.26'
 USERPREF = "user_"
 
 
