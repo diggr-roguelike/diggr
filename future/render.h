@@ -621,6 +621,7 @@ public:
             if (keylog_index >= keylog.size())
                 throw std::runtime_error("Malformed replay file: premature end-of-keylog.");
 
+            TCOD_sys_check_for_event(TCOD_EVENT_KEY_PRESS, NULL, NULL);
             TCOD_sys_sleep_milli(replay_delay);
             return keylog[keylog_index++];
         }

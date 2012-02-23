@@ -7,19 +7,26 @@
 #include "grid.h"
 
 
-extern "C" void dg_neighbors_init(unsigned int w, unsigned int h) {
+#ifdef __MINGW32__
+#define EXPORT extern "C" __declspec(dllexport)
+#else
+#define EXPORT extern "C"
+#endif
+
+
+EXPORT void dg_neighbors_init(unsigned int w, unsigned int h) {
     neighbors::get().init(w, h);
 }
 
-extern "C" void dg_celauto_init() {
+EXPORT void dg_celauto_init() {
     celauto::get().init();
 }
 
-extern "C" void dg_celauto_make_rule(size_t i, const char* s, const char* b, unsigned int a) {
+EXPORT void dg_celauto_make_rule(size_t i, const char* s, const char* b, unsigned int a) {
     celauto::get().make_rule(i, s, b, a);
 }
 
-extern "C" void dg_celauto_seed(unsigned int x, unsigned int y, size_t ri) {
+EXPORT void dg_celauto_seed(unsigned int x, unsigned int y, size_t ri) {
     celauto::CaMap& ca = celauto::get();
     std::shared_ptr<celauto::rule> r = ca.get_rule(ri);
 
@@ -30,27 +37,27 @@ extern "C" void dg_celauto_seed(unsigned int x, unsigned int y, size_t ri) {
 
 typedef void (*dg_celauto_callback)(unsigned int, unsigned int, size_t);
 
-extern "C" void dg_celauto_clear(unsigned int x, unsigned int y, dg_celauto_callback cb) {
+EXPORT void dg_celauto_clear(unsigned int x, unsigned int y, dg_celauto_callback cb) {
     celauto::get().clear(celauto::pt(x,y), cb);
 }
 
-extern "C" void dg_celauto_step(dg_celauto_callback cbon, dg_celauto_callback cboff) {
+EXPORT void dg_celauto_step(dg_celauto_callback cbon, dg_celauto_callback cboff) {
     celauto::get().step(cbon, cboff);
 }
 
-extern "C" void dg_celauto_get_state(unsigned int x, unsigned int y, size_t* id, unsigned int* age) {
+EXPORT void dg_celauto_get_state(unsigned int x, unsigned int y, size_t* id, unsigned int* age) {
     celauto::get().get_state(celauto::pt(x,y), *id, *age);
 }
 
 
-extern "C" void dg_state_save(const char* filename) {
+EXPORT void dg_state_save(const char* filename) {
     serialize::Sink s(filename);
     celauto::get().write(s);
     grender::get().write(s);
     grid::get().write(s);
 }
 
-extern "C" void dg_state_load(const char* filename) {
+EXPORT void dg_state_load(const char* filename) {
     serialize::Source s(filename);
     celauto::get().read(s);
     grender::get().read(s);
@@ -58,30 +65,30 @@ extern "C" void dg_state_load(const char* filename) {
 }
 
 
-extern "C" void dg_render_init(unsigned int w, unsigned int h, 
+EXPORT void dg_render_init(unsigned int w, unsigned int h, 
                                const char* fontfile, const char* title, bool fullscreen) {
     grender::get().init(w, h, fontfile, title, fullscreen);
 }
 
-extern "C" void dg_render_clear() {
+EXPORT void dg_render_clear() {
     grender::get().clear();
 }
 
-extern "C" void dg_render_wait_for_anykey() {
+EXPORT void dg_render_wait_for_anykey() {
     return grender::get().wait_for_anykey();
 }
 
-extern "C" void dg_render_skip_input(unsigned int delay) {
+EXPORT void dg_render_skip_input(unsigned int delay) {
     return grender::get().skip_input(delay);
 }
 
-extern "C" void dg_render_wait_for_key(int* vk, char* c) {
+EXPORT void dg_render_wait_for_key(int* vk, char* c) {
     grender::Grid::keypress k = grender::get().wait_for_key();
     *vk = k.vk;
     *c = k.c;
 }
 
-extern "C" void dg_render_draw_window(const char** _msg, size_t n, int* vk, char* c) {
+EXPORT void dg_render_draw_window(const char** _msg, size_t n, int* vk, char* c) {
     std::vector<std::string> msg;
     for (int i = 0; i < n; ++i) {
         msg.push_back(_msg[i]);
@@ -91,11 +98,11 @@ extern "C" void dg_render_draw_window(const char** _msg, size_t n, int* vk, char
     *c = k.c;
 }
 
-extern "C" unsigned long dg_render_get_keylog_size() {
+EXPORT unsigned long dg_render_get_keylog_size() {
     return grender::get().keylog.size();
 }
 
-extern "C" bool dg_render_get_keylog_entry(unsigned long i, int* vk, char* c) {
+EXPORT bool dg_render_get_keylog_entry(unsigned long i, int* vk, char* c) {
 
     if (i >= grender::get().keylog.size())
         return false;
@@ -106,22 +113,22 @@ extern "C" bool dg_render_get_keylog_entry(unsigned long i, int* vk, char* c) {
     return true;
 }
 
-extern "C" void dg_render_clear_keylog() {
+EXPORT void dg_render_clear_keylog() {
     grender::get().keylog.clear();
 }
 
-extern "C" void dg_render_push_replay_keypress(int vk, char c) {
+EXPORT void dg_render_push_replay_keypress(int vk, char c) {
     grender::get().push_replay_keypress(grender::Grid::keypress(vk, c));
 }
 
-extern "C" void dg_render_stop_keypress_replay() {
+EXPORT void dg_render_stop_keypress_replay() {
     grender::get().stop_keypress_replay();
 }
 
 // python ctypes and/or libffi is severly broken. This is why struct are passed by each individual field.
 
 
-extern "C" void dg_render_set_env(uint8 r, uint8 g, uint8 b, double intensity) {
+EXPORT void dg_render_set_env(uint8 r, uint8 g, uint8 b, double intensity) {
     TCOD_color_t color;
     color.r = r;
     color.g = g;
@@ -129,7 +136,7 @@ extern "C" void dg_render_set_env(uint8 r, uint8 g, uint8 b, double intensity) {
     grender::get().set_env(color, intensity);
 }
 
-extern "C" void dg_render_set_back(unsigned int x, unsigned int y, uint8 r, uint8 g, uint8 b) {
+EXPORT void dg_render_set_back(unsigned int x, unsigned int y, uint8 r, uint8 g, uint8 b) {
     TCOD_color_t back;
     back.r = r;
     back.g = g;
@@ -137,11 +144,11 @@ extern "C" void dg_render_set_back(unsigned int x, unsigned int y, uint8 r, uint
     grender::get().set_back(x, y, back);
 }
 
-extern "C" void dg_render_set_is_lit(unsigned int x, unsigned int y, bool is_lit) {
+EXPORT void dg_render_set_is_lit(unsigned int x, unsigned int y, bool is_lit) {
     grender::get().set_is_lit(x, y, is_lit);
 }
 
-extern "C" void dg_render_push_skin(unsigned int x, unsigned int y,
+EXPORT void dg_render_push_skin(unsigned int x, unsigned int y,
 				    uint8 fr, uint8 fg, uint8 fb, 
 				    unsigned char c,
 				    uint8 f2r, uint8 f2g, uint8 f2b, 
@@ -157,7 +164,7 @@ extern "C" void dg_render_push_skin(unsigned int x, unsigned int y,
     grender::get().push_skin(x, y, fore, c, fore2, fore_interp, is_terrain);
 }
 
-extern "C" void dg_render_set_skin(unsigned int x, unsigned int y,
+EXPORT void dg_render_set_skin(unsigned int x, unsigned int y,
 				   uint8 fr, uint8 fg, uint8 fb, 
 				   unsigned char c,
 				    uint8 f2r, uint8 f2g, uint8 f2b, 
@@ -173,23 +180,23 @@ extern "C" void dg_render_set_skin(unsigned int x, unsigned int y,
     grender::get().set_skin(x, y, fore, c, fore2, fore_interp, is_terrain);
 }
 
-extern "C" void dg_render_pop_skin(unsigned int x, unsigned int y) {
+EXPORT void dg_render_pop_skin(unsigned int x, unsigned int y) {
     grender::get().pop_skin(x, y);
 }
 
-extern "C" bool dg_render_is_in_fov(unsigned int x, unsigned int y) {
+EXPORT bool dg_render_is_in_fov(unsigned int x, unsigned int y) {
     return grender::get().is_in_fov(x, y);
 }
 
-extern "C" void dg_render_set_is_viewblock(unsigned int x, unsigned int y, bool t, unsigned int bit) {
+EXPORT void dg_render_set_is_viewblock(unsigned int x, unsigned int y, bool t, unsigned int bit) {
     grender::get().set_is_viewblock(x, y, t, bit);
 }
 
-extern "C" void dg_render_set_is_walkblock(unsigned int x, unsigned int y, bool t, unsigned int bit) {
+EXPORT void dg_render_set_is_walkblock(unsigned int x, unsigned int y, bool t, unsigned int bit) {
     grender::get().set_is_walkblock(x, y, t, bit);
 }
 
-extern "C" bool dg_render_draw(unsigned int t,
+EXPORT bool dg_render_draw(unsigned int t,
 			       unsigned int px, unsigned int py, 
 			       unsigned int hlx, unsigned int hly,
 			       unsigned int rmin, unsigned int rmax,
@@ -197,7 +204,7 @@ extern "C" bool dg_render_draw(unsigned int t,
     return grender::get().draw(t, px, py, hlx, hly, rmin, rmax, lr, do_hud);
 }
 
-extern "C" void dg_render_push_hud_line(char* label, uint8 lr, uint8 lg, uint8 lb,
+EXPORT void dg_render_push_hud_line(char* label, uint8 lr, uint8 lg, uint8 lb,
                                         bool signd, int npips, 
                                         char s1, uint8 r1, uint8 g1, uint8 b1,
                                         char s2, uint8 r2, uint8 g2, uint8 b2) {
@@ -210,7 +217,7 @@ extern "C" void dg_render_push_hud_line(char* label, uint8 lr, uint8 lg, uint8 l
 typedef void (*dg_draw_do_callback)(unsigned int, unsigned int);
 typedef bool (*dg_draw_check_callback)(unsigned int, unsigned int);
 
-extern "C" void dg_render_draw_circle(unsigned int x, unsigned int y, unsigned int r, 
+EXPORT void dg_render_draw_circle(unsigned int x, unsigned int y, unsigned int r, 
                                       bool do_draw, 
                                       uint8 rf, uint8 gf, uint8 bf,
                                       uint8 rb, uint8 gb, uint8 bb,
@@ -222,7 +229,7 @@ extern "C" void dg_render_draw_circle(unsigned int x, unsigned int y, unsigned i
     grender::get().draw_circle(x, y, r, do_draw, fore, back, func);
 }
 
-extern "C" void dg_render_draw_fov_circle(unsigned int x, unsigned int y, unsigned int rad, 
+EXPORT void dg_render_draw_fov_circle(unsigned int x, unsigned int y, unsigned int rad, 
                                           bool do_draw, 
                                           uint8 rf, uint8 gf, uint8 bf,
                                           uint8 rb, uint8 gb, uint8 bb,
@@ -234,7 +241,7 @@ extern "C" void dg_render_draw_fov_circle(unsigned int x, unsigned int y, unsign
     grender::get().draw_fov_circle(x, y, rad, do_draw, fore, back, func);
 }
 
-extern "C" void dg_render_draw_floodfill(unsigned int x, unsigned int y, 
+EXPORT void dg_render_draw_floodfill(unsigned int x, unsigned int y, 
                                          bool do_draw, 
                                          uint8 rf, uint8 gf, uint8 bf,
                                          uint8 rb, uint8 gb, uint8 bb,
@@ -247,7 +254,7 @@ extern "C" void dg_render_draw_floodfill(unsigned int x, unsigned int y,
     grender::get().draw_floodfill(x, y, do_draw, fore, back, func);
 }
 
-extern "C" void dg_render_draw_line(unsigned int x0, unsigned int y0, 
+EXPORT void dg_render_draw_line(unsigned int x0, unsigned int y0, 
                                     unsigned int x1, unsigned int y1, 
                                     bool do_draw, 
                                     uint8 rf, uint8 gf, uint8 bf,
@@ -260,97 +267,97 @@ extern "C" void dg_render_draw_line(unsigned int x0, unsigned int y0,
     grender::get().draw_line(x0, y0, x1, y1, do_draw, fore, back, func);
 }
 
-extern "C" void dg_render_message(char* msg, bool important) {
+EXPORT void dg_render_message(char* msg, bool important) {
     grender::get().do_message(msg, important);
 }
 
-extern "C" void dg_render_draw_messages_window() {
+EXPORT void dg_render_draw_messages_window() {
     grender::get().draw_messages_window();
 }
 
-extern "C" bool dg_render_path_walk(unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1,
+EXPORT bool dg_render_path_walk(unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1,
                                     unsigned int n, unsigned int cutoff, 
                                     unsigned int* xo, unsigned int* yo) {
     return grender::get().path_walk(x0, y0, x1, y1, n, cutoff, *xo, *yo);
 }
 
-extern "C" void dg_random_init(long seed) {
+EXPORT void dg_random_init(long seed) {
     rnd::get().init(seed);
 }
 
-extern "C" int dg_random_range(int a, int b) {
+EXPORT int dg_random_range(int a, int b) {
     return rnd::get().range(a, b);
 }
 
-extern "C" unsigned int dg_random_n(unsigned int n) {
+EXPORT unsigned int dg_random_n(unsigned int n) {
     return rnd::get().n(n);
 }
 
-extern "C" double dg_random_gauss(double m, double s) {
+EXPORT double dg_random_gauss(double m, double s) {
     return rnd::get().gauss(m, s);
 }
 
-extern "C" double dg_random_uniform(double a, double b) {
+EXPORT double dg_random_uniform(double a, double b) {
     return rnd::get().uniform(a, b);
 }
 
-extern "C" unsigned int dg_random_geometric(double p) {
+EXPORT unsigned int dg_random_geometric(double p) {
     return rnd::get().geometric(p);
 }
 
-extern "C" double dg_random_biased_gauss(double mean, double stddev, double bias, double factor) {
+EXPORT double dg_random_biased_gauss(double mean, double stddev, double bias, double factor) {
     return rnd::get().biased_gauss(mean, stddev, bias, factor);
 }
 
-extern "C" void dg_grid_init(unsigned int w, unsigned int h) {
+EXPORT void dg_grid_init(unsigned int w, unsigned int h) {
     grid::get().init(w, h);
 }
 
-extern "C" void dg_grid_generate(int type) {
+EXPORT void dg_grid_generate(int type) {
     grid::get().generate(type);
 }
 
-extern "C" void dg_grid_set_height(unsigned int x, unsigned int y, double h) {
+EXPORT void dg_grid_set_height(unsigned int x, unsigned int y, double h) {
     grid::get().set_height(x, y, h);
 }
 
-extern "C" double dg_grid_get_height(unsigned int x, unsigned int y) {
+EXPORT double dg_grid_get_height(unsigned int x, unsigned int y) {
     return grid::get().get_height(x, y);
 }
 
-extern "C" bool dg_grid_is_walk(unsigned int x, unsigned int y) {
+EXPORT bool dg_grid_is_walk(unsigned int x, unsigned int y) {
     return grid::get().is_walk(x, y);
 }
 
-extern "C" bool dg_grid_is_water(unsigned int x, unsigned int y) {
+EXPORT bool dg_grid_is_water(unsigned int x, unsigned int y) {
     return grid::get().is_water(x, y);
 }
 
-extern "C" void dg_grid_set_walk(unsigned int x, unsigned int y, bool v) {
+EXPORT void dg_grid_set_walk(unsigned int x, unsigned int y, bool v) {
     return grid::get().set_walk(x, y, v);
 }
 
-extern "C" void dg_grid_set_water(unsigned int x, unsigned int y, bool v) {
+EXPORT void dg_grid_set_water(unsigned int x, unsigned int y, bool v) {
     return grid::get().set_water(x, y, v);
 }
 
-extern "C" void dg_grid_add_nogen(unsigned int x, unsigned int y) {
+EXPORT void dg_grid_add_nogen(unsigned int x, unsigned int y) {
     grid::get().add_nogen(x, y);
 }
 
-extern "C" void dg_grid_one_of_floor(unsigned int* x, unsigned int* y) {
+EXPORT void dg_grid_one_of_floor(unsigned int* x, unsigned int* y) {
     grid::pt xy = grid::get().one_of_floor();
     *x = xy.first;
     *y = xy.second;
 }
 
-extern "C" void dg_grid_one_of_water(unsigned int* x, unsigned int* y) {
+EXPORT void dg_grid_one_of_water(unsigned int* x, unsigned int* y) {
     grid::pt xy = grid::get().one_of_water();
     *x = xy.first;
     *y = xy.second;
 }
 
-extern "C" void dg_grid_one_of_walk(unsigned int* x, unsigned int* y) {
+EXPORT void dg_grid_one_of_walk(unsigned int* x, unsigned int* y) {
     grid::pt xy = grid::get().one_of_walk();
     *x = xy.first;
     *y = xy.second;
