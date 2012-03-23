@@ -105,7 +105,7 @@ set(plugins_list
         UnaryOpUGens
         UnpackFFTUGens
 
-        UIUGens FFT_UGens PV_ThirdParty ML_UGens
+        MouseUGens KeyboardUGens FFT_UGens PV_ThirdParty ML_UGens
 )
 
 # I have to set this propery again, due to CMake being braindead about recursion. 
