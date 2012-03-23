@@ -39,17 +39,6 @@ from quests import *
 from celauto import *
 
 
-# Manitou            // lg (neck) the spirit pendant of Manitou
-# Wendigo            // ce (backpack) a cannibal corpse of Wendigo
-# Quetzalcoatl       // ln (trunk) the feathered coat of Quetzalcoatl
-
-# Huitzilopochtli    // le (left hand) the serpent staff of Huitzilopochtli
-# Tlaloc             // cn (backpack) the water stone of Tlaloc
-# Kokopelli          // nn (feet) the winged sandals of Kokopelli 
-
-# Pachamama          // ng (right hand) the stone hammer of Pachamama
-# Xibalba            // ne (head) the skull crown of Xibalba
-# Xbalanque          // cg (legs) the leather breeches of Xbalanque
 
 class Player:
     def __init__(self):
