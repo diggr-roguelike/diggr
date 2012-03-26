@@ -15,6 +15,7 @@ toggled Bool->Toggle :-
    Toggle{v=-1}.
 
 def {
+  back: Sym
   water: Toggle
   height: Int
   lit
@@ -51,13 +52,6 @@ def {
   resource: Sym
 } Flags;
 
-
-def {
-  flags: Flags
-  props: Gridprops
-  back: Sym
-} FeatNoSkin;
-
 def {
   flags: Flags
   props: Gridprops
@@ -66,10 +60,10 @@ def {
 
 
 def [tag:Sym feat:Feat];
-def [tag:Sym feat:FeatNoSkin];
 def [tag:Sym props:Gridprops];
 
 floor Void->Gridprops :- Gridprops{ walkable=true visible=true height=-10 }.
+floor Sym->Gridprops :- Gridprops{ walkable=true visible=true height=-10 back=\v }.
 glass Int->Gridprops :- Gridprops{ walkable=false visible=true height=\v }.
 wall Int->Gridprops :- Gridprops{ walkable=false visible=false height=\v }.
 water Bool->Gridprops :- Gridprops{ walkable=true visible=true height=-10 water=(\v toggled->Toggle) }.
@@ -155,9 +149,8 @@ featstock_init Void->Void :-
         flags=Flags{name='bulletproof glass' } } ] featstock_set
 
 [ '\"' 
-  FeatNoSkin{ props=(floor->Gridprops)
-              back='red'
-              flags=Flags{fire=0.333 name='napalm' } } ] featstock_set
+  Feat{ props=('red' floor->Gridprops)
+        flags=Flags{fire=0.333 name='napalm' } } ] featstock_set
 
 [ '$' 
   Feat{ props=(floor->Gridprops)
@@ -165,9 +158,8 @@ featstock_init Void->Void :-
         flags=Flags{healingfountain=true name='a Fountain of Youth' } } ] featstock_set
 
 [ '&' 
-  FeatNoSkin{ props=Gridprops{ walkable=true visible=true height=-10 lit=true }
-              back='darkest_blue'
-              flags=Flags{explode=3 queasy=0.1 name='swamp gas' } } ] featstock_set
+  Feat{ props=Gridprops{ walkable=true visible=true height=-10 lit=true back='darkest_blue' }
+        flags=Flags{explode=3 queasy=0.1 name='swamp gas' } } ] featstock_set
 
 [ '+' 
   Feat{ props=(0 wall->Gridprops)
@@ -384,9 +376,8 @@ featstock_init Void->Void :-
         flags=Flags{name='a shrine to Brahma' b_shrine=true } } ] featstock_set
 
 [ 'e' 
-  FeatNoSkin{ props=(floor->Gridprops)
-              back='desaturated_green'
-              flags=Flags{poison=0.5 name='a cloud of Ebola virus' } } ] featstock_set
+  Feat{ props=('desaturated_green' floor->Gridprops)
+        flags=Flags{poison=0.5 name='a cloud of Ebola virus' } } ] featstock_set
 
 [ 'd' 
   Feat{ props=(-10 glass->Gridprops)
@@ -394,14 +385,12 @@ featstock_init Void->Void :-
         flags=Flags{name='barricades' shootable=true } } ] featstock_set
 
 [ 'g' 
-  FeatNoSkin{ props=(floor->Gridprops)
-              back='dark_green'
-              flags=Flags{pois2=true poison=0.25 name='spores of black mold' } } ] featstock_set
+  Feat{ props=('dark_green' floor->Gridprops)
+        flags=Flags{pois2=true poison=0.25 name='spores of black mold' } } ] featstock_set
 
 [ 'f' 
-  FeatNoSkin{ props=(floor->Gridprops)
-              back='gray'
-              flags=Flags{confuse=true name='confusing smoke' } } ] featstock_set
+  Feat{ props=('gray' floor->Gridprops)
+        flags=Flags{confuse=true name='confusing smoke' } } ] featstock_set
 
 [ 'h' 
   Feat{ props=(floor->Gridprops)
@@ -464,3 +453,60 @@ featstock_init Void->Void :-
         flags=Flags{name='bulletproof glass' } } ] featstock_set
 
 .
+
+/*** *** *** ***/
+
+def { x:Int y:Int } Coord;
+
+def [ a:Coord b:Sym ];
+def [ a:Coord b:Gridprops ];
+
+def [x:Int y:Int props:Gridprops];
+def [x:Int y:Int is_lit:Bool walk:Bool view:Bool height:Int water:Int back:Sym];
+
+/* This could be greatly simplified with macros, but I don't want to bother just yet. */
+
+x Coord->Int :- \x.
+y Coord->Int :- \y.
+lit Gridprops->Bool :- \lit.
+walkable Gridprops->Bool :- \walkable.
+visible Gridprops->Bool :- \visible.
+height Gridprops->Int :- \height.
+water Gridprops->Int :- \water ->Int(\v).
+back Gridprops->Sym :- \back.
+
+gridprops_set [Int Int Gridprops]->Void :-
+  [ \x \y 
+    (\props lit->Bool) (\props walkable->Bool) (\props visible->Bool)
+    (\props height->Int) (\props water->Int) (\props back->Sym) ] gridprops_set_.
+
+
+/*** *** *** ***/
+
+gridprops_set Coord->Void :-
+  [\x \y (featmap_get->Gridprops)] gridprops_set;
+  [\x \y Gridprops{ height=([\x \y] grid_get_height)
+                    walkable=([\x \y] grid_is_walk)
+                    visible=([\x \y] grid_is_walk) }
+     ] gridprops_set.
+
+renderprops_set Coord->Void :-
+.
+
+flags Feat->Flags :- \flags.
+props Feat->Gridprops :- \props.
+
+feat_set [Coord Sym]->Void :-
+  \a featmap_get->Flags(\flags)->Int(\stairs) $to_bool ? ;
+  [\a \b]->Void (
+     <: \b == nil :> ? \a featmap_del ;
+     [\a (\b featstock_get->Gridprops)] featmap_set;
+     [\a (\b featstock_get->Feat)] ->Void ( 
+         [\a (\b props->Gridprops)] featmap_set
+         [\a (\b flags->Flags)] featmap_set
+     )
+  )
+  \a gridprops_set
+  \a renderprops_set
+.
+

@@ -5,6 +5,8 @@
 
 #include "piccol.h"
 
+#include "tcod_colors.h"
+
 namespace feats {
 
 using nanom::Sym;
@@ -24,8 +26,7 @@ struct Featstock {
     }
 
     void add_feat(Sym s, const Obj& o)        { _add_feat(s, o, 1); }
-    void add_noskin_feat(Sym s, const Obj& o) { _add_feat(s, o, 2); }
-    void add_gridprops(Sym s, const Obj& o)   { _add_feat(s, o, 3); }
+    void add_gridprops(Sym s, const Obj& o)   { _add_feat(s, o, 2); }
 
     bool _get_feat(Sym s, Obj& o, int t) const {
         auto i = feats.find(s);
@@ -36,8 +37,7 @@ struct Featstock {
     }
 
     bool get_feat(Sym s, Obj& o) const        { return _get_feat(s, o, 1); }
-    bool get_noskin_feat(Sym s, Obj& o) const { return _get_feat(s, o, 2); }
-    bool get_gridprops(Sym s, Obj& o) const   { return _get_feat(s, o, 3); }
+    bool get_gridprops(Sym s, Obj& o) const   { return _get_feat(s, o, 2); }
 
 };
 
@@ -54,12 +54,6 @@ inline bool featstock_set_1(const nanom::Shapes& shapes, const nanom::Shape& sha
 
 inline bool featstock_set_2(const nanom::Shapes& shapes, const nanom::Shape& shape, const nanom::Shape& shapeto,
                             const nanom::Struct& struc, nanom::Struct& ret) {
-    featstock().add_noskin_feat(struc.v[0].uint, struc.substruct(1, shape.size()-1));
-    return true;
-}
-
-inline bool featstock_set_3(const nanom::Shapes& shapes, const nanom::Shape& shape, const nanom::Shape& shapeto,
-                            const nanom::Struct& struc, nanom::Struct& ret) {
     featstock().add_gridprops(struc.v[0].uint, struc.substruct(1, shape.size()-1));
     return true;
 }
@@ -72,13 +66,43 @@ inline bool featstock_get_1(const nanom::Shapes& shapes, const nanom::Shape& sha
 
 inline bool featstock_get_2(const nanom::Shapes& shapes, const nanom::Shape& shape, const nanom::Shape& shapeto,
                             const nanom::Struct& struc, nanom::Struct& ret) {
-    return featstock().get_noskin_feat(struc.v[0].uint, ret);
-}
-
-inline bool featstock_get_3(const nanom::Shapes& shapes, const nanom::Shape& shape, const nanom::Shape& shapeto,
-                            const nanom::Struct& struc, nanom::Struct& ret) {
     return featstock().get_gridprops(struc.v[0].uint, ret);
 }
+
+inline bool set_gridprops(const nanom::Shapes& shapes, const nanom::Shape& shape, const nanom::Shape& shapeto,
+                          const nanom::Struct& struc, nanom::Struct& ret) {
+
+    nanom::Int x = struc.v[0].inte;
+    nanom::Int y = struc.v[1].inte;
+
+    bool is_lit          = struc.v[2].uint;
+    bool walkable        = struc.v[3].uint;
+    bool visible         = struc.v[4].uint;
+    nanom::Int height    = struc.v[5].inte;
+    nanom::Int water     = struc.v[6].inte;
+    nanom::Sym back      = struc.v[7].uint;
+
+    grender::get().set_is_lit(x, y, is_lit);
+
+    if (back > 0) {
+        grender::get().set_back(x, y, colorsyms::color(back));
+    } else {
+        grender::get().set_back(x, y, TCOD_color_black);
+    }
+
+    grender::get().set_is_viewblock(x, y, !visible);
+    grender::get().set_is_walkblock(x, y, !walkable);
+
+    grid::get().set_walk(x, y, walkable);
+    grid::get().set_height(x, y, height);
+
+    if (water < 0) {
+        grid::get().set_water(x, y, false);
+    } else {
+        grid::get().set_water(x, y, true);
+    }
+}
+
 
 struct FeatVm {
 
@@ -86,12 +110,14 @@ struct FeatVm {
 
     FeatVm() {
         vm.register_callback("featstock_set", "[ Sym Feat ]",       "Void", featstock_set_1);
-        vm.register_callback("featstock_set", "[ Sym FeatNoSkin ]", "Void", featstock_set_2);
-        vm.register_callback("featstock_set", "[ Sym Gridprops ]",  "Void", featstock_set_3);
+        vm.register_callback("featstock_set", "[ Sym Gridprops ]",  "Void", featstock_set_2);
 
         vm.register_callback("featstock_get", "Sym", "Feat",       featstock_get_1);
-        vm.register_callback("featstock_set", "Sym", "FeatNoSkin", featstock_get_2);
-        vm.register_callback("featstock_set", "Sym", "Gridprops",  featstock_get_3);
+        vm.register_callback("featstock_set", "Sym", "Gridprops",  featstock_get_2);
+
+        vm.register_callback("_set_gridprops", 
+                             "[ Int Int Bool Bool Bool Int Int Sym ]", "Void",
+                             set_gridprops);
 
         vm.load(piccol::load_file("scripts/feats.piccol"));
     }        
