@@ -6,6 +6,7 @@
 #include "random.h"
 #include "grid.h"
 
+#include "script.h"
 
 #ifdef __MINGW32__
 #define EXPORT extern "C" __declspec(dllexport)
