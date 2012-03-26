@@ -77,10 +77,6 @@ water Bool->Gridprops :- Gridprops{ walkable=true visible=true height=-10 water=
 char Int->Sym :- \v $to_sym.
 
 
-featstock_set [Sym Feat]->Void :-.
-featstock_set [Sym FeatNoSkin]->Void :-.
-featstock_set [Sym Gridprops]->Void :-.
-
 featstock_init Void->Void :-
 
 [ 'signcth2' 
