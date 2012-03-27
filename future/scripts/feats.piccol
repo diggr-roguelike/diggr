@@ -5,22 +5,43 @@ def {
 } Skin;
 
 def { v:Int } Toggle;
+def { v:Int } ToggleInt;
+def { v:Sym } ToggleSym;
 
-toggled Toggle->Bool :- 
-   <: \v < 0 :> ? false ;
-   <: \v > 0 :> ? true.
+get Toggle->Bool :- 
+  <: \v < 0 :> ? false ;
+  <: \v > 0 :> ? true.
 
-toggled Bool->Toggle :-
-   \v ? Toggle{v=1};
-   Toggle{v=-1}.
+set Bool->Toggle :-
+  \v ? Toggle{v=1};
+  Toggle{v=-1}.
+
+unset Void->Toggle :- Toggle{v=0}.
+
+get ToggleInt->Int :-
+  <: \v < 0 :> ? <: \v + 1 :>;
+  \v.
+
+set Int->ToggleInt :-
+  <: \v <= 0 :> ? ToggleInt{v=(<: \v - 1 :>)};
+  ToggleInt{v=\v}.
+
+unset Void->ToggleInt :- ToggleInt{v=0}.
+
+get ToggleSym->Sym :-
+  <: \v != nil :> ? \v.
+
+set Sym->ToggleSym :- ToggleSym{v=\v}.
+
+unset Void->ToggleSym :- ToggleSym{v=nil}.
 
 def {
-  back: Sym
-  water: Toggle
-  height: Int
-  lit
-  walkable 
-  visible
+  walkable: Toggle
+  visible:  Toggle
+  water:    Toggle
+  lit:      Toggle
+  back:     ToggleSym
+  height:   ToggleInt
 } Gridprops;
 
 
@@ -62,14 +83,27 @@ def {
 def [tag:Sym feat:Feat];
 def [tag:Sym props:Gridprops];
 
-floor Void->Gridprops :- Gridprops{ walkable=true visible=true height=-10 }.
-floor Sym->Gridprops :- Gridprops{ walkable=true visible=true height=-10 back=\v }.
-glass Int->Gridprops :- Gridprops{ walkable=false visible=true height=\v }.
-wall Int->Gridprops :- Gridprops{ walkable=false visible=false height=\v }.
-water Bool->Gridprops :- Gridprops{ walkable=true visible=true height=-10 water=(\v toggled->Toggle) }.
+floor Void->Gridprops :- 
+  Gridprops{ walkable=(true set->Toggle)
+             visible =(true set->Toggle)
+             water   =(unset->Toggle)
+             lit     =(unset->Toggle)
+             back    =(unset->ToggleSym)
+             height  =(-10 set->ToggleInt) }.
+
+floor Sym->Gridprops  :- floor->Gridprops { back=(\v set->ToggleSym) }.
+
+glass Int->Gridprops  :- floor->Gridprops { walkable=(false set->Toggle) 
+                                           height   =(\v set->ToggleInt) }.
+
+wall Int->Gridprops   :- \v glass->Gridprops { visible=(false set->Toggle) }.
+
+water Bool->Gridprops :- floor->Gridprops { water=(\v set->Toggle) }.
 
 char Int->Sym :- \v $to_sym.
 
+featstock_set [Sym Feat]->Void :-.
+featstock_set [Sym Gridprops]->Void :-.
 
 featstock_init Void->Void :-
 
@@ -139,7 +173,7 @@ featstock_init Void->Void :-
         flags=Flags{special='monolith' name='the Monolith' } } ] featstock_set
 
 [ '!' 
-  Feat{ props=Gridprops{ walkable=true visible=false height=-10 lit=false }
+  Feat{ props=(floor->Gridprops { visible=(false set->Toggle) })
         skin=Skin{char=(173 char->Sym) color='dark_green'}
         flags=Flags{name='a giant fern' } } ] featstock_set
 
@@ -158,7 +192,7 @@ featstock_init Void->Void :-
         flags=Flags{healingfountain=true name='a Fountain of Youth' } } ] featstock_set
 
 [ '&' 
-  Feat{ props=Gridprops{ walkable=true visible=true height=-10 lit=true back='darkest_blue' }
+  Feat{ props=('darkest_blue' floor->Gridprops{ lit=(true set->Toggle)})
         flags=Flags{explode=3 queasy=0.1 name='swamp gas' } } ] featstock_set
 
 [ '+' 
@@ -167,7 +201,7 @@ featstock_init Void->Void :-
         flags=Flags{name='a smooth stone wall' } } ] featstock_set
 
 [ '*' 
-  Feat{ props=Gridprops{ walkable=true visible=false height=-10 lit=false }
+  Feat{ props=(floor->Gridprops{ visible=(false set->Toggle) })
         skin=Skin{char='*' color='lightest_green'}
         flags=Flags{name='rubble' } } ] featstock_set
 
@@ -284,7 +318,7 @@ featstock_init Void->Void :-
         flags=Flags{name='bulletproof glass' } } ] featstock_set
 
 [ 'dd' 
-  Feat{ props=Gridprops{ walkable=true visible=true height=-10 lit=true }
+  Feat{ props=(floor->Gridprops{ lit=(true set->Toggle) })
         skin=Skin{char='^' color='white'}
         flags=Flags{lightbonus=7 name='a dolmen' } } ] featstock_set
 
@@ -466,6 +500,8 @@ def [x:Int y:Int is_lit:Bool walk:Bool view:Bool height:Int water:Int back:Sym];
 
 /* This could be greatly simplified with macros, but I don't want to bother just yet. */
 
+/**
+
 x Coord->Int :- \x.
 y Coord->Int :- \y.
 lit Gridprops->Bool :- \lit.
@@ -480,8 +516,11 @@ gridprops_set [Int Int Gridprops]->Void :-
     (\props lit->Bool) (\props walkable->Bool) (\props visible->Bool)
     (\props height->Int) (\props water->Int) (\props back->Sym) ] gridprops_set_.
 
+**/
 
 /*** *** *** ***/
+
+/**
 
 gridprops_set Coord->Void :-
   [\x \y (featmap_get->Gridprops)] gridprops_set;
@@ -510,3 +549,4 @@ feat_set [Coord Sym]->Void :-
   \a renderprops_set
 .
 
+**/
