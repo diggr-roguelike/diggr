@@ -496,27 +496,52 @@ def [ a:Coord b:Sym ];
 def [ a:Coord b:Gridprops ];
 
 def [x:Int y:Int props:Gridprops];
-def [x:Int y:Int is_lit:Bool walk:Bool view:Bool height:Int water:Int back:Sym];
 
-/* This could be greatly simplified with macros, but I don't want to bother just yet. */
+<:: try_any(types)
 
-/**
+    ident_here :- ident &''.
+    type_here :- type &''.
 
-x Coord->Int :- \x.
-y Coord->Int :- \y.
-lit Gridprops->Bool :- \lit.
-walkable Gridprops->Bool :- \walkable.
-visible Gridprops->Bool :- \visible.
-height Gridprops->Int :- \height.
-water Gridprops->Int :- \water ->Int(\v).
-back Gridprops->Sym :- \back.
+    body :- ';;'.
+    body :- \any &'' body.
 
-gridprops_set [Int Int Gridprops]->Void :-
-  [ \x \y 
-    (\props lit->Bool) (\props walkable->Bool) (\props visible->Bool)
-    (\props height->Int) (\props water->Int) (\props back->Sym) ] gridprops_set_.
+    body_here :- &'top' @'Void(' body @';) '.
+    body_list :- body_here body_list.
+    body_list :- .
 
-**/
+    header :- '->'.
+    header :- \any header.
+
+    header_here :- header &'push'.
+
+    try_any :- spaces ident_here 
+               spaces @' ' type_here @'->Void :- '
+               spaces header_here
+               body_list spaces @'.'.
+::>
+
+<:[try_any]
+
+gridprops_set [Int Int Gridprops] 
+
+  [\x \y \props] ->
+
+  [ \x \y (\props->Bool(\lit get->Bool)) ] dg_render_set_is_lit 
+;;
+  [ \x \y (\props->Sym(\back get->Sym; 'black')) ] dg_render_set_back 
+;;
+  [ \x \y (\props->Bool(\visible get->Bool $not)) ] dg_render_set_viewblock
+;;
+  [ \x \y (\props->Bool(\walkable get->Bool $not)) ] dg_render_set_walkblock 
+  [ \x \y (\props->Bool(\walkable get->Bool)) ] dg_grid_set_walk 
+;;
+  [ \x \y (\props->Int(\height get->Int)) ] dg_grid_set_height 
+;;
+  [ \x \y (\props->Bool(\water get->Bool)) ] dg_grid_set_water 
+;;
+:>
+
+
 
 /*** *** *** ***/
 
