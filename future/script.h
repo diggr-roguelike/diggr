@@ -41,8 +41,36 @@ struct Featstock {
 
 };
 
+struct Featmap {
+
+    typedef std::unordered_map< std::pair<unsigned int, unsigned int>, Obj > fmap_t;
+
+    fmap_t feats;
+    
+    void set(unsigned int x, unsigned int y, const Obj& o) {
+        feats[std::make_pair(x, y)] = o;
+    }
+
+    void unset(unsigned int x, unsigned int y) {
+        feats.erase(std::make_pair(x, y));
+    }
+
+    bool get(unsigned int x, unsigned int y, Obj& o) const {
+        auto i = feats.find(std::make_pair(x, y));
+        if (i == feats.end())
+            return false;
+        o = i->second;
+        return true;
+    }
+};
+
 inline Featstock& featstock() {
     static Featstock ret;
+    return ret;
+}
+
+inline Featmap& featmap() {
+    static Featmap ret;
     return ret;
 }
 
@@ -68,6 +96,23 @@ inline bool featstock_get_2(const nanom::Shapes& shapes, const nanom::Shape& sha
                             const nanom::Struct& struc, nanom::Struct& ret) {
     return featstock().get_gridprops(struc.v[0].uint, ret);
 }
+
+
+inline bool featmap_set(const nanom::Shapes& shapes, const nanom::Shape& shape, const nanom::Shape& shapeto,
+                        const nanom::Struct& struc, nanom::Struct& ret) {
+    featmap().set(struc.v[0].uint, 
+                  struc.v[1].uint, struc.substruct(2, shape.size()-1));
+    return true;
+}
+
+inline bool featmap_unset(const nanom::Shapes& shapes, const nanom::Shape& shape, const nanom::Shape& shapeto,
+                          const nanom::Struct& struc, nanom::Struct& ret) {
+    featmap().unset(struc.v[0].uint, struc.v[1].uint);
+    return true;
+}
+
+
+/****/
 
 inline bool dg_render_set_is_lit(const nanom::Shapes& shapes, const nanom::Shape& shape, const nanom::Shape& shapeto,
                                  const nanom::Struct& struc, nanom::Struct& ret) {
@@ -134,6 +179,41 @@ inline bool dg_grid_set_water(const nanom::Shapes& shapes, const nanom::Shape& s
     return true;
 }
 
+inline bool dg_grid_is_walk(const nanom::Shapes& shapes, const nanom::Shape& shape, 
+                            const nanom::Shape& shapeto, const nanom::Struct& struc, nanom::Struct& ret) {
+
+    nanom::UInt x = struc.v[0].uint;
+    nanom::UInt y = struc.v[1].uint;
+    bool r = grid::get().is_walk(x, y);
+    ret.v.push_back((nanom::UInt)r);
+    return true;
+}
+
+inline bool dg_grid_is_water(const nanom::Shapes& shapes, const nanom::Shape& shape, 
+                             const nanom::Shape& shapeto, const nanom::Struct& struc, nanom::Struct& ret) {
+
+    nanom::UInt x = struc.v[0].uint;
+    nanom::UInt y = struc.v[1].uint;
+    bool r = grid::get().is_water(x, y);
+    ret.v.push_back((nanom::UInt)r);
+    return true;
+}
+
+inline bool dg_render_set_skin(const nanom::Shapes& shapes, const nanom::Shape& shape, 
+                               const nanom::Shape& shapeto, const nanom::Struct& struc, nanom::Struct& ret) {
+
+    nanom::UInt x = struc.v[0].uint;
+    nanom::UInt y = struc.v[1].uint;
+
+    grender::get().set_skin(x, y, 
+                            colorsyms::color(struc.v[2].uint),
+                            metalan::symtab().get(struc.v[3].uint)[0],
+                            colorsyms::color(struc.v[4].uint),
+                            struc.v[5].uint,
+                            struc.v[6].uint);
+    return true;
+}
+
 
 struct FeatVm {
 
@@ -144,7 +224,10 @@ struct FeatVm {
         vm.register_callback("featstock_set", "[ Sym Gridprops ]",  "Void", featstock_set_2);
 
         vm.register_callback("featstock_get", "Sym", "Feat",       featstock_get_1);
-        vm.register_callback("featstock_set", "Sym", "Gridprops",  featstock_get_2);
+        vm.register_callback("featstock_get", "Sym", "Gridprops",  featstock_get_2);
+
+        vm.register_callback("featmap_set",   "[ UInt UInt Feat ]", "Void", featmap_set);
+        vm.register_callback("featmap_unset", "[ UInt UInt ]",      "Void", featmap_unset);
 
         vm.register_callback("dg_render_set_is_lit",    "[ UInt UInt Bool ]", "Void", dg_render_set_is_lit);
         vm.register_callback("dg_render_set_back",      "[ UInt UInt Sym ]",  "Void", dg_render_set_back);
@@ -157,6 +240,12 @@ struct FeatVm {
         vm.register_callback("dg_render_set_is_walkblock", "[ UInt UInt Bool UInt ]", 
                              "Void", dg_render_set_is_walkblock);
 
+        vm.register_callback("dg_grid_is_walk",  "[ UInt UInt ]", "Bool", dg_grid_is_walk);
+        vm.register_callback("dg_grid_is_water", "[ UInt UInt ]", "Bool", dg_grid_is_water);
+
+        vm.register_callback("dg_render_set_skin", 
+                             "[ UInt UInt Sym Sym Sym Bool Bool ]", "Void", dg_render_set_skin);
+        
         vm.load(piccol::load_file("scripts/feats.piccol"));
     }        
 

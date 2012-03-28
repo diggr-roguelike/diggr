@@ -44,28 +44,13 @@ def {
   height:   ToggleInt
 } Gridprops;
 
-/***
-
-<:: accessor(types)
-
-  fun_name  :- ident &{} &{push} @{ }.
-  type_from :- type &{} @{->}.
-  type_to   :- type &{} &{push} @{ :- }.
-  accessor  :- spaces fun_name
-               spaces type_from
-               spaces type_to spaces
-               @{\\} &{rot} &{pop} @{ get->} &{pop} @{.}.
-::>
-
-<:[accessor] walkable Gridprops Bool :>
-<:[accessor] visible  Gridprops Bool :>
-<:[accessor] water    Gridprops Bool :>
-<:[accessor] lit      Gridprops Bool :>
-<:[accessor] back     Gridprops Sym :>
-<:[accessor] height  Gridprops Int :>
-
-***/
-
+def {
+  fore:       Sym
+  char:       Sym
+  fore2:      Sym
+  fore_i:     Bool
+  is_terrain: Bool
+} Gridskin;
 
 def {
   confuse
@@ -102,11 +87,16 @@ def {
 } Feat;
 
 
-def [tag:Sym feat:Feat];
-def [tag:Sym props:Gridprops];
-def [x:Int y:Int a:Bool];
-def [x:Int y:Int a:Int];
-def [x:Int y:Int a:Sym];
+def [x:UInt y:UInt props:Gridprops];
+def [x:UInt y:UInt skin:Gridskin];
+def [x:UInt y:UInt a:Bool];
+def [x:UInt y:UInt a:Bool b:UInt];
+def [x:UInt y:UInt a:Int];
+def [x:UInt y:UInt feat:Feat];
+def [x:UInt y:UInt feat:Sym];
+
+def [a:Sym b:Feat];
+def [a:Sym b:Gridprops];
 
 floor Void->Gridprops :- 
   Gridprops{ walkable=(true set->Toggle)
@@ -513,16 +503,6 @@ featstock_init Void->Void :-
 
 /*** *** *** ***/
 
-def { x:UInt y:UInt } Coord;
-
-def [ a:Coord b:Sym ];
-def [ a:Coord b:Gridprops ];
-
-def [x:UInt y:UInt props:Gridprops];
-def [x:UInt y:UInt a:Bool];
-def [x:UInt y:UInt a:Bool b:UInt];
-def [x:UInt y:UInt a:Int];
-def [x:UInt y:UInt a:Sym];
 
 <:: try_any(types)
 
@@ -568,37 +548,90 @@ gridprops_set [UInt UInt Gridprops]
 ;;
 :>
 
+dungeontheme Void->Sym :- 'red'.
 
 
-/*** *** *** ***/
+default [UInt UInt]->Gridprops :- 
+  Gridprops { walkable=([\a \b] dg_grid_is_walk->Bool set->Toggle)
+              visible =([\a \b] dg_grid_is_walk->Bool set->Toggle)
+              water   =([\a \b] dg_grid_is_water->Bool set->Toggle)
+              lit     =(false set->Toggle)
+              back    =('black' set->ToggleSym)
+              height  =(unset->ToggleInt) }.
 
-/**
+def [x:UInt y:UInt fore:Sym char:Sym fore2:Sym fore_i:Bool is_terrain:Bool ];
 
-gridprops_set Coord->Void :-
-  [\x \y (featmap_get->Gridprops)] gridprops_set;
-  [\x \y Gridprops{ height=([\x \y] grid_get_height)
-                    walkable=([\x \y] grid_is_walk)
-                    visible=([\x \y] grid_is_walk) }
-     ] gridprops_set.
+gridskin_set [UInt UInt Gridskin]->Void :-
+  [ \x \y 
+    (\skin->Sym(\fore))
+    (\skin->Sym(\char))
+    (\skin->Sym(\fore2))
+    (\skin->Bool(\fore_i))
+    (\skin->Bool(\is_terrain)) ] dg_render_set_skin.
 
-renderprops_set Coord->Void :-
+default Void->Gridskin :- 
+  Gridskin{ char=' '
+            fore=(dungeontheme->Sym) 
+            fore2=nil 
+            fore_i=false 
+            is_terrain=false }.
+
+default_floor Void->Gridskin :-
+  default->Gridskin { char=(250 char->Sym) is_terrain=true }.
+
+default_wall Void->Gridskin :-
+  default->Gridskin { char=(176 char->Sym) is_terrain=true }.
+
+default_floor_water Void->Gridskin :- 
+  default->Gridskin { char  =(251 char->Sym) 
+                               fore  ='light_azure'
+                               fore2 ='dark_azure'
+                               fore_i=true }.
+
+default_wall_water Void->Gridskin :-
+  default_wall->Gridskin { fore='desaturated_blue' }.
+
+default [UInt UInt]->Gridskin :-
+  [ ([\a \b] dg_grid_is_walk->Bool) 
+    ([\a \b] dg_grid_is_water->Bool) ] -> Gridskin (
+
+    <: \a && \b :> ? default_floor_water->Gridskin ;
+                \a ? default_floor->Gridskin ;
+                \b ? default_wall_water->Gridskin ;
+                     default_wall->Gridskin
+). 
+
+
+gridskin_set [UInt UInt Feat]->Void :-
+  [ \x \y (default->Gridskin { char=(\feat->Sym(\skin->Sym(\char)))
+                               fore=(\feat->Sym(\skin->Sym(\color))) }) ]
+    gridskin_set.
+                                               
+
+gridskin_set [UInt UInt]->Void :-
+  [ \a \b ([\a \b] default->Gridskin) ] gridskin_set.
+
+gridprops_set [UInt UInt]->Void :-
+  [ \a \b ([\a \b] default->Gridprops) ] gridprops_set
 .
 
-flags Feat->Flags :- \flags.
-props Feat->Gridprops :- \props.
 
-feat_set [Coord Sym]->Void :-
-  \a featmap_get->Flags(\flags)->Int(\stairs) $to_bool ? ;
-  [\a \b]->Void (
-     <: \b == nil :> ? \a featmap_del ;
-     [\a (\b featstock_get->Gridprops)] featmap_set;
-     [\a (\b featstock_get->Feat)] ->Void ( 
-         [\a (\b props->Gridprops)] featmap_set
-         [\a (\b flags->Flags)] featmap_set
-     )
-  )
-  \a gridprops_set
-  \a renderprops_set
+/*** *** ***/
+
+feat_set [UInt UInt Sym]->Void :-
+  [ \x \y (\feat featstock_get->Feat) ] -> Void (
+       [\x \y \feat] featmap_set 
+       [\x \y \feat] gridskin_set 
+       [\x \y (\feat->Gridprops(\props)) ] gridprops_set
+       )
+  ;
+  [ \x \y (\feat featstock_get->Gridprops) ] -> Void (
+       [\x \y] featmap_unset
+       [\x \y] gridskin_set
+       [\x \y \props] gridprops_set
+       )
+  ;
+  [\x \y] featmap_unset
+  [\x \y] gridskin_set
+  [\x \y] gridprops_set
 .
-
-**/
