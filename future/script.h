@@ -69,38 +69,69 @@ inline bool featstock_get_2(const nanom::Shapes& shapes, const nanom::Shape& sha
     return featstock().get_gridprops(struc.v[0].uint, ret);
 }
 
-inline bool set_gridprops(const nanom::Shapes& shapes, const nanom::Shape& shape, const nanom::Shape& shapeto,
-                          const nanom::Struct& struc, nanom::Struct& ret) {
+inline bool dg_render_set_is_lit(const nanom::Shapes& shapes, const nanom::Shape& shape, const nanom::Shape& shapeto,
+                                 const nanom::Struct& struc, nanom::Struct& ret) {
 
-    nanom::Int x = struc.v[0].inte;
-    nanom::Int y = struc.v[1].inte;
+    nanom::UInt x = struc.v[0].uint;
+    nanom::UInt y = struc.v[1].uint;
+    grender::get().set_is_lit(x, y, struc.v[2].uint);
+    return true;
+}
 
-    bool is_lit          = struc.v[2].uint;
-    bool walkable        = struc.v[3].uint;
-    bool visible         = struc.v[4].uint;
-    nanom::Int height    = struc.v[5].inte;
-    nanom::Int water     = struc.v[6].inte;
-    nanom::Sym back      = struc.v[7].uint;
+inline bool dg_render_set_back(const nanom::Shapes& shapes, const nanom::Shape& shape, const nanom::Shape& shapeto,
+                               const nanom::Struct& struc, nanom::Struct& ret) {
 
-    grender::get().set_is_lit(x, y, is_lit);
+    nanom::UInt x = struc.v[0].uint;
+    nanom::UInt y = struc.v[1].uint;
+    grender::get().set_back(x, y, colorsyms::color(struc.v[2].uint));
+    return true;
+}
 
-    if (back > 0) {
-        grender::get().set_back(x, y, colorsyms::color(back));
-    } else {
-        grender::get().set_back(x, y, TCOD_color_black);
-    }
+inline bool dg_render_set_is_viewblock(const nanom::Shapes& shapes, const nanom::Shape& shape, 
+                                       const nanom::Shape& shapeto, const nanom::Struct& struc, 
+                                       nanom::Struct& ret) {
 
-    grender::get().set_is_viewblock(x, y, !visible);
-    grender::get().set_is_walkblock(x, y, !walkable);
+    nanom::UInt x = struc.v[0].uint;
+    nanom::UInt y = struc.v[1].uint;
+    grender::get().set_is_viewblock(x, y, struc.v[2].uint, struc.v[3].uint);
+    return true;
+}
 
-    grid::get().set_walk(x, y, walkable);
-    grid::get().set_height(x, y, height);
+inline bool dg_render_set_is_walkblock(const nanom::Shapes& shapes, const nanom::Shape& shape, 
+                                       const nanom::Shape& shapeto, const nanom::Struct& struc, 
+                                       nanom::Struct& ret) {
 
-    if (water < 0) {
-        grid::get().set_water(x, y, false);
-    } else {
-        grid::get().set_water(x, y, true);
-    }
+    nanom::UInt x = struc.v[0].uint;
+    nanom::UInt y = struc.v[1].uint;
+    grender::get().set_is_walkblock(x, y, struc.v[2].uint, struc.v[3].uint);
+    return true;
+}
+
+inline bool dg_grid_set_walk(const nanom::Shapes& shapes, const nanom::Shape& shape, 
+                             const nanom::Shape& shapeto, const nanom::Struct& struc, nanom::Struct& ret) {
+
+    nanom::UInt x = struc.v[0].uint;
+    nanom::UInt y = struc.v[1].uint;
+    grid::get().set_walk(x, y, struc.v[2].uint);
+    return true;
+}
+
+inline bool dg_grid_set_height(const nanom::Shapes& shapes, const nanom::Shape& shape, 
+                               const nanom::Shape& shapeto, const nanom::Struct& struc, nanom::Struct& ret) {
+
+    nanom::UInt x = struc.v[0].uint;
+    nanom::UInt y = struc.v[1].uint;
+    grid::get().set_height(x, y, struc.v[2].inte);
+    return true;
+}
+
+inline bool dg_grid_set_water(const nanom::Shapes& shapes, const nanom::Shape& shape, 
+                               const nanom::Shape& shapeto, const nanom::Struct& struc, nanom::Struct& ret) {
+
+    nanom::UInt x = struc.v[0].uint;
+    nanom::UInt y = struc.v[1].uint;
+    grid::get().set_height(x, y, struc.v[2].uint);
+    return true;
 }
 
 
@@ -115,9 +146,16 @@ struct FeatVm {
         vm.register_callback("featstock_get", "Sym", "Feat",       featstock_get_1);
         vm.register_callback("featstock_set", "Sym", "Gridprops",  featstock_get_2);
 
-        vm.register_callback("_set_gridprops", 
-                             "[ Int Int Bool Bool Bool Int Int Sym ]", "Void",
-                             set_gridprops);
+        vm.register_callback("dg_render_set_is_lit",    "[ UInt UInt Bool ]", "Void", dg_render_set_is_lit);
+        vm.register_callback("dg_render_set_back",      "[ UInt UInt Sym ]",  "Void", dg_render_set_back);
+        vm.register_callback("dg_grid_set_walk",        "[ UInt UInt Bool ]", "Void", dg_grid_set_walk);
+        vm.register_callback("dg_grid_set_height",      "[ UInt UInt Int ]",  "Void", dg_grid_set_height);
+        vm.register_callback("dg_grid_set_water",       "[ UInt UInt Bool ]", "Void", dg_grid_set_water);
+
+        vm.register_callback("dg_render_set_is_viewblock", "[ UInt UInt Bool UInt ]", 
+                             "Void", dg_render_set_is_viewblock);
+        vm.register_callback("dg_render_set_is_walkblock", "[ UInt UInt Bool UInt ]", 
+                             "Void", dg_render_set_is_walkblock);
 
         vm.load(piccol::load_file("scripts/feats.piccol"));
     }        

@@ -5,13 +5,13 @@ namespace colorsyms {
 
 struct ColorSyms {
 
-    std::unordered_map<Sym,TCOD_color_t> colors;
+    std::unordered_map<metalan::Sym,TCOD_color_t> colors;
 
     void add(const std::string& s, const TCOD_color_t& c) {
         colors[metalan::symtab().get(s)] = c;
     }
 
-    const TCOD_color_t& get(Sym s) {
+    const TCOD_color_t& get(metalan::Sym s) {
         auto i = colors.find(s);
         if (i == colors.end())
             throw std::runtime_error("Undefined color: " + metalan::symtab().get(s));
@@ -219,7 +219,7 @@ struct ColorSyms {
     }
 };
 
-inline const TCOD_color_t& color(Sym s) {
+inline const TCOD_color_t& color(metalan::Sym s) {
     static ColorSyms ret;
     return ret.get(s);
 }

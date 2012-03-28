@@ -44,6 +44,28 @@ def {
   height:   ToggleInt
 } Gridprops;
 
+/***
+
+<:: accessor(types)
+
+  fun_name  :- ident &{} &{push} @{ }.
+  type_from :- type &{} @{->}.
+  type_to   :- type &{} &{push} @{ :- }.
+  accessor  :- spaces fun_name
+               spaces type_from
+               spaces type_to spaces
+               @{\\} &{rot} &{pop} @{ get->} &{pop} @{.}.
+::>
+
+<:[accessor] walkable Gridprops Bool :>
+<:[accessor] visible  Gridprops Bool :>
+<:[accessor] water    Gridprops Bool :>
+<:[accessor] lit      Gridprops Bool :>
+<:[accessor] back     Gridprops Sym :>
+<:[accessor] height  Gridprops Int :>
+
+***/
+
 
 def {
   confuse
@@ -82,6 +104,9 @@ def {
 
 def [tag:Sym feat:Feat];
 def [tag:Sym props:Gridprops];
+def [x:Int y:Int a:Bool];
+def [x:Int y:Int a:Int];
+def [x:Int y:Int a:Sym];
 
 floor Void->Gridprops :- 
   Gridprops{ walkable=(true set->Toggle)
@@ -102,8 +127,6 @@ water Bool->Gridprops :- floor->Gridprops { water=(\v set->Toggle) }.
 
 char Int->Sym :- \v $to_sym.
 
-featstock_set [Sym Feat]->Void :-.
-featstock_set [Sym Gridprops]->Void :-.
 
 featstock_init Void->Void :-
 
@@ -490,12 +513,16 @@ featstock_init Void->Void :-
 
 /*** *** *** ***/
 
-def { x:Int y:Int } Coord;
+def { x:UInt y:UInt } Coord;
 
 def [ a:Coord b:Sym ];
 def [ a:Coord b:Gridprops ];
 
-def [x:Int y:Int props:Gridprops];
+def [x:UInt y:UInt props:Gridprops];
+def [x:UInt y:UInt a:Bool];
+def [x:UInt y:UInt a:Bool b:UInt];
+def [x:UInt y:UInt a:Int];
+def [x:UInt y:UInt a:Sym];
 
 <:: try_any(types)
 
@@ -522,7 +549,7 @@ def [x:Int y:Int props:Gridprops];
 
 <:[try_any]
 
-gridprops_set [Int Int Gridprops] 
+gridprops_set [UInt UInt Gridprops] 
 
   [\x \y \props] ->
 
@@ -530,9 +557,9 @@ gridprops_set [Int Int Gridprops]
 ;;
   [ \x \y (\props->Sym(\back get->Sym; 'black')) ] dg_render_set_back 
 ;;
-  [ \x \y (\props->Bool(\visible get->Bool $not)) ] dg_render_set_viewblock
+  [ \x \y (\props->Bool(\visible get->Bool $not)) 0u ] dg_render_set_is_viewblock
 ;;
-  [ \x \y (\props->Bool(\walkable get->Bool $not)) ] dg_render_set_walkblock 
+  [ \x \y (\props->Bool(\walkable get->Bool $not)) 0u ] dg_render_set_is_walkblock 
   [ \x \y (\props->Bool(\walkable get->Bool)) ] dg_grid_set_walk 
 ;;
   [ \x \y (\props->Int(\height get->Int)) ] dg_grid_set_height 
