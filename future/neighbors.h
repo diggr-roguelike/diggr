@@ -14,8 +14,13 @@ struct Neighbors {
     
     typedef std::map<pt, std::vector<pt> > ns_t;
     ns_t nbmap;
+    unsigned int w;
+    unsigned int h;
 
-    void init(unsigned int w, unsigned int h) {
+    void init(unsigned int _w, unsigned int _h) {
+
+        w = _w;
+        h = _h;
 
         nbmap.clear();
 
@@ -52,6 +57,20 @@ struct Neighbors {
         
         return empty;
     }
+
+    //***  ***//
+
+    inline void write(serialize::Sink& s) {
+        serialize::write(s, w);
+        serialize::write(s, h);
+    }
+
+    inline void read(serialize::Source& s) {
+        serialize::read(s, w);
+        serialize::read(s, h);
+        init(w, h);
+    }
+
 };
 
 

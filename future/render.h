@@ -46,6 +46,8 @@ struct Grid {
 
     static const size_t replay_delay = 100;
 
+    static const size_t skincount = 8;
+
 
     struct skin {
 	TCOD_color_t fore;
@@ -54,7 +56,7 @@ struct Grid {
 	int fore_interp;
 	bool is_terrain;
 
-	skin() : c(' '), fore_interp(0), is_terrain(false)
+	skin() : c(0), fore_interp(0), is_terrain(false)
 	    {
 		fore = TCOD_black;
 	    }
@@ -75,7 +77,10 @@ struct Grid {
         unsigned int is_walkblock;
 
 	gridpoint() : back(TCOD_black), is_lit(0), in_fov(false), 
-                      is_viewblock(0), is_walkblock(0) {}
+                      is_viewblock(0), is_walkblock(0) 
+            {
+                skins.resize(8);
+            }
     };
 
     struct keypress {
@@ -416,36 +421,21 @@ public:
         TCOD_map_set_properties(tcodmap, x, y, (g.is_viewblock == 0), (g.is_walkblock == 0));
     }
 
-    void push_skin(unsigned int x, unsigned int y,
-		   const TCOD_color_t& fore, unsigned char c,
-		   const TCOD_color_t& fore2, int fore_interp,
-		   bool is_terrain) {
+    void set_skin(unsigned int x, unsigned int y, unsigned int z,
+                  const TCOD_color_t& fore, unsigned char c,
+                  const TCOD_color_t& fore2, int fore_interp,
+                  bool is_terrain) {
 
 	std::vector<skin>& skins = _get(x,y).skins; 
 
-	skins.emplace_back(fore, c, fore2, fore_interp, is_terrain);
+	skins.emplace(skins.begin() + z,
+                      fore, c, fore2, fore_interp, is_terrain);
     }
 
-    void set_skin(unsigned int x, unsigned int y,
-		  TCOD_color_t fore, unsigned char c,
-		  TCOD_color_t fore2, int fore_interp,
-		  bool is_terrain) {
-
-	std::vector<skin>& skins = _get(x,y).skins; 
-
-	if (skins.size() == 0) {
-	    skins.emplace_back(fore, c, fore2, fore_interp, is_terrain);
-	} else {
-	    skin& sk = skins.back();
-	    sk = skin(fore, c, fore2, fore_interp, is_terrain);
-	}
-    }
-
-    void pop_skin(unsigned int x, unsigned int y) {
+    void unset_skin(unsigned int x, unsigned int y, unsigned int z) {
 	std::vector<skin>& skins = _get(x,y).skins;
 
-	if (skins.size() > 0)
-	    skins.pop_back();
+        skins[z].c = 0;
     }
 
 
@@ -455,7 +445,7 @@ public:
     }
 
 
-    bool draw(unsigned int t,
+    void draw(unsigned int t,
 	      unsigned int px, unsigned int py,
 	      unsigned int hlx, unsigned int hly,
 	      unsigned int rangemin, unsigned int rangemax,
@@ -472,7 +462,6 @@ public:
 	    did_init = true;
 	}
 
-	bool ret = false;
 
 	TCOD_map_compute_fov(tcodmap, px, py, lightradius, true, FOV_SHADOW);
 
@@ -490,11 +479,21 @@ public:
 
 		gp.in_fov = in_fov;
 
-		if (skins.size() == 0) {
+                auto skin_i = skins.rbegin();
+                while (skin_i != skins.rend()) {
+
+                    if (skin_i->c != 0)
+                        break;
+
+                    ++skin_i;
+                }
+
+
+                if (skin_i == skins.rend()) {
 		    continue;
 		}
 
-		const skin& sk = skins.back();
+		const skin& sk = *skin_i;
 
 		TCOD_color_t fore = sk.fore;
 		TCOD_color_t back = gp.back;
@@ -548,10 +547,6 @@ public:
 
 		if (x == hlx && y == hly) {
 		    back = TCOD_white;
-
-		    if (in_fov || gp.is_lit > 0) {
-			ret = true;
-		    }
 		}
 
 		TCOD_console_put_char_ex(NULL, x, y, c, fore, back);
@@ -575,8 +570,6 @@ public:
         }
 
         hud_pips.clear();
-
-	return ret;
     }
 
     void push_hud_line(const std::string& label, TCOD_color_t labelcolor,

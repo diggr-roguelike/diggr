@@ -3,15 +3,20 @@
 
 #include <random>
 
+#include "serialize.h"
+
 namespace rnd {
 
 struct Generator {
 
     std::mt19937 gen;
 
+    size_t seed;
+
     template <typename T>
-    void init(T seed) {
-        gen.seed(seed);
+    void init(T _seed) {
+        gen.seed(_seed);
+        seed = _seed;
     }
 
     template <typename T>
@@ -50,6 +55,18 @@ struct Generator {
 
         return gauss(mean, stddev);
     }
+
+    //***  ***//
+
+    inline void write(serialize::Sink& s) {
+        serialize::write(s, seed);
+    }
+
+    inline void read(serialize::Source& s) {
+        serialize::read(s, seed);
+        init(seed);
+    }
+
 };
 
 inline Generator& get() {

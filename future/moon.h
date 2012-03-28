@@ -5,89 +5,91 @@
 #include <time.h>
 #include <string>
 
+#include "serialize.h"
+
 namespace constants {
 
-  // JDN stands for Julian Day Number
-  // Angles here are in degrees
+// JDN stands for Julian Day Number
+// Angles here are in degrees
 
-  // 1980 January 0.0 in JDN
-  double epoch = 2444239.0;
+// 1980 January 0.0 in JDN
+double epoch = 2444239.0;
 
-  // Ecliptic longitude of the Sun at epoch 1980.0
-  double ecliptic_longitude_epoch = 278.833540;
+// Ecliptic longitude of the Sun at epoch 1980.0
+double ecliptic_longitude_epoch = 278.833540;
 
-  // Ecliptic longitude of the Sun at perigee
-  double ecliptic_longitude_perigee = 282.596403;
+// Ecliptic longitude of the Sun at perigee
+double ecliptic_longitude_perigee = 282.596403;
 
-  // Eccentricity of Earth's orbit
-  double eccentricity = 0.016718;
+// Eccentricity of Earth's orbit
+double eccentricity = 0.016718;
 
-  // Semi-major axis of Earth's orbit, in kilometers
-  double sun_smaxis = 1.49585e8;
+// Semi-major axis of Earth's orbit, in kilometers
+double sun_smaxis = 1.49585e8;
   
-  // Sun's angular size, in degrees, at semi-major axis distance
-  double sun_angular_size_smaxis = 0.533128;
+// Sun's angular size, in degrees, at semi-major axis distance
+double sun_angular_size_smaxis = 0.533128;
 
-  //// Elements of the Moon's orbit, epoch 1980.0
+//// Elements of the Moon's orbit, epoch 1980.0
 
-  // Moon's mean longitude at the epoch
-  double moon_mean_longitude_epoch = 64.975464;
-  // Mean longitude of the perigee at the epoch
-  double moon_mean_perigee_epoch = 349.383063;
+// Moon's mean longitude at the epoch
+double moon_mean_longitude_epoch = 64.975464;
+// Mean longitude of the perigee at the epoch
+double moon_mean_perigee_epoch = 349.383063;
 
-  // Mean longitude of the node at the epoch
-  double node_mean_longitude_epoch = 151.950429;
+// Mean longitude of the node at the epoch
+double node_mean_longitude_epoch = 151.950429;
 
-  // Inclination of the Moon's orbit
-  double moon_inclination = 5.145396;
+// Inclination of the Moon's orbit
+double moon_inclination = 5.145396;
 
-  // Eccentricity of the Moon's orbit
-  double moon_eccentricity = 0.054900;
+// Eccentricity of the Moon's orbit
+double moon_eccentricity = 0.054900;
 
-  // Moon's angular size at distance a from Earth
-  double moon_angular_size = 0.5181;
+// Moon's angular size at distance a from Earth
+double moon_angular_size = 0.5181;
 
-  // Semi-mojor axis of the Moon's orbit, in kilometers
-  double moon_smaxis = 384401.0;
-  // Parallax at a distance a from Earth
-  double moon_parallax = 0.9507;
+// Semi-mojor axis of the Moon's orbit, in kilometers
+double moon_smaxis = 384401.0;
+// Parallax at a distance a from Earth
+double moon_parallax = 0.9507;
 
-  // Synodic month (new Moon to new Moon), in days
-  double synodic_month = 29.53058868;
+// Synodic month (new Moon to new Moon), in days
+double synodic_month = 29.53058868;
 
-  // Base date for E. W. Brown's numbered series of lunations (1923 January 16)
-  double lunations_base = 2423436.0;
+// Base date for E. W. Brown's numbered series of lunations (1923 January 16)
+double lunations_base = 2423436.0;
 
-  //// Properties of the Earth
+//// Properties of the Earth
 
-  double earth_radius = 6378.16;
+double earth_radius = 6378.16;
 }
 
 namespace c = constants;
 
 namespace moon {
 
-  inline double fixangle(double a) {
+inline double fixangle(double a) {
     return a - 360.0 * floor(a/360.0);
-  }
+}
 
-  inline double torad(double d) {
+inline double torad(double d) {
     return d * M_PI / 180.0;
-  }
+}
 
-  inline double todeg(double r) {
+inline double todeg(double r) {
     return r * 180.0 / M_PI;
-  }
+}
 
-  inline double dsin(double d) {
+inline double dsin(double d) {
     return sin(torad(d));
-  }
+}
 
-  inline double dcos(double d) {
+inline double dcos(double d) {
     return cos(torad(d));
-  }
+}
 
-  enum PHASE {
+enum PHASE {
     NEW = 1,
     WAXING_CRESCENT = 2,
     FIRST_QUARTER = 3,
@@ -96,43 +98,43 @@ namespace moon {
     WANING_GIBBOUS = 6,
     LAST_QUARTER = 7,
     WANING_CRESCENT = 8
-  };
+};
 
     
-  inline PHASE phase_n(double p) {
+inline PHASE phase_n(double p) {
     double PRECISION = 0.05;
 
     if (p <= 0 + PRECISION) {
-      return NEW;
+        return NEW;
 
     } else if (p <= 0.25 - PRECISION) {
-      return WAXING_CRESCENT;
+        return WAXING_CRESCENT;
 
     } else if (p <= 0.25 + PRECISION) {
-      return FIRST_QUARTER;
+        return FIRST_QUARTER;
 
     } else if (p <= 0.5 - PRECISION) {
-      return WAXING_GIBBOUS;
+        return WAXING_GIBBOUS;
 
     } else if (p <= 0.5 + PRECISION) {
-      return FULL;
+        return FULL;
 
     } else if (p <= 0.75 - PRECISION) {
-      return WANING_GIBBOUS;
+        return WANING_GIBBOUS;
 
     } else if (p <= 0.75 + PRECISION) {
-      return LAST_QUARTER;
+        return LAST_QUARTER;
 
     } else if (p <= 1.0 - PRECISION) {
-      return WANING_CRESCENT;
+        return WANING_CRESCENT;
 
     } else if (p <= 1.0 + PRECISION) {
-      return NEW;
+        return NEW;
     }
-  }
+}
 
 
-  inline std::string phase_string(PHASE p) {
+inline std::string phase_string(PHASE p) {
     switch (p) {
     case NEW: return "new";
     case WAXING_CRESCENT: return "waxing crescent";
@@ -143,10 +145,10 @@ namespace moon {
     case LAST_QUARTER: return "last quarter";
     case WANING_CRESCENT: return "waning crescent";
     }
-  }
+}
 
 
-  inline double kepler(double m, double ecc) {
+inline double kepler(double m, double ecc) {
     // Solve the equation of Kepler.
 
     double epsilon = 1e-6;
@@ -154,18 +156,18 @@ namespace moon {
     m = torad(m);
     double e = m;
     while (1) {
-      double delta = e - ecc * sin(e) - m;
-      e = e - delta / (1.0 - ecc * cos(e));
+        double delta = e - ecc * sin(e) - m;
+        e = e - delta / (1.0 - ecc * cos(e));
 
-      if (fabs(delta) <= epsilon)
-        break;
+        if (fabs(delta) <= epsilon)
+            break;
     }
 
     return e;
-  }
+}
 
 
-  struct PhaseInfo {
+struct PhaseInfo {
     double phase_n;
     double illuminated;
     double age;
@@ -175,20 +177,20 @@ namespace moon {
     double sun_angular_diameter;
     PHASE phase;
     std::string phase_str;
-  };
+};
 
   
-  inline PhaseInfo phase(time_t _phase_date=time(NULL)) {
+inline PhaseInfo phase(time_t _phase_date=time(NULL)) {
     /** Calculate phase of moon as a fraction:
 
-    The argument is the time for which the phase is requested.
+        The argument is the time for which the phase is requested.
 
-    Returns a struct containing the terminator phase angle as a
-    percentage of a full circle (i.e., 0 to 1), the illuminated
-    fraction of the Moon's disc, the Moon's age in days and fraction,
-    the distance of the Moon from the centre of the Earth, and the
-    angular diameter subtended by the Moon as seen by an observer at
-    the centre of the Earth. **/
+        Returns a struct containing the terminator phase angle as a
+        percentage of a full circle (i.e., 0 to 1), the illuminated
+        fraction of the Moon's disc, the Moon's age in days and fraction,
+        the distance of the Moon from the centre of the Earth, and the
+        angular diameter subtended by the Moon as seen by an observer at
+        the centre of the Earth. **/
 
     // Calculation of the Sun's position
 
@@ -287,7 +289,7 @@ namespace moon {
 
     // Calculate distance of Moon from the centre of the Earth
     double moon_dist = (c::moon_smaxis * pow(1 - c::moon_eccentricity,2)) / 
-      (1 + c::moon_eccentricity * cos(torad(MmP + mEc)));
+        (1 + c::moon_eccentricity * cos(torad(MmP + mEc)));
 
     // Calculate Moon's angular diameter
     double moon_diam_frac = moon_dist / c::moon_smaxis;
@@ -311,7 +313,49 @@ namespace moon {
     res.phase = ppn;
     res.phase_str = phase_string(ppn);
     return res;
-  }
+}
+
+
+struct Moon {
+
+    PhraseInfo pi;
+
+    void init() {
+        pi = phase();
+    }
+
+    //***  ***//
+
+    inline void write(serialize::Sink& s) {
+        serialize::write(s, pi.phase_n);
+        serialize::write(s, pi.illuminated);
+        serialize::write(s, pi.age);
+        serialize::write(s, pi.distance);
+        serialize::write(s, pi.angular_diameter);
+        serialize::write(s, pi.sun_distance);
+        serialize::write(s, pi.sun_angular_diameter);
+        serialize::write(s, pi.phase);
+        serialize::write(s, pi.phase_str);
+    }
+
+    inline void read(serialize::Source& s) {
+        serialize::read(s, pi.phase_n);
+        serialize::read(s, pi.illuminated);
+        serialize::read(s, pi.age);
+        serialize::read(s, pi.distance);
+        serialize::read(s, pi.angular_diameter);
+        serialize::read(s, pi.sun_distance);
+        serialize::read(s, pi.sun_angular_diameter);
+        serialize::read(s, pi.phase);
+        serialize::read(s, pi.phase_str);
+    }
+};
+
+
+inline Moon& get() {
+    static Moon ret;
+    return ret;
+}
 
 }
 
