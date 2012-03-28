@@ -62,6 +62,10 @@ struct Featmap {
         o = i->second;
         return true;
     }
+
+    void clear() {
+        feats.clear();
+    }
 };
 
 inline Featstock& featstock() {

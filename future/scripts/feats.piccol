@@ -619,6 +619,8 @@ gridprops_set [UInt UInt]->Void :-
 /*** *** ***/
 
 feat_set [UInt UInt Sym]->Void :-
+  [ \x \y ] featmap_get->Feat->Void(<: \stairs > 0 :> ? )
+  ;
   [ \x \y (\feat featstock_get->Feat) ] -> Void (
        [\x \y \feat] featmap_set 
        [\x \y \feat] gridskin_set 
@@ -635,3 +637,4 @@ feat_set [UInt UInt Sym]->Void :-
   [\x \y] gridskin_set
   [\x \y] gridprops_set
 .
+
