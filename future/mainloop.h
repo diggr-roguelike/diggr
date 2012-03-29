@@ -13,20 +13,32 @@
 
 namespace mainloop {
 
-template <typename GENERATE,
-          typename DRAWING_CONTEXT,
-          typename DRAW_HUD,
-          typename PROCESS,
-          typename HANDLE_INPUT,
-          typename ENDGAME>
+
+struct drawing_context_t {
+    unsigned int px;
+    unsigned int py;
+    unsigned int lightradius;
+    unsigned int hlx;
+    unsigned int hly;
+    unsigned int rangemin;
+    unsigned int rangemax;
+    bool do_hud;
+
+    drawing_context_t() :
+        px(0), py(0), lightradius(1000), 
+        hlx(std::numeric_limits<unsigned int>::max()), 
+        hly(hlx),
+        rangemin(0),
+        rangemax(hlx),
+        do_hud(true)
+        {}
+};
+
+
+template <typename GAME>
 struct Main {
 
-    GENERATE generate;
-    DRAWING_CONTEXT drawing_context;
-    DRAW_HUD draw_hud;
-    PROCESS process;
-    HANDLE_INPUT handle_input;
-    ENDGAME endgame;
+    GAME game;
 
     size_t ticks;
 
@@ -45,7 +57,9 @@ struct Main {
             neighbors::get().read(s);
             moon::get().read(s);
 
-            serialize::read(s, tick);
+            serialize::read(s, ticks);
+
+            game.load(s);
 
         } catch (std::exception& e) {
             return false;
@@ -64,7 +78,9 @@ struct Main {
         neighbors::get().write(s);
         moon::get().write(s);
 
-        serialize::write(s, tick);
+        serialize::write(s, ticks);
+
+        game.save(s);
     }
 
     void clobber_savefile(const std::string& filename) {
@@ -72,15 +88,13 @@ struct Main {
     }
 
 
-    bool start(const std::string& _savefile,
+    bool start(const std::string& savefile,
                long seed,
                unsigned int _w, unsigned int _h, 
                unsigned int _w2, unsigned int _h2,
                const std::string& _font, 
                const std::string& _title, 
                bool _fullscreen) {
-
-        savefile = _savefile;
 
         if (load(savefile)) {
             return false;
@@ -97,51 +111,43 @@ struct Main {
 
         ticks = 1;
 
-        generate();
+        game.generate();
+
         return true;
     }
 
-
     void draw() {
 
-        unsigned int px;
-        unsigned int py;
-        unsigned int lightradius;
-        unsigned int hlx;
-        unsigned int hly;
-        unsigned int rangemin;
-        unsigned int rangemax;
-        bool do_hud;
-        
-        drawing_context(px, py, lightradius, hlx, hly, rangemin, rangemax, do_hud);
+        drawing_context_t ctx;
+        game.drawing_context(ctx);
 
-        if (do_hud) {
-            draw_hud();
+        if (ctx.do_hud) {
+            game.draw_hud();
         }
         
-        grender::get().draw(ticks, px, py, hlx, hly,
-                            rangemin, rangemax, lightradius, do_hud);
+        grender::get().draw(ticks, ctx.px, ctx.py, ctx.hlx, ctx.hly,
+                            ctx.rangemin, ctx.rangemax, ctx.lightradius, 
+                            ctx.do_hud);
 
     }
 
-    void process(bool done, bool need_input) {
-        static size_t oldticks = 0;
+    void process(size_t& oldticks, bool& done, bool& dead, bool& need_input) {
 
         if (ticks == oldticks)
             return;
 
         oldticks = ticks;
 
-        process(ticks, done, need_input);
+        game.process_world(ticks, done, dead, need_input);
 
     }
 
-    void pump_event(bool need_input) {
+    void pump_event(bool need_input, bool& done, bool& dead) {
 
         if (need_input) {
 
-            grender::Grid::keypress_t k = grender::get().wait_for_key();
-            handle_input(k.vk, k.c);
+            grender::Grid::keypress k = grender::get().wait_for_key();
+            game.handle_input(ticks, done, dead, k.vk, k.c);
 
         } else {
             grender::get().skip_input();
@@ -149,26 +155,40 @@ struct Main {
     }
     
 
-    bool mainloop(const std::string& savefile) {
+    bool mainloop(const std::string& savefile,
+                  long seed,
+                  unsigned int _w, unsigned int _h, 
+                  unsigned int _w2, unsigned int _h2,
+                  const std::string& _font, 
+                  const std::string& _title, 
+                  bool _fullscreen) {
 
-        init(savefile);
+
+        start(savefile, seed, _w, _h, _w2, _h2, _font, _title, _fullscreen);
+
+        size_t oldticks = 0;
+
+        draw();
+
+        bool done = false;
+        bool dead = false;
 
         while (1) {
 
+            bool need_input = false;
+
+            process(oldticks, done, dead, need_input);
+
             draw();
 
-            bool done;
-            bool dead;
-            bool need_input;
-
-            process(done, need_input);
-
             if (done) {
-                draw();
                 
                 if (dead) {
-                    endgame();
+
+                    game.endgame();
+
                     clobber_savefile(savefile);
+
                 } else {
                     save(savefile);
                 }
@@ -177,7 +197,7 @@ struct Main {
                 return dead;
             }
 
-            pump_event(need_input);
+            pump_event(need_input, done, dead);
         }
     }
     

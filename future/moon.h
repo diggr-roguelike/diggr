@@ -318,7 +318,7 @@ inline PhaseInfo phase(time_t _phase_date=time(NULL)) {
 
 struct Moon {
 
-    PhraseInfo pi;
+    PhaseInfo pi;
 
     void init() {
         pi = phase();
@@ -334,7 +334,7 @@ struct Moon {
         serialize::write(s, pi.angular_diameter);
         serialize::write(s, pi.sun_distance);
         serialize::write(s, pi.sun_angular_diameter);
-        serialize::write(s, pi.phase);
+        serialize::write(s, (unsigned int)pi.phase);
         serialize::write(s, pi.phase_str);
     }
 
@@ -346,7 +346,9 @@ struct Moon {
         serialize::read(s, pi.angular_diameter);
         serialize::read(s, pi.sun_distance);
         serialize::read(s, pi.sun_angular_diameter);
-        serialize::read(s, pi.phase);
+        unsigned int phase;
+        serialize::read(s, phase);
+        pi.phase = (PHASE)phase;
         serialize::read(s, pi.phase_str);
     }
 };
