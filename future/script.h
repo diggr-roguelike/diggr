@@ -131,7 +131,13 @@ inline bool player_set(CALLBACK) {
 }
 
 inline bool player_get(CALLBACK) {
-    ret = player().p;
+    Obj& p = player().p;
+
+    if (p.v.size() != shapeto.size()) {
+        p.v.resize(shapeto.size());
+    }
+
+    ret = p;
     return true;
 }
 

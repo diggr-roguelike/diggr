@@ -12,6 +12,11 @@ struct ColorSyms {
     }
 
     const TCOD_color_t& get(metalan::Sym s) {
+
+        if (s == 0) {
+            return TCOD_black;
+        }
+
         auto i = colors.find(s);
         if (i == colors.end())
             throw std::runtime_error("Undefined color: " + metalan::symtab().get(s));
