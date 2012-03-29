@@ -8,12 +8,12 @@ namespace piccol {
 
 struct Piccol0 : public Piccol {
 
-    Piccol0() :
-        Piccol(piccol::load_file("../piccol/macrolan.metal"),
-               piccol::load_file("../piccol/piccol_lex.metal"),
-               piccol::load_file("../piccol/piccol_morph.metal"),
-               piccol::load_file("../piccol/piccol_emit.metal"),
-               piccol::load_file("../piccol/prelude.piccol"))
+    Piccol0(const std::string& sysdir) :
+        Piccol(piccol::load_file(sysdir + "macrolan.metal"),
+               piccol::load_file(sysdir + "piccol_lex.metal"),
+               piccol::load_file(sysdir + "piccol_morph.metal"),
+               piccol::load_file(sysdir + "piccol_emit.metal"),
+               piccol::load_file(sysdir + "prelude.piccol"))
         {
             Piccol::init();
         }

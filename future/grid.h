@@ -59,6 +59,10 @@ struct Map {
         }
     }
 
+    void clear() {
+        init(w, h);
+    }
+
     double& _get(unsigned int x, unsigned int y) {
         return grid[y*w+x];
     }

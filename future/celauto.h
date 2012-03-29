@@ -67,6 +67,10 @@ struct CaMap {
         camap.clear();
     }
 
+    void clear() {
+        init();
+    }
+
     void get_state(const pt& xy, size_t& id, unsigned int& age) {
         camap_t::iterator i = camap.find(xy);
 

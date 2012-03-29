@@ -46,6 +46,10 @@ struct Neighbors {
         }
     }
 
+    void clear() {
+        init(w, h);
+    }
+
     const std::vector<pt>& operator()(const pt& xy) const {
         static std::vector<pt> empty;
 

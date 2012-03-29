@@ -3,15 +3,29 @@
 
 #include "mainloop.h"
 
+#include "script.h"
+
+
 struct Game {
+
+    scripting::Vm vm;
 
     grid::pt pxy;
 
-    Game() {}
+    Game() : vm("piccol/", "future/scripts/") {}
 
     void generate() {
 
-        grid::get().generate(0);
+        vm.generate();
+
+        unsigned int gw = grender::get().w;
+        unsigned int gh = grender::get().h;
+
+        for (unsigned int y = 0; y < gh; ++y) {
+            for (unsigned int x = 0; x < gw; ++x) {
+                vm.set_skin(x, y);
+            }
+        }
 
         pxy = grid::get().one_of_floor();
     }

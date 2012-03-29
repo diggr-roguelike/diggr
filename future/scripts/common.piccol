@@ -1,0 +1,6 @@
+
+def { x:UInt y:UInt } Player;
+
+char Int->Sym :- \v $to_sym.
+
+

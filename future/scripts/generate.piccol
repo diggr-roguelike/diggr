@@ -1,0 +1,66 @@
+
+
+def {
+  fore:       Sym
+  char:       Sym
+  fore2:      Sym
+  fore_i:     Bool
+  is_terrain: Bool
+} Gridskin;
+
+def [x:UInt y:UInt z:UInt skin:Gridskin];
+def [x:UInt y:UInt z:UInt fore:Sym char:Sym fore2:Sym fore_i:Bool is_terrain:Bool];
+
+set_gridskin [UInt UInt UInt Gridskin]->Void :-
+  [ \x \y \z
+    (\skin->Sym(\fore))
+    (\skin->Sym(\char))
+    (\skin->Sym(\fore2))
+    (\skin->Bool(\fore_i))
+    (\skin->Bool(\is_terrain)) ] dg_render_set_skin.
+
+dungeontheme Void->Sym :- 'red'.
+
+default Void->Gridskin :- 
+  Gridskin{ char=' '
+            fore=(dungeontheme->Sym) 
+            fore2=nil 
+            fore_i=false 
+            is_terrain=false }.
+
+default_floor Void->Gridskin :-
+  default->Gridskin { char=(250 char->Sym) is_terrain=true }.
+
+default_wall Void->Gridskin :-
+  default->Gridskin { char=(176 char->Sym) is_terrain=true }.
+
+default_floor_water Void->Gridskin :- 
+  default->Gridskin { char  =(251 char->Sym) 
+                               fore  ='light_azure'
+                               fore2 ='dark_azure'
+                               fore_i=true }.
+
+default_wall_water Void->Gridskin :-
+  default_wall->Gridskin { fore='desaturated_blue' }.
+
+default [UInt UInt]->Gridskin :-
+  [ ([\a \b] dg_grid_is_walk->Bool) 
+    ([\a \b] dg_grid_is_water->Bool) ] -> Gridskin (
+
+    <: \a && \b :> ? default_floor_water->Gridskin ;
+                \a ? default_floor->Gridskin ;
+                \b ? default_wall_water->Gridskin ;
+                     default_wall->Gridskin
+). 
+
+
+set_skin [UInt UInt]->Void :-
+  [ \a \b 0u ([\a \b] default->Gridskin) ] set_gridskin.  
+
+
+generate Void->Void :-
+  dg__clear_map
+  0 dg_grid_generate
+  dg_grid_one_of_walk->[UInt UInt]->Void(get->Player {x=\a y=\b} set)
+.
+
