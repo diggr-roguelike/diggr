@@ -116,32 +116,45 @@ inline bool featmap_unset(CALLBACK) {
 
 /****/
 
-struct Player {
-    Obj p;
+struct GlobalVar {
+    Obj v;
 };
 
-inline Player& player() {
-    static Player ret;
+template <typename T>
+inline T& global() {
+    static T ret;
     return ret;
 }
 
-inline bool player_set(CALLBACK) {
-    player().p = struc;
+template <typename T>
+inline bool global_set(CALLBACK) {
+    global<T>().v = struc;
     return true;
 }
 
-inline bool player_get(CALLBACK) {
-    Obj& p = player().p;
+template <typename T>
+inline bool global_get(CALLBACK) {
+    Obj& v = global<T>().v;
 
-    if (p.v.size() != shapeto.size()) {
-        p.v.resize(shapeto.size());
+    if (v.v.size() != shapeto.size()) {
+        v.v.resize(shapeto.size());
     }
 
-    ret = p;
+    ret = v;
     return true;
 }
 
+struct Player : public GlobalVar {};
+struct Dungeon : public GlobalVar {};
+
+
 /****/
+
+inline bool dg_random_range(CALLBACK) {
+
+    ret.v.push_back(rnd::get().range(struc.v[0].inte, struc.v[1].inte));
+    return true;
+}
 
 inline bool dg_render_set_is_lit(CALLBACK) {
 
@@ -240,6 +253,12 @@ inline bool dg_render_set_skin(CALLBACK) {
     return true;
 }
 
+inline bool dg_render_set_env(CALLBACK) {
+    
+    grender::get().set_env(colorsyms::color(struc.v[0].uint), struc.v[1].real);
+    return true;
+}
+
 inline bool dg_grid_generate(CALLBACK) {
 
     grid::get().generate(struc.v[0].inte);
@@ -270,6 +289,11 @@ inline bool dg_grid_one_of_walk(CALLBACK) {
     return true;
 }
 
+inline bool dg_current_moon(CALLBACK) {
+    ret.v.push_back(metalan::symtab().get(moon::get().pi.phase_str));
+    return true;
+}
+
 inline bool dg__clear_map(CALLBACK) {
 
     celauto::get().clear();
@@ -295,9 +319,16 @@ struct Vm {
         vm.register_callback("featmap_set",   "[ UInt UInt Feat ]", "Void", featmap_set);
         vm.register_callback("featmap_unset", "[ UInt UInt ]",      "Void", featmap_unset);
 
-        vm.register_callback("get", "Void", "Player", player_get);
-        vm.register_callback("set", "Player", "Void", player_set);
+        vm.register_callback("get", "Void",   "Player", global_get<Player>);
+        vm.register_callback("set", "Player", "Void",   global_set<Player>);
 
+        vm.register_callback("get", "Void",    "Dungeon", global_get<Dungeon>);
+        vm.register_callback("set", "Dungeon", "Void",    global_set<Dungeon>);
+
+        //////
+
+        vm.register_callback("dg_random_range", "[ Int Int ]", "Int", dg_random_range);
+        
         vm.register_callback("dg_render_set_is_lit",    "[ UInt UInt Bool ]", "Void", dg_render_set_is_lit);
         vm.register_callback("dg_render_set_back",      "[ UInt UInt Sym ]",  "Void", dg_render_set_back);
 
@@ -308,6 +339,8 @@ struct Vm {
 
         vm.register_callback("dg_render_set_skin", 
                              "[ UInt UInt UInt Sym Sym Sym Bool Bool ]", "Void", dg_render_set_skin);
+
+        vm.register_callback("dg_render_set_env", "[ Sym Real ]", "Void", dg_render_set_env);
 
         vm.register_callback("dg_grid_set_walk",        "[ UInt UInt Bool ]", "Void", dg_grid_set_walk);
         vm.register_callback("dg_grid_set_water",       "[ UInt UInt Bool ]", "Void", dg_grid_set_water);
@@ -322,6 +355,8 @@ struct Vm {
         vm.register_callback("dg_grid_one_of_floor", "Void", "[ UInt UInt ]", dg_grid_one_of_floor);
         vm.register_callback("dg_grid_one_of_water", "Void", "[ UInt UInt ]", dg_grid_one_of_water);
         vm.register_callback("dg_grid_one_of_walk",  "Void", "[ UInt UInt ]", dg_grid_one_of_walk);
+
+        vm.register_callback("dg_current_moon", "Void", "Sym", dg_current_moon);
 
         vm.register_callback("dg__clear_map", "Void", "Void", dg__clear_map);
 
@@ -341,6 +376,14 @@ struct Vm {
         in.v.push_back((nanom::UInt)x);
         in.v.push_back((nanom::UInt)y);
         vm.run("set_skin", "[ UInt UInt ]", "Void", in, out);
+    }
+
+    void drawing_context(unsigned int& px, unsigned int& py) {
+        Obj out;
+        vm.run("drawing_context", "Void", "[ UInt UInt ]", out);
+
+        px = out.v[0].uint;
+        py = out.v[1].uint;
     }
 
     void init() {

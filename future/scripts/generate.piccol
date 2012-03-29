@@ -6,8 +6,12 @@ def {
   fore2:      Sym
   fore_i:     Bool
   is_terrain: Bool
+  is_nowalk:  Bool
+  is_noview:  Bool
 } Gridskin;
 
+def [a:Sym  b:Real];
+def [x:UInt y:UInt a:Bool b:UInt];
 def [x:UInt y:UInt z:UInt skin:Gridskin];
 def [x:UInt y:UInt z:UInt fore:Sym char:Sym fore2:Sym fore_i:Bool is_terrain:Bool];
 
@@ -17,28 +21,44 @@ set_gridskin [UInt UInt UInt Gridskin]->Void :-
     (\skin->Sym(\char))
     (\skin->Sym(\fore2))
     (\skin->Bool(\fore_i))
-    (\skin->Bool(\is_terrain)) ] dg_render_set_skin.
+    (\skin->Bool(\is_terrain)) ] dg_render_set_skin
+  [ \x \y (\skin->Bool(\is_nowalk)) 0u ] dg_render_set_is_walkblock
+  [ \x \y (\skin->Bool(\is_noview)) 0u ] dg_render_set_is_viewblock
+.
 
-dungeontheme Void->Sym :- 'red'.
+dungeontheme Void->Sym :- 
+  get->Dungeon->Sym(
+    <: \branch == 'a' :> ? 'lime';
+    <: \branch == 'b' :> ? 'red';
+    <: \branch == 'c' :> ? 'sky';
+    <: \branch == 'd' :> ? 'darkest_gray';
+    <: \branch == 'e' :> ? 'lightest_yellow';
+    <: \branch == 's' :> ? 'darkest_blue';
+    <: \branch == 'q' :> ? 'white';
+    <: \branch == 'qk' :> ? 'grey')
+.
 
 default Void->Gridskin :- 
   Gridskin{ char=' '
             fore=(dungeontheme->Sym) 
             fore2=nil 
             fore_i=false 
-            is_terrain=false }.
+            is_terrain=false
+            is_nowalk=true
+            is_noview=true }.
 
 default_floor Void->Gridskin :-
-  default->Gridskin { char=(250 char->Sym) is_terrain=true }.
+  default->Gridskin { char=(250 char->Sym) is_terrain=true is_nowalk=false is_noview=false }.
 
 default_wall Void->Gridskin :-
   default->Gridskin { char=(176 char->Sym) is_terrain=true }.
 
 default_floor_water Void->Gridskin :- 
   default->Gridskin { char  =(251 char->Sym) 
-                               fore  ='light_azure'
-                               fore2 ='dark_azure'
-                               fore_i=true }.
+                      fore  ='light_azure'
+                      fore2 ='dark_azure'
+                      fore_i=true
+                      is_nowalk=false is_noview=false }.
 
 default_wall_water Void->Gridskin :-
   default_wall->Gridskin { fore='desaturated_blue' }.
@@ -53,14 +73,57 @@ default [UInt UInt]->Gridskin :-
                      default_wall->Gridskin
 ). 
 
+switch_branch Sym->Void :- get->Dungeon { branch=\v is_quest=false } set.
+
+choose_branch Void->Void :-
+  get->Dungeon->Void( <: \branch == nil :> ?
+  [ 1 5 ] dg_random_range->Int->Void(
+    <: \v == 1 :> ? 'a' switch_branch;
+    <: \v == 2 :> ? 'b' switch_branch;
+    <: \v == 3 :> ? 'c' switch_branch;
+    <: \v == 4 :> ? 'd' switch_branch;
+    <: \v == 5 :> ? 'e' switch_branch)
+  )
+.
+
+generate_map Void->Void :-
+  dg__clear_map
+
+  get->Dungeon->Void( <: !\is_quest :> ?
+    dg_current_moon->Sym->Int(
+       <: \v == 'new' || \v == 'full' :> ? 1;
+       <: \v == 'first quarter' || \v == 'last quarter' :> ? -1;
+       0)
+    dg_grid_generate)
+
+  dg_current_moon->Sym->Void(
+    <: \v == 'full' :> ? [ 'gray' 0.6 ] dg_render_set_env;
+    <: \v == 'new'  :> ? [ 'darkest_blue' 0.4 ] dg_render_set_env;
+    [ 'white' 0f ] dg_render_set_env)
+.
+
+set_playerskin Void->Void :-
+  get->Player->Void( [\x \y 7u 'white' '@' 'black' false false ] dg_render_set_skin ).
+
+place_player Void->Void :-
+  dg_grid_one_of_walk->[UInt UInt]->Void(get->Player {x=\a y=\b} set)
+  set_playerskin
+.
+
+
+/*** *** ***/
+
 
 set_skin [UInt UInt]->Void :-
-  [ \a \b 0u ([\a \b] default->Gridskin) ] set_gridskin.  
+  [ \a \b 0u ([\a \b] default->Gridskin) ] set_gridskin.
 
 
 generate Void->Void :-
-  dg__clear_map
-  0 dg_grid_generate
-  dg_grid_one_of_walk->[UInt UInt]->Void(get->Player {x=\a y=\b} set)
+
+  choose_branch
+  generate_map
+  place_player
 .
 
+drawing_context Void->[UInt UInt] :-
+  get->Player->[UInt UInt]([\x \y]).

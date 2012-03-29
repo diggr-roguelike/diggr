@@ -79,7 +79,7 @@ struct Grid {
 	gridpoint() : back(TCOD_black), is_lit(0), in_fov(false), 
                       is_viewblock(0), is_walkblock(0) 
             {
-                skins.resize(8);
+                skins.resize(skincount);
             }
     };
 
@@ -481,7 +481,6 @@ public:
 
                 auto skin_i = skins.rbegin();
                 while (skin_i != skins.rend()) {
-
                     if (skin_i->c != 0)
                         break;
 

@@ -1,5 +1,14 @@
 
-def { x:UInt y:UInt } Player;
+def { 
+  x: UInt
+  y: UInt 
+} Player;
+
+def {
+  branch: Sym
+  is_quest: Bool
+} Dungeon;
+
 
 char Int->Sym :- \v $to_sym.
 

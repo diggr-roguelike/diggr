@@ -10,8 +10,6 @@ struct Game {
 
     scripting::Vm vm;
 
-    grid::pt pxy;
-
     Game() : vm("piccol/", "future/scripts/") {}
 
     void generate() {
@@ -26,8 +24,6 @@ struct Game {
                 vm.set_skin(x, y);
             }
         }
-
-        pxy = grid::get().one_of_floor();
     }
 
     void endgame() {
@@ -36,17 +32,17 @@ struct Game {
 
     template <typename SINK>
     void save(SINK& s) {
-        serialize::write(s, pxy);
+        //serialize::write(s, pxy);
     }
 
     template <typename SOURCE>
     void load(SOURCE& s) {
-        serialize::read(s, pxy);
+        //serialize::read(s, pxy);
     }
 
     void drawing_context(mainloop::drawing_context_t& ctx) {
-        ctx.px = pxy.first;
-        ctx.py = pxy.second;
+        vm.drawing_context(ctx.px, ctx.py);
+        ctx.lightradius = 8;
     }
 
     void draw_hud() {

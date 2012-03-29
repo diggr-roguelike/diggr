@@ -51,10 +51,10 @@ struct Main {
             serialize::Source s(filename);
 
             rnd::get().read(s);
-            celauto::get().read(s);
-            grender::get().read(s);
-            grid::get().read(s);
             neighbors::get().read(s);
+            grid::get().read(s);
+            grender::get().read(s);
+            celauto::get().read(s);
             moon::get().read(s);
 
             serialize::read(s, ticks);
@@ -72,10 +72,10 @@ struct Main {
         serialize::Sink s(filename);
 
         rnd::get().write(s);
-        celauto::get().write(s);
-        grender::get().write(s);
-        grid::get().write(s);
         neighbors::get().write(s);
+        grid::get().write(s);
+        grender::get().write(s);
+        celauto::get().write(s);
         moon::get().write(s);
 
         serialize::write(s, ticks);
@@ -102,11 +102,11 @@ struct Main {
 
 
         rnd::get().init(seed);
-        celauto::get().init();
+        neighbors::get().init(_w, _h);
         grid::get().init(_w, _h);
         grender::get().init(_w2, _h2, _font, _title, _fullscreen);
         grender::get().keylog.clear();
-        neighbors::get().init(_w, _h);
+        celauto::get().init();
         moon::get().init();
 
         ticks = 1;
@@ -133,8 +133,10 @@ struct Main {
 
     void process(size_t& oldticks, bool& done, bool& dead, bool& need_input) {
 
-        if (ticks == oldticks)
+        if (ticks == oldticks) {
+            need_input = true;
             return;
+        }
 
         oldticks = ticks;
 
@@ -177,9 +179,12 @@ struct Main {
 
             bool need_input = false;
 
+            std::cout << "!" << ticks << " " << oldticks << " process" << std::endl;
             process(oldticks, done, dead, need_input);
 
             draw();
+
+            std::cout << "!draw " << done << " " << dead << " " << need_input << std::endl;
 
             if (done) {
                 
@@ -197,7 +202,9 @@ struct Main {
                 return dead;
             }
 
+            std::cout << "!pump_event" << std::endl;
             pump_event(need_input, done, dead);
+            std::cout << "  " << done << " " << dead << std::endl;
         }
     }
     
