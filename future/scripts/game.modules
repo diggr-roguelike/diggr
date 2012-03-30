@@ -1,0 +1,11 @@
+
+modules Void->Void :-
+  'common.piccol' common  
+
+  ['generate'  'generate.piccol'] module
+  ['skin' 'skin.piccol'] module
+
+  ['generate' 'generate' 'Void' 'Void'] exported
+  ['skin'     'set_skin' '[ UInt UInt ]' 'Void'] exported
+  ['generate' 'drawing_context' 'Void' '[ UInt UInt ]'] exported
+.

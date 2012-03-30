@@ -12,4 +12,7 @@ def {
 
 char Int->Sym :- \v $to_sym.
 
+/***/
+
+def [a:UInt b:UInt c:UInt d:UInt];
 

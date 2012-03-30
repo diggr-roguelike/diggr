@@ -3,7 +3,7 @@
 
 #include <unordered_map>
 
-#include "piccol.h"
+#include "../piccol/piccol_modulum.h"
 
 #include "tcod_colors.h"
 
@@ -305,10 +305,10 @@ inline bool dg__clear_map(CALLBACK) {
 
 struct Vm {
 
-    piccol::Piccol0 vm;
+    piccol::Modules vm;
 
     Vm(const std::string& sysdir, 
-       const std::string& appdir) : vm(sysdir) {
+       const std::string& appdir) : vm(sysdir, appdir, "game.modules") {
             
         vm.register_callback("featstock_set", "[ Sym Feat ]",       "Void", featstock_set_1);
         vm.register_callback("featstock_set", "[ Sym Gridprops ]",  "Void", featstock_set_2);
@@ -360,14 +360,14 @@ struct Vm {
 
         vm.register_callback("dg__clear_map", "Void", "Void", dg__clear_map);
 
-        vm.load(piccol::load_file(appdir + "common.piccol"));
-        vm.load(piccol::load_file(appdir + "generate.piccol"));
+        vm.init();
     }        
 
 
     void generate() {
         Obj out;
-        vm.run("generate", "Void", "Void", out);
+        Obj inp;
+        vm.run("generate", "Void", "Void", inp, out);
     }
 
     void set_skin(unsigned int x, unsigned int y) {
@@ -380,15 +380,12 @@ struct Vm {
 
     void drawing_context(unsigned int& px, unsigned int& py) {
         Obj out;
-        vm.run("drawing_context", "Void", "[ UInt UInt ]", out);
+        Obj inp;
+
+        vm.run("drawing_context", "Void", "[ UInt UInt ]", inp, out);
 
         px = out.v[0].uint;
         py = out.v[1].uint;
-    }
-
-    void init() {
-        //Obj out;
-        //vm.run("featstock_init", "Void", "Void", out);
     }
 };
 

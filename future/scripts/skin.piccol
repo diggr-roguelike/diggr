@@ -1,0 +1,89 @@
+
+def {
+  fore:       Sym
+  char:       Sym
+  fore2:      Sym
+  fore_i:     Bool
+  is_terrain: Bool
+  is_nowalk:  Bool
+  is_noview:  Bool
+} Gridskin;
+
+def [a:Sym  b:Real];
+def [x:UInt y:UInt a:Bool b:UInt];
+def [x:UInt y:UInt z:UInt skin:Gridskin];
+def [x:UInt y:UInt z:UInt fore:Sym char:Sym fore2:Sym fore_i:Bool is_terrain:Bool];
+
+set_gridskin [UInt UInt UInt Gridskin]->Void :-
+  [ \x \y \z
+    (\skin->Sym(\fore))
+    (\skin->Sym(\char))
+    (\skin->Sym(\fore2))
+    (\skin->Bool(\fore_i))
+    (\skin->Bool(\is_terrain)) ] dg_render_set_skin
+  [ \x \y (\skin->Bool(\is_nowalk)) 0u ] dg_render_set_is_walkblock
+  [ \x \y (\skin->Bool(\is_noview)) 0u ] dg_render_set_is_viewblock
+.
+
+dungeontheme Void->Sym :- 
+  get->Dungeon->Sym(
+    <: \branch == 'a' :> ? 'lime';
+    <: \branch == 'b' :> ? 'red';
+    <: \branch == 'c' :> ? 'sky';
+    <: \branch == 'd' :> ? 'darkest_gray';
+    <: \branch == 'e' :> ? 'lightest_yellow';
+    <: \branch == 's' :> ? 'darkest_blue';
+    <: \branch == 'q' :> ? 'white';
+    <: \branch == 'qk' :> ? 'grey')
+.
+
+default Void->Gridskin :- 
+  Gridskin{ char=' '
+            fore=(dungeontheme->Sym) 
+            fore2=nil 
+            fore_i=false 
+            is_terrain=false
+            is_nowalk=true
+            is_noview=true }.
+
+default_floor Void->Gridskin :-
+  default->Gridskin { char=(250 char->Sym) is_terrain=true is_nowalk=false is_noview=false }.
+
+default_wall Void->Gridskin :-
+  default->Gridskin { char=(176 char->Sym) is_terrain=true }.
+
+default_floor_water Void->Gridskin :- 
+  default->Gridskin { char  =(251 char->Sym) 
+                      fore  ='light_azure'
+                      fore2 ='dark_azure'
+                      fore_i=true
+                      is_nowalk=false is_noview=false }.
+
+default_wall_water Void->Gridskin :-
+  default_wall->Gridskin { fore='desaturated_blue' }.
+
+default [UInt UInt]->Gridskin :-
+  [ ([\a \b] dg_grid_is_walk->Bool) 
+    ([\a \b] dg_grid_is_water->Bool) ] -> Gridskin (
+
+    <: \a && \b :> ? default_floor_water->Gridskin ;
+                \a ? default_floor->Gridskin ;
+                \b ? default_wall_water->Gridskin ;
+                     default_wall->Gridskin
+). 
+
+player Void->Gridskin :- Gridskin{ char='@' fore='white' }.
+
+player [UInt UInt]->Gridskin :-
+  [ \a \b (get->Player->UInt(\x)) (get->Player->UInt(\y)) ]->Gridskin (
+     <: \a == \c && \b == \d :> ? player->Gridskin).
+
+
+/*** *** ***/
+
+set_skin [UInt UInt]->Void :-
+  [ \a \b 0u ([\a \b] default->Gridskin) ] set_gridskin fail;
+
+  [ \a \b 7u ([\a \b] player->Gridskin) ] set_gridskin fail; 
+
+.
