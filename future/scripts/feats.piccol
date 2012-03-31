@@ -4,6 +4,8 @@ def {
   color: Sym
 } Skin;
 
+unset Void->Skin :- Skin{char=nil color=nil}.
+
 def { v:Int } Toggle;
 def { v:Int } ToggleInt;
 def { v:Sym } ToggleSym;
@@ -42,15 +44,7 @@ def {
   lit:      Toggle
   back:     ToggleSym
   height:   ToggleInt
-} Gridprops;
-
-def {
-  fore:       Sym
-  char:       Sym
-  fore2:      Sym
-  fore_i:     Bool
-  is_terrain: Bool
-} Gridskin;
+} Props;
 
 def {
   confuse
@@ -82,559 +76,454 @@ def {
 
 def {
   flags: Flags
-  props: Gridprops
   skin: Skin
 } Feat;
 
+def {
+  flags: Flags
+  props: Props
+  skin: Skin
+} Feat_;
 
-def [x:UInt y:UInt props:Gridprops];
-def [x:UInt y:UInt skin:Gridskin];
+
+def [x:UInt y:UInt props:Props];
 def [x:UInt y:UInt a:Bool];
 def [x:UInt y:UInt a:Bool b:UInt];
 def [x:UInt y:UInt a:Int];
-def [x:UInt y:UInt feat:Feat];
-def [x:UInt y:UInt feat:Sym];
+def [x:UInt y:UInt v:Feat];
 
+def [a:Sym b:Feat_];
 def [a:Sym b:Feat];
-def [a:Sym b:Gridprops];
+def [a:Sym b:Props];
 
-floor Void->Gridprops :- 
-  Gridprops{ walkable=(true set->Toggle)
-             visible =(true set->Toggle)
-             water   =(unset->Toggle)
-             lit     =(unset->Toggle)
-             back    =(unset->ToggleSym)
-             height  =(-10 set->ToggleInt) }.
+floor Void->Props :- 
+  Props{ walkable=(true set->Toggle)
+         visible =(true set->Toggle)
+         water   =(unset->Toggle)
+         lit     =(unset->Toggle)
+         back    =(unset->ToggleSym)
+         height  =(-10 set->ToggleInt) }.
 
-floor Sym->Gridprops  :- floor->Gridprops { back=(\v set->ToggleSym) }.
+floor Sym->Props  :- floor->Props { back=(\v set->ToggleSym) }.
 
-glass Int->Gridprops  :- floor->Gridprops { walkable=(false set->Toggle) 
-                                           height   =(\v set->ToggleInt) }.
+glass Int->Props  :- floor->Props { walkable=(false set->Toggle) 
+                                    height   =(\v set->ToggleInt) }.
 
-wall Int->Gridprops   :- \v glass->Gridprops { visible=(false set->Toggle) }.
+wall Int->Props   :- \v glass->Props { visible=(false set->Toggle) }.
 
-water Bool->Gridprops :- floor->Gridprops { water=(\v set->Toggle) }.
-
-char Int->Sym :- \v $to_sym.
+water Bool->Props :- floor->Props { water=(\v set->Toggle) }.
 
 
-featstock_init Void->Void :-
+/**/
+
+set_props [UInt UInt Props]->Void :-.
+
+set_feature [UInt UInt Sym]->Void :-
+  [\x \y (\v featstock_get->Feat)] featmap_set fail;
+  [\x \y (\v featstock_get->Props)] set_props
+.
+
+featstock_set [Sym Feat_]->Void :-
+  [\a (\b->Props(\props))] featstock_set
+  [\a (\b->Feat(Feat{skin=\skin flags=\flags}))] featstock_set
+.
+
+
+/*
+ *
+ *
+ */
+
+init_featstock Void->Void :-
+
+/**/
+
+[ '.' (false water->Props) ] featstock_set
+
+[ 'W' (true water->Props) ] featstock_set
+
+/**/
+
+[ '~' 
+  Feat_{ props=('red' floor->Props)
+        skin=(unset->Skin)
+        flags=Flags{fire=0.333 name='napalm' } } ] featstock_set
+[ '&' 
+  Feat_{ props=('darkest_blue' floor->Props{ lit=(true set->Toggle)})
+        skin=(unset->Skin)
+        flags=Flags{explode=3 queasy=0.1 name='swamp gas' } } ] featstock_set
+
+[ 'e' 
+  Feat_{ props=('desaturated_green' floor->Props)
+        skin=(unset->Skin)
+        flags=Flags{poison=0.5 name='a cloud of Ebola virus' } } ] featstock_set
+
+[ 'g' 
+  Feat_{ props=('dark_green' floor->Props)
+        skin=(unset->Skin)
+        flags=Flags{pois2=true poison=0.25 name='spores of black mold' } } ] featstock_set
+
+[ 'f' 
+  Feat_{ props=('gray' floor->Props)
+        skin=(unset->Skin)
+        flags=Flags{confuse=true name='confusing smoke' } } ] featstock_set
+
+/**/
 
 [ 'signcth2' 
-  Feat{ props=(floor->Gridprops)
+  Feat_{ props=(floor->Props)
         skin=Skin{char=(250 char->Sym) color='red'}
         flags=Flags{name='eldritch engravings' sign='MGLW\'NAFH' } } ] featstock_set
 
 [ 'signcth3' 
-  Feat{ props=(floor->Gridprops)
+  Feat_{ props=(floor->Props)
         skin=Skin{char=(250 char->Sym) color='red'}
         flags=Flags{name='eldritch engravings' sign='CTHULHU' } } ] featstock_set
 
 [ 'signcth1' 
-  Feat{ props=(floor->Gridprops)
+  Feat_{ props=(floor->Props)
         skin=Skin{char=(250 char->Sym) color='red'}
         flags=Flags{name='eldritch engravings' sign='PH\'NGLUI' } } ] featstock_set
 
 [ 'signcth6' 
-  Feat{ props=(floor->Gridprops)
+  Feat_{ props=(floor->Props)
         skin=Skin{char=(250 char->Sym) color='red'}
         flags=Flags{name='eldritch engravings' sign='FHTAGN' } } ] featstock_set
 
 [ 'signcth4' 
-  Feat{ props=(floor->Gridprops)
+  Feat_{ props=(floor->Props)
         skin=Skin{char=(250 char->Sym) color='red'}
         flags=Flags{name='eldritch engravings' sign='R\'LYEH' } } ] featstock_set
 
 [ 'signcth5' 
-  Feat{ props=(floor->Gridprops)
+  Feat_{ props=(floor->Props)
         skin=Skin{char=(250 char->Sym) color='red'}
         flags=Flags{name='eldritch engravings' sign='WGAH\'NAGL' } } ] featstock_set
 
 [ '##' 
-  Feat{ props=(1 wall->Gridprops)
+  Feat_{ props=(1 wall->Props)
         skin=Skin{char=(176 char->Sym) color='grey'}
         flags=Flags{name='carbonized graphite' } } ] featstock_set
 
 [ 'kali' 
-  Feat{ props=(floor->Gridprops)
+  Feat_{ props=(floor->Props)
         skin=Skin{char=(234 char->Sym) color='white'}
         flags=Flags{special='kali' name='a statue of Kali' } } ] featstock_set
 
 [ '#!' 
-  Feat{ props=(1000 wall->Gridprops)
+  Feat_{ props=(1000 wall->Props)
         skin=Skin{char=(176 char->Sym) color='grey'}
         flags=Flags{permanent=true name='crystalline graphite' } } ] featstock_set
 
 [ '+.' 
-  Feat{ props=(0 glass->Gridprops)
+  Feat_{ props=(0 glass->Props)
         skin=Skin{char=(206 char->Sym) color='gray'}
         flags=Flags{name='bulletproof glass' } } ] featstock_set
 
 [ 'Y' 
-  Feat{ props=(5 wall->Gridprops)
+  Feat_{ props=(5 wall->Props)
         skin=Skin{char=(157 char->Sym) color='green'}
         flags=Flags{name='a tree' } } ] featstock_set
 
 [ 'cthulhu' 
-  Feat{ props=(floor->Gridprops)
+  Feat_{ props=(floor->Props)
         skin=Skin{char=(16 char->Sym) color='gray'}
         flags=Flags{special='cthulhu' name='an unholy stone' } } ] featstock_set
 
 [ 'monolith' 
-  Feat{ props=(floor->Gridprops)
+  Feat_{ props=(floor->Props)
         skin=Skin{char=(8 char->Sym) color='light_gray'}
         flags=Flags{special='monolith' name='the Monolith' } } ] featstock_set
 
 [ '!' 
-  Feat{ props=(floor->Gridprops { visible=(false set->Toggle) })
+  Feat_{ props=(floor->Props { visible=(false set->Toggle) })
         skin=Skin{char=(173 char->Sym) color='dark_green'}
         flags=Flags{name='a giant fern' } } ] featstock_set
 
 [ 'Z.' 
-  Feat{ props=(0 glass->Gridprops)
+  Feat_{ props=(0 glass->Props)
         skin=Skin{char=(185 char->Sym) color='gray'}
         flags=Flags{name='bulletproof glass' } } ] featstock_set
 
-[ '\"' 
-  Feat{ props=('red' floor->Gridprops)
-        flags=Flags{fire=0.333 name='napalm' } } ] featstock_set
-
 [ '$' 
-  Feat{ props=(floor->Gridprops)
+  Feat_{ props=(floor->Props)
         skin=Skin{char=(20 char->Sym) color='light_sky'}
         flags=Flags{healingfountain=true name='a Fountain of Youth' } } ] featstock_set
 
-[ '&' 
-  Feat{ props=('darkest_blue' floor->Gridprops{ lit=(true set->Toggle)})
-        flags=Flags{explode=3 queasy=0.1 name='swamp gas' } } ] featstock_set
-
 [ '+' 
-  Feat{ props=(0 wall->Gridprops)
+  Feat_{ props=(0 wall->Props)
         skin=Skin{char=(206 char->Sym) color='white'}
         flags=Flags{name='a smooth stone wall' } } ] featstock_set
 
 [ '*' 
-  Feat{ props=(floor->Gridprops{ visible=(false set->Toggle) })
+  Feat_{ props=(floor->Props{ visible=(false set->Toggle) })
         skin=Skin{char='*' color='lightest_green'}
         flags=Flags{name='rubble' } } ] featstock_set
 
 [ '-' 
-  Feat{ props=(0 wall->Gridprops)
+  Feat_{ props=(0 wall->Props)
         skin=Skin{char=(205 char->Sym) color='white'}
         flags=Flags{name='a smooth stone wall' } } ] featstock_set
 
 [ 'J.' 
-  Feat{ props=(0 glass->Gridprops)
+  Feat_{ props=(0 glass->Props)
         skin=Skin{char=(202 char->Sym) color='gray'}
         flags=Flags{name='bulletproof glass' } } ] featstock_set
 
 [ '/' 
-  Feat{ props=(0 wall->Gridprops)
+  Feat_{ props=(0 wall->Props)
         skin=Skin{char=(188 char->Sym) color='white'}
         flags=Flags{name='a smooth stone wall' } } ] featstock_set
 
-[ '.' (false water->Gridprops) ] featstock_set
-
 [ '1' 
-  Feat{ props=(floor->Gridprops)
+  Feat_{ props=(floor->Props)
         skin=Skin{char='>' color='lime'}
         flags=Flags{branch='a' stairs=1 name='a hole in the floor' } } ] featstock_set
 
 [ 'signvault' 
-  Feat{ props=(floor->Gridprops)
+  Feat_{ props=(floor->Props)
         skin=Skin{char=(254 char->Sym) color='white'}
         flags=Flags{name='an engraving on the floor' sign='"Entrance to the Vault. Robbers beware."' } } ] featstock_set
 
 [ '3' 
-  Feat{ props=(floor->Gridprops)
+  Feat_{ props=(floor->Props)
         skin=Skin{char='>' color='sky'}
         flags=Flags{branch='c' stairs=1 name='a hole in the floor' } } ] featstock_set
 
 [ '2' 
-  Feat{ props=(floor->Gridprops)
+  Feat_{ props=(floor->Props)
         skin=Skin{char='>' color='crimson'}
         flags=Flags{branch='b' stairs=1 name='a hole in the floor' } } ] featstock_set
 
 [ '5' 
-  Feat{ props=(floor->Gridprops)
+  Feat_{ props=(floor->Props)
         skin=Skin{char='>' color='light_gray'}
         flags=Flags{branch='e' stairs=1 name='a hole in the floor' } } ] featstock_set
 
 [ '4' 
-  Feat{ props=(floor->Gridprops)
+  Feat_{ props=(floor->Props)
         skin=Skin{char='>' color='dark_gray'}
         flags=Flags{branch='d' stairs=1 name='a hole in the floor' } } ] featstock_set
 
 [ '7' 
-  Feat{ props=(0 wall->Gridprops)
+  Feat_{ props=(0 wall->Props)
         skin=Skin{char=(187 char->Sym) color='white'}
         flags=Flags{name='a smooth stone wall' } } ] featstock_set
 
 [ '6' 
-  Feat{ props=(floor->Gridprops)
+  Feat_{ props=(floor->Props)
         skin=Skin{char=(175 char->Sym) color='white'}
         flags=Flags{branch='s' stairs=1 name='a hole in the floor' } } ] featstock_set
 
 [ '8' 
-  Feat{ props=(floor->Gridprops)
+  Feat_{ props=(floor->Props)
         skin=Skin{char=(175 char->Sym) color='red'}
         flags=Flags{branch='q' stairs=1 name='an entrance to the Rehabilitation Thunderdome' } } ] featstock_set
 
 [ ':' 
-  Feat{ props=(0 wall->Gridprops)
+  Feat_{ props=(0 wall->Props)
         skin=Skin{char=(9 char->Sym) color='white'}
         flags=Flags{name='a column' } } ] featstock_set
 
 [ '=' 
-  Feat{ props=(-10 glass->Gridprops)
+  Feat_{ props=(-10 glass->Props)
         skin=Skin{char=(196 char->Sym) color='gray'}
         flags=Flags{name='barricades' shootable=true } } ] featstock_set
 
 [ '>' 
-  Feat{ props=(floor->Gridprops)
+  Feat_{ props=(floor->Props)
         skin=Skin{char='>' color='white'}
         flags=Flags{stairs=1 name='a hole in the floor' } } ] featstock_set
 
 [ '@' 
-  Feat{ props=(floor->Gridprops)
+  Feat_{ props=(floor->Props)
         skin=Skin{char=(15 char->Sym) color='yellow'}
         flags=Flags{warm=true name='a hearth' } } ] featstock_set
 
 [ 'C' 
-  Feat{ props=(floor->Gridprops)
+  Feat_{ props=(floor->Props)
         skin=Skin{char=(20 char->Sym) color='dark_green'}
         flags=Flags{resource='g' name='a Green Fountain' } } ] featstock_set
 
 [ 'B' 
-  Feat{ props=(floor->Gridprops)
+  Feat_{ props=(floor->Props)
         skin=Skin{char=(20 char->Sym) color='dark_yellow'}
         flags=Flags{resource='y' name='a Yellow Fountain' } } ] featstock_set
 
 [ 'bb' 
-  Feat{ props=(floor->Gridprops)
+  Feat_{ props=(floor->Props)
         skin=Skin{char=(16 char->Sym) color='crimson'}
         flags=Flags{bb_shrine=true name='an Altar of Ba\'al-Zebub' } } ] featstock_set
 
 [ 'F' 
-  Feat{ props=(0 wall->Gridprops)
+  Feat_{ props=(0 wall->Props)
         skin=Skin{char=(204 char->Sym) color='white'}
         flags=Flags{name='a smooth stone wall' } } ] featstock_set
 
 [ 'L.' 
-  Feat{ props=(0 glass->Gridprops)
+  Feat_{ props=(0 glass->Props)
         skin=Skin{char=(200 char->Sym) color='gray'}
         flags=Flags{name='bulletproof glass' } } ] featstock_set
 
 [ '7.' 
-  Feat{ props=(0 glass->Gridprops)
+  Feat_{ props=(0 glass->Props)
         skin=Skin{char=(187 char->Sym) color='gray'}
         flags=Flags{name='bulletproof glass' } } ] featstock_set
 
 [ 'dd' 
-  Feat{ props=(floor->Gridprops{ lit=(true set->Toggle) })
+  Feat_{ props=(floor->Props{ lit=(true set->Toggle) })
         skin=Skin{char='^' color='white'}
         flags=Flags{lightbonus=7 name='a dolmen' } } ] featstock_set
 
 [ 'J' 
-  Feat{ props=(0 wall->Gridprops)
+  Feat_{ props=(0 wall->Props)
         skin=Skin{char=(202 char->Sym) color='white'}
         flags=Flags{name='a smooth stone wall' } } ] featstock_set
 
 [ 'M' 
-  Feat{ props=(floor->Gridprops)
+  Feat_{ props=(floor->Props)
         skin=Skin{char=(20 char->Sym) color='dark_purple'}
         flags=Flags{resource='p' name='a Purple Fountain' } } ] featstock_set
 
 [ 'L' 
-  Feat{ props=(0 wall->Gridprops)
+  Feat_{ props=(0 wall->Props)
         skin=Skin{char=(200 char->Sym) color='white'}
         flags=Flags{name='a smooth stone wall' } } ] featstock_set
 
 [ 'N' 
-  Feat{ props=(floor->Gridprops)
+  Feat_{ props=(floor->Props)
         skin=Skin{char=(20 char->Sym) color='dark_sky'}
         flags=Flags{resource='b' name='a Blue Fountain' } } ] featstock_set
 
 [ 'T.' 
-  Feat{ props=(0 glass->Gridprops)
+  Feat_{ props=(0 glass->Props)
         skin=Skin{char=(203 char->Sym) color='gray'}
         flags=Flags{name='bulletproof glass' } } ] featstock_set
 
 [ '!f' 
-  Feat{ props=(floor->Gridprops)
+  Feat_{ props=(floor->Props)
         skin=Skin{char=(24 char->Sym) color='desaturated_green'}
         flags=Flags{name='a flowering fern' } } ] featstock_set
 
 [ 'R' 
-  Feat{ props=(0 wall->Gridprops)
+  Feat_{ props=(0 wall->Props)
         skin=Skin{char=(201 char->Sym) color='white'}
         flags=Flags{name='a smooth stone wall' } } ] featstock_set
 
 [ 'T' 
-  Feat{ props=(0 wall->Gridprops)
+  Feat_{ props=(0 wall->Props)
         skin=Skin{char=(203 char->Sym) color='white'}
         flags=Flags{name='a smooth stone wall' } } ] featstock_set
 
-[ 'W' (true water->Gridprops) ] featstock_set
-
 [ 'V' 
-  Feat{ props=(floor->Gridprops)
+  Feat_{ props=(floor->Props)
         skin=Skin{char=(20 char->Sym) color='dark_red'}
         flags=Flags{resource='r' name='a Red Fountain' } } ] featstock_set
 
 [ '|.' 
-  Feat{ props=(0 glass->Gridprops)
+  Feat_{ props=(0 glass->Props)
         skin=Skin{char=(186 char->Sym) color='gray'}
         flags=Flags{name='bulletproof glass' } } ] featstock_set
 
 [ 'signkali' 
-  Feat{ props=(floor->Gridprops)
+  Feat_{ props=(floor->Props)
         skin=Skin{char='.' color='white'}
         flags=Flags{name='an engraving on the floor' sign='kali ma, kali ma shakti de' } } ] featstock_set
 
 [ 'R.' 
-  Feat{ props=(0 glass->Gridprops)
+  Feat_{ props=(0 glass->Props)
         skin=Skin{char=(201 char->Sym) color='gray'}
         flags=Flags{name='bulletproof glass' } } ] featstock_set
 
 [ 'Z' 
-  Feat{ props=(0 wall->Gridprops)
+  Feat_{ props=(0 wall->Props)
         skin=Skin{char=(185 char->Sym) color='white'}
         flags=Flags{name='a smooth stone wall' } } ] featstock_set
 
 [ '^' 
-  Feat{ props=(floor->Gridprops)
+  Feat_{ props=(floor->Props)
         skin=Skin{char=(248 char->Sym) color='red'}
         flags=Flags{sticky=true name='a cave floor covered with glue' } } ] featstock_set
 
 [ 'a' 
-  Feat{ props=(floor->Gridprops)
+  Feat_{ props=(floor->Props)
         skin=Skin{char=(254 char->Sym) color='green'}
         flags=Flags{name='an abandoned altar stone' } } ] featstock_set
 
 [ '/.' 
-  Feat{ props=(0 glass->Gridprops)
+  Feat_{ props=(0 glass->Props)
         skin=Skin{char=(188 char->Sym) color='gray'}
         flags=Flags{name='bulletproof glass' } } ] featstock_set
 
 [ 'b' 
-  Feat{ props=(floor->Gridprops)
+  Feat_{ props=(floor->Props)
         skin=Skin{char=(127 char->Sym) color='white'}
         flags=Flags{name='a shrine to Brahma' b_shrine=true } } ] featstock_set
 
-[ 'e' 
-  Feat{ props=('desaturated_green' floor->Gridprops)
-        flags=Flags{poison=0.5 name='a cloud of Ebola virus' } } ] featstock_set
-
 [ 'd' 
-  Feat{ props=(-10 glass->Gridprops)
+  Feat_{ props=(-10 glass->Props)
         skin=Skin{char=(217 char->Sym) color='gray'}
         flags=Flags{name='barricades' shootable=true } } ] featstock_set
 
-[ 'g' 
-  Feat{ props=('dark_green' floor->Gridprops)
-        flags=Flags{pois2=true poison=0.25 name='spores of black mold' } } ] featstock_set
-
-[ 'f' 
-  Feat{ props=('gray' floor->Gridprops)
-        flags=Flags{confuse=true name='confusing smoke' } } ] featstock_set
-
 [ 'h' 
-  Feat{ props=(floor->Gridprops)
+  Feat_{ props=(floor->Props)
         skin=Skin{char=(242 char->Sym) color='white'}
         flags=Flags{stairs=6 name='a dropchute' } } ] featstock_set
 
 [ '-.' 
-  Feat{ props=(0 glass->Gridprops)
+  Feat_{ props=(0 glass->Props)
         skin=Skin{char=(205 char->Sym) color='gray'}
         flags=Flags{name='bulletproof glass' } } ] featstock_set
 
 [ 'l' 
-  Feat{ props=(-10 glass->Gridprops)
+  Feat_{ props=(-10 glass->Props)
         skin=Skin{char=(179 char->Sym) color='gray'}
         flags=Flags{name='barricades' shootable=true } } ] featstock_set
 
 [ 'q' 
-  Feat{ props=(-10 glass->Gridprops)
+  Feat_{ props=(-10 glass->Props)
         skin=Skin{char=(191 char->Sym) color='gray'}
         flags=Flags{name='barricades' shootable=true } } ] featstock_set
 
 [ 'p' 
-  Feat{ props=(-10 glass->Gridprops)
+  Feat_{ props=(-10 glass->Props)
         skin=Skin{char=(192 char->Sym) color='gray'}
         flags=Flags{name='barricades' shootable=true } } ] featstock_set
 
 [ 's' 
-  Feat{ props=(floor->Gridprops)
+  Feat_{ props=(floor->Props)
         skin=Skin{char=(234 char->Sym) color='darker_grey'}
         flags=Flags{s_shrine=true name='a shrine to Shiva' } } ] featstock_set
 
 [ 'r' 
-  Feat{ props=(-10 glass->Gridprops)
+  Feat_{ props=(-10 glass->Props)
         skin=Skin{char=(218 char->Sym) color='gray'}
         flags=Flags{name='barricades' shootable=true } } ] featstock_set
 
 [ 'w' 
-  Feat{ props=(true water->Gridprops)
+  Feat_{ props=(true water->Props)
         skin=Skin{char='-' color='sky'}
         flags=Flags{name='a pool of water' } } ] featstock_set
 
 [ 'v' 
-  Feat{ props=(floor->Gridprops)
+  Feat_{ props=(floor->Props)
         skin=Skin{char=(233 char->Sym) color='azure'}
         flags=Flags{v_shrine=true name='a shrine to Vishnu' } } ] featstock_set
 
 [ 'qk' 
-  Feat{ props=(floor->Gridprops)
+  Feat_{ props=(floor->Props)
         skin=Skin{char=(175 char->Sym) color='dark_gray'}
         flags=Flags{branch='qk' stairs=1 name='an entrace to the temple of Kali' } } ] featstock_set
 
 [ '|' 
-  Feat{ props=(0 wall->Gridprops)
+  Feat_{ props=(0 wall->Props)
         skin=Skin{char=(186 char->Sym) color='white'}
         flags=Flags{name='a smooth stone wall' } } ] featstock_set
 
 [ 'F.' 
-  Feat{ props=(0 glass->Gridprops)
+  Feat_{ props=(0 glass->Props)
         skin=Skin{char=(204 char->Sym) color='gray'}
         flags=Flags{name='bulletproof glass' } } ] featstock_set
 
-.
-
-/*** *** *** ***/
-
-
-<:: try_any(types)
-
-    ident_here :- ident &''.
-    type_here :- type &''.
-
-    body :- ';;'.
-    body :- \any &'' body.
-
-    body_here :- &'top' @'Void(' body @';) '.
-    body_list :- body_here body_list.
-    body_list :- .
-
-    header :- '->'.
-    header :- \any header.
-
-    header_here :- header &'push'.
-
-    try_any :- spaces ident_here 
-               spaces @' ' type_here @'->Void :- '
-               spaces header_here
-               body_list spaces @'.'.
-::>
-
-<:[try_any]
-
-gridprops_set [UInt UInt Gridprops] 
-
-  [\x \y \props] ->
-
-  [ \x \y (\props->Bool(\lit get->Bool)) ] dg_render_set_is_lit 
-;;
-  [ \x \y (\props->Sym(\back get->Sym; 'black')) ] dg_render_set_back 
-;;
-  [ \x \y (\props->Bool(\visible get->Bool $not)) 0u ] dg_render_set_is_viewblock
-;;
-  [ \x \y (\props->Bool(\walkable get->Bool $not)) 0u ] dg_render_set_is_walkblock 
-  [ \x \y (\props->Bool(\walkable get->Bool)) ] dg_grid_set_walk 
-;;
-  [ \x \y (\props->Int(\height get->Int)) ] dg_grid_set_height 
-;;
-  [ \x \y (\props->Bool(\water get->Bool)) ] dg_grid_set_water 
-;;
-:>
-
-dungeontheme Void->Sym :- 'red'.
-
-
-default [UInt UInt]->Gridprops :- 
-  Gridprops { walkable=([\a \b] dg_grid_is_walk->Bool set->Toggle)
-              visible =([\a \b] dg_grid_is_walk->Bool set->Toggle)
-              water   =([\a \b] dg_grid_is_water->Bool set->Toggle)
-              lit     =(false set->Toggle)
-              back    =('black' set->ToggleSym)
-              height  =(unset->ToggleInt) }.
-
-def [x:UInt y:UInt fore:Sym char:Sym fore2:Sym fore_i:Bool is_terrain:Bool ];
-
-gridskin_set [UInt UInt Gridskin]->Void :-
-  [ \x \y 
-    (\skin->Sym(\fore))
-    (\skin->Sym(\char))
-    (\skin->Sym(\fore2))
-    (\skin->Bool(\fore_i))
-    (\skin->Bool(\is_terrain)) ] dg_render_set_skin.
-
-default Void->Gridskin :- 
-  Gridskin{ char=' '
-            fore=(dungeontheme->Sym) 
-            fore2=nil 
-            fore_i=false 
-            is_terrain=false }.
-
-default_floor Void->Gridskin :-
-  default->Gridskin { char=(250 char->Sym) is_terrain=true }.
-
-default_wall Void->Gridskin :-
-  default->Gridskin { char=(176 char->Sym) is_terrain=true }.
-
-default_floor_water Void->Gridskin :- 
-  default->Gridskin { char  =(251 char->Sym) 
-                               fore  ='light_azure'
-                               fore2 ='dark_azure'
-                               fore_i=true }.
-
-default_wall_water Void->Gridskin :-
-  default_wall->Gridskin { fore='desaturated_blue' }.
-
-default [UInt UInt]->Gridskin :-
-  [ ([\a \b] dg_grid_is_walk->Bool) 
-    ([\a \b] dg_grid_is_water->Bool) ] -> Gridskin (
-
-    <: \a && \b :> ? default_floor_water->Gridskin ;
-                \a ? default_floor->Gridskin ;
-                \b ? default_wall_water->Gridskin ;
-                     default_wall->Gridskin
-). 
-
-
-gridskin_set [UInt UInt Feat]->Void :-
-  [ \x \y (default->Gridskin { char=(\feat->Sym(\skin->Sym(\char)))
-                               fore=(\feat->Sym(\skin->Sym(\color))) }) ]
-    gridskin_set.
-                                               
-
-gridskin_set [UInt UInt]->Void :-
-  [ \a \b ([\a \b] default->Gridskin) ] gridskin_set.
-
-gridprops_set [UInt UInt]->Void :-
-  [ \a \b ([\a \b] default->Gridprops) ] gridprops_set
-.
-
-
-/*** *** ***/
-
-feat_set [UInt UInt Sym]->Void :-
-  [ \x \y ] featmap_get->Feat->Void(<: \stairs > 0 :> ? )
-  ;
-  [ \x \y (\feat featstock_get->Feat) ] -> Void (
-       [\x \y \feat] featmap_set 
-       [\x \y \feat] gridskin_set 
-       [\x \y (\feat->Gridprops(\props)) ] gridprops_set
-       )
-  ;
-  [ \x \y (\feat featstock_get->Gridprops) ] -> Void (
-       [\x \y] featmap_unset
-       [\x \y] gridskin_set
-       [\x \y \props] gridprops_set
-       )
-  ;
-  [\x \y] featmap_unset
-  [\x \y] gridskin_set
-  [\x \y] gridprops_set
 .
 

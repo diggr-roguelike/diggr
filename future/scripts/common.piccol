@@ -7,12 +7,18 @@ def {
 def {
   branch: Sym
   is_quest: Bool
+  exit: [UInt UInt]
 } Dungeon;
+
+
+/***/
 
 
 char Int->Sym :- \v $to_sym.
 
+
 /***/
 
-def [a:UInt b:UInt c:UInt d:UInt];
 
+def [a:UInt b:UInt c:UInt d:UInt];
+def [x:UInt y:UInt v:Sym];

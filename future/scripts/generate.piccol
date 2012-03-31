@@ -3,6 +3,9 @@
 
 switch_branch Sym->Void :- get->Dungeon { branch=\v is_quest=false } set.
 
+is_quest     Void->Bool :- get->Dungeon->Bool( <:  \is_quest :>).
+is_not_quest Void->Bool :- get->Dungeon->Bool( <: !\is_quest :>).
+
 choose_branch Void->Void :-
   get->Dungeon->Void( <: \branch == nil :> ?
   [ 1 5 ] dg_random_range->Int->Void(
@@ -19,12 +22,13 @@ def [a:Sym b:Real];
 generate_map Void->Void :-
   dg__clear_map
 
-  get->Dungeon->Void( <: !\is_quest :> ?
+  is_not_quest->Bool ?
     dg_current_moon->Sym->Int(
        <: \v == 'new' || \v == 'full' :> ? 1;
        <: \v == 'first quarter' || \v == 'last quarter' :> ? -1;
        0)
-    dg_grid_generate)
+    dg_grid_generate
+    fail;
 
   dg_current_moon->Sym->Void(
     <: \v == 'full' :> ? [ 'gray' 0.6 ] dg_render_set_env;
@@ -33,6 +37,15 @@ generate_map Void->Void :-
 .
 
 
+place_feats Void->Void :-
+  is_not_quest->Bool ?
+   dg_grid_one_of_floor->[UInt UInt]->Void(
+      [\a \b '>'] set_feature
+      get->Dungeon {exit=([\a \b])} set
+      [\a \b] dg_grid_add_nogen)
+  ; 
+.
+
 place_player Void->Void :-
   dg_grid_one_of_walk->[UInt UInt]->Void(get->Player {x=\a y=\b} set)
 .
@@ -40,11 +53,15 @@ place_player Void->Void :-
 
 /*** *** ***/
 
+init Void->Void :-
+  init_featstock
+.
 
 generate Void->Void :-
 
   choose_branch
   generate_map
+  place_feats
   place_player
 .
 

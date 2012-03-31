@@ -2,10 +2,18 @@
 modules Void->Void :-
   'common.piccol' common  
 
-  ['generate'  'generate.piccol'] module
-  ['skin' 'skin.piccol'] module
+  <:[module] generate 'generate.piccol'
+             generate Void->Void
+             drawing_context Void->[UInt UInt]
+             init Void->Void
+   :>
 
-  ['generate' 'generate' 'Void' 'Void'] exported
-  ['skin'     'set_skin' '[ UInt UInt ]' 'Void'] exported
-  ['generate' 'drawing_context' 'Void' '[ UInt UInt ]'] exported
+  <:[module] skin 'skin.piccol'
+             set_skin [UInt UInt]->Void
+   :>
+
+  <:[module] feats 'feats.piccol'
+             init_featstock Void->Void
+             set_feature [UInt UInt Sym]->Void
+   :>
 .

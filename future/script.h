@@ -16,34 +16,49 @@ namespace scripting {
 using nanom::Sym;
 typedef nanom::Struct Obj;
 
-struct Featstock {
+struct SymMap {
 
-    typedef std::unordered_map< Sym, std::pair<int,Obj> > stock_t;
+    typedef std::unordered_map<Sym,Obj> stock_t;
 
-    stock_t feats;
+    stock_t objs;
 
-    void _add_feat(Sym s, const Obj& o, int t) { 
-        auto i = feats.find(s);
-        if (i != feats.end())
-            throw std::runtime_error("Adding new Feature: duplicate tag, '" + metalan::symtab().get(s) + "'");
-        feats[s] = std::make_pair(t, o);
+    void add(Sym s, const Obj& o) { 
+        auto i = objs.find(s);
+        if (i != objs.end())
+            throw std::runtime_error("Adding new object to stock: duplicate tag, '" + metalan::symtab().get(s) + "'");
+        objs[s] = o;
     }
 
-    void add_feat(Sym s, const Obj& o)        { _add_feat(s, o, 1); }
-    void add_gridprops(Sym s, const Obj& o)   { _add_feat(s, o, 2); }
-
-    bool _get_feat(Sym s, Obj& o, int t) const {
-        auto i = feats.find(s);
-        if (i == feats.end() || i->second.first != t)
+    bool get(Sym s, Obj& o) const {
+        auto i = objs.find(s);
+        if (i == objs.end())
             return false;
-        o = i->second.second;
+        o = i->second;
         return true;
     }
-
-    bool get_feat(Sym s, Obj& o) const        { return _get_feat(s, o, 1); }
-    bool get_gridprops(Sym s, Obj& o) const   { return _get_feat(s, o, 2); }
-
 };
+
+
+template <typename T>
+inline T& symmap() {
+    static T ret;
+    return ret;
+}
+
+template <typename T>
+inline bool symmap_set(CALLBACK) {
+    symmap<T>().add(struc.v[0].uint, struc.substruct(1, shape.size()-1));
+    return true;
+}
+
+template <typename T>
+inline bool symmap_get(CALLBACK) {
+    return symmap<T>().get(struc.v[0].uint, ret);
+}
+
+
+/*** *** ***/
+
 
 struct Featmap {
 
@@ -72,35 +87,10 @@ struct Featmap {
     }
 };
 
-inline Featstock& featstock() {
-    static Featstock ret;
-    return ret;
-}
-
 inline Featmap& featmap() {
     static Featmap ret;
     return ret;
 }
-
-inline bool featstock_set_1(CALLBACK) {
-    featstock().add_feat(struc.v[0].uint, struc.substruct(1, shape.size()-1));
-    return true;
-}
-
-inline bool featstock_set_2(CALLBACK) {
-    featstock().add_gridprops(struc.v[0].uint, struc.substruct(1, shape.size()-1));
-    return true;
-}
-
-
-inline bool featstock_get_1(CALLBACK) {
-    return featstock().get_feat(struc.v[0].uint, ret);
-}
-
-inline bool featstock_get_2(CALLBACK) {
-    return featstock().get_gridprops(struc.v[0].uint, ret);
-}
-
 
 inline bool featmap_set(CALLBACK) {
     featmap().set(struc.v[0].uint, 
@@ -144,8 +134,14 @@ inline bool global_get(CALLBACK) {
     return true;
 }
 
+
+/****/
+
 struct Player : public GlobalVar {};
 struct Dungeon : public GlobalVar {};
+
+struct FeatStock : public SymMap {};
+struct PropStock : public SymMap {};
 
 
 /****/
@@ -239,6 +235,14 @@ inline bool dg_grid_get_height(CALLBACK) {
     return true;
 }
 
+inline bool dg_grid_add_nogen(CALLBACK) {
+
+    nanom::UInt x = struc.v[0].uint;
+    nanom::UInt y = struc.v[1].uint;
+    grid::get().add_nogen(x, y);
+    return true;
+}
+
 inline bool dg_render_set_skin(CALLBACK) {
 
     nanom::UInt x = struc.v[0].uint;
@@ -310,11 +314,11 @@ struct Vm {
     Vm(const std::string& sysdir, 
        const std::string& appdir) : vm(sysdir, appdir, "game.modules") {
             
-        vm.register_callback("featstock_set", "[ Sym Feat ]",       "Void", featstock_set_1);
-        vm.register_callback("featstock_set", "[ Sym Gridprops ]",  "Void", featstock_set_2);
+        vm.register_callback("featstock_set", "[ Sym Feat ]",   "Void", symmap_set<FeatStock>);
+        vm.register_callback("featstock_set", "[ Sym Props ]",  "Void", symmap_set<PropStock>);
 
-        vm.register_callback("featstock_get", "Sym", "Feat",       featstock_get_1);
-        vm.register_callback("featstock_get", "Sym", "Gridprops",  featstock_get_2);
+        vm.register_callback("featstock_get", "Sym", "Feat",   symmap_get<FeatStock>);
+        vm.register_callback("featstock_get", "Sym", "Props",  symmap_get<PropStock>);
 
         vm.register_callback("featmap_set",   "[ UInt UInt Feat ]", "Void", featmap_set);
         vm.register_callback("featmap_unset", "[ UInt UInt ]",      "Void", featmap_unset);
@@ -349,6 +353,8 @@ struct Vm {
         vm.register_callback("dg_grid_is_walk",    "[ UInt UInt ]", "Bool", dg_grid_is_walk);
         vm.register_callback("dg_grid_is_water",   "[ UInt UInt ]", "Bool", dg_grid_is_water);
         vm.register_callback("dg_grid_get_height", "[ UInt UInt ]", "Real", dg_grid_get_height);
+
+        vm.register_callback("dg_grid_add_nogen",  "[ UInt UInt ]", "Void", dg_grid_add_nogen);
        
         vm.register_callback("dg_grid_generate", "Int", "Void", dg_grid_generate);
 
@@ -360,9 +366,19 @@ struct Vm {
 
         vm.register_callback("dg__clear_map", "Void", "Void", dg__clear_map);
 
+        vm.required("init", "Void", "Void");
+        vm.required("generate", "Void", "Void");
+        vm.required("set_skin", "[ UInt UInt ]", "Void");
+        vm.required("drawing_context", "Void", "[ UInt UInt ]");
+
         vm.init();
     }        
 
+    void init() {
+        Obj out;
+        Obj inp;
+        vm.run("init", "Void", "Void", inp, out);
+    }
 
     void generate() {
         Obj out;
@@ -389,12 +405,6 @@ struct Vm {
     }
 };
 
-/*
-inline Vm& vm() {
-    static Vm ret;
-    return ret;
-}
-*/
 
 }
 
