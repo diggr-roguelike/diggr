@@ -379,6 +379,9 @@ struct Vm {
         vm.required("handle_input", "InState", "OutState");
 
         vm.init();
+
+        vm.check_type("InState",  {nanom::UINT, nanom::INT, nanom::SYMBOL});
+        vm.check_type("OutState", {nanom::UINT, nanom::BOOL, nanom::BOOL});
     }        
 
     void init() {
@@ -414,10 +417,10 @@ struct Vm {
     void handle_input(size_t& ticks, int vk, char c, bool& done, bool& dead) {
         Obj out;
         Obj inp;
-        inp.v.push_back((UInt)ticks);
-        inp.v.push_back((Int)vk);
+        inp.v.push_back((nanom::UInt)ticks);
+        inp.v.push_back((nanom::Int)vk);
         char cc[2] = { c, 0 };
-        inp.v.push_back((Sym)metalan::symtab().get(cc));
+        inp.v.push_back((nanom::Sym)metalan::symtab().get(cc));
 
         vm.run("handle_input", "InState", "OutState", inp, out);
 

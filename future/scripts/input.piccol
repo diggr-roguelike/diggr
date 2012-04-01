@@ -1,12 +1,10 @@
 
 
-def [ticks:UInt vkey:Int c:Sym];
-def [ticks:UInt done:Bool dead:Bool];
+handle_input InState->OutState :-
 
-handle_input [UInt Int Sym]->[UInt Bool Bool] :-
-
-  <: \c == 'S' :> ? [ \ticks true false ] ;
-  <: \c == 'Q' :> ? [ \ticks true true ] ;
-  <: \c == '.' :> ? [ <: \ticks + 1 :> false false ] ;
-  
-  <: \c == 'h' :> ? [-1 0] move->[UInt Bool Bool]
+  <: \c == 'S' :> ? OutState{ticks=\ticks done=true dead=false} ;
+  <: \c == 'Q' :> ? OutState{ticks=\ticks done=true dead=true} ;
+  <: \c == '.' :> ? OutState{ticks=(<: \ticks + 1u :>) done=false dead=false} ;
+ 
+  OutState{ticks=\ticks done=false dead=false} 
+.
