@@ -11,11 +11,71 @@ def {
 } Dungeon;
 
 
+def {
+  ticks: UInt
+  vk: Int
+  c: Sym
+} InState;
+
+def {
+  ticks: UInt
+  done: Bool
+  dead: Bool
+} OutState;
+
 /***/
 
 
+def {
+  char: Sym
+  color: Sym
+
+  back: Sym
+  is_lit: Bool
+  walkable: Bool
+  visible: Bool
+} Skin;
+
+unset Void->Skin :- Skin{char=nil color=nil}.
+
 char Int->Sym :- \v $to_sym.
 
+
+def {
+  confuse
+  sticky
+  pois2
+  shootable
+  v_shrine
+  s_shrine
+  healingfountain
+  bb_shrine
+  permanent
+  warm
+  b_shrine
+
+  lightbonus: Int
+  explode: Int
+  stairs: Int
+
+  poison: Real
+  queasy: Real
+  fire: Real
+
+  name: Sym
+  special: Sym
+  branch: Sym
+  sign: Sym
+  resource: Sym
+} FeatFlags;
+
+def {
+  flags: FeatFlags
+  skin: Skin
+} Feat;
+
+
+ 
 
 /***/
 

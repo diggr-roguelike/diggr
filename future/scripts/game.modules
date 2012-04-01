@@ -1,5 +1,6 @@
 
 modules Void->Void :-
+
   'common.piccol' common  
 
   <:[module] generate 'generate.piccol'
@@ -15,5 +16,10 @@ modules Void->Void :-
   <:[module] feats 'feats.piccol'
              init_featstock Void->Void
              set_feature [UInt UInt Sym]->Void
+             feature [UInt UInt]->Skin
+   :>
+
+  <:[module] input 'input.piccol'
+             handle_input InState->OutState
    :>
 .

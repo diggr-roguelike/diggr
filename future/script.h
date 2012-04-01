@@ -103,8 +103,13 @@ inline bool featmap_unset(CALLBACK) {
     return true;
 }
 
+inline bool featmap_get(CALLBACK) {
+    return featmap().get(struc.v[0].uint,struc.v[1].uint, ret);
+}
+
 
 /****/
+
 
 struct GlobalVar {
     Obj v;
@@ -322,6 +327,7 @@ struct Vm {
 
         vm.register_callback("featmap_set",   "[ UInt UInt Feat ]", "Void", featmap_set);
         vm.register_callback("featmap_unset", "[ UInt UInt ]",      "Void", featmap_unset);
+        vm.register_callback("featmap_get",   "[ UInt UInt ]",      "Feat", featmap_get);
 
         vm.register_callback("get", "Void",   "Player", global_get<Player>);
         vm.register_callback("set", "Player", "Void",   global_set<Player>);
@@ -370,6 +376,7 @@ struct Vm {
         vm.required("generate", "Void", "Void");
         vm.required("set_skin", "[ UInt UInt ]", "Void");
         vm.required("drawing_context", "Void", "[ UInt UInt ]");
+        vm.required("handle_input", "InState", "OutState");
 
         vm.init();
     }        
@@ -388,10 +395,10 @@ struct Vm {
 
     void set_skin(unsigned int x, unsigned int y) {
         Obj out;
-        Obj in;
-        in.v.push_back((nanom::UInt)x);
-        in.v.push_back((nanom::UInt)y);
-        vm.run("set_skin", "[ UInt UInt ]", "Void", in, out);
+        Obj inp;
+        inp.v.push_back((nanom::UInt)x);
+        inp.v.push_back((nanom::UInt)y);
+        vm.run("set_skin", "[ UInt UInt ]", "Void", inp, out);
     }
 
     void drawing_context(unsigned int& px, unsigned int& py) {
@@ -403,6 +410,22 @@ struct Vm {
         px = out.v[0].uint;
         py = out.v[1].uint;
     }
+
+    void handle_input(size_t& ticks, int vk, char c, bool& done, bool& dead) {
+        Obj out;
+        Obj inp;
+        inp.v.push_back((UInt)ticks);
+        inp.v.push_back((Int)vk);
+        char cc[2] = { c, 0 };
+        inp.v.push_back((Sym)metalan::symtab().get(cc));
+
+        vm.run("handle_input", "InState", "OutState", inp, out);
+
+        ticks = out.v[0].uint;
+        done = out.v[1].uint;
+        dead = out.v[2].uint;
+    }
+
 };
 
 

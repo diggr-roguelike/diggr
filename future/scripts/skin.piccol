@@ -7,23 +7,42 @@ def {
   is_terrain: Bool
   is_nowalk:  Bool
   is_noview:  Bool
-} Gridskin;
+  back:       Sym
+  is_lit:     Bool
+} Renderskin;
 
 def [a:Sym  b:Real];
+def [a:UInt b:UInt v:Bool];
 def [x:UInt y:UInt a:Bool b:UInt];
-def [x:UInt y:UInt z:UInt skin:Gridskin];
+def [x:UInt y:UInt z:UInt skin:Renderskin];
+def [x:UInt y:UInt z:UInt skin:Skin];
 def [x:UInt y:UInt z:UInt fore:Sym char:Sym fore2:Sym fore_i:Bool is_terrain:Bool];
 
-set_gridskin [UInt UInt UInt Gridskin]->Void :-
+set_renderskin [UInt UInt UInt Renderskin]->Void :-
   [ \x \y \z
     (\skin->Sym(\fore))
     (\skin->Sym(\char))
     (\skin->Sym(\fore2))
     (\skin->Bool(\fore_i))
     (\skin->Bool(\is_terrain)) ] dg_render_set_skin
-  [ \x \y (\skin->Bool(\is_nowalk)) 0u ] dg_render_set_is_walkblock
-  [ \x \y (\skin->Bool(\is_noview)) 0u ] dg_render_set_is_viewblock
+  [ \x \y (\skin->Bool(\is_nowalk)) \z ] dg_render_set_is_walkblock
+  [ \x \y (\skin->Bool(\is_noview)) \z ] dg_render_set_is_viewblock
+  [ \x \y (\skin->Bool(\is_lit)) ] dg_render_set_is_lit
+  [ \x \y (\skin->Sym(\back)) ] dg_render_set_back
 .
+
+to Skin->Renderskin :-
+  Renderskin{ fore=\color 
+              char=\char 
+              is_nowalk=(\walkable $not)
+              is_noview=(\visible $not)
+              is_lit=(\is_lit)
+              back=(\back) }.
+
+set_renderskin [UInt UInt UInt Skin]->Void :-
+  [ \x \y \z (\skin to->Renderskin) ] set_renderskin.
+
+
 
 dungeontheme Void->Sym :- 
   get->Dungeon->Sym(
@@ -37,8 +56,8 @@ dungeontheme Void->Sym :-
     <: \branch == 'qk' :> ? 'grey')
 .
 
-default Void->Gridskin :- 
-  Gridskin{ char=' '
+default Void->Renderskin :- 
+  Renderskin{ char=' '
             fore=(dungeontheme->Sym) 
             fore2=nil 
             fore_i=false 
@@ -46,44 +65,46 @@ default Void->Gridskin :-
             is_nowalk=true
             is_noview=true }.
 
-default_floor Void->Gridskin :-
-  default->Gridskin { char=(250 char->Sym) is_terrain=true is_nowalk=false is_noview=false }.
+default_floor Void->Renderskin :-
+  default->Renderskin { char=(250 char->Sym) is_terrain=true is_nowalk=false is_noview=false }.
 
-default_wall Void->Gridskin :-
-  default->Gridskin { char=(176 char->Sym) is_terrain=true }.
+default_wall Void->Renderskin :-
+  default->Renderskin { char=(176 char->Sym) is_terrain=true }.
 
-default_floor_water Void->Gridskin :- 
-  default->Gridskin { char  =(251 char->Sym) 
+default_floor_water Void->Renderskin :- 
+  default->Renderskin { char  =(251 char->Sym) 
                       fore  ='light_azure'
                       fore2 ='dark_azure'
                       fore_i=true
                       is_nowalk=false is_noview=false }.
 
-default_wall_water Void->Gridskin :-
-  default_wall->Gridskin { fore='desaturated_blue' }.
+default_wall_water Void->Renderskin :-
+  default_wall->Renderskin { fore='desaturated_blue' }.
 
-default [UInt UInt]->Gridskin :-
+default [UInt UInt]->Renderskin :-
   [ ([\a \b] dg_grid_is_walk->Bool) 
-    ([\a \b] dg_grid_is_water->Bool) ] -> Gridskin (
+    ([\a \b] dg_grid_is_water->Bool) ] -> Renderskin (
 
-    <: \a && \b :> ? default_floor_water->Gridskin ;
-                \a ? default_floor->Gridskin ;
-                \b ? default_wall_water->Gridskin ;
-                     default_wall->Gridskin
+    <: \a && \b :> ? default_floor_water->Renderskin ;
+                \a ? default_floor->Renderskin ;
+                \b ? default_wall_water->Renderskin ;
+                     default_wall->Renderskin
 ). 
 
-player Void->Gridskin :- Gridskin{ char='@' fore='white' }.
+player Void->Renderskin :- Renderskin{ char='@' fore='white' }.
 
-player [UInt UInt]->Gridskin :-
-  [ \a \b (get->Player->UInt(\x)) (get->Player->UInt(\y)) ]->Gridskin (
-     <: \a == \c && \b == \d :> ? player->Gridskin).
+player [UInt UInt]->Renderskin :-
+  [ \a \b (get->Player->UInt(\x)) (get->Player->UInt(\y)) ]->Renderskin (
+     <: \a == \c && \b == \d :> ? player->Renderskin).
 
 
 /*** *** ***/
 
 set_skin [UInt UInt]->Void :-
-  [ \a \b 0u ([\a \b] default->Gridskin) ] set_gridskin fail;
+  [ \a \b 0u ([\a \b] default->Renderskin) ] set_renderskin fail;
 
-  [ \a \b 7u ([\a \b] player->Gridskin) ] set_gridskin fail; 
+  [ \a \b 1u ([\a \b] feature->Skin) ] set_renderskin fail;
+
+  [ \a \b 7u ([\a \b] player->Renderskin) ] set_renderskin fail; 
 
 .
