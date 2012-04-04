@@ -170,7 +170,7 @@ inline bool dg_render_set_back(CALLBACK) {
     nanom::UInt x = struc.v[0].uint;
     nanom::UInt y = struc.v[1].uint;
     nanom::UInt z = struc.v[2].uint;
-    grender::get().set_back(x, y, z, colorsyms::color(struc.v[2].uint));
+    grender::get().set_back(x, y, z, colorsyms::color(struc.v[3].uint));
     return true;
 }
 
@@ -187,6 +187,22 @@ inline bool dg_render_set_is_walkblock(CALLBACK) {
     nanom::UInt x = struc.v[0].uint;
     nanom::UInt y = struc.v[1].uint;
     grender::get().set_is_walkblock(x, y, struc.v[2].uint, struc.v[3].uint);
+    return true;
+}
+
+inline bool dg_render_is_viewblock(CALLBACK) {
+
+    nanom::UInt x = struc.v[0].uint;
+    nanom::UInt y = struc.v[1].uint;
+    ret.v.push_back((nanom::UInt)grender::get().is_viewblock(x, y));
+    return true;
+}
+
+inline bool dg_render_is_walkblock(CALLBACK) {
+
+    nanom::UInt x = struc.v[0].uint;
+    nanom::UInt y = struc.v[1].uint;
+    ret.v.push_back((nanom::UInt)grender::get().is_walkblock(x, y));
     return true;
 }
 
@@ -299,6 +315,13 @@ inline bool dg_grid_one_of_walk(CALLBACK) {
     return true;
 }
 
+inline bool dg_neighbors_linked(CALLBACK) {
+    
+    ret.v.push_back((nanom::UInt)neighbors::get().linked(neighbors::pt(struc.v[0].uint, struc.v[1].uint),
+                                                         neighbors::pt(struc.v[2].inte, struc.v[3].inte)));
+    return true;
+}
+
 inline bool dg_current_moon(CALLBACK) {
     ret.v.push_back(metalan::symtab().get(moon::get().pi.phase_str));
     return true;
@@ -312,6 +335,22 @@ inline bool dg__clear_map(CALLBACK) {
     grender::get().clear();
     return true;
 }
+
+inline bool _print1(CALLBACK) {
+    std::cout << struc.v[0].inte;
+    return true;
+}
+
+inline bool _print2(CALLBACK) {
+    std::cout << struc.v[0].uint;
+    return true;
+}
+
+inline bool _print3(CALLBACK) {
+    std::cout << metalan::symtab().get(struc.v[0].uint);
+    return true;
+}
+
 
 struct Vm {
 
@@ -348,6 +387,9 @@ struct Vm {
         vm.register_callback("dg_render_set_is_walkblock", "[ UInt UInt Bool UInt ]", 
                              "Void", dg_render_set_is_walkblock);
 
+        vm.register_callback("dg_render_is_viewblock", "[ UInt UInt ]", "Bool", dg_render_is_viewblock);
+        vm.register_callback("dg_render_is_walkblock", "[ UInt UInt ]", "Bool", dg_render_is_walkblock);
+
         vm.register_callback("dg_render_set_skin", 
                              "[ UInt UInt UInt Sym Sym Sym Bool Bool ]", "Void", dg_render_set_skin);
 
@@ -369,9 +411,15 @@ struct Vm {
         vm.register_callback("dg_grid_one_of_water", "Void", "[ UInt UInt ]", dg_grid_one_of_water);
         vm.register_callback("dg_grid_one_of_walk",  "Void", "[ UInt UInt ]", dg_grid_one_of_walk);
 
+        vm.register_callback("dg_neighbors_linked", "[ UInt UInt Int Int ]", "Bool", dg_neighbors_linked);
+
         vm.register_callback("dg_current_moon", "Void", "Sym", dg_current_moon);
 
         vm.register_callback("dg__clear_map", "Void", "Void", dg__clear_map);
+
+        vm.register_callback("print", "UInt", "Void", _print1);
+        vm.register_callback("print", "Int",  "Void", _print2);
+        vm.register_callback("print", "Sym",  "Void", _print3);
 
         vm.required("init", "Void", "Void");
         vm.required("generate", "Void", "Void");

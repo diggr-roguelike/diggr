@@ -421,15 +421,29 @@ public:
         TCOD_map_set_properties(tcodmap, x, y, (g.is_viewblock == 0), (g.is_walkblock == 0));
     }
 
+    bool is_walkblock(unsigned int x, unsigned int y) {
+	gridpoint& g = _get(x,y);
+        return g.is_walkblock;
+    }
+
+    bool is_viewblock(unsigned int x, unsigned int y) {
+	gridpoint& g = _get(x,y);
+        return g.is_viewblock;
+    }
+
     void set_skin(unsigned int x, unsigned int y, unsigned int z,
                   const TCOD_color_t& fore, unsigned char c,
                   const TCOD_color_t& fore2, int fore_interp,
                   bool is_terrain) {
 
 	std::vector<skin>& skins = _get(x,y).skins; 
+        skin& s = skins[z];
 
-	skins.emplace(skins.begin() + z,
-                      fore, c, fore2, fore_interp, is_terrain);
+        s.fore = fore;
+        s.c = c;
+        s.fore2 = fore2;
+        s.fore_interp = fore_interp;
+        s.is_terrain = is_terrain;
     }
 
     void unset_skin(unsigned int x, unsigned int y, unsigned int z) {
@@ -465,8 +479,8 @@ public:
 
 	TCOD_map_compute_fov(tcodmap, px, py, lightradius, true, FOV_SHADOW);
 
-	for (int y = 0; y < h; ++y) {
-	    for (int x = 0; x < w; ++x) {
+	for (size_t y = 0; y < h; ++y) {
+	    for (size_t x = 0; x < w; ++x) {
 
 		bool in_fov = TCOD_map_is_in_fov(tcodmap, x, y);
 
@@ -870,6 +884,8 @@ public:
                    unsigned int& xo, unsigned int& yo) {
 
         bool tmp = TCOD_path_compute(tcodpath, x0, y0, x1, y1, cutoff);
+
+        if (!tmp) return false;
 
         for (unsigned int i = 0; i < n; ++i) {
             if (!TCOD_path_walk(tcodpath, (int*)&xo, (int*)&yo, true, cutoff))

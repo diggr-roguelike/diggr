@@ -64,7 +64,10 @@ struct Game {
     void handle_input(size_t& ticks, bool& done, bool& dead, int vk, char c) {
 
         std::cout << "!" << ticks << " " << vk << " [" << c << "]" << std::endl;
+        
+        vm.handle_input(ticks, vk, c, done, dead);
 
+        /*
         if (c == 'Q') {
             dead = true;
             done = true;
@@ -75,6 +78,7 @@ struct Game {
         } else if (c == '.') {
             ticks++;
         }
+        */
     }
 };
 

@@ -54,7 +54,7 @@ struct Map {
         watermap.clear();
         nogens.clear();
 
-        for (int i = 0; i < w*h; ++i) {
+        for (size_t i = 0; i < w*h; ++i) {
             grid[i] = 10.0;
         }
     }
@@ -191,7 +191,7 @@ struct Map {
         std::sort(l.begin(), l.end());
         std::reverse(l.begin(), l.end());
 
-        int culln = 4;
+        unsigned int culln = 4;
 
         if (l.size() > culln) {
             l.resize(culln);
@@ -264,7 +264,7 @@ struct Map {
         std::sort(watr_r.begin(), watr_r.end());
         std::reverse(watr_r.begin(), watr_r.end());
 
-        int pctwater = rnd::get().gauss(5.0, 1.0);
+        unsigned int pctwater = rnd::get().gauss(5.0, 1.0);
         if (pctwater <= 1) pctwater = 1;
 
         pctwater = watr_r.size() / pctwater;
@@ -284,8 +284,8 @@ struct Map {
         std::unordered_set<pt> towalk;
         std::unordered_set<pt> towater;
 
-        for (int x = 0; x < w; ++x) {
-            for (int y = 0; y < h; ++y) {
+        for (size_t x = 0; x < w; ++x) {
+            for (size_t y = 0; y < h; ++y) {
 
                 int nwall = 0;
                 int nwater = 0;

@@ -65,5 +65,3 @@ generate Void->Void :-
   place_player
 .
 
-drawing_context Void->[UInt UInt] :-
-  get->Player->[UInt UInt]([\x \y]).

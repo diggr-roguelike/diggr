@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <map>
+#include <set>
 
 
 namespace neighbors {
@@ -12,7 +13,7 @@ typedef std::pair<unsigned int, unsigned int> pt;
 
 struct Neighbors {
     
-    typedef std::map<pt, std::vector<pt> > ns_t;
+    typedef std::map<pt, std::set<pt> > ns_t;
     ns_t nbmap;
     unsigned int w;
     unsigned int h;
@@ -27,7 +28,7 @@ struct Neighbors {
         for (unsigned int x = 0; x < w; x++) {
             for (unsigned int y = 0; y < h; y++) {
 
-                std::vector<pt>& v = nbmap[std::make_pair(x, y)];
+                auto& v = nbmap[std::make_pair(x, y)];
 
                 for (int xi = -1; xi <= 1; xi++) {
                     for (int yi = -1; yi <= 1; yi++) { 
@@ -39,7 +40,7 @@ struct Neighbors {
                         if (tmp.first < 0 || tmp.first >= w || tmp.second < 0 || tmp.second >= h)
                             continue;
 
-                        v.push_back(tmp);
+                        v.insert(v.end(), tmp);
                     }
                 }
             }
@@ -50,8 +51,8 @@ struct Neighbors {
         init(w, h);
     }
 
-    const std::vector<pt>& operator()(const pt& xy) const {
-        static std::vector<pt> empty;
+    const std::set<pt>& operator()(const pt& xy) const {
+        static std::set<pt> empty;
 
         ns_t::const_iterator i = nbmap.find(xy);
 
@@ -60,6 +61,10 @@ struct Neighbors {
 	}
         
         return empty;
+    }
+
+    bool linked(const pt& xy1, const pt& xy2) const {
+        return operator()(xy1).count(xy2);
     }
 
     //***  ***//

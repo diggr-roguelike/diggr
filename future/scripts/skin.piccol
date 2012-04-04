@@ -16,6 +16,7 @@ def [a:UInt b:UInt v:Bool];
 def [x:UInt y:UInt a:Bool b:UInt];
 def [x:UInt y:UInt z:UInt skin:Renderskin];
 def [x:UInt y:UInt z:UInt skin:Skin];
+def [x:UInt y:UInt z:UInt back:Sym];
 def [x:UInt y:UInt z:UInt fore:Sym char:Sym fore2:Sym fore_i:Bool is_terrain:Bool];
 def [x:UInt y:UInt z:UInt];
 
@@ -106,8 +107,16 @@ player [UInt UInt]->Renderskin :-
   [ \a \b (get->Player->UInt(\x)) (get->Player->UInt(\y)) ]->Renderskin (
      <: \a == \c && \b == \d :> ? player->Renderskin).
 
+set_player [UInt UInt]->Void :-
+ [ \a \b 7u ([\a \b] player->Renderskin) ] set_renderskin.
+
+unset_player [UInt UInt]->Void :-
+ [ \a \b 7u ] unset_renderskin.
+
 
 /*** *** ***/
+
+/* Completely redraw all layers properly. */
 
 set_skin [UInt UInt]->Void :-
   [ \a \b 0u ([\a \b] default->Renderskin) ] set_renderskin fail;
@@ -117,3 +126,9 @@ set_skin [UInt UInt]->Void :-
   [ \a \b 7u ([\a \b] player->Renderskin) ] set_renderskin fail; 
 
 .
+
+/* Move only the player's layer from one spot to another. */
+
+move_player [UInt UInt UInt UInt]->Void :-
+  [ \a \b ] unset_player
+  [ \c \d ] set_player.

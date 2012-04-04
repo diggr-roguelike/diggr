@@ -1,10 +1,62 @@
 
 
+px Void->UInt :- get->Player->UInt(\x).
+py Void->UInt :- get->Player->UInt(\y).  
+
+def { x:UInt y:UInt dx:Int dy:Int } XyPair;
+def [ a:UInt b:UInt c:Int d:Int ];
+
+add XyPair->XyPair :- XyPair{ x=\x y=\y dx=(<:int(\x)+\dx:>) dy=(<:int(\y)+\dy:>) }.
+
+walkable XyPair->Bool :-
+         '. ' print \x print ' ' print \y print ' ' print \dx print ' ' print \dy print '\n' print
+  [ \x \y \dx \dy ] dg_neighbors_linked->Bool ? 
+  [ (<:uint(\dx):>) (<:uint(\dy):>) ] dg_render_is_walkblock->Bool $not ? true;
+  false
+.
+
+move [Int Int]->Void :-
+  XyPair{ x=(px->UInt) y=(py->UInt) dx=\a dy=\b } add->XyPair->Void( 
+         '.. ' print \x print ' ' print \y print ' ' print \dx print ' ' print \dy print '\n' print
+    XyPair{ x=\x y=\y dx=\dx dy=\dy } walkable->Bool ? 
+      [ \x \y (<:uint(\dx):>) (<:uint(\dy):>) ]->Void (
+          get->Player {x=\c y=\d} set
+          [ \a \b \c \d ] move_player))
+.
+
+
+/*
+move [Int Int]->Void :-
+  XyPair{ x=(px->UInt) y=(py->UInt) dx=\a dy=\b } add->XyPair->Void( 
+          '.. ' print \x print ' ' print \y print ' ' print \dx print ' ' print \dy print '\n' print
+          get->Player {x=(<:uint(\dx):>) y=(<:uint(\dy):>)} set)
+.
+*/
+
+go UInt->OutState :- OutState{ticks=(<: \v + 1u :>) done=false dead=false}.
+
+
+/***** *** *****/
+
+
 handle_input InState->OutState :-
 
   <: \c == 'S' :> ? OutState{ticks=\ticks done=true dead=false} ;
   <: \c == 'Q' :> ? OutState{ticks=\ticks done=true dead=true} ;
-  <: \c == '.' :> ? OutState{ticks=(<: \ticks + 1u :>) done=false dead=false} ;
- 
+  <: \c == '.' :> ? \ticks go->OutState ;
+
+  <: \c == 'h' :> ? [-1  0] move \ticks go->OutState ;
+  <: \c == 'j' :> ? [ 0  1] move \ticks go->OutState;
+  <: \c == 'k' :> ? [ 0 -1] move \ticks go->OutState;
+  <: \c == 'l' :> ? [ 1  0] move \ticks go->OutState;
+  <: \c == 'y' :> ? [-1 -1] move \ticks go->OutState;
+  <: \c == 'u' :> ? [ 1 -1] move \ticks go->OutState;
+  <: \c == 'b' :> ? [-1  1] move \ticks go->OutState;
+  <: \c == 'n' :> ? [ 1  1] move \ticks go->OutState;
+
   OutState{ticks=\ticks done=false dead=false} 
 .
+
+
+drawing_context Void->[UInt UInt] :-
+  get->Player->[UInt UInt]('^^' print \x print \y print '\n' print [\x \y]).

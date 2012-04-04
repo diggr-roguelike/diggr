@@ -5,12 +5,12 @@ modules Void->Void :-
 
   <:[module] generate 'generate.piccol'
              generate Void->Void
-             drawing_context Void->[UInt UInt]
              init Void->Void
    :>
 
   <:[module] skin 'skin.piccol'
              set_skin [UInt UInt]->Void
+             move_player [UInt UInt UInt UInt]->Void
    :>
 
   <:[module] feats 'feats.piccol'
@@ -21,5 +21,6 @@ modules Void->Void :-
 
   <:[module] input 'input.piccol'
              handle_input InState->OutState
+             drawing_context Void->[UInt UInt]
    :>
 .

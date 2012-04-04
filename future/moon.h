@@ -131,6 +131,8 @@ inline PHASE phase_n(double p) {
     } else if (p <= 1.0 + PRECISION) {
         return NEW;
     }
+
+    return NEW;
 }
 
 
@@ -145,6 +147,7 @@ inline std::string phase_string(PHASE p) {
     case LAST_QUARTER: return "last quarter";
     case WANING_CRESCENT: return "waning crescent";
     }
+    return "error";
 }
 
 
