@@ -51,32 +51,32 @@ struct Grid {
 
     struct skin {
 	TCOD_color_t fore;
+	TCOD_color_t back;
 	unsigned char c;
 	TCOD_color_t fore2;
 	int fore_interp;
 	bool is_terrain;
 
-	skin() : c(0), fore_interp(0), is_terrain(false)
+	skin() : back(TCOD_black), c(0), fore_interp(0), is_terrain(false)
 	    {
 		fore = TCOD_black;
 	    }
 
 	skin(const TCOD_color_t& _fore, unsigned char _c,
 	     const TCOD_color_t& _fore2, int _fore_interp, bool _is_terrain) :
-	    fore(_fore), c(_c), fore2(_fore2), fore_interp(_fore_interp), 
+	    fore(_fore), back(TCOD_black), c(_c), fore2(_fore2), fore_interp(_fore_interp), 
 	    is_terrain(_is_terrain) {}
 	     
     };
 
     struct gridpoint {
 	std::vector<skin> skins;
-	TCOD_color_t back;
 	unsigned int is_lit;
 	bool in_fov;
         unsigned int is_viewblock;
         unsigned int is_walkblock;
 
-	gridpoint() : back(TCOD_black), is_lit(0), in_fov(false), 
+	gridpoint() : is_lit(0), in_fov(false), 
                       is_viewblock(0), is_walkblock(0) 
             {
                 skins.resize(skincount);
@@ -383,8 +383,8 @@ public:
 	env_intensity = intensity;
     }
 
-    void set_back(unsigned int x, unsigned int y, const TCOD_color_t& color) {
-	_get(x,y).back = color;
+    void set_back(unsigned int x, unsigned int y, unsigned int z, const TCOD_color_t& color) {
+	_get(x,y).skins[z].back = color;
     }
 
     void set_is_lit(unsigned int x, unsigned int y, bool is_lit) {
@@ -479,23 +479,38 @@ public:
 
 		gp.in_fov = in_fov;
 
-                auto skin_i = skins.rbegin();
-                while (skin_i != skins.rend()) {
-                    if (skin_i->c != 0)
-                        break;
+		TCOD_color_t back = TCOD_black;
 
-                    ++skin_i;
+                auto skin_i = skins.rbegin();
+                auto skin_c = skin_i;
+                bool found_s = false;
+                bool found_b = false;
+
+                while (skin_c != skins.rend()) {
+
+                    if (!found_s && skin_c->c != 0) {
+                        found_s = true;
+                        skin_i = skin_c;
+                    }
+
+                    if (!found_b && !TCOD_color_equal(skin_c->back, TCOD_black)) {
+                        found_b = true;
+                        back = skin_c->back;
+                    }
+
+                    if (found_s && found_b) break;
+
+                    ++skin_c;
                 }
 
 
-                if (skin_i == skins.rend()) {
+                if (!found_s) {
 		    continue;
 		}
 
 		const skin& sk = *skin_i;
 
 		TCOD_color_t fore = sk.fore;
-		TCOD_color_t back = gp.back;
 		unsigned char c = sk.c;
 
 		if (sk.fore_interp) {
