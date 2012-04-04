@@ -169,7 +169,8 @@ inline bool dg_render_set_back(CALLBACK) {
 
     nanom::UInt x = struc.v[0].uint;
     nanom::UInt y = struc.v[1].uint;
-    grender::get().set_back(x, y, colorsyms::color(struc.v[2].uint));
+    nanom::UInt z = struc.v[2].uint;
+    grender::get().set_back(x, y, z, colorsyms::color(struc.v[2].uint));
     return true;
 }
 
@@ -339,8 +340,8 @@ struct Vm {
 
         vm.register_callback("dg_random_range", "[ Int Int ]", "Int", dg_random_range);
         
-        vm.register_callback("dg_render_set_is_lit",    "[ UInt UInt Bool ]", "Void", dg_render_set_is_lit);
-        vm.register_callback("dg_render_set_back",      "[ UInt UInt Sym ]",  "Void", dg_render_set_back);
+        vm.register_callback("dg_render_set_is_lit",    "[ UInt UInt Bool ]",      "Void", dg_render_set_is_lit);
+        vm.register_callback("dg_render_set_back",      "[ UInt UInt UInt Sym ]",  "Void", dg_render_set_back);
 
         vm.register_callback("dg_render_set_is_viewblock", "[ UInt UInt Bool UInt ]", 
                              "Void", dg_render_set_is_viewblock);

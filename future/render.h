@@ -493,7 +493,7 @@ public:
                         skin_i = skin_c;
                     }
 
-                    if (!found_b && !TCOD_color_equal(skin_c->back, TCOD_black)) {
+                    if (!found_b && !TCOD_color_equals(skin_c->back, TCOD_black)) {
                         found_b = true;
                         back = skin_c->back;
                     }
@@ -898,13 +898,13 @@ public:
             serialize::write(s, t.skins.size());
 	    for (const auto& u : t.skins) {
 		serialize::write(s, u.fore);
+                serialize::write(s, u.back);
 		serialize::write(s, u.c);
 		serialize::write(s, u.fore2);
 		serialize::write(s, u.fore_interp);
 		serialize::write(s, u.is_terrain);
 	    }
 
-            serialize::write(s, t.back);
             serialize::write(s, t.is_lit);
             serialize::write(s, t.in_fov);
             serialize::write(s, t.is_viewblock);
@@ -952,13 +952,13 @@ public:
 	    for (size_t j = 0; j < sks; ++j) {
 		skin& tmp = p.skins[j];
 		serialize::read(s, tmp.fore);
+                serialize::read(s, tmp.back);
 		serialize::read(s, tmp.c);
 		serialize::read(s, tmp.fore2);
 		serialize::read(s, tmp.fore_interp);
 		serialize::read(s, tmp.is_terrain);
 	    }
 
-            serialize::read(s, p.back);
             serialize::read(s, p.is_lit);
             serialize::read(s, p.in_fov);
             serialize::read(s, p.is_viewblock);
