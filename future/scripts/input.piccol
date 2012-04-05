@@ -6,11 +6,6 @@ py Void->UInt :- get->Player->UInt(\y).
 def { x:UInt y:UInt dx:Int dy:Int } XyPair;
 def [ a:UInt b:UInt c:Int d:Int ];
 
-<:: uint
-  body :- \any.
-  body :- .
-  uint :- @'(' body &'' @' $to_uint)'.
-::>
 
 add XyPair->XyPair :- XyPair{ x=\x y=\y dx=(<:int(\x)+\dx:>) dy=(<:int(\y)+\dy:>) }.
 
