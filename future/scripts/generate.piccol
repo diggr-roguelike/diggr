@@ -19,15 +19,47 @@ choose_branch Void->Void :-
 
 def [a:Sym b:Real];
 
+generate_grid Void->Void :-
+  dg_current_moon->Sym->Int(
+     <: \v == 'new' || \v == 'full' :> ? 1;
+     <: \v == 'first quarter' || \v == 'last quarter' :> ? -1;
+     0)
+  dg_grid_generate
+.
+
+
+def {xy:[UInt UInt] sym:Sym} XySym;
+
+random_floor_feature Sym->Void :-
+  XySym{ xy=(dg_grid_one_of_floor->[UInt UInt]) sym=\v}->Void(
+    '** ' print \xy->UInt(\a) print ' ' print \xy->UInt(\b) print ' ' print \sym print '\n' print
+    [ (\xy->UInt(\a)) (\xy->UInt(\b)) \sym ] set_feature)
+.
+
+generate_feats Void->Void :-
+  dg_grid_one_of_floor->[UInt UInt]->Void(
+      [\a \b '>'] set_feature
+      get->Dungeon {exit=([\a \b])} set
+      [\a \b] dg_grid_add_nogen)
+  fail; 
+
+  dg_current_moon->Sym->Void(
+      <: \v == 'new'  :> ? 'bb' random_floor_feature ;
+      <: \v == 'full' :> ? 'dd' random_floor_feature ;
+      [-1 1] dg_random_range->Int->Void(
+          <: \v == -1 :> ? 's' random_floor_feature ;
+          <: \v ==  0 :> ? 'b' random_floor_feature ;
+          'v' random_floor_feature)
+  )
+.
+
+
 generate_map Void->Void :-
   dg__clear_map
 
   is_not_quest->Bool ?
-    dg_current_moon->Sym->Int(
-       <: \v == 'new' || \v == 'full' :> ? 1;
-       <: \v == 'first quarter' || \v == 'last quarter' :> ? -1;
-       0)
-    dg_grid_generate
+    generate_grid
+    generate_feats
     fail;
 
   dg_current_moon->Sym->Void(
@@ -36,15 +68,6 @@ generate_map Void->Void :-
     [ 'white' 0f ] dg_render_set_env)
 .
 
-
-place_feats Void->Void :-
-  is_not_quest->Bool ?
-   dg_grid_one_of_floor->[UInt UInt]->Void(
-      [\a \b '>'] set_feature
-      get->Dungeon {exit=([\a \b])} set
-      [\a \b] dg_grid_add_nogen)
-  ; 
-.
 
 place_player Void->Void :-
   dg_grid_one_of_walk->[UInt UInt]->Void(get->Player {x=\a y=\b} set)
@@ -61,7 +84,6 @@ generate Void->Void :-
 
   choose_branch
   generate_map
-  place_feats
   place_player
 .
 

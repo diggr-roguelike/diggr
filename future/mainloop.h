@@ -179,12 +179,9 @@ struct Main {
 
             bool need_input = false;
 
-            std::cout << "!" << ticks << " " << oldticks << " process" << std::endl;
             process(oldticks, done, dead, need_input);
 
             draw();
-
-            std::cout << "!draw " << done << " " << dead << " " << need_input << std::endl;
 
             if (done) {
                 
@@ -202,9 +199,7 @@ struct Main {
                 return dead;
             }
 
-            std::cout << "!pump_event" << std::endl;
             pump_event(need_input, done, dead);
-            std::cout << "  " << done << " " << dead << std::endl;
         }
     }
     
