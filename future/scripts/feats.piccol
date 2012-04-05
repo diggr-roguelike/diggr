@@ -84,12 +84,6 @@ set_props [UInt UInt Props]->Void :-
   [\x \y (\props->Real(\height get->Real))] dg_grid_set_height;
 .
 
-set_feature [UInt UInt Sym]->Void :-
-  [\x \y (\v featstock_get->Props)] set_props fail;
-  [\x \y (\v featstock_get->Feat)] featmap_set;
-  [\x \y] featmap_unset
-.
-
 featstock_set [Sym Feat_]->Void :-
   [\a (\b->Props(\props))] featstock_set
   [\a (\b->Feat(Feat{skin=\skin flags=\flags}))] featstock_set
@@ -100,6 +94,15 @@ featstock_set [Sym Feat_]->Void :-
  *
  *
  */
+
+set_feature [UInt UInt Sym]->Void :-
+  \\ ->Void(
+    [\x \y (\v featstock_get->Props)] set_props fail;
+    [\x \y (\v featstock_get->Feat)] featmap_set;
+    [\x \y] featmap_unset
+  ) 
+  [\x \y] set_skin
+.
 
 feature [UInt UInt]->Skin :-
   [\a \b] featmap_get->Feat->Skin(\skin).

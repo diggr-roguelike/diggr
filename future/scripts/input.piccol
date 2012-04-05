@@ -77,7 +77,7 @@ go UInt->OutState :- OutState{ticks=(<: \v + 1u :>) done=false dead=false}.
 :>
 
 remap InState->InState :- 
-  InState { vk=0 c=(\vk
+  \\ { c=(\vk
   <:[switch]
     key_left     'h'
     key_down     'j'
@@ -126,5 +126,5 @@ handle_input InState->OutState :-
 
 
 drawing_context Void->[UInt UInt] :-
-  get->Player->[UInt UInt]([\x \y]).
+  get->Player->[UInt UInt]( '*** ' print \x print ' ' print \y print '\n' print [\x \y]).
 

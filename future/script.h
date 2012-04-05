@@ -493,6 +493,7 @@ struct Vm {
     }
 
     void set_skin(unsigned int x, unsigned int y) {
+        std::cout << "!!!! set_skin" << std::endl;
         Obj out;
         Obj inp;
         inp.v.push_back((nanom::UInt)x);
