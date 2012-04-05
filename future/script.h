@@ -157,6 +157,47 @@ inline bool dg_random_range(CALLBACK) {
     return true;
 }
 
+inline bool random_gauss(const nanom::Struct& struc, nanom::Struct& ret, nanom::Real n) {
+    nanom::Real mean = struc.v[0].real;
+    nanom::Real stdd = struc.v[1].real;
+    nanom::Real bias = struc.v[2].real;
+    nanom::Real rt;
+
+    if (bias == 0) {
+        rt = rnd::get().gauss(mean, stdd);
+    } else {
+        rt = rnd::get().biased_gauss(mean, stdd, bias, n);
+    }
+
+    ret.v.push_back(rt);
+    return true;
+}
+
+inline bool dg_random_neg_gauss(CALLBACK) {
+    return random_gauss(struc, ret, -1.0);
+}
+
+inline bool dg_random_pos_gauss(CALLBACK) {
+    return random_gauss(struc, ret, 1.0);
+}
+
+inline bool random_nat_gauss(const nanom::Struct& struc, nanom::Struct& ret, nanom::Real n) {
+    bool rr = random_gauss(struc, ret, n);
+    nanom::UInt m = struc.v[3].uint;
+    nanom::UInt tmp = std::max((nanom::Int)round(ret.v[0].real), (nanom::Int)m);
+    ret.v[0] = tmp;
+    return rr;
+}
+
+inline bool dg_random_nat_neg_gauss(CALLBACK) {
+    return random_nat_gauss(struc, ret, -1.0);
+}
+
+inline bool dg_random_nat_pos_gauss(CALLBACK) {
+    return random_nat_gauss(struc, ret, 1.0);
+}
+
+
 inline bool dg_render_set_is_lit(CALLBACK) {
 
     nanom::UInt x = struc.v[0].uint;
@@ -378,6 +419,10 @@ struct Vm {
         //////
 
         vm.register_callback("dg_random_range", "[ Int Int ]", "Int", dg_random_range);
+        vm.register_callback("dg_random_pos_gauss", "[ Real Real Real ]", "Real", dg_random_pos_gauss);
+        vm.register_callback("dg_random_neg_gauss", "[ Real Real Real ]", "Real", dg_random_neg_gauss);
+        vm.register_callback("dg_random_nat_pos_gauss", "[ Real Real Real UInt ]", "UInt", dg_random_nat_pos_gauss);
+        vm.register_callback("dg_random_nat_neg_gauss", "[ Real Real Real UInt ]", "UInt", dg_random_nat_neg_gauss);
         
         vm.register_callback("dg_render_set_is_lit",    "[ UInt UInt Bool ]",      "Void", dg_render_set_is_lit);
         vm.register_callback("dg_render_set_back",      "[ UInt UInt UInt Sym ]",  "Void", dg_render_set_back);
@@ -420,6 +465,8 @@ struct Vm {
         vm.register_callback("print", "UInt", "Void", _print1);
         vm.register_callback("print", "Int",  "Void", _print2);
         vm.register_callback("print", "Sym",  "Void", _print3);
+
+        ////// 
 
         vm.required("init", "Void", "Void");
         vm.required("generate", "Void", "Void");

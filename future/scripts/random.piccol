@@ -1,0 +1,12 @@
+
+
+def [ mean:Real stddev:Real bias:Real floor:UInt ];
+
+pos_gauss [Real Real]->Real :- [ \a \b (luck->Real) ] dg_random_pos_gauss->Real.
+
+neg_gauss [Real Real]->Real :- [ \a \b (luck->Real) ] dg_random_neg_gauss->Real.
+
+pos_gauss [Real Real UInt]->UInt :- [ \a \b (luck->Real) \c ] dg_random_nat_pos_gauss->UInt->UInt( '@@ ' print \v print '\n' print \v).
+
+neg_gauss [Real Real UInt]->UInt :- [ \a \b (luck->Real) \c ] dg_random_nat_neg_gauss->UInt.
+
