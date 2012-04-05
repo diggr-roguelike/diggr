@@ -27,10 +27,90 @@ move [Int Int]->Void :-
 go UInt->OutState :- OutState{ticks=(<: \v + 1u :>) done=false dead=false}.
 
 
+/***/
+
+<:: enums(literals)
+    ident_here :- ident &''.    
+    integer_here :- integer &''.
+    enum :- spaces ident_here @' Void->Int :- ' spaces integer_here @'.' spaces.
+    enums :- enum enums.
+    enums :- .
+::>
+
+<:[enums] 
+
+  key_up    14
+  key_left  15 
+  key_right 16
+  key_down  17
+
+  key_pageup   10
+  key_pagedown 11
+  key_end      12
+  key_home     13
+
+  key_kp1 35
+  key_kp2 36
+  key_kp3 37
+  key_kp4 38
+  key_kp5 39
+  key_kp6 40
+  key_kp7 41
+  key_kp8 42
+  key_kp9 43
+
+  key_f9  58
+  key_f10 59
+  key_f11 60
+  key_f12 61
+
+:>
+
+<:: switch(literals)
+  ident_here :- ident &''.
+  sym_here :- sym &''.
+  case :- @'[\\v (' spaces ident_here spaces @'->Int)] $eq ?' sym_here spaces @';'.
+  cases :- case cases.
+  cases :- .
+  switch :- @'->Sym(' cases @' fail)'.
+::>
+
+remap InState->InState :- 
+  InState { vk=0 c=(\vk
+  <:[switch]
+    key_left  'h'
+    key_down  'j'
+    key_up    'k'
+    key_right 'l'
+   :>
+   )}
+  ; \\ .
+
+/*
+    libtcod.KEY_LEFT: 'h',
+    libtcod.KEY_RIGHT: 'l',
+    libtcod.KEY_UP: 'k',
+    libtcod.KEY_DOWN: 'j',
+    libtcod.KEY_HOME: 'y',
+    libtcod.KEY_PAGEUP: 'u',
+    libtcod.KEY_END: 'b',
+    libtcod.KEY_PAGEDOWN: 'n',
+    libtcod.KEY_KP4: 'h',
+    libtcod.KEY_KP6: 'l',
+    libtcod.KEY_KP8: 'k',
+    libtcod.KEY_KP2: 'j',
+    libtcod.KEY_KP7: 'y',
+    libtcod.KEY_KP9: 'u',
+    libtcod.KEY_KP1: 'b',
+    libtcod.KEY_KP3: 'n'
+*/
+
 /***** *** *****/
 
 
 handle_input InState->OutState :-
+
+  \\ remap->InState->OutState (
 
   <: \c == 'S' :> ? OutState{ticks=\ticks done=true dead=false} ;
   <: \c == 'Q' :> ? OutState{ticks=\ticks done=true dead=true} ;
@@ -46,6 +126,7 @@ handle_input InState->OutState :-
   <: \c == 'n' :> ? [ 1  1] move \ticks go->OutState;
 
   OutState{ticks=\ticks done=false dead=false} 
+  )
 .
 
 
