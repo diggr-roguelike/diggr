@@ -13,7 +13,7 @@ def {
 
 def [a:Sym  b:Real];
 def [a:UInt b:UInt v:Bool];
-def [x:UInt y:UInt a:Bool b:UInt];
+def [x:UInt y:UInt z:UInt a:Bool];
 def [x:UInt y:UInt z:UInt skin:Renderskin];
 def [x:UInt y:UInt z:UInt skin:Skin];
 def [x:UInt y:UInt z:UInt back:Sym];
@@ -27,9 +27,9 @@ set_renderskin [UInt UInt UInt Renderskin]->Void :-
     (\skin->Sym(\fore2))
     (\skin->Bool(\fore_i))
     (\skin->Bool(\is_terrain)) ] dg_render_set_skin
-  [ \x \y (\skin->Bool(\is_nowalk)) \z ] dg_render_set_is_walkblock
-  [ \x \y (\skin->Bool(\is_noview)) \z ] dg_render_set_is_viewblock
-  [ \x \y (\skin->Bool(\is_lit)) ] dg_render_set_is_lit
+  [ \x \y \z (\skin->Bool(\is_nowalk)) ] dg_render_set_is_walkblock
+  [ \x \y \z (\skin->Bool(\is_noview)) ] dg_render_set_is_viewblock
+  [ \x \y \z (\skin->Bool(\is_lit)) ] dg_render_set_is_lit
   [ \x \y \z (\skin->Sym(\back)) ] dg_render_set_back
 .
 

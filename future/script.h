@@ -47,7 +47,9 @@ inline T& symmap() {
 
 template <typename T>
 inline bool symmap_set(CALLBACK) {
-    symmap<T>().add(struc.v[0].uint, struc.substruct(1, shape.size()-1));
+    std::cout << "XXX XXX SET: " << struc.v.size() << " " 
+              << shape.size() << " " << struc.substruct(1, shape.size()).v.size() << std::endl;
+    symmap<T>().add(struc.v[0].uint, struc.substruct(1, shape.size()));
     return true;
 }
 
@@ -94,7 +96,7 @@ inline Featmap& featmap() {
 
 inline bool featmap_set(CALLBACK) {
     featmap().set(struc.v[0].uint, 
-                  struc.v[1].uint, struc.substruct(2, shape.size()-1));
+                  struc.v[1].uint, struc.substruct(2, shape.size()));
     return true;
 }
 
@@ -202,7 +204,8 @@ inline bool dg_render_set_is_lit(CALLBACK) {
 
     nanom::UInt x = struc.v[0].uint;
     nanom::UInt y = struc.v[1].uint;
-    grender::get().set_is_lit(x, y, struc.v[2].uint);
+    nanom::UInt z = struc.v[2].uint;
+    grender::get().set_is_lit(x, y, z, struc.v[3].uint);
     return true;
 }
 
@@ -424,12 +427,12 @@ struct Vm {
         vm.register_callback("dg_random_nat_pos_gauss", "[ Real Real Real UInt ]", "UInt", dg_random_nat_pos_gauss);
         vm.register_callback("dg_random_nat_neg_gauss", "[ Real Real Real UInt ]", "UInt", dg_random_nat_neg_gauss);
         
-        vm.register_callback("dg_render_set_is_lit",    "[ UInt UInt Bool ]",      "Void", dg_render_set_is_lit);
+        vm.register_callback("dg_render_set_is_lit",    "[ UInt UInt UInt Bool ]",  "Void", dg_render_set_is_lit);
         vm.register_callback("dg_render_set_back",      "[ UInt UInt UInt Sym ]",  "Void", dg_render_set_back);
 
-        vm.register_callback("dg_render_set_is_viewblock", "[ UInt UInt Bool UInt ]", 
+        vm.register_callback("dg_render_set_is_viewblock", "[ UInt UInt UInt Bool ]", 
                              "Void", dg_render_set_is_viewblock);
-        vm.register_callback("dg_render_set_is_walkblock", "[ UInt UInt Bool UInt ]", 
+        vm.register_callback("dg_render_set_is_walkblock", "[ UInt UInt UInt Bool ]", 
                              "Void", dg_render_set_is_walkblock);
 
         vm.register_callback("dg_render_is_viewblock", "[ UInt UInt ]", "Bool", dg_render_is_viewblock);

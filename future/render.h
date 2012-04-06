@@ -387,35 +387,35 @@ public:
 	_get(x,y).skins[z].back = color;
     }
 
-    void set_is_lit(unsigned int x, unsigned int y, bool is_lit) {
+    void set_is_lit(unsigned int x, unsigned int y, unsigned int z, bool is_lit) {
 	unsigned int& il = _get(x,y).is_lit;
 
-	if (!is_lit) {
-	    if (il > 0) --il;
+        if (is_lit) {
+            il |= (1<<z);
 	} else {
-	    ++il;
+	    il &= ~(1<<z);
 	}
     }
 
-    void set_is_viewblock(unsigned int x, unsigned int y, bool t, unsigned int bit) {
+    void set_is_viewblock(unsigned int x, unsigned int y, unsigned int z, bool t) {
 	gridpoint& g = _get(x,y);
 
         if (t) {
-            g.is_viewblock |= (1<<bit);
+            g.is_viewblock |= (1<<z);
         } else {
-            g.is_viewblock &= ~(1<<bit);
+            g.is_viewblock &= ~(1<<z);
         }
 
         TCOD_map_set_properties(tcodmap, x, y, (g.is_viewblock == 0), (g.is_walkblock == 0));
     }
 
-    void set_is_walkblock(unsigned int x, unsigned int y, bool t, unsigned int bit) {
+    void set_is_walkblock(unsigned int x, unsigned int y, unsigned int z, bool t) {
 	gridpoint& g = _get(x,y);
 
         if (t) {
-            g.is_walkblock |= (1<<bit);
+            g.is_walkblock |= (1<<z);
         } else {
-            g.is_walkblock &= ~(1<<bit);
+            g.is_walkblock &= ~(1<<z);
         }
 
         TCOD_map_set_properties(tcodmap, x, y, (g.is_viewblock == 0), (g.is_walkblock == 0));
@@ -455,7 +455,7 @@ public:
 
     bool is_in_fov(unsigned int x, unsigned int y) {
         const gridpoint& gp = _get(x,y);
-        return (gp.in_fov || gp.is_lit > 0);
+        return (gp.in_fov || gp.is_lit != 0);
     }
 
 
