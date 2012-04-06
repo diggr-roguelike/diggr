@@ -1,5 +1,5 @@
 import tcod_colors as libtcod
-import libdiggrpy as dg
+#import libdiggrpy as dg
 import copy
 
 
@@ -1448,28 +1448,28 @@ class MonsterStock:
                                'species of mold.']))
 
         self.add(Monster('black mold', no_a=True, attack=0, defence=5.0, range=0, branch='x',
-                         level=2, count=15, static=True, summon=('bmold1', 10), idtag='bmold1',
+                         level=2, count=15, static=True, summon=('bmold2', 10), idtag='bmold2',
                          moldspew=(MOLD,3,3), poisimmune=True, skin=('x',libtcod.gray), is_mold=True,
                          moon=quartermoon_bias, no_exting=True, pointsfac=0.5,
                          desc=['Stachybotrys chartarum, a toxic and sometimes deadly',
                                'species of mold.']))
 
         self.add(Monster('black mold', no_a=True, attack=0, defence=5.0, range=0, branch='x',
-                         level=4, count=15, static=True, summon=('bmold2', 10), idtag='bmold2',
+                         level=4, count=15, static=True, summon=('bmold3', 10), idtag='bmold3',
                          moldspew=(MOLD,3,3), poisimmune=True, skin=('x',libtcod.gray), is_mold=True,
                          moon=quartermoon_bias, no_exting=True, pointsfac=0.5,
                          desc=['Stachybotrys chartarum, a toxic and sometimes deadly',
                                'species of mold.']))
 
         self.add(Monster('black mold', no_a=True, attack=0, defence=5.0, range=0, branch='x',
-                         level=6, count=15, static=True, summon=('bmold3', 10), idtag='bmold3',
+                         level=6, count=15, static=True, summon=('bmold4', 10), idtag='bmold4',
                          moldspew=(MOLD,3,3), poisimmune=True, skin=('x',libtcod.gray), is_mold=True,
                          moon=quartermoon_bias, no_exting=True, pointsfac=0.5,
                          desc=['Stachybotrys chartarum, a toxic and sometimes deadly',
                                'species of mold.']))
 
         self.add(Monster('black mold', no_a=True, attack=0, defence=5.0, range=0, branch='x',
-                         level=8, count=15, static=True, summon=('mold4', 10), idtag='bmold4',
+                         level=8, count=15, static=True, summon=('bmold5', 10), idtag='bmold5',
                          moldspew=(MOLD,3,3), poisimmune=True, skin=('x',libtcod.gray), is_mold=True,
                          moon=quartermoon_bias, no_exting=True, pointsfac=0.5,
                          desc=['Stachybotrys chartarum, a toxic and sometimes deadly',

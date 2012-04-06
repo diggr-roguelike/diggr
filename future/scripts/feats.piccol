@@ -107,6 +107,10 @@ set_feature [UInt UInt Sym]->Void :-
 feature [UInt UInt]->Skin :-
   [\a \b] featmap_get->Feat->Skin(\skin).
 
+
+/*** ***/
+
+
 init_featstock Void->Void :-
 
 /**/

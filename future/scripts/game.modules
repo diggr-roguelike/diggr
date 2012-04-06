@@ -26,6 +26,10 @@ modules Void->Void :-
              feature [UInt UInt]->Skin
    :>
 
+  <:[module] monsters 'monsters.piccol'
+             init_monsterstock Void->Void
+   :>
+
   <:[module] input 'input.piccol'
              handle_input InState->OutState
              drawing_context Void->[UInt UInt]

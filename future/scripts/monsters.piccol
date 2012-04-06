@@ -1,0 +1,2811 @@
+
+def { mon:Sym timeout:UInt } Summon;
+def { damage:Real timeout:UInt } TimedEffect;
+def { moldid:UInt chance:UInt timeout:UInt } MoldEffect;
+def { num:UInt timeout:UInt } NumEffect;
+
+def { new: UInt 
+      wax_c: UInt
+      q1: UInt
+      wax_g: UInt
+      full: UInt
+      wan_g: UInt
+      q2: UInt
+      wan_c: UInt
+    } MoonDistrib;
+
+new_moon Void->MoonDistrib :- MoonDistrib{new  = 9u 
+                                          wax_c= 7u 
+                                          q1   = 5u 
+                                          wax_g= 3u 
+                                          full = 1u 
+                                          wan_g= 3u 
+                                          q2   = 5u 
+                                          wan_c= 7u}.
+
+full_moon Void->MoonDistrib :- MoonDistrib{new  = 1u 
+                                           wax_c= 3u 
+                                           q1   = 5u 
+                                           wax_g= 7u 
+                                           full = 9u 
+                                           wan_g= 7u 
+                                           q2   = 5u 
+                                           wan_c= 3u}.
+
+
+new_moon_only Void->MoonDistrib :- MoonDistrib{ new = 9u }.
+
+full_moon_only Void->MoonDistrib :- MoonDistrib{ full = 9u }.
+
+quarter_moon_only Void->MoonDistrib :- MoonDistrib{ q1 = 9u q2 = 9u }. 
+
+mold Void->MoonDistrib :- MoonDistrib{new  = 5u 
+                                      wax_c= 7u 
+                                      q1   = 2u 
+                                      wax_g= 7u 
+                                      full = 9u 
+                                      wan_g= 7u 
+                                      q2   = 2u 
+                                      wan_c= 7u}.
+
+
+def {
+  skin: Skin
+
+  name: Sym
+  branch: Sym
+  level: Int
+  desc: Sym
+  count: Int
+
+  flavor: Sym
+
+  psyrange: Int
+  pointscontrib: Int
+  range: Int
+  blink_away: Int
+  attack: Real
+  defence: Real
+  psyattack: Real
+  itemdrop: Sym
+  align: Sym
+  pointsfac: Real
+  fleerange: Int
+
+  summon: Summon
+  bloodsucker: TimedEffect
+  moldspew: MoldEffect
+  summononce: NumEffect
+  raise_dead: NumEffect
+  moon: MoonDistrib
+
+  straightline
+  fireimmune
+  static
+  confimmune
+  no_exting
+  inanimate
+  explodeimmune
+  flying
+  sleepattack
+  fast
+  is_mold
+  no_a
+  boulder
+  selfdestruct
+  stoneeating
+  slow
+  hungerattack
+  large
+  radimmune
+  poisimmune
+  heatseeking
+
+} Monster;
+
+
+def [idtag:Sym mon:Monster];
+
+
+monsterstock_set [Sym Monster]->Void :- .
+
+init_monsterstock Void->Void :-
+
+[ 'Australopithecus afarensis'
+  Monster{
+    skin=Skin{ char='h' color='sepia' } name='Australopithecus afarensis' branch='a' level=1 count=9 
+    attack=0.1 defence=0.3 psyattack=0f pointsfac=1f no_a=true itemdrop='booze' 
+    pointscontrib=1 range=4 
+    desc='An early hominid, this creature walked upright\nbut lacked the intelligence of the modern human.' } ] monsterstock_set
+
+[ 'Calvatia gigantea'
+  Monster{
+    skin=Skin{ char='x' color='white' } name='Calvatia gigantea' branch='a' level=1 count=8 
+    attack=0f defence=0.2 psyattack=0f confimmune=true pointsfac=1f no_a=true 
+    itemdrop='mushrooms' pointscontrib=1 range=1 
+    desc='(Also known as the giant puffball.)\nAn edible mushroom about the same size, color and texture\nas a volleyball.' } ] monsterstock_set
+
+[ 'ba1'
+  Monster{
+    skin=Skin{ char='0' color='gray' } name='boulder' branch='a' level=1 count=3 
+    attack=0.5 defence=0.5 psyattack=0f confimmune=true no_exting=true inanimate=true 
+    pointsfac=1f boulder=true range=11 radimmune=true poisimmune=true 
+    
+    desc='A gigantic rock of spherical shape.' } ] monsterstock_set
+
+[ 'Dinornis giganteus'
+  Monster{
+    skin=Skin{ char='B' color='light_sepia' } name='Dinornis giganteus' branch='a' level=2 count=5 
+    attack=1f defence=0.5 psyattack=0f flavor='animal' moon=(new_moon->MoonDistrib) pointsfac=1f 
+    no_a=true pointscontrib=1 align='nn' range=7 
+    desc='(Also known as the giant moa.)\nA gigantic flightless bird, like the modern-day\nostrich, only about twice as big.' } ] monsterstock_set
+
+[ 'Meganeura monyi'
+  Monster{
+    skin=Skin{ char='X' color='light_gray' } name='Meganeura monyi' branch='a' level=2 count=7 
+    attack=0.5 defence=1.7 psyattack=0f confimmune=true flavor='flying' flying=true 
+    moon=(new_moon->MoonDistrib) pointsfac=1f no_a=true pointscontrib=1 align='nn' 
+    range=5 
+    desc='One of the largest insects to have ever lived,\nit is a relative of the modern-day dragonfly from\nthe Carboniferous period.\nIt\'s about the same size as a modern-day crow.' } ] monsterstock_set
+
+[ 'nosf_a2'
+  Monster{
+    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='a' level=2 count=1 
+    attack=7f defence=7f psyattack=0f flavor='air' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    pointsfac=1f no_a=true range=25 bloodsucker=TimedEffect{damage=0.25 timeout=50} 
+    desc='A bloodsucking walking corpse.' } ] monsterstock_set
+
+[ 'Sus barbatus'
+  Monster{
+    skin=Skin{ char='q' color='dark_sepia' } name='Sus barbatus' branch='a' level=2 count=6 
+    attack=1.2 defence=0.6 psyattack=0f flavor='animal' moon=(full_moon->MoonDistrib) pointsfac=1f 
+    no_a=true pointscontrib=1 align='cg' range=4 
+    desc='(Also known as the bearded pig.)\nA species of pig. It is characterized by its beard-like\nfacial hair. It is native to the tropics.' } ] monsterstock_set
+
+[ 'ba2'
+  Monster{
+    skin=Skin{ char='0' color='gray' } name='boulder' branch='a' level=2 count=5 
+    attack=0.5 defence=0.5 psyattack=0f confimmune=true no_exting=true inanimate=true 
+    pointsfac=1f boulder=true range=11 radimmune=true poisimmune=true 
+    
+    desc='A gigantic rock of spherical shape.' } ] monsterstock_set
+
+[ 'luna_a2'
+  Monster{
+    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='a' level=2 count=1 
+    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6 timeout=12} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
+    no_exting=true pointsfac=1f 
+    desc='Strange, selenic emanations have driven this poor soul\nto eternally walk the moon-lit dungeon, whispering softly\nto the pale, round face of the Moon.' } ] monsterstock_set
+
+[ 'lyca_a2'
+  Monster{
+    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='a' level=2 count=1 
+    attack=4f defence=1.5 psyattack=0f moon=(full_moon_only->MoonDistrib) no_exting=true fast=true 
+    pointsfac=1f range=20 heatseeking=true 
+    desc='Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.' } ] monsterstock_set
+
+[ 'ufo_a2'
+  Monster{
+    skin=Skin{ char='a' color='dark_lime' } name='rigellian' branch='a' level=2 count=1 
+    attack=7f defence=22f psyattack=0f blink_away=5 confimmune=true moon=(quarter_moon_only->MoonDistrib) 
+    no_exting=true explodeimmune=true flying=true pointsfac=5f itemdrop='deathray' pointscontrib=1 
+    fleerange=8 fireimmune=true range=25 radimmune=true poisimmune=true 
+    
+    desc='An evil alien overlord.\nHe studies humanity and plots plans of world domination.\nHe might also be the one responsible for abductions of\nimmocents civilians and cattle.' } ] monsterstock_set
+
+[ 'priest_a2'
+  Monster{
+    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='a' level=2 count=1 
+    attack=2f defence=1f psyattack=0f flavor='wizard' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    raise_dead=NumEffect{num=15 timeout=2} pointsfac=1f fleerange=5 range=25 
+    desc='A depraved worshipper of Ba\'al-Zebub, the unclean undead god.' } ] monsterstock_set
+
+[ 'Argentavis magnificens'
+  Monster{
+    skin=Skin{ char='B' color='dark_blue' } name='Argentavis magnificens' branch='a' level=3 count=6 
+    attack=3f defence=0.3 psyattack=0f flavor='flying' flying=true moon=(new_moon->MoonDistrib) 
+    pointsfac=1f no_a=true pointscontrib=1 align='ln' range=17 
+    
+    desc='The largest flying bird to have ever lived.\nA relative of the modern-day Andean condor,\nthis bird had a wingspan of 7 meters and weighed\nup to 80 kilograms.' } ] monsterstock_set
+
+[ 'Bos primigenius'
+  Monster{
+    skin=Skin{ char='Q' color='lightest_gray' } name='Bos primigenius' branch='a' level=3 count=3 
+    attack=7f defence=1f psyattack=0f flavor='animal' moon=(full_moon->MoonDistrib) pointsfac=1f 
+    no_a=true pointscontrib=1 align='lg' range=10 
+    desc='(Also known as the aurochs.)\nThis magnificent animal was the ancesor of modern-day\ndomestic cattle. It is much larger and stronger than any\ndomestic bull.' } ] monsterstock_set
+
+[ 'Megatherium americanum'
+  Monster{
+    skin=Skin{ char='Q' color='light_amber' } name='Megatherium americanum' branch='a' level=3 count=6 
+    attack=0.5 defence=3.5 psyattack=0f flavor='animal' moon=(full_moon->MoonDistrib) pointsfac=1f 
+    no_a=true slow=true pointscontrib=1 align='lg' large=true 
+    range=5 
+    desc='A gigantic ground sloth from the Pliocene period.\nIt was one of the largest land animals to ever live,\nlarger than the modern-day African elephant.' } ] monsterstock_set
+
+[ 'nosf_a3'
+  Monster{
+    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='a' level=3 count=1 
+    attack=7f defence=7f psyattack=0f flavor='air' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    pointsfac=1f no_a=true range=25 bloodsucker=TimedEffect{damage=0.25 timeout=50} 
+    desc='A bloodsucking walking corpse.' } ] monsterstock_set
+
+[ 'ba3'
+  Monster{
+    skin=Skin{ char='0' color='gray' } name='boulder' branch='a' level=3 count=8 
+    attack=0.5 defence=0.5 psyattack=0f confimmune=true no_exting=true inanimate=true 
+    pointsfac=1f boulder=true range=11 radimmune=true poisimmune=true 
+    
+    desc='A gigantic rock of spherical shape.' } ] monsterstock_set
+
+[ 'luna_a3'
+  Monster{
+    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='a' level=3 count=1 
+    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6 timeout=12} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
+    no_exting=true pointsfac=1f 
+    desc='Strange, selenic emanations have driven this poor soul\nto eternally walk the moon-lit dungeon, whispering softly\nto the pale, round face of the Moon.' } ] monsterstock_set
+
+[ 'lyca_a3'
+  Monster{
+    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='a' level=3 count=1 
+    attack=4f defence=1.5 psyattack=0f moon=(full_moon_only->MoonDistrib) no_exting=true fast=true 
+    pointsfac=1f range=20 heatseeking=true 
+    desc='Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.' } ] monsterstock_set
+
+[ 'priest_a3'
+  Monster{
+    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='a' level=3 count=1 
+    attack=2f defence=1f psyattack=0f flavor='wizard' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    raise_dead=NumEffect{num=15 timeout=2} pointsfac=1f fleerange=5 range=25 
+    desc='A depraved worshipper of Ba\'al-Zebub, the unclean undead god.' } ] monsterstock_set
+
+[ 'Crocodylus porosus'
+  Monster{
+    skin=Skin{ char='R' color='green' } name='Crocodylus porosus' branch='a' level=4 count=7 
+    attack=5f defence=3f psyattack=0f flavor='snake' moon=(new_moon->MoonDistrib) pointsfac=1f 
+    no_a=true slow=true pointscontrib=1 align='ne' range=9 
+    heatseeking=true 
+    desc='(Also known as the saltwater crocodile.)\nThe largest of all living reptiles.' } ] monsterstock_set
+
+[ 'nosf_a4'
+  Monster{
+    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='a' level=4 count=1 
+    attack=7f defence=7f psyattack=0f flavor='air' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    pointsfac=1f no_a=true range=25 bloodsucker=TimedEffect{damage=0.25 timeout=50} 
+    desc='A bloodsucking walking corpse.' } ] monsterstock_set
+
+[ 'Varanus komodoensis'
+  Monster{
+    skin=Skin{ char='R' color='gray' } name='Varanus komodoensis' branch='a' level=4 count=7 
+    attack=2f defence=2f psyattack=0f flavor='snake' moon=(new_moon->MoonDistrib) pointsfac=1f 
+    no_a=true pointscontrib=1 align='ne' range=9 
+    desc='(Also known as the Komodo dragon.)\nNot as large as a crocodile, this truly huge\nlizard is still a fearsome opponent.' } ] monsterstock_set
+
+[ 'ba4'
+  Monster{
+    skin=Skin{ char='0' color='gray' } name='boulder' branch='a' level=4 count=8 
+    attack=0.5 defence=0.5 psyattack=0f confimmune=true no_exting=true inanimate=true 
+    pointsfac=1f boulder=true range=11 radimmune=true poisimmune=true 
+    
+    desc='A gigantic rock of spherical shape.' } ] monsterstock_set
+
+[ 'luna_a4'
+  Monster{
+    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='a' level=4 count=1 
+    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6 timeout=12} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
+    no_exting=true pointsfac=1f 
+    desc='Strange, selenic emanations have driven this poor soul\nto eternally walk the moon-lit dungeon, whispering softly\nto the pale, round face of the Moon.' } ] monsterstock_set
+
+[ 'lyca_a4'
+  Monster{
+    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='a' level=4 count=1 
+    attack=4f defence=1.5 psyattack=0f moon=(full_moon_only->MoonDistrib) no_exting=true fast=true 
+    pointsfac=1f range=20 heatseeking=true 
+    desc='Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.' } ] monsterstock_set
+
+[ 'ufo_a4'
+  Monster{
+    skin=Skin{ char='a' color='dark_lime' } name='rigellian' branch='a' level=4 count=1 
+    attack=7f defence=22f psyattack=0f blink_away=5 confimmune=true moon=(quarter_moon_only->MoonDistrib) 
+    no_exting=true explodeimmune=true flying=true pointsfac=5f itemdrop='deathray' pointscontrib=1 
+    fleerange=8 fireimmune=true range=25 radimmune=true poisimmune=true 
+    
+    desc='An evil alien overlord.\nHe studies humanity and plots plans of world domination.\nHe might also be the one responsible for abductions of\nimmocents civilians and cattle.' } ] monsterstock_set
+
+[ 'priest_a4'
+  Monster{
+    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='a' level=4 count=1 
+    attack=2f defence=1f psyattack=0f flavor='wizard' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    raise_dead=NumEffect{num=15 timeout=2} pointsfac=1f fleerange=5 range=25 
+    desc='A depraved worshipper of Ba\'al-Zebub, the unclean undead god.' } ] monsterstock_set
+
+[ 'Colossochelys atlas'
+  Monster{
+    skin=Skin{ char='O' color='darkest_green' } name='Colossochelys atlas' branch='a' level=5 count=4 
+    attack=1f defence=24f psyattack=0f confimmune=true flavor='giant' explodeimmune=true 
+    moon=(full_moon->MoonDistrib) pointsfac=1f no_a=true slow=true pointscontrib=1 align='ng' 
+    large=true range=10 
+    desc='The largest land turtle, ever.\nFound in the Pleistoce perood, it is the size and weight\nof your average SUV vehicle.' } ] monsterstock_set
+
+[ 'Gigantophis garstini'
+  Monster{
+    skin=Skin{ char='S' color='green' } name='Gigantophis garstini' branch='a' level=5 count=9 
+    attack=4f defence=1f psyattack=0f confimmune=true flavor='snake' moon=(new_moon->MoonDistrib) 
+    pointsfac=1f no_a=true pointscontrib=1 align='ln' range=20 
+    heatseeking=true 
+    desc='One of the largest snakes known, it is an almost\n10 meter long ancient relative of the modern boa constrictor.' } ] monsterstock_set
+
+[ 'nosf_a5'
+  Monster{
+    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='a' level=5 count=1 
+    attack=7f defence=7f psyattack=0f flavor='air' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    pointsfac=1f no_a=true range=25 bloodsucker=TimedEffect{damage=0.25 timeout=50} 
+    desc='A bloodsucking walking corpse.' } ] monsterstock_set
+
+[ 'ba5'
+  Monster{
+    skin=Skin{ char='0' color='gray' } name='boulder' branch='a' level=5 count=5 
+    attack=0.5 defence=0.5 psyattack=0f confimmune=true no_exting=true inanimate=true 
+    pointsfac=1f boulder=true range=11 radimmune=true poisimmune=true 
+    
+    desc='A gigantic rock of spherical shape.' } ] monsterstock_set
+
+[ 'luna_a5'
+  Monster{
+    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='a' level=5 count=1 
+    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6 timeout=12} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
+    no_exting=true pointsfac=1f 
+    desc='Strange, selenic emanations have driven this poor soul\nto eternally walk the moon-lit dungeon, whispering softly\nto the pale, round face of the Moon.' } ] monsterstock_set
+
+[ 'lyca_a5'
+  Monster{
+    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='a' level=5 count=1 
+    attack=4f defence=1.5 psyattack=0f moon=(full_moon_only->MoonDistrib) no_exting=true fast=true 
+    pointsfac=1f range=20 heatseeking=true 
+    desc='Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.' } ] monsterstock_set
+
+[ 'priest_a5'
+  Monster{
+    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='a' level=5 count=1 
+    attack=2f defence=1f psyattack=0f flavor='wizard' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    raise_dead=NumEffect{num=15 timeout=2} pointsfac=1f fleerange=5 range=25 
+    desc='A depraved worshipper of Ba\'al-Zebub, the unclean undead god.' } ] monsterstock_set
+
+[ 'Arctotherium bonariense'
+  Monster{
+    skin=Skin{ char='Q' color='dark_sepia' } name='Arctotherium bonariense' branch='a' level=6 count=3 
+    attack=10f defence=2f psyattack=0f flavor='carnivore' moon=(full_moon->MoonDistrib) pointsfac=1f 
+    no_a=true pointscontrib=1 align='le' large=true range=10 
+    
+    desc='The most fearsome mammal to have ever lived, this bear\nlived during the Pleistocene epoch.\nIt is more than twice the size of the modern-day grizzly bear.' } ] monsterstock_set
+
+[ 'Glyptodon perforatus'
+  Monster{
+    skin=Skin{ char='o' color='brass' } name='Glyptodon perforatus' branch='a' level=6 count=7 
+    attack=0.2 defence=20f psyattack=0f flavor='giant' explodeimmune=true moon=(full_moon->MoonDistrib) 
+    pointsfac=1f no_a=true pointscontrib=1 align='ng' large=true 
+    range=7 heatseeking=true 
+    desc='A relative of the armadillo from the Pleistocene epoch.\nUnlike the modern armadillos, this armored monstrocity is\nthe size and weight of a car.' } ] monsterstock_set
+
+[ 'nosf_a6'
+  Monster{
+    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='a' level=6 count=1 
+    attack=7f defence=7f psyattack=0f flavor='air' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    pointsfac=1f no_a=true range=25 bloodsucker=TimedEffect{damage=0.25 timeout=50} 
+    desc='A bloodsucking walking corpse.' } ] monsterstock_set
+
+[ 'ba6'
+  Monster{
+    skin=Skin{ char='0' color='gray' } name='boulder' branch='a' level=6 count=4 
+    attack=0.5 defence=0.5 psyattack=0f confimmune=true no_exting=true inanimate=true 
+    pointsfac=1f boulder=true range=11 radimmune=true poisimmune=true 
+    
+    desc='A gigantic rock of spherical shape.' } ] monsterstock_set
+
+[ 'luna_a6'
+  Monster{
+    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='a' level=6 count=1 
+    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6 timeout=12} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
+    no_exting=true pointsfac=1f 
+    desc='Strange, selenic emanations have driven this poor soul\nto eternally walk the moon-lit dungeon, whispering softly\nto the pale, round face of the Moon.' } ] monsterstock_set
+
+[ 'lyca_a6'
+  Monster{
+    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='a' level=6 count=1 
+    attack=4f defence=1.5 psyattack=0f moon=(full_moon_only->MoonDistrib) no_exting=true fast=true 
+    pointsfac=1f range=20 heatseeking=true 
+    desc='Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.' } ] monsterstock_set
+
+[ 'ufo_a6'
+  Monster{
+    skin=Skin{ char='a' color='dark_lime' } name='rigellian' branch='a' level=6 count=1 
+    attack=7f defence=22f psyattack=0.25 blink_away=5 confimmune=true psyrange=3 
+    moon=(quarter_moon_only->MoonDistrib) no_exting=true explodeimmune=true flying=true pointsfac=5f itemdrop='deathray' 
+    pointscontrib=1 fleerange=8 fireimmune=true range=25 radimmune=true 
+    poisimmune=true 
+    desc='An evil alien overlord.\nHe studies humanity and plots plans of world domination.\nHe might also be the one responsible for abductions of\nimmocents civilians and cattle.' } ] monsterstock_set
+
+[ 'priest_a6'
+  Monster{
+    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='a' level=6 count=1 
+    attack=2f defence=1f psyattack=0f flavor='wizard' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    raise_dead=NumEffect{num=15 timeout=2} pointsfac=1f fleerange=5 range=25 
+    desc='A depraved worshipper of Ba\'al-Zebub, the unclean undead god.' } ] monsterstock_set
+
+[ 'Hippopotamus gorgops'
+  Monster{
+    skin=Skin{ char='Q' color='light_azure' } name='Hippopotamus gorgops' branch='a' level=7 count=5 
+    attack=8f defence=2f psyattack=0f flavor='animal' moon=(full_moon->MoonDistrib) pointsfac=1f 
+    no_a=true pointscontrib=1 align='ng' large=true range=4 
+    
+    desc='This hippo from the Miocene period was much, much larger than\nits modern-day living relatives.' } ] monsterstock_set
+
+[ 'nosf_a7'
+  Monster{
+    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='a' level=7 count=1 
+    attack=7f defence=7f psyattack=0f flavor='air' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    pointsfac=1f no_a=true range=25 bloodsucker=TimedEffect{damage=0.25 timeout=50} 
+    desc='A bloodsucking walking corpse.' } ] monsterstock_set
+
+[ 'Pteranodon longiceps'
+  Monster{
+    skin=Skin{ char='B' color='lightest_lime' } name='Pteranodon longiceps' branch='a' level=7 count=8 
+    attack=3f defence=4f psyattack=0f flavor='flying' moon=(new_moon->MoonDistrib) pointsfac=1f 
+    no_a=true pointscontrib=1 align='le' large=true range=10 
+    
+    desc='A flying reptile that had a wingspan of over 6 meters!\nIt was a very common animal during the Cretaceous period.' } ] monsterstock_set
+
+[ 'ba7'
+  Monster{
+    skin=Skin{ char='0' color='gray' } name='boulder' branch='a' level=7 count=3 
+    attack=0.5 defence=0.5 psyattack=0f confimmune=true no_exting=true inanimate=true 
+    pointsfac=1f boulder=true range=11 radimmune=true poisimmune=true 
+    
+    desc='A gigantic rock of spherical shape.' } ] monsterstock_set
+
+[ 'luna_a7'
+  Monster{
+    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='a' level=7 count=1 
+    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6 timeout=12} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
+    no_exting=true pointsfac=1f 
+    desc='Strange, selenic emanations have driven this poor soul\nto eternally walk the moon-lit dungeon, whispering softly\nto the pale, round face of the Moon.' } ] monsterstock_set
+
+[ 'lyca_a7'
+  Monster{
+    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='a' level=7 count=1 
+    attack=4f defence=1.5 psyattack=0f moon=(full_moon_only->MoonDistrib) no_exting=true fast=true 
+    pointsfac=1f range=20 heatseeking=true 
+    desc='Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.' } ] monsterstock_set
+
+[ 'priest_a7'
+  Monster{
+    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='a' level=7 count=1 
+    attack=2f defence=1f psyattack=0f flavor='wizard' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    raise_dead=NumEffect{num=15 timeout=2} pointsfac=1f fleerange=5 range=25 
+    desc='A depraved worshipper of Ba\'al-Zebub, the unclean undead god.' } ] monsterstock_set
+
+[ 'nosf_a8'
+  Monster{
+    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='a' level=8 count=1 
+    attack=7f defence=7f psyattack=0f flavor='air' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    pointsfac=1f no_a=true range=25 bloodsucker=TimedEffect{damage=0.25 timeout=50} 
+    desc='A bloodsucking walking corpse.' } ] monsterstock_set
+
+[ 'Titanoceratops ouranos'
+  Monster{
+    skin=Skin{ char='D' color='sepia' } name='Titanoceratops ouranos' branch='a' level=8 count=8 
+    attack=11f defence=4f psyattack=0f flavor='giant' moon=(full_moon->MoonDistrib) pointsfac=1f 
+    no_a=true pointscontrib=1 align='cn' large=true range=3 
+    
+    desc='The largest of many species of triceratops.\nYou recognize the familiar triceratops profile from\nnumerous film, cartoon and book descriptions of this\ndinosaur.' } ] monsterstock_set
+
+[ 'Velociraptor mongoliensis'
+  Monster{
+    skin=Skin{ char='d' color='yellow' } name='Velociraptor mongoliensis' branch='a' level=8 count=24 
+    attack=1.5 defence=1f psyattack=0f flavor='animal' pointsfac=1f no_a=true 
+    pointscontrib=1 align='ce' summon=Summon{mon='Velociraptor mongoliensis' timeout=4} range=20 
+    desc='A small theropod from the Cretaceous period.\nIt is about the size of a chicken and is covered with\nbright, feathery plumage. It has a relatively large, \ndangerous-looking beak.\nIt was also a vicious pack-hunting carnivore.' } ] monsterstock_set
+
+[ 'ba8'
+  Monster{
+    skin=Skin{ char='0' color='gray' } name='boulder' branch='a' level=8 count=2 
+    attack=0.5 defence=0.5 psyattack=0f confimmune=true no_exting=true inanimate=true 
+    pointsfac=1f boulder=true range=11 radimmune=true poisimmune=true 
+    
+    desc='A gigantic rock of spherical shape.' } ] monsterstock_set
+
+[ 'luna_a8'
+  Monster{
+    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='a' level=8 count=1 
+    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6 timeout=12} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
+    no_exting=true pointsfac=1f 
+    desc='Strange, selenic emanations have driven this poor soul\nto eternally walk the moon-lit dungeon, whispering softly\nto the pale, round face of the Moon.' } ] monsterstock_set
+
+[ 'lyca_a8'
+  Monster{
+    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='a' level=8 count=1 
+    attack=4f defence=1.5 psyattack=0f moon=(full_moon_only->MoonDistrib) no_exting=true fast=true 
+    pointsfac=1f range=20 heatseeking=true 
+    desc='Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.' } ] monsterstock_set
+
+[ 'ufo_a8'
+  Monster{
+    skin=Skin{ char='a' color='dark_lime' } name='rigellian' branch='a' level=8 count=1 
+    attack=7f defence=22f psyattack=0.25 blink_away=5 confimmune=true psyrange=5 
+    moon=(quarter_moon_only->MoonDistrib) no_exting=true explodeimmune=true flying=true pointsfac=5f itemdrop='deathray' 
+    pointscontrib=1 fleerange=8 fireimmune=true range=25 radimmune=true 
+    poisimmune=true 
+    desc='An evil alien overlord.\nHe studies humanity and plots plans of world domination.\nHe might also be the one responsible for abductions of\nimmocents civilians and cattle.' } ] monsterstock_set
+
+[ 'priest_a8'
+  Monster{
+    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='a' level=8 count=1 
+    attack=2f defence=1f psyattack=0f flavor='wizard' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    raise_dead=NumEffect{num=15 timeout=2} pointsfac=1f fleerange=5 range=25 
+    desc='A depraved worshipper of Ba\'al-Zebub, the unclean undead god.' } ] monsterstock_set
+
+[ 'Indricotherium transouralicum'
+  Monster{
+    skin=Skin{ char='Q' color='sepia' } name='Indricotherium transouralicum' branch='a' level=9 count=6 
+    attack=1f defence=6f psyattack=0f flavor='giant' moon=(full_moon->MoonDistrib) pointsfac=1f 
+    no_a=true pointscontrib=1 align='cg' large=true range=7 
+    
+    desc='Named after the mystical Indrik-Beast, this is the \nlargest land mammal ever to have lived!\nA relative of the rhinoceros, it looks like a ridiculously\nmuscled cross between wooly mammoth and a giraffe.\nIts long neck reaches to 8 meters in height, more than\na 3-story building!' } ] monsterstock_set
+
+[ 'Mammuthus primigenius'
+  Monster{
+    skin=Skin{ char='Q' color='darker_amber' } name='Mammuthus primigenius' branch='a' level=9 count=6 
+    attack=3f defence=4f psyattack=0f flavor='giant' moon=(new_moon->MoonDistrib) pointsfac=1f 
+    no_a=true pointscontrib=1 align='lg' large=true range=6 
+    
+    desc='Also known as the wooly mammoth.' } ] monsterstock_set
+
+[ 'nosf_a9'
+  Monster{
+    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='a' level=9 count=1 
+    attack=7f defence=7f psyattack=0f flavor='air' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    pointsfac=1f no_a=true range=25 bloodsucker=TimedEffect{damage=0.25 timeout=50} 
+    desc='A bloodsucking walking corpse.' } ] monsterstock_set
+
+[ 'luna_a9'
+  Monster{
+    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='a' level=9 count=1 
+    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6 timeout=12} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
+    no_exting=true pointsfac=1f 
+    desc='Strange, selenic emanations have driven this poor soul\nto eternally walk the moon-lit dungeon, whispering softly\nto the pale, round face of the Moon.' } ] monsterstock_set
+
+[ 'lyca_a9'
+  Monster{
+    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='a' level=9 count=1 
+    attack=4f defence=1.5 psyattack=0f moon=(full_moon_only->MoonDistrib) no_exting=true fast=true 
+    pointsfac=1f range=20 heatseeking=true 
+    desc='Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.' } ] monsterstock_set
+
+[ 'priest_a9'
+  Monster{
+    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='a' level=9 count=1 
+    attack=2f defence=1f psyattack=0f flavor='wizard' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    raise_dead=NumEffect{num=15 timeout=2} pointsfac=1f fleerange=5 range=25 
+    desc='A depraved worshipper of Ba\'al-Zebub, the unclean undead god.' } ] monsterstock_set
+
+[ 'Tyrannosaurus rex'
+  Monster{
+    skin=Skin{ char='D' color='light_lime' } name='Tyrannosaurus rex' branch='a' level=10 count=1 
+    attack=15f defence=15f psyattack=0f confimmune=true flavor='carnivore' moon=(new_moon->MoonDistrib) 
+    pointsfac=1f no_a=true pointscontrib=1 align='ce' large=true 
+    range=20 
+    desc='The Tyrant Lizard King, in person. No introduction necessary.' } ] monsterstock_set
+
+[ 'ufo_a10'
+  Monster{
+    skin=Skin{ char='a' color='dark_lime' } name='rigellian' branch='a' level=10 count=1 
+    attack=7f defence=22f psyattack=0.25 blink_away=5 confimmune=true psyrange=6 
+    moon=(quarter_moon_only->MoonDistrib) no_exting=true explodeimmune=true flying=true pointsfac=5f itemdrop='deathray' 
+    pointscontrib=1 fleerange=8 fireimmune=true range=25 radimmune=true 
+    poisimmune=true 
+    desc='An evil alien overlord.\nHe studies humanity and plots plans of world domination.\nHe might also be the one responsible for abductions of\nimmocents civilians and cattle.' } ] monsterstock_set
+
+[ 'Sauroposeidon proteles'
+  Monster{
+    skin=Skin{ char='D' color='light_azure' } name='Sauroposeidon proteles' branch='a' level=11 count=1 
+    attack=1f defence=64f psyattack=0f confimmune=true flavor='earthshake' explodeimmune=true 
+    moon=(full_moon->MoonDistrib) pointsfac=1f no_a=true slow=true pointscontrib=1 align='cn' 
+    large=true range=10 radimmune=true 
+    desc='The Earthshaker-Lizard. A sauropod so truly, veritably huge that\nit might have indeed caused earthquakes merely by walking.\nAlso, the World\'s Largest Dinosaur.\nFor a creature so large, researchers have wondered how it survived\nwith its tiny brain.' } ] monsterstock_set
+
+[ 'chanterelle'
+  Monster{
+    skin=Skin{ char='x' color='orange' } name='chanterelle' branch='b' level=1 count=6 
+    attack=0f defence=0.3 psyattack=0f confimmune=true pointsfac=1f itemdrop='mushrooms' 
+    pointscontrib=1 range=1 
+    desc='It looks delicious.' } ] monsterstock_set
+
+[ 'gibbering maniac'
+  Monster{
+    skin=Skin{ char='h' color='gray' } name='gibbering maniac' branch='b' level=1 count=7 
+    attack=0.3 defence=0.1 psyattack=0f pointsfac=1f itemdrop='booze' pointscontrib=1 
+    range=3 
+    desc='Eldritch horrors have driven this poor wretch\nto the cusp of insanity.\nHe\'s probably an alumnus of Miskatonic University.' } ] monsterstock_set
+
+[ 'nosf_b2'
+  Monster{
+    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='b' level=2 count=1 
+    attack=7f defence=7f psyattack=0f flavor='air' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    pointsfac=1f no_a=true range=25 bloodsucker=TimedEffect{damage=0.25 timeout=50} 
+    desc='A bloodsucking walking corpse.' } ] monsterstock_set
+
+[ 'brownie'
+  Monster{
+    skin=Skin{ char='h' color='light_red' } name='brownie' branch='b' level=2 count=4 
+    attack=1.5 defence=0.2 psyattack=0f flavor='faerie' moon=(full_moon->MoonDistrib) pointsfac=1f 
+    pointscontrib=1 align='lg' range=8 
+    desc='Once a friendly house spirit, this small fey humanoid\nhas been driven to hate humanity after years of neglect\nand abuse by its master.' } ] monsterstock_set
+
+[ 'luna_b2'
+  Monster{
+    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='b' level=2 count=1 
+    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6 timeout=12} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
+    no_exting=true pointsfac=1f 
+    desc='Strange, selenic emanations have driven this poor soul\nto eternally walk the moon-lit dungeon, whispering softly\nto the pale, round face of the Moon.' } ] monsterstock_set
+
+[ 'lyca_b2'
+  Monster{
+    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='b' level=2 count=1 
+    attack=4f defence=1.5 psyattack=0f moon=(full_moon_only->MoonDistrib) no_exting=true fast=true 
+    pointsfac=1f range=20 heatseeking=true 
+    desc='Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.' } ] monsterstock_set
+
+[ 'pixie'
+  Monster{
+    skin=Skin{ char='h' color='green' } name='pixie' branch='b' level=2 count=4 
+    attack=1f defence=0.7 psyattack=0f flavor='faerie' moon=(full_moon->MoonDistrib) pointsfac=1f 
+    pointscontrib=1 align='lg' range=6 
+    desc='A magical creature that has been driven underground\nby human pollution and habitat loss.' } ] monsterstock_set
+
+[ 'ufo_b2'
+  Monster{
+    skin=Skin{ char='a' color='dark_lime' } name='rigellian' branch='b' level=2 count=1 
+    attack=7f defence=22f psyattack=0f blink_away=5 confimmune=true moon=(quarter_moon_only->MoonDistrib) 
+    no_exting=true explodeimmune=true flying=true pointsfac=5f itemdrop='deathray' pointscontrib=1 
+    fleerange=8 fireimmune=true range=25 radimmune=true poisimmune=true 
+    
+    desc='An evil alien overlord.\nHe studies humanity and plots plans of world domination.\nHe might also be the one responsible for abductions of\nimmocents civilians and cattle.' } ] monsterstock_set
+
+[ 'sprite'
+  Monster{
+    skin=Skin{ char='f' color='light_lime' } name='sprite' branch='b' level=2 count=3 
+    attack=0.5 defence=0.9 psyattack=0f flavor='faerie' moon=(new_moon->MoonDistrib) pointsfac=1f 
+    pointscontrib=1 align='le' range=8 poisimmune=true 
+    desc='A ghost of a dead faerie.' } ] monsterstock_set
+
+[ 'priest_b2'
+  Monster{
+    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='b' level=2 count=1 
+    attack=2f defence=1f psyattack=0f flavor='wizard' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    raise_dead=NumEffect{num=15 timeout=2} pointsfac=1f fleerange=5 range=25 
+    desc='A depraved worshipper of Ba\'al-Zebub, the unclean undead god.' } ] monsterstock_set
+
+[ 'nosf_b3'
+  Monster{
+    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='b' level=3 count=1 
+    attack=7f defence=7f psyattack=0f flavor='air' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    pointsfac=1f no_a=true range=25 bloodsucker=TimedEffect{damage=0.25 timeout=50} 
+    desc='A bloodsucking walking corpse.' } ] monsterstock_set
+
+[ 'ghost'
+  Monster{
+    skin=Skin{ char='h' color='dark_grey' } name='ghost' branch='b' level=3 count=3 
+    attack=0.5 defence=2.5 psyattack=0f fireimmune=true flavor='air' moon=(new_moon->MoonDistrib) 
+    pointsfac=1f pointscontrib=1 hungerattack=true range=7 poisimmune=true 
+    
+    desc='A spirit of an adventurer that perished in these\nterrible and wondorous caves.\nIts eyes are glowing with a malignant hunger.' } ] monsterstock_set
+
+[ 'luna_b3'
+  Monster{
+    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='b' level=3 count=1 
+    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6 timeout=12} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
+    no_exting=true pointsfac=1f 
+    desc='Strange, selenic emanations have driven this poor soul\nto eternally walk the moon-lit dungeon, whispering softly\nto the pale, round face of the Moon.' } ] monsterstock_set
+
+[ 'lyca_b3'
+  Monster{
+    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='b' level=3 count=1 
+    attack=4f defence=1.5 psyattack=0f moon=(full_moon_only->MoonDistrib) no_exting=true fast=true 
+    pointsfac=1f range=20 heatseeking=true 
+    desc='Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.' } ] monsterstock_set
+
+[ 'bc1'
+  Monster{
+    skin=Skin{ char='0' color='red' } name='mountain of meat' branch='b' level=3 count=2 
+    attack=0.5 defence=0.5 psyattack=0f confimmune=true no_exting=true inanimate=true 
+    pointsfac=1f boulder=true range=11 radimmune=true poisimmune=true 
+    
+    desc='A mountain of quivering, perverse, vomitous flesh.' } ] monsterstock_set
+
+[ 'nematode'
+  Monster{
+    skin=Skin{ char='w' color='yellow' } name='nematode' branch='b' level=3 count=5 
+    attack=0f defence=0.1 psyattack=2f psyrange=4 flavor='snake' moon=(new_moon->MoonDistrib) 
+    pointsfac=1f pointscontrib=1 align='ce' range=30 
+    desc='A gigantic (5 meter long) yellow worm.\nIt has no visible eyes, but instead has a \ngiant, bulging, pulsating brain.' } ] monsterstock_set
+
+[ 'shoggoth'
+  Monster{
+    skin=Skin{ char='x' color='dark_sepia' } name='shoggoth' branch='b' level=3 count=3 
+    attack=0.7 defence=0.6 psyattack=0.5 psyrange=3 flavor='weird' moon=(new_moon->MoonDistrib) 
+    pointsfac=1f pointscontrib=1 align='cn' range=5 
+    desc='A creature of a terrible servant race created by the\nElder Things. A shapeless congeries of protoplasmic\nbubbles, faintly self-luminous.' } ] monsterstock_set
+
+[ 'priest_b3'
+  Monster{
+    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='b' level=3 count=1 
+    attack=2f defence=1f psyattack=0f flavor='wizard' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    raise_dead=NumEffect{num=15 timeout=2} pointsfac=1f fleerange=5 range=25 
+    desc='A depraved worshipper of Ba\'al-Zebub, the unclean undead god.' } ] monsterstock_set
+
+[ 'nosf_b4'
+  Monster{
+    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='b' level=4 count=1 
+    attack=7f defence=7f psyattack=0f flavor='air' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    pointsfac=1f no_a=true range=25 bloodsucker=TimedEffect{damage=0.25 timeout=50} 
+    desc='A bloodsucking walking corpse.' } ] monsterstock_set
+
+[ 'luna_b4'
+  Monster{
+    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='b' level=4 count=1 
+    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6 timeout=12} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
+    no_exting=true pointsfac=1f 
+    desc='Strange, selenic emanations have driven this poor soul\nto eternally walk the moon-lit dungeon, whispering softly\nto the pale, round face of the Moon.' } ] monsterstock_set
+
+[ 'lyca_b4'
+  Monster{
+    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='b' level=4 count=1 
+    attack=4f defence=1.5 psyattack=0f moon=(full_moon_only->MoonDistrib) no_exting=true fast=true 
+    pointsfac=1f range=20 heatseeking=true 
+    desc='Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.' } ] monsterstock_set
+
+[ 'bc2'
+  Monster{
+    skin=Skin{ char='0' color='red' } name='mountain of meat' branch='b' level=4 count=4 
+    attack=0.5 defence=0.5 psyattack=0f confimmune=true no_exting=true inanimate=true 
+    pointsfac=1f boulder=true range=11 radimmune=true poisimmune=true 
+    
+    desc='A mountain of quivering, perverse, vomitous flesh.' } ] monsterstock_set
+
+[ 'ufo_b4'
+  Monster{
+    skin=Skin{ char='a' color='dark_lime' } name='rigellian' branch='b' level=4 count=1 
+    attack=7f defence=22f psyattack=0f blink_away=5 confimmune=true moon=(quarter_moon_only->MoonDistrib) 
+    no_exting=true explodeimmune=true flying=true pointsfac=5f itemdrop='deathray' pointscontrib=1 
+    fleerange=8 fireimmune=true range=25 radimmune=true poisimmune=true 
+    
+    desc='An evil alien overlord.\nHe studies humanity and plots plans of world domination.\nHe might also be the one responsible for abductions of\nimmocents civilians and cattle.' } ] monsterstock_set
+
+[ 'satyr'
+  Monster{
+    skin=Skin{ char='h' color='light_sepia' } name='satyr' branch='b' level=4 count=4 
+    attack=7f defence=0.01 psyattack=0f flavor='weird' moon=(full_moon->MoonDistrib) pointsfac=1f 
+    pointscontrib=1 align='ce' range=5 
+    desc='A savage worshipper of the Mad God Dionysus.\nHe is completely naked and gibbering wildly.' } ] monsterstock_set
+
+[ 'sylphid'
+  Monster{
+    skin=Skin{ char='f' color='light_blue' } name='sylphid' branch='b' level=4 count=4 
+    attack=1.4 defence=1.4 psyattack=0.1 psyrange=10 flavor='air' moon=(full_moon->MoonDistrib) 
+    pointsfac=1f pointscontrib=1 align='ln' range=4 
+    desc='An air elemental. It takes the form of a beautiful\nyoung woman.' } ] monsterstock_set
+
+[ 'priest_b4'
+  Monster{
+    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='b' level=4 count=1 
+    attack=2f defence=1f psyattack=0f flavor='wizard' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    raise_dead=NumEffect{num=15 timeout=2} pointsfac=1f fleerange=5 range=25 
+    desc='A depraved worshipper of Ba\'al-Zebub, the unclean undead god.' } ] monsterstock_set
+
+[ 'nosf_b5'
+  Monster{
+    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='b' level=5 count=1 
+    attack=7f defence=7f psyattack=0f flavor='air' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    pointsfac=1f no_a=true range=25 bloodsucker=TimedEffect{damage=0.25 timeout=50} 
+    desc='A bloodsucking walking corpse.' } ] monsterstock_set
+
+[ 'chthonian'
+  Monster{
+    skin=Skin{ char='W' color='dark_blue' } name='chthonian' branch='b' level=5 count=4 
+    attack=4f defence=1f psyattack=2f straightline=true psyrange=2 flavor='weird' 
+    stoneeating=true moon=(new_moon->MoonDistrib) pointsfac=1f pointscontrib=1 align='ne' 
+    range=8 
+    desc='An immense squid-like creature that burrows in the\ndark, loathsome depths of the Earth\'s crust.\nIt is covered in slime and is accompanied by a faint\nchanting sound.' } ] monsterstock_set
+
+[ 'gnophkeh'
+  Monster{
+    skin=Skin{ char='h' color='gray' } name='gnophkeh' branch='b' level=5 count=4 
+    attack=7f defence=1f psyattack=0f flavor='weird' moon=(new_moon->MoonDistrib) pointsfac=1f 
+    pointscontrib=1 align='le' range=18 
+    desc='A member of a race of disgusting, hairy cannibal humanoids.' } ] monsterstock_set
+
+[ 'luna_b5'
+  Monster{
+    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='b' level=5 count=1 
+    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6 timeout=12} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
+    no_exting=true pointsfac=1f 
+    desc='Strange, selenic emanations have driven this poor soul\nto eternally walk the moon-lit dungeon, whispering softly\nto the pale, round face of the Moon.' } ] monsterstock_set
+
+[ 'lyca_b5'
+  Monster{
+    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='b' level=5 count=1 
+    attack=4f defence=1.5 psyattack=0f moon=(full_moon_only->MoonDistrib) no_exting=true fast=true 
+    pointsfac=1f range=20 heatseeking=true 
+    desc='Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.' } ] monsterstock_set
+
+[ 'bc3'
+  Monster{
+    skin=Skin{ char='0' color='red' } name='mountain of meat' branch='b' level=5 count=12 
+    attack=0.5 defence=0.5 psyattack=0f confimmune=true no_exting=true inanimate=true 
+    pointsfac=1f boulder=true range=11 radimmune=true poisimmune=true 
+    
+    desc='A mountain of quivering, perverse, vomitous flesh.' } ] monsterstock_set
+
+[ 'priest_b5'
+  Monster{
+    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='b' level=5 count=1 
+    attack=2f defence=1f psyattack=0f flavor='wizard' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    raise_dead=NumEffect{num=15 timeout=2} pointsfac=1f fleerange=5 range=25 
+    desc='A depraved worshipper of Ba\'al-Zebub, the unclean undead god.' } ] monsterstock_set
+
+[ 'nosf_b6'
+  Monster{
+    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='b' level=6 count=1 
+    attack=7f defence=7f psyattack=0f flavor='air' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    pointsfac=1f no_a=true range=25 bloodsucker=TimedEffect{damage=0.25 timeout=50} 
+    desc='A bloodsucking walking corpse.' } ] monsterstock_set
+
+[ 'aelf'
+  Monster{
+    skin=Skin{ char='f' color='green' } name='aelf' branch='b' level=6 count=5 
+    attack=3f defence=2f psyattack=0f fireimmune=true confimmune=true flavor='faerie' 
+    flying=true moon=(full_moon->MoonDistrib) pointsfac=1f pointscontrib=1 align='ln' 
+    range=20 
+    desc='A faery creature from the elemental plane of Aelfrice.' } ] monsterstock_set
+
+[ 'luna_b6'
+  Monster{
+    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='b' level=6 count=1 
+    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6 timeout=12} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
+    no_exting=true pointsfac=1f 
+    desc='Strange, selenic emanations have driven this poor soul\nto eternally walk the moon-lit dungeon, whispering softly\nto the pale, round face of the Moon.' } ] monsterstock_set
+
+[ 'lyca_b6'
+  Monster{
+    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='b' level=6 count=1 
+    attack=4f defence=1.5 psyattack=0f moon=(full_moon_only->MoonDistrib) no_exting=true fast=true 
+    pointsfac=1f range=20 heatseeking=true 
+    desc='Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.' } ] monsterstock_set
+
+[ 'bc4'
+  Monster{
+    skin=Skin{ char='0' color='red' } name='mountain of meat' branch='b' level=6 count=4 
+    attack=0.5 defence=0.5 psyattack=0f confimmune=true no_exting=true inanimate=true 
+    pointsfac=1f boulder=true range=11 radimmune=true poisimmune=true 
+    
+    desc='A mountain of quivering, perverse, vomitous flesh.' } ] monsterstock_set
+
+[ 'ufo_b6'
+  Monster{
+    skin=Skin{ char='a' color='dark_lime' } name='rigellian' branch='b' level=6 count=1 
+    attack=7f defence=22f psyattack=0.25 blink_away=5 confimmune=true psyrange=3 
+    moon=(quarter_moon_only->MoonDistrib) no_exting=true explodeimmune=true flying=true pointsfac=5f itemdrop='deathray' 
+    pointscontrib=1 fleerange=8 fireimmune=true range=25 radimmune=true 
+    poisimmune=true 
+    desc='An evil alien overlord.\nHe studies humanity and plots plans of world domination.\nHe might also be the one responsible for abductions of\nimmocents civilians and cattle.' } ] monsterstock_set
+
+[ 'sleep faerie'
+  Monster{
+    skin=Skin{ char='f' color='light_pink' } name='sleep faerie' branch='b' level=6 count=5 
+    attack=1f defence=1f psyattack=0f flavor='faerie' flying=true moon=(full_moon->MoonDistrib) 
+    sleepattack=true pointsfac=1f pointscontrib=1 align='ng' range=9 
+    
+    desc='A tiny fay creature dressed in pink ballet clothes.\nIt looks adorable.' } ] monsterstock_set
+
+[ 'priest_b6'
+  Monster{
+    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='b' level=6 count=1 
+    attack=2f defence=1f psyattack=0f flavor='wizard' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    raise_dead=NumEffect{num=15 timeout=2} pointsfac=1f fleerange=5 range=25 
+    desc='A depraved worshipper of Ba\'al-Zebub, the unclean undead god.' } ] monsterstock_set
+
+[ 'nosf_b7'
+  Monster{
+    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='b' level=7 count=1 
+    attack=7f defence=7f psyattack=0f flavor='air' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    pointsfac=1f no_a=true range=25 bloodsucker=TimedEffect{damage=0.25 timeout=50} 
+    desc='A bloodsucking walking corpse.' } ] monsterstock_set
+
+[ 'black knight'
+  Monster{
+    skin=Skin{ char='k' color='darker_grey' } name='black knight' branch='b' level=7 count=6 
+    attack=6f defence=4.5 psyattack=0f flavor='humanwarrior' moon=(new_moon->MoonDistrib) pointsfac=1f 
+    pointscontrib=1 align='cn' range=8 
+    desc='An evil humanoid in black cast-iron armor.\nHe is armed with a longsword.' } ] monsterstock_set
+
+[ 'leipreachan'
+  Monster{
+    skin=Skin{ char='f' color='azure' } name='leipreachan' branch='b' level=7 count=5 
+    attack=2.5 defence=1.5 psyattack=0f flavor='faerie' moon=(full_moon->MoonDistrib) pointsfac=1f 
+    pointscontrib=1 hungerattack=true align='ng' range=9 
+    desc='A fay creature in the form of a dirty, lecherous old man.' } ] monsterstock_set
+
+[ 'luna_b7'
+  Monster{
+    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='b' level=7 count=1 
+    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6 timeout=12} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
+    no_exting=true pointsfac=1f 
+    desc='Strange, selenic emanations have driven this poor soul\nto eternally walk the moon-lit dungeon, whispering softly\nto the pale, round face of the Moon.' } ] monsterstock_set
+
+[ 'lyca_b7'
+  Monster{
+    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='b' level=7 count=1 
+    attack=4f defence=1.5 psyattack=0f moon=(full_moon_only->MoonDistrib) no_exting=true fast=true 
+    pointsfac=1f range=20 heatseeking=true 
+    desc='Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.' } ] monsterstock_set
+
+[ 'bc5'
+  Monster{
+    skin=Skin{ char='0' color='red' } name='mountain of meat' branch='b' level=7 count=2 
+    attack=0.5 defence=0.5 psyattack=0f confimmune=true no_exting=true inanimate=true 
+    pointsfac=1f boulder=true range=11 radimmune=true poisimmune=true 
+    
+    desc='A mountain of quivering, perverse, vomitous flesh.' } ] monsterstock_set
+
+[ 'priest_b7'
+  Monster{
+    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='b' level=7 count=1 
+    attack=2f defence=1f psyattack=0f flavor='wizard' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    raise_dead=NumEffect{num=15 timeout=2} pointsfac=1f fleerange=5 range=25 
+    desc='A depraved worshipper of Ba\'al-Zebub, the unclean undead god.' } ] monsterstock_set
+
+[ 'nosf_b8'
+  Monster{
+    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='b' level=8 count=1 
+    attack=7f defence=7f psyattack=0f flavor='air' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    pointsfac=1f no_a=true range=25 bloodsucker=TimedEffect{damage=0.25 timeout=50} 
+    desc='A bloodsucking walking corpse.' } ] monsterstock_set
+
+[ 'frost giant'
+  Monster{
+    skin=Skin{ char='k' color='lighter_sky' } name='frost giant' branch='b' level=8 count=5 
+    attack=6f defence=4.5 psyattack=0f flavor='giant' moon=(full_moon->MoonDistrib) pointsfac=1f 
+    pointscontrib=1 align='ne' large=true range=8 
+    desc='A humanoid about twice the size of a human.\nHe is an evil, emotionless immigrant from the dark\nplanes of Jotunheim.' } ] monsterstock_set
+
+[ 'luna_b8'
+  Monster{
+    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='b' level=8 count=1 
+    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6 timeout=12} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
+    no_exting=true pointsfac=1f 
+    desc='Strange, selenic emanations have driven this poor soul\nto eternally walk the moon-lit dungeon, whispering softly\nto the pale, round face of the Moon.' } ] monsterstock_set
+
+[ 'lyca_b8'
+  Monster{
+    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='b' level=8 count=1 
+    attack=4f defence=1.5 psyattack=0f moon=(full_moon_only->MoonDistrib) no_exting=true fast=true 
+    pointsfac=1f range=20 heatseeking=true 
+    desc='Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.' } ] monsterstock_set
+
+[ 'ufo_b8'
+  Monster{
+    skin=Skin{ char='a' color='dark_lime' } name='rigellian' branch='b' level=8 count=1 
+    attack=7f defence=22f psyattack=0.25 blink_away=5 confimmune=true psyrange=5 
+    moon=(quarter_moon_only->MoonDistrib) no_exting=true explodeimmune=true flying=true pointsfac=5f itemdrop='deathray' 
+    pointscontrib=1 fleerange=8 fireimmune=true range=25 radimmune=true 
+    poisimmune=true 
+    desc='An evil alien overlord.\nHe studies humanity and plots plans of world domination.\nHe might also be the one responsible for abductions of\nimmocents civilians and cattle.' } ] monsterstock_set
+
+[ 'priest_b8'
+  Monster{
+    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='b' level=8 count=1 
+    attack=2f defence=1f psyattack=0f flavor='wizard' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    raise_dead=NumEffect{num=15 timeout=2} pointsfac=1f fleerange=5 range=25 
+    desc='A depraved worshipper of Ba\'al-Zebub, the unclean undead god.' } ] monsterstock_set
+
+[ 'Caliban'
+  Monster{
+    skin=Skin{ char='H' color='sea' } name='Caliban' branch='b' level=9 count=1 
+    attack=7f defence=7f psyattack=0f confimmune=true flavor='humanweird' moon=(full_moon->MoonDistrib) 
+    pointsfac=1f no_a=true pointscontrib=1 align='cg' range=10 
+    
+    desc='A deformed beast-man. Half-devil on his father\'s side,he is a resentful slave of Prospero.' } ] monsterstock_set
+
+[ 'nosf_b9'
+  Monster{
+    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='b' level=9 count=1 
+    attack=7f defence=7f psyattack=0f flavor='air' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    pointsfac=1f no_a=true range=25 bloodsucker=TimedEffect{damage=0.25 timeout=50} 
+    desc='A bloodsucking walking corpse.' } ] monsterstock_set
+
+[ 'Oberon'
+  Monster{
+    skin=Skin{ char='F' color='purple' } name='Oberon' branch='b' level=9 count=1 
+    attack=3f defence=3f psyattack=2f psyrange=8 confimmune=true flavor='faerie' 
+    explodeimmune=true flying=true moon=(full_moon->MoonDistrib) pointsfac=1f no_a=true pointscontrib=1 
+    align='cg' large=true range=10 
+    desc='A faerie king.\nHe takes on the appearance of a 2 meter tall\nhandsome man, wearing a delicate crown.' } ] monsterstock_set
+
+[ 'luna_b9'
+  Monster{
+    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='b' level=9 count=1 
+    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6 timeout=12} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
+    no_exting=true pointsfac=1f 
+    desc='Strange, selenic emanations have driven this poor soul\nto eternally walk the moon-lit dungeon, whispering softly\nto the pale, round face of the Moon.' } ] monsterstock_set
+
+[ 'lyca_b9'
+  Monster{
+    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='b' level=9 count=1 
+    attack=4f defence=1.5 psyattack=0f moon=(full_moon_only->MoonDistrib) no_exting=true fast=true 
+    pointsfac=1f range=20 heatseeking=true 
+    desc='Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.' } ] monsterstock_set
+
+[ 'priest_b9'
+  Monster{
+    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='b' level=9 count=1 
+    attack=2f defence=1f psyattack=0f flavor='wizard' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    raise_dead=NumEffect{num=15 timeout=2} pointsfac=1f fleerange=5 range=25 
+    desc='A depraved worshipper of Ba\'al-Zebub, the unclean undead god.' } ] monsterstock_set
+
+[ 'Prospero'
+  Monster{
+    skin=Skin{ char='H' color='purple' } name='Prospero' branch='b' level=10 count=1 
+    attack=2f defence=7f psyattack=2f psyrange=2 confimmune=true explodeimmune=true 
+    flying=true moon=(full_moon->MoonDistrib) pointsfac=1f no_a=true pointscontrib=1 align='nn' 
+    summon=Summon{mon='black knight' timeout=2} large=true range=20 poisimmune=true 
+    desc='Self-styled royalty, self-styled wizard, self-styled\nruler of this dungeon.\nHe has instilled unthinking loyalty into his subjects\nand slaves.' } ] monsterstock_set
+
+[ 'ufo_b10'
+  Monster{
+    skin=Skin{ char='a' color='dark_lime' } name='rigellian' branch='b' level=10 count=1 
+    attack=7f defence=22f psyattack=0.25 blink_away=5 confimmune=true psyrange=6 
+    moon=(quarter_moon_only->MoonDistrib) no_exting=true explodeimmune=true flying=true pointsfac=5f itemdrop='deathray' 
+    pointscontrib=1 fleerange=8 fireimmune=true range=25 radimmune=true 
+    poisimmune=true 
+    desc='An evil alien overlord.\nHe studies humanity and plots plans of world domination.\nHe might also be the one responsible for abductions of\nimmocents civilians and cattle.' } ] monsterstock_set
+
+[ 'Yog-Sothoth'
+  Monster{
+    skin=Skin{ char='X' color='pink' } name='Yog-Sothoth' branch='b' level=11 count=1 
+    attack=2f defence=7f psyattack=2f psyrange=20 fireimmune=true confimmune=true 
+    flavor='weird' explodeimmune=true flying=true moon=(new_moon->MoonDistrib) pointsfac=1f no_a=true 
+    pointscontrib=1 align='ce' summon=Summon{mon='Prospero' timeout=2} large=true range=20 poisimmune=true 
+    
+    desc='An Outer God: The Lurker at the Threshold, The Key and the Gate,\nThe Beyond One, Opener of the Way, The All-in-One\nand the One-in-All.\n "Only a congeries of iridescent globes, yet stupendous\n  in its malign suggestiveness."' } ] monsterstock_set
+
+[ 'cramration'
+  Monster{
+    skin=Skin{ char='x' color='pink' } name='cramration' branch='c' level=1 count=6 
+    attack=0f defence=0.2 psyattack=0f confimmune=true pointsfac=1f itemdrop='mushrooms' 
+    pointscontrib=1 range=1 
+    desc='A mushroom/pork genetically engineered vegetarian\nfood ration. It sports tiny legs.' } ] monsterstock_set
+
+[ 'cyberpunk'
+  Monster{
+    skin=Skin{ char='h' color='light_purple' } name='cyberpunk' branch='c' level=1 count=6 
+    attack=0.2 defence=0.1 psyattack=0f pointsfac=1f itemdrop='booze' pointscontrib=1 
+    range=4 
+    desc='Stoned out of his gourd, he is chatting with his avatar\nin cyberspace while wearing VR glasses.' } ] monsterstock_set
+
+[ 'nosf_c2'
+  Monster{
+    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='c' level=2 count=1 
+    attack=7f defence=7f psyattack=0f flavor='air' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    pointsfac=1f no_a=true range=25 bloodsucker=TimedEffect{damage=0.25 timeout=50} 
+    desc='A bloodsucking walking corpse.' } ] monsterstock_set
+
+[ 'charizard'
+  Monster{
+    skin=Skin{ char='v' color='green' } name='charizard' branch='c' level=2 count=5 
+    attack=1f defence=0.4 psyattack=0f flavor='digital' moon=(full_moon->MoonDistrib) pointsfac=1f 
+    pointscontrib=1 align='ng' range=8 
+    desc='A creature of indeterminate race, looking like\nsome sort of small dragonish flying reptile.\nIt is greenish in color.' } ] monsterstock_set
+
+[ 'luna_c2'
+  Monster{
+    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='c' level=2 count=1 
+    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6 timeout=12} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
+    no_exting=true pointsfac=1f 
+    desc='Strange, selenic emanations have driven this poor soul\nto eternally walk the moon-lit dungeon, whispering softly\nto the pale, round face of the Moon.' } ] monsterstock_set
+
+[ 'lyca_c2'
+  Monster{
+    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='c' level=2 count=1 
+    attack=4f defence=1.5 psyattack=0f moon=(full_moon_only->MoonDistrib) no_exting=true fast=true 
+    pointsfac=1f range=20 heatseeking=true 
+    desc='Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.' } ] monsterstock_set
+
+[ 'ufo_c2'
+  Monster{
+    skin=Skin{ char='a' color='dark_lime' } name='rigellian' branch='c' level=2 count=1 
+    attack=7f defence=22f psyattack=0f blink_away=5 confimmune=true moon=(quarter_moon_only->MoonDistrib) 
+    no_exting=true explodeimmune=true flying=true pointsfac=5f itemdrop='deathray' pointscontrib=1 
+    fleerange=8 fireimmune=true range=25 radimmune=true poisimmune=true 
+    
+    desc='An evil alien overlord.\nHe studies humanity and plots plans of world domination.\nHe might also be the one responsible for abductions of\nimmocents civilians and cattle.' } ] monsterstock_set
+
+[ 'bb1'
+  Monster{
+    skin=Skin{ char='0' color='dark_blue' } name='rollerball' branch='c' level=2 count=3 
+    attack=0.5 defence=0.5 psyattack=0f confimmune=true no_exting=true inanimate=true 
+    pointsfac=1f boulder=true range=11 radimmune=true poisimmune=true 
+    
+    desc='A huge metal ball with sharp spikes all over it.' } ] monsterstock_set
+
+[ 'snorlax'
+  Monster{
+    skin=Skin{ char='v' color='purple' } name='snorlax' branch='c' level=2 count=5 
+    attack=1f defence=1.2 psyattack=0f flavor='digital' moon=(full_moon->MoonDistrib) pointsfac=1f 
+    slow=true pointscontrib=1 align='cg' range=5 
+    desc='A 2 meter tall, enourmously obese creature of\nsome indeterminate cat-bear-dog race. It has\na pinkish-purple hide.' } ] monsterstock_set
+
+[ 'squirtle'
+  Monster{
+    skin=Skin{ char='v' color='light_blue' } name='squirtle' branch='c' level=2 count=7 
+    attack=0.4 defence=1f psyattack=0f flavor='digital' moon=(full_moon->MoonDistrib) pointsfac=1f 
+    pointscontrib=1 align='le' range=6 heatseeking=true 
+    desc='A bluish creature of indeterminate race.\nIt looks like a cute turtle.' } ] monsterstock_set
+
+[ 'priest_c2'
+  Monster{
+    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='c' level=2 count=1 
+    attack=2f defence=1f psyattack=0f flavor='wizard' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    raise_dead=NumEffect{num=15 timeout=2} pointsfac=1f fleerange=5 range=25 
+    desc='A depraved worshipper of Ba\'al-Zebub, the unclean undead god.' } ] monsterstock_set
+
+[ 'nosf_c3'
+  Monster{
+    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='c' level=3 count=1 
+    attack=7f defence=7f psyattack=0f flavor='air' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    pointsfac=1f no_a=true range=25 bloodsucker=TimedEffect{damage=0.25 timeout=50} 
+    desc='A bloodsucking walking corpse.' } ] monsterstock_set
+
+[ 'luna_c3'
+  Monster{
+    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='c' level=3 count=1 
+    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6 timeout=12} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
+    no_exting=true pointsfac=1f 
+    desc='Strange, selenic emanations have driven this poor soul\nto eternally walk the moon-lit dungeon, whispering softly\nto the pale, round face of the Moon.' } ] monsterstock_set
+
+[ 'lyca_c3'
+  Monster{
+    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='c' level=3 count=1 
+    attack=4f defence=1.5 psyattack=0f moon=(full_moon_only->MoonDistrib) no_exting=true fast=true 
+    pointsfac=1f range=20 heatseeking=true 
+    desc='Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.' } ] monsterstock_set
+
+[ 'memetic virus'
+  Monster{
+    skin=Skin{ char='v' color='dark_gray' } name='memetic virus' branch='c' level=3 count=16 
+    attack=0.3 defence=0.3 psyattack=0f fireimmune=true explodeimmune=true moon=(full_moon->MoonDistrib) 
+    pointsfac=1f pointscontrib=1 align='nn' summon=Summon{mon='memetic virus' timeout=5} range=30 radimmune=true 
+    poisimmune=true 
+    desc='It doesn\'t exist. It\'s a memetic virus.' } ] monsterstock_set
+
+[ 'bb2'
+  Monster{
+    skin=Skin{ char='0' color='dark_blue' } name='rollerball' branch='c' level=3 count=4 
+    attack=0.5 defence=0.5 psyattack=0f confimmune=true no_exting=true inanimate=true 
+    pointsfac=1f boulder=true range=11 radimmune=true poisimmune=true 
+    
+    desc='A huge metal ball with sharp spikes all over it.' } ] monsterstock_set
+
+[ 'scavenger drone'
+  Monster{
+    skin=Skin{ char='Z' color='silver' } name='scavenger drone' branch='c' level=3 count=4 
+    attack=1f defence=24f psyattack=0f fireimmune=true confimmune=true flavor='robot' 
+    explodeimmune=true moon=(new_moon->MoonDistrib) pointsfac=1f slow=true pointscontrib=1 align='ng' 
+    range=10 poisimmune=true 
+    desc='A remotely-controlled robot used for exploring the dungeon.' } ] monsterstock_set
+
+[ 'spore plant'
+  Monster{
+    skin=Skin{ char='x' color='dark_yellow' } name='spore plant' branch='c' level=3 count=7 
+    attack=0.3 defence=0.2 psyattack=0f confimmune=true moon=(new_moon->MoonDistrib) pointsfac=1f 
+    itemdrop='bomb' pointscontrib=1 align='cg' range=7 heatseeking=true 
+    
+    desc='A large plantlike carnivorous creature.\nIt has large bulbous appendages growing out of its stalk.\nIt looks like it is radiating heat from the inside.' } ] monsterstock_set
+
+[ 'priest_c3'
+  Monster{
+    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='c' level=3 count=1 
+    attack=2f defence=1f psyattack=0f flavor='wizard' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    raise_dead=NumEffect{num=15 timeout=2} pointsfac=1f fleerange=5 range=25 
+    desc='A depraved worshipper of Ba\'al-Zebub, the unclean undead god.' } ] monsterstock_set
+
+[ 'nosf_c4'
+  Monster{
+    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='c' level=4 count=1 
+    attack=7f defence=7f psyattack=0f flavor='air' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    pointsfac=1f no_a=true range=25 bloodsucker=TimedEffect{damage=0.25 timeout=50} 
+    desc='A bloodsucking walking corpse.' } ] monsterstock_set
+
+[ 'luna_c4'
+  Monster{
+    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='c' level=4 count=1 
+    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6 timeout=12} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
+    no_exting=true pointsfac=1f 
+    desc='Strange, selenic emanations have driven this poor soul\nto eternally walk the moon-lit dungeon, whispering softly\nto the pale, round face of the Moon.' } ] monsterstock_set
+
+[ 'lyca_c4'
+  Monster{
+    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='c' level=4 count=1 
+    attack=4f defence=1.5 psyattack=0f moon=(full_moon_only->MoonDistrib) no_exting=true fast=true 
+    pointsfac=1f range=20 heatseeking=true 
+    desc='Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.' } ] monsterstock_set
+
+[ 'ufo_c4'
+  Monster{
+    skin=Skin{ char='a' color='dark_lime' } name='rigellian' branch='c' level=4 count=1 
+    attack=7f defence=22f psyattack=0f blink_away=5 confimmune=true moon=(quarter_moon_only->MoonDistrib) 
+    no_exting=true explodeimmune=true flying=true pointsfac=5f itemdrop='deathray' pointscontrib=1 
+    fleerange=8 fireimmune=true range=25 radimmune=true poisimmune=true 
+    
+    desc='An evil alien overlord.\nHe studies humanity and plots plans of world domination.\nHe might also be the one responsible for abductions of\nimmocents civilians and cattle.' } ] monsterstock_set
+
+[ 'bb3'
+  Monster{
+    skin=Skin{ char='0' color='dark_blue' } name='rollerball' branch='c' level=4 count=5 
+    attack=0.5 defence=0.5 psyattack=0f confimmune=true no_exting=true inanimate=true 
+    pointsfac=1f boulder=true range=11 radimmune=true poisimmune=true 
+    
+    desc='A huge metal ball with sharp spikes all over it.' } ] monsterstock_set
+
+[ 'spore'
+  Monster{
+    skin=Skin{ char='x' color='pink' } name='spore' branch='c' level=4 count=7 
+    attack=0f defence=0.2 psyattack=0f confimmune=true flavor='air' flying=true 
+    moon=(new_moon->MoonDistrib) pointsfac=1f selfdestruct=true itemdrop='bomb' pointscontrib=1 
+    range=30 heatseeking=true 
+    desc='A pulsating pink spherical spore, about 1 meter in diameter.\nIt is levitating.\nIt looks like it is radiating heat from the inside.' } ] monsterstock_set
+
+[ 'priest_c4'
+  Monster{
+    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='c' level=4 count=1 
+    attack=2f defence=1f psyattack=0f flavor='wizard' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    raise_dead=NumEffect{num=15 timeout=2} pointsfac=1f fleerange=5 range=25 
+    desc='A depraved worshipper of Ba\'al-Zebub, the unclean undead god.' } ] monsterstock_set
+
+[ 'xenomorph'
+  Monster{
+    skin=Skin{ char='X' color='silver' } name='xenomorph' branch='c' level=4 count=2 
+    attack=7f defence=7f psyattack=0f fireimmune=true confimmune=true flavor='snake' 
+    moon=(new_moon->MoonDistrib) pointsfac=1f pointscontrib=1 align='ce' range=5 
+    radimmune=true poisimmune=true 
+    desc='A horrifying alien creature. It looks like a giant,\nvery evil insect. It is truly scary.' } ] monsterstock_set
+
+[ 'nosf_c5'
+  Monster{
+    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='c' level=5 count=1 
+    attack=7f defence=7f psyattack=0f flavor='air' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    pointsfac=1f no_a=true range=25 bloodsucker=TimedEffect{damage=0.25 timeout=50} 
+    desc='A bloodsucking walking corpse.' } ] monsterstock_set
+
+[ 'cthulhumon'
+  Monster{
+    skin=Skin{ char='v' color='gray' } name='cthulhumon' branch='c' level=5 count=4 
+    attack=3f defence=1f psyattack=2f psyrange=8 confimmune=true flavor='digital' 
+    moon=(new_moon->MoonDistrib) pointsfac=1f pointscontrib=1 align='le' range=8 
+    
+    desc='The other Pokemon nobody told you about.' } ] monsterstock_set
+
+[ 'cyberdemon'
+  Monster{
+    skin=Skin{ char='Z' color='red' } name='cyberdemon' branch='c' level=5 count=2 
+    attack=7f defence=2f psyattack=0f flavor='robot' explodeimmune=true moon=(new_moon->MoonDistrib) 
+    pointsfac=1f pointscontrib=1 align='ce' summon=Summon{mon='spore' timeout=2} large=true range=4 
+    
+    desc='A 3 meter tall hellish demon-robot hybrid.\nFleshy parts of its demonic body have rotted away,\nto be replaced with crude stainless-steel robotic parts.' } ] monsterstock_set
+
+[ 'luna_c5'
+  Monster{
+    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='c' level=5 count=1 
+    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6 timeout=12} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
+    no_exting=true pointsfac=1f 
+    desc='Strange, selenic emanations have driven this poor soul\nto eternally walk the moon-lit dungeon, whispering softly\nto the pale, round face of the Moon.' } ] monsterstock_set
+
+[ 'lyca_c5'
+  Monster{
+    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='c' level=5 count=1 
+    attack=4f defence=1.5 psyattack=0f moon=(full_moon_only->MoonDistrib) no_exting=true fast=true 
+    pointsfac=1f range=20 heatseeking=true 
+    desc='Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.' } ] monsterstock_set
+
+[ 'bb4'
+  Monster{
+    skin=Skin{ char='0' color='dark_blue' } name='rollerball' branch='c' level=5 count=6 
+    attack=0.5 defence=0.5 psyattack=0f confimmune=true no_exting=true inanimate=true 
+    pointsfac=1f boulder=true range=11 radimmune=true poisimmune=true 
+    
+    desc='A huge metal ball with sharp spikes all over it.' } ] monsterstock_set
+
+[ 'priest_c5'
+  Monster{
+    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='c' level=5 count=1 
+    attack=2f defence=1f psyattack=0f flavor='wizard' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    raise_dead=NumEffect{num=15 timeout=2} pointsfac=1f fleerange=5 range=25 
+    desc='A depraved worshipper of Ba\'al-Zebub, the unclean undead god.' } ] monsterstock_set
+
+[ 'nosf_c6'
+  Monster{
+    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='c' level=6 count=1 
+    attack=7f defence=7f psyattack=0f flavor='air' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    pointsfac=1f no_a=true range=25 bloodsucker=TimedEffect{damage=0.25 timeout=50} 
+    desc='A bloodsucking walking corpse.' } ] monsterstock_set
+
+[ 'klingon'
+  Monster{
+    skin=Skin{ char='k' color='brass' } name='klingon' branch='c' level=6 count=5 
+    attack=5f defence=0.5 psyattack=0f flavor='humanwarrior' moon=(full_moon->MoonDistrib) pointsfac=1f 
+    pointscontrib=1 align='lg' range=5 
+    desc='A member of a chivalrous warrior race of extraterrestrial aliens.' } ] monsterstock_set
+
+[ 'luna_c6'
+  Monster{
+    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='c' level=6 count=1 
+    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6 timeout=12} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
+    no_exting=true pointsfac=1f 
+    desc='Strange, selenic emanations have driven this poor soul\nto eternally walk the moon-lit dungeon, whispering softly\nto the pale, round face of the Moon.' } ] monsterstock_set
+
+[ 'lyca_c6'
+  Monster{
+    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='c' level=6 count=1 
+    attack=4f defence=1.5 psyattack=0f moon=(full_moon_only->MoonDistrib) no_exting=true fast=true 
+    pointsfac=1f range=20 heatseeking=true 
+    desc='Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.' } ] monsterstock_set
+
+[ 'ufo_c6'
+  Monster{
+    skin=Skin{ char='a' color='dark_lime' } name='rigellian' branch='c' level=6 count=1 
+    attack=7f defence=22f psyattack=0.25 blink_away=5 confimmune=true psyrange=3 
+    moon=(quarter_moon_only->MoonDistrib) no_exting=true explodeimmune=true flying=true pointsfac=5f itemdrop='deathray' 
+    pointscontrib=1 fleerange=8 fireimmune=true range=25 radimmune=true 
+    poisimmune=true 
+    desc='An evil alien overlord.\nHe studies humanity and plots plans of world domination.\nHe might also be the one responsible for abductions of\nimmocents civilians and cattle.' } ] monsterstock_set
+
+[ 'bb5'
+  Monster{
+    skin=Skin{ char='0' color='dark_blue' } name='rollerball' branch='c' level=6 count=7 
+    attack=0.5 defence=0.5 psyattack=0f confimmune=true no_exting=true inanimate=true 
+    pointsfac=1f boulder=true range=11 radimmune=true poisimmune=true 
+    
+    desc='A huge metal ball with sharp spikes all over it.' } ] monsterstock_set
+
+[ 'shai-hulud'
+  Monster{
+    skin=Skin{ char='W' color='gray' } name='shai-hulud' branch='c' level=6 count=4 
+    attack=2f defence=4.5 psyattack=0f straightline=true flavor='giant' stoneeating=true 
+    explodeimmune=true moon=(full_moon->MoonDistrib) pointsfac=1f pointscontrib=1 align='lg' 
+    large=true range=30 heatseeking=true 
+    desc='A giant worm. It is gray in color and has a skin made of something like granite.\nIt is about 15 meters in length.' } ] monsterstock_set
+
+[ 'priest_c6'
+  Monster{
+    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='c' level=6 count=1 
+    attack=2f defence=1f psyattack=0f flavor='wizard' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    raise_dead=NumEffect{num=15 timeout=2} pointsfac=1f fleerange=5 range=25 
+    desc='A depraved worshipper of Ba\'al-Zebub, the unclean undead god.' } ] monsterstock_set
+
+[ 'nosf_c7'
+  Monster{
+    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='c' level=7 count=1 
+    attack=7f defence=7f psyattack=0f flavor='air' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    pointsfac=1f no_a=true range=25 bloodsucker=TimedEffect{damage=0.25 timeout=50} 
+    desc='A bloodsucking walking corpse.' } ] monsterstock_set
+
+[ 'T-1 terminator'
+  Monster{
+    skin=Skin{ char='z' color='lightest_sepia' } name='T-1 terminator' branch='c' level=7 count=7 
+    attack=0.4 defence=0.4 psyattack=0f fireimmune=true confimmune=true flavor='robot' 
+    moon=(new_moon->MoonDistrib) pointsfac=1f itemdrop='radblob' pointscontrib=1 range=7 
+    radimmune=true poisimmune=true heatseeking=true 
+    desc='The very first model in Cyberdine\'s robot-killer lineup.\n(Brought to you by Skynet.)' } ] monsterstock_set
+
+[ 'autobot'
+  Monster{
+    skin=Skin{ char='z' color='silver' } name='autobot' branch='c' level=7 count=7 
+    attack=1.5 defence=1.5 psyattack=0f confimmune=true flavor='robot' explodeimmune=true 
+    moon=(full_moon->MoonDistrib) pointsfac=1f itemdrop='bomb' pointscontrib=1 align='ln' 
+    range=15 radimmune=true poisimmune=true 
+    desc='An extraterrestrial sentient robot from the planet\nCybertron. Powered by the energy source Nucleon,\nhe fights for intergalactic Good.' } ] monsterstock_set
+
+[ 'luna_c7'
+  Monster{
+    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='c' level=7 count=1 
+    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6 timeout=12} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
+    no_exting=true pointsfac=1f 
+    desc='Strange, selenic emanations have driven this poor soul\nto eternally walk the moon-lit dungeon, whispering softly\nto the pale, round face of the Moon.' } ] monsterstock_set
+
+[ 'lyca_c7'
+  Monster{
+    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='c' level=7 count=1 
+    attack=4f defence=1.5 psyattack=0f moon=(full_moon_only->MoonDistrib) no_exting=true fast=true 
+    pointsfac=1f range=20 heatseeking=true 
+    desc='Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.' } ] monsterstock_set
+
+[ 'bb6'
+  Monster{
+    skin=Skin{ char='0' color='dark_blue' } name='rollerball' branch='c' level=7 count=8 
+    attack=0.5 defence=0.5 psyattack=0f confimmune=true no_exting=true inanimate=true 
+    pointsfac=1f boulder=true range=11 radimmune=true poisimmune=true 
+    
+    desc='A huge metal ball with sharp spikes all over it.' } ] monsterstock_set
+
+[ 'priest_c7'
+  Monster{
+    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='c' level=7 count=1 
+    attack=2f defence=1f psyattack=0f flavor='wizard' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    raise_dead=NumEffect{num=15 timeout=2} pointsfac=1f fleerange=5 range=25 
+    desc='A depraved worshipper of Ba\'al-Zebub, the unclean undead god.' } ] monsterstock_set
+
+[ 'nosf_c8'
+  Monster{
+    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='c' level=8 count=1 
+    attack=7f defence=7f psyattack=0f flavor='air' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    pointsfac=1f no_a=true range=25 bloodsucker=TimedEffect{damage=0.25 timeout=50} 
+    desc='A bloodsucking walking corpse.' } ] monsterstock_set
+
+[ 'decepticon'
+  Monster{
+    skin=Skin{ char='z' color='dark_gray' } name='decepticon' branch='c' level=8 count=7 
+    attack=1.5 defence=1.5 psyattack=0f confimmune=true flavor='robot' explodeimmune=true 
+    moon=(new_moon->MoonDistrib) pointsfac=1f pointscontrib=1 align='ne' summon=Summon{mon='autobot' timeout=3} range=15 
+    radimmune=true poisimmune=true 
+    desc='An extraterrestrial sentient robot from the planet\nCybertron. Powered by the energy source Nucleon,\nhe fights for intergalactic Evil.' } ] monsterstock_set
+
+[ 'luna_c8'
+  Monster{
+    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='c' level=8 count=1 
+    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6 timeout=12} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
+    no_exting=true pointsfac=1f 
+    desc='Strange, selenic emanations have driven this poor soul\nto eternally walk the moon-lit dungeon, whispering softly\nto the pale, round face of the Moon.' } ] monsterstock_set
+
+[ 'lyca_c8'
+  Monster{
+    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='c' level=8 count=1 
+    attack=4f defence=1.5 psyattack=0f moon=(full_moon_only->MoonDistrib) no_exting=true fast=true 
+    pointsfac=1f range=20 heatseeking=true 
+    desc='Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.' } ] monsterstock_set
+
+[ 'ufo_c8'
+  Monster{
+    skin=Skin{ char='a' color='dark_lime' } name='rigellian' branch='c' level=8 count=1 
+    attack=7f defence=22f psyattack=0.25 blink_away=5 confimmune=true psyrange=5 
+    moon=(quarter_moon_only->MoonDistrib) no_exting=true explodeimmune=true flying=true pointsfac=5f itemdrop='deathray' 
+    pointscontrib=1 fleerange=8 fireimmune=true range=25 radimmune=true 
+    poisimmune=true 
+    desc='An evil alien overlord.\nHe studies humanity and plots plans of world domination.\nHe might also be the one responsible for abductions of\nimmocents civilians and cattle.' } ] monsterstock_set
+
+[ 'bb7'
+  Monster{
+    skin=Skin{ char='0' color='dark_blue' } name='rollerball' branch='c' level=8 count=9 
+    attack=0.5 defence=0.5 psyattack=0f confimmune=true no_exting=true inanimate=true 
+    pointsfac=1f boulder=true range=11 radimmune=true poisimmune=true 
+    
+    desc='A huge metal ball with sharp spikes all over it.' } ] monsterstock_set
+
+[ 'triffid'
+  Monster{
+    skin=Skin{ char='x' color='peach' } name='triffid' branch='c' level=8 count=16 
+    attack=2f defence=2f psyattack=0f confimmune=true moon=(full_moon->MoonDistrib) pointsfac=1f 
+    itemdrop='triffidlarva' pointscontrib=1 align='cn' range=5 
+    desc='A carnivorous plant. It is a sneaky pest that is very\nhard to get rid of.' } ] monsterstock_set
+
+[ 'priest_c8'
+  Monster{
+    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='c' level=8 count=1 
+    attack=2f defence=1f psyattack=0f flavor='wizard' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    raise_dead=NumEffect{num=15 timeout=2} pointsfac=1f fleerange=5 range=25 
+    desc='A depraved worshipper of Ba\'al-Zebub, the unclean undead god.' } ] monsterstock_set
+
+[ 'nosf_c9'
+  Monster{
+    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='c' level=9 count=1 
+    attack=7f defence=7f psyattack=0f flavor='air' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    pointsfac=1f no_a=true range=25 bloodsucker=TimedEffect{damage=0.25 timeout=50} 
+    desc='A bloodsucking walking corpse.' } ] monsterstock_set
+
+[ 'Wintermute'
+  Monster{
+    skin=Skin{ char='V' color='azure' } name='Wintermute' branch='c' level=9 count=2 
+    attack=0.5 defence=4f psyattack=0f fireimmune=true confimmune=true flavor='digital' 
+    explodeimmune=true flying=true moon=(new_moon->MoonDistrib) sleepattack=true pointsfac=1f no_a=true 
+    pointscontrib=1 align='cn' large=true range=30 radimmune=true 
+    poisimmune=true 
+    desc='A manifestation of the powerful AI construct named \'Wintermute\'.' } ] monsterstock_set
+
+[ 'luna_c9'
+  Monster{
+    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='c' level=9 count=1 
+    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6 timeout=12} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
+    no_exting=true pointsfac=1f 
+    desc='Strange, selenic emanations have driven this poor soul\nto eternally walk the moon-lit dungeon, whispering softly\nto the pale, round face of the Moon.' } ] monsterstock_set
+
+[ 'lyca_c9'
+  Monster{
+    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='c' level=9 count=1 
+    attack=4f defence=1.5 psyattack=0f moon=(full_moon_only->MoonDistrib) no_exting=true fast=true 
+    pointsfac=1f range=20 heatseeking=true 
+    desc='Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.' } ] monsterstock_set
+
+[ 'mosura-chan'
+  Monster{
+    skin=Skin{ char='x' color='dark_lime' } name='mosura-chan' branch='c' level=9 count=16 
+    attack=0f defence=0.2 psyattack=0f confimmune=true flavor='flying' explodeimmune=true 
+    flying=true moon=(full_moon->MoonDistrib) pointsfac=1f no_a=true selfdestruct=true itemdrop='radblob' 
+    pointscontrib=1 align='nn' range=30 radimmune=true 
+    desc='A bird-sized, moth-like creature.\nIt has a strange green glow.' } ] monsterstock_set
+
+[ 'bb8'
+  Monster{
+    skin=Skin{ char='0' color='dark_blue' } name='rollerball' branch='c' level=9 count=10 
+    attack=0.5 defence=0.5 psyattack=0f confimmune=true no_exting=true inanimate=true 
+    pointsfac=1f boulder=true range=11 radimmune=true poisimmune=true 
+    
+    desc='A huge metal ball with sharp spikes all over it.' } ] monsterstock_set
+
+[ 'priest_c9'
+  Monster{
+    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='c' level=9 count=1 
+    attack=2f defence=1f psyattack=0f flavor='wizard' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    raise_dead=NumEffect{num=15 timeout=2} pointsfac=1f fleerange=5 range=25 
+    desc='A depraved worshipper of Ba\'al-Zebub, the unclean undead god.' } ] monsterstock_set
+
+[ 'Voltron'
+  Monster{
+    skin=Skin{ char='Z' color='white' } name='Voltron' branch='c' level=10 count=1 
+    attack=6f defence=5f psyattack=0f fireimmune=true confimmune=true flavor='robot' 
+    explodeimmune=true moon=(full_moon->MoonDistrib) pointsfac=1f no_a=true pointscontrib=1 align='ln' 
+    large=true range=5 poisimmune=true heatseeking=true 
+    desc='Defender of the Universe.' } ] monsterstock_set
+
+[ 'ufo_c10'
+  Monster{
+    skin=Skin{ char='a' color='dark_lime' } name='rigellian' branch='c' level=10 count=1 
+    attack=7f defence=22f psyattack=0.25 blink_away=5 confimmune=true psyrange=6 
+    moon=(quarter_moon_only->MoonDistrib) no_exting=true explodeimmune=true flying=true pointsfac=5f itemdrop='deathray' 
+    pointscontrib=1 fleerange=8 fireimmune=true range=25 radimmune=true 
+    poisimmune=true 
+    desc='An evil alien overlord.\nHe studies humanity and plots plans of world domination.\nHe might also be the one responsible for abductions of\nimmocents civilians and cattle.' } ] monsterstock_set
+
+[ 'Gojira-sama'
+  Monster{
+    skin=Skin{ char='G' color='green' } name='Gojira-sama' branch='c' level=11 count=1 
+    attack=6f defence=5f psyattack=0f flavor='earthshake' explodeimmune=true moon=(new_moon->MoonDistrib) 
+    pointsfac=1f no_a=true itemdrop='radsuit' pointscontrib=1 align='ne' summon=Summon{mon='mosura-chan' timeout=3} 
+    large=true range=10 radimmune=true 
+    desc='She really hates Japan after what they did\nto the nuclear power plant.' } ] monsterstock_set
+
+[ 'avern'
+  Monster{
+    skin=Skin{ char='x' color='green' } name='avern' branch='d' level=1 count=4 
+    attack=0.3 defence=0.01 psyattack=0f confimmune=true pointsfac=1f itemdrop='avern' 
+    pointscontrib=1 range=1 
+    desc='A poisonous, carnivorous species of plant.\n(It might actually be at least in part an animal.)' } ] monsterstock_set
+
+[ 'omophagist'
+  Monster{
+    skin=Skin{ char='h' color='dark_purple' } name='omophagist' branch='d' level=1 count=4 
+    attack=0.3 defence=0.1 psyattack=0f pointsfac=1f pointscontrib=1 
+    range=4 
+    desc='A poor, degenerate inhabitant of the poorest parts of the City.\n(Those parts that are composed of mostly ancient ruins.)\nHe might be a little insane and a cannibal, as well.' } ] monsterstock_set
+
+[ 'nosf_d2'
+  Monster{
+    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='d' level=2 count=1 
+    attack=7f defence=7f psyattack=0f flavor='air' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    pointsfac=1f no_a=true range=25 bloodsucker=TimedEffect{damage=0.25 timeout=50} 
+    desc='A bloodsucking walking corpse.' } ] monsterstock_set
+
+[ 'armiger'
+  Monster{
+    skin=Skin{ char='k' color='silver' } name='armiger' branch='d' level=2 count=4 
+    attack=2f defence=1f psyattack=0f flavor='humanwarrior' pointsfac=1f pointscontrib=1 
+    align='ng' range=8 
+    desc='A member of the warrior caste.' } ] monsterstock_set
+
+[ 'bd1'
+  Monster{
+    skin=Skin{ char='0' color='gray' } name='boulder' branch='d' level=2 count=6 
+    attack=0.5 defence=0.5 psyattack=0f confimmune=true no_exting=true inanimate=true 
+    pointsfac=1f boulder=true range=11 radimmune=true poisimmune=true 
+    
+    desc='A gigantic rock of spherical shape.' } ] monsterstock_set
+
+[ 'exultant'
+  Monster{
+    skin=Skin{ char='h' color='gold' } name='exultant' branch='d' level=2 count=3 
+    attack=0.5 defence=0.5 psyattack=0f flavor='humanwarrior' pointsfac=1f pointscontrib=1 
+    align='lg' summon=Summon{mon='armiger' timeout=2} range=8 
+    desc='A member of the nobility caste.' } ] monsterstock_set
+
+[ 'luna_d2'
+  Monster{
+    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='d' level=2 count=1 
+    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6 timeout=12} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
+    no_exting=true pointsfac=1f 
+    desc='Strange, selenic emanations have driven this poor soul\nto eternally walk the moon-lit dungeon, whispering softly\nto the pale, round face of the Moon.' } ] monsterstock_set
+
+[ 'lyca_d2'
+  Monster{
+    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='d' level=2 count=1 
+    attack=4f defence=1.5 psyattack=0f moon=(full_moon_only->MoonDistrib) no_exting=true fast=true 
+    pointsfac=1f range=20 heatseeking=true 
+    desc='Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.' } ] monsterstock_set
+
+[ 'ufo_d2'
+  Monster{
+    skin=Skin{ char='a' color='dark_lime' } name='rigellian' branch='d' level=2 count=1 
+    attack=7f defence=22f psyattack=0f blink_away=5 confimmune=true moon=(quarter_moon_only->MoonDistrib) 
+    no_exting=true explodeimmune=true flying=true pointsfac=5f itemdrop='deathray' pointscontrib=1 
+    fleerange=8 fireimmune=true range=25 radimmune=true poisimmune=true 
+    
+    desc='An evil alien overlord.\nHe studies humanity and plots plans of world domination.\nHe might also be the one responsible for abductions of\nimmocents civilians and cattle.' } ] monsterstock_set
+
+[ 'priest_d2'
+  Monster{
+    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='d' level=2 count=1 
+    attack=2f defence=1f psyattack=0f flavor='wizard' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    raise_dead=NumEffect{num=15 timeout=2} pointsfac=1f fleerange=5 range=25 
+    desc='A depraved worshipper of Ba\'al-Zebub, the unclean undead god.' } ] monsterstock_set
+
+[ 'nosf_d3'
+  Monster{
+    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='d' level=3 count=1 
+    attack=7f defence=7f psyattack=0f flavor='air' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    pointsfac=1f no_a=true range=25 bloodsucker=TimedEffect{damage=0.25 timeout=50} 
+    desc='A bloodsucking walking corpse.' } ] monsterstock_set
+
+[ 'aquastor'
+  Monster{
+    skin=Skin{ char='v' color='gray' } name='aquastor' branch='d' level=3 count=4 
+    attack=1.5 defence=1f psyattack=0f flying=true moon=(new_moon->MoonDistrib) pointsfac=1f 
+    pointscontrib=1 hungerattack=true align='lg' range=10 poisimmune=true 
+    
+    desc='An entity formed by the power of a concentrated thought\nand which assumed a physical form.' } ] monsterstock_set
+
+[ 'bd2'
+  Monster{
+    skin=Skin{ char='0' color='gray' } name='boulder' branch='d' level=3 count=6 
+    attack=0.5 defence=0.5 psyattack=0f confimmune=true no_exting=true inanimate=true 
+    pointsfac=1f boulder=true range=11 radimmune=true poisimmune=true 
+    
+    desc='A gigantic rock of spherical shape.' } ] monsterstock_set
+
+[ 'eidolon'
+  Monster{
+    skin=Skin{ char='v' color='white' } name='eidolon' branch='d' level=3 count=4 
+    attack=0f defence=2f psyattack=1.5 psyrange=7 fireimmune=true flavor='faerie' 
+    flying=true moon=(full_moon->MoonDistrib) pointsfac=1f pointscontrib=1 align='ln' 
+    range=8 poisimmune=true 
+    desc='A spirit-image of a living or dead person;\na shade or phantom look-alike of the human form.' } ] monsterstock_set
+
+[ 'luna_d3'
+  Monster{
+    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='d' level=3 count=1 
+    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6 timeout=12} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
+    no_exting=true pointsfac=1f 
+    desc='Strange, selenic emanations have driven this poor soul\nto eternally walk the moon-lit dungeon, whispering softly\nto the pale, round face of the Moon.' } ] monsterstock_set
+
+[ 'lyca_d3'
+  Monster{
+    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='d' level=3 count=1 
+    attack=4f defence=1.5 psyattack=0f moon=(full_moon_only->MoonDistrib) no_exting=true fast=true 
+    pointsfac=1f range=20 heatseeking=true 
+    desc='Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.' } ] monsterstock_set
+
+[ 'priest_d3'
+  Monster{
+    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='d' level=3 count=1 
+    attack=2f defence=1f psyattack=0f flavor='wizard' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    raise_dead=NumEffect{num=15 timeout=2} pointsfac=1f fleerange=5 range=25 
+    desc='A depraved worshipper of Ba\'al-Zebub, the unclean undead god.' } ] monsterstock_set
+
+[ 'nosf_d4'
+  Monster{
+    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='d' level=4 count=1 
+    attack=7f defence=7f psyattack=0f flavor='air' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    pointsfac=1f no_a=true range=25 bloodsucker=TimedEffect{damage=0.25 timeout=50} 
+    desc='A bloodsucking walking corpse.' } ] monsterstock_set
+
+[ 'bd3'
+  Monster{
+    skin=Skin{ char='0' color='gray' } name='boulder' branch='d' level=4 count=6 
+    attack=0.5 defence=0.5 psyattack=0f confimmune=true no_exting=true inanimate=true 
+    pointsfac=1f boulder=true range=11 radimmune=true poisimmune=true 
+    
+    desc='A gigantic rock of spherical shape.' } ] monsterstock_set
+
+[ 'cacogen'
+  Monster{
+    skin=Skin{ char='u' color='silver' } name='cacogen' branch='d' level=4 count=3 
+    attack=0.5 defence=1f psyattack=0f flavor='humanweird' moon=(full_moon->MoonDistrib) pointsfac=1f 
+    itemdrop='radblob' pointscontrib=1 align='ln' summon=Summon{mon='eidolon' timeout=2} range=10 poisimmune=true 
+    
+    desc='In fact an extraterrestrial who disguises itself as an\nurthly monster.' } ] monsterstock_set
+
+[ 'destrier'
+  Monster{
+    skin=Skin{ char='q' color='dark_gray' } name='destrier' branch='d' level=4 count=3 
+    attack=2.5 defence=1.5 psyattack=0f flavor='carnivore' moon=(full_moon->MoonDistrib) pointsfac=1f 
+    pointscontrib=1 align='nn' range=6 
+    desc='A mount; A highly modified horse, possessing\nclawed feet (for better traction) and large canine teeth.\nIt is carnivorous.' } ] monsterstock_set
+
+[ 'luna_d4'
+  Monster{
+    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='d' level=4 count=1 
+    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6 timeout=12} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
+    no_exting=true pointsfac=1f 
+    desc='Strange, selenic emanations have driven this poor soul\nto eternally walk the moon-lit dungeon, whispering softly\nto the pale, round face of the Moon.' } ] monsterstock_set
+
+[ 'lyca_d4'
+  Monster{
+    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='d' level=4 count=1 
+    attack=4f defence=1.5 psyattack=0f moon=(full_moon_only->MoonDistrib) no_exting=true fast=true 
+    pointsfac=1f range=20 heatseeking=true 
+    desc='Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.' } ] monsterstock_set
+
+[ 'ufo_d4'
+  Monster{
+    skin=Skin{ char='a' color='dark_lime' } name='rigellian' branch='d' level=4 count=1 
+    attack=7f defence=22f psyattack=0f blink_away=5 confimmune=true moon=(quarter_moon_only->MoonDistrib) 
+    no_exting=true explodeimmune=true flying=true pointsfac=5f itemdrop='deathray' pointscontrib=1 
+    fleerange=8 fireimmune=true range=25 radimmune=true poisimmune=true 
+    
+    desc='An evil alien overlord.\nHe studies humanity and plots plans of world domination.\nHe might also be the one responsible for abductions of\nimmocents civilians and cattle.' } ] monsterstock_set
+
+[ 'priest_d4'
+  Monster{
+    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='d' level=4 count=1 
+    attack=2f defence=1f psyattack=0f flavor='wizard' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    raise_dead=NumEffect{num=15 timeout=2} pointsfac=1f fleerange=5 range=25 
+    desc='A depraved worshipper of Ba\'al-Zebub, the unclean undead god.' } ] monsterstock_set
+
+[ 'nosf_d5'
+  Monster{
+    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='d' level=5 count=1 
+    attack=7f defence=7f psyattack=0f flavor='air' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    pointsfac=1f no_a=true range=25 bloodsucker=TimedEffect{damage=0.25 timeout=50} 
+    desc='A bloodsucking walking corpse.' } ] monsterstock_set
+
+[ 'ascian'
+  Monster{
+    skin=Skin{ char='h' color='gray' } name='ascian' branch='d' level=5 count=4 
+    attack=2f defence=1f psyattack=1.5 psyrange=10 flavor='weird' moon=(new_moon->MoonDistrib) 
+    pointsfac=1f pointscontrib=1 align='ne' range=5 
+    desc='A human from Ascia, the tyrannical empire ruled\nby the evil Abaia. His mind is warped to the point\nwhere he cannot any longer speak or understand any\nreal human language.' } ] monsterstock_set
+
+[ 'bd4'
+  Monster{
+    skin=Skin{ char='0' color='gray' } name='boulder' branch='d' level=5 count=3 
+    attack=0.5 defence=0.5 psyattack=0f confimmune=true no_exting=true inanimate=true 
+    pointsfac=1f boulder=true range=11 radimmune=true poisimmune=true 
+    
+    desc='A gigantic rock of spherical shape.' } ] monsterstock_set
+
+[ 'luna_d5'
+  Monster{
+    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='d' level=5 count=1 
+    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6 timeout=12} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
+    no_exting=true pointsfac=1f 
+    desc='Strange, selenic emanations have driven this poor soul\nto eternally walk the moon-lit dungeon, whispering softly\nto the pale, round face of the Moon.' } ] monsterstock_set
+
+[ 'lyca_d5'
+  Monster{
+    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='d' level=5 count=1 
+    attack=4f defence=1.5 psyattack=0f moon=(full_moon_only->MoonDistrib) no_exting=true fast=true 
+    pointsfac=1f range=20 heatseeking=true 
+    desc='Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.' } ] monsterstock_set
+
+[ 'smilodon'
+  Monster{
+    skin=Skin{ char='Q' color='dark_orange' } name='smilodon' branch='d' level=5 count=3 
+    attack=2.5 defence=1.5 psyattack=0f flavor='carnivore' moon=(full_moon->MoonDistrib) pointsfac=1f 
+    pointscontrib=1 align='nn' range=12 
+    desc='An ancient genetically-engineered feline animal.\nIt looks somewhat like the familiar sabre-toothed tiger.' } ] monsterstock_set
+
+[ 'priest_d5'
+  Monster{
+    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='d' level=5 count=1 
+    attack=2f defence=1f psyattack=0f flavor='wizard' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    raise_dead=NumEffect{num=15 timeout=2} pointsfac=1f fleerange=5 range=25 
+    desc='A depraved worshipper of Ba\'al-Zebub, the unclean undead god.' } ] monsterstock_set
+
+[ 'nosf_d6'
+  Monster{
+    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='d' level=6 count=1 
+    attack=7f defence=7f psyattack=0f flavor='air' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    pointsfac=1f no_a=true range=25 bloodsucker=TimedEffect{damage=0.25 timeout=50} 
+    desc='A bloodsucking walking corpse.' } ] monsterstock_set
+
+[ 'alzabo'
+  Monster{
+    skin=Skin{ char='u' color='darkest_red' } name='alzabo' branch='d' level=6 count=3 
+    attack=2f defence=2f psyattack=0f flavor='carnivore' moon=(new_moon->MoonDistrib) pointsfac=1f 
+    itemdrop='alzabobrain' pointscontrib=1 align='ce' range=12 
+    desc=' "The red orbs of the alzabo were something more, neither\n  the intelligence of humankind nor the the innocence of\n  the brutes. So a fiend might look, I thought, when it had\n  at last struggled up from the pit of some dark star."' } ] monsterstock_set
+
+[ 'bd5'
+  Monster{
+    skin=Skin{ char='0' color='gray' } name='boulder' branch='d' level=6 count=2 
+    attack=0.5 defence=0.5 psyattack=0f confimmune=true no_exting=true inanimate=true 
+    pointsfac=1f boulder=true range=11 radimmune=true poisimmune=true 
+    
+    desc='A gigantic rock of spherical shape.' } ] monsterstock_set
+
+[ 'luna_d6'
+  Monster{
+    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='d' level=6 count=1 
+    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6 timeout=12} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
+    no_exting=true pointsfac=1f 
+    desc='Strange, selenic emanations have driven this poor soul\nto eternally walk the moon-lit dungeon, whispering softly\nto the pale, round face of the Moon.' } ] monsterstock_set
+
+[ 'lyca_d6'
+  Monster{
+    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='d' level=6 count=1 
+    attack=4f defence=1.5 psyattack=0f moon=(full_moon_only->MoonDistrib) no_exting=true fast=true 
+    pointsfac=1f range=20 heatseeking=true 
+    desc='Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.' } ] monsterstock_set
+
+[ 'ufo_d6'
+  Monster{
+    skin=Skin{ char='a' color='dark_lime' } name='rigellian' branch='d' level=6 count=1 
+    attack=7f defence=22f psyattack=0.25 blink_away=5 confimmune=true psyrange=3 
+    moon=(quarter_moon_only->MoonDistrib) no_exting=true explodeimmune=true flying=true pointsfac=5f itemdrop='deathray' 
+    pointscontrib=1 fleerange=8 fireimmune=true range=25 radimmune=true 
+    poisimmune=true 
+    desc='An evil alien overlord.\nHe studies humanity and plots plans of world domination.\nHe might also be the one responsible for abductions of\nimmocents civilians and cattle.' } ] monsterstock_set
+
+[ 'undine'
+  Monster{
+    skin=Skin{ char='u' color='darkest_blue' } name='undine' branch='d' level=6 count=5 
+    attack=0.7 defence=3f psyattack=0f flavor='snake' moon=(new_moon->MoonDistrib) sleepattack=true 
+    pointsfac=1f pointscontrib=1 align='ce' large=true range=10 
+    
+    desc='A monstrous slave-servant of its megetherian overlords.\nIt looks like humongous, deformed mermaid.' } ] monsterstock_set
+
+[ 'priest_d6'
+  Monster{
+    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='d' level=6 count=1 
+    attack=2f defence=1f psyattack=0f flavor='wizard' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    raise_dead=NumEffect{num=15 timeout=2} pointsfac=1f fleerange=5 range=25 
+    desc='A depraved worshipper of Ba\'al-Zebub, the unclean undead god.' } ] monsterstock_set
+
+[ 'nosf_d7'
+  Monster{
+    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='d' level=7 count=1 
+    attack=7f defence=7f psyattack=0f flavor='air' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    pointsfac=1f no_a=true range=25 bloodsucker=TimedEffect{damage=0.25 timeout=50} 
+    desc='A bloodsucking walking corpse.' } ] monsterstock_set
+
+[ 'Scylla'
+  Monster{
+    skin=Skin{ char='U' color='white' } name='Scylla' branch='d' level=7 count=1 
+    attack=10f defence=10f psyattack=0f flavor='giant' pointsfac=1f no_a=true 
+    pointscontrib=1 align='le' large=true range=15 
+    desc='A megatherian: an evil, immortal, gigantic creature of\npossibly extraterrestrial origin. They are hellbent on ruling\nUrth. They are powerful enough and amoral enough to be\nessentially equal to gods.' } ] monsterstock_set
+
+[ 'bd6'
+  Monster{
+    skin=Skin{ char='0' color='gray' } name='boulder' branch='d' level=7 count=1 
+    attack=0.5 defence=0.5 psyattack=0f confimmune=true no_exting=true inanimate=true 
+    pointsfac=1f boulder=true range=11 radimmune=true poisimmune=true 
+    
+    desc='A gigantic rock of spherical shape.' } ] monsterstock_set
+
+[ 'luna_d7'
+  Monster{
+    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='d' level=7 count=1 
+    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6 timeout=12} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
+    no_exting=true pointsfac=1f 
+    desc='Strange, selenic emanations have driven this poor soul\nto eternally walk the moon-lit dungeon, whispering softly\nto the pale, round face of the Moon.' } ] monsterstock_set
+
+[ 'lyca_d7'
+  Monster{
+    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='d' level=7 count=1 
+    attack=4f defence=1.5 psyattack=0f moon=(full_moon_only->MoonDistrib) no_exting=true fast=true 
+    pointsfac=1f range=20 heatseeking=true 
+    desc='Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.' } ] monsterstock_set
+
+[ 'priest_d7'
+  Monster{
+    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='d' level=7 count=1 
+    attack=2f defence=1f psyattack=0f flavor='wizard' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    raise_dead=NumEffect{num=15 timeout=2} pointsfac=1f fleerange=5 range=25 
+    desc='A depraved worshipper of Ba\'al-Zebub, the unclean undead god.' } ] monsterstock_set
+
+[ 'nosf_d8'
+  Monster{
+    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='d' level=8 count=1 
+    attack=7f defence=7f psyattack=0f flavor='air' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    pointsfac=1f no_a=true range=25 bloodsucker=TimedEffect{damage=0.25 timeout=50} 
+    desc='A bloodsucking walking corpse.' } ] monsterstock_set
+
+[ 'Uroboros'
+  Monster{
+    skin=Skin{ char='U' color='light_green' } name='Uroboros' branch='d' level=8 count=1 
+    attack=10f defence=10f psyattack=0f confimmune=true flavor='giant' pointsfac=1f 
+    no_a=true pointscontrib=1 align='ne' large=true range=15 
+    
+    desc='A megatherian: an evil, immortal, gigantic creature of\npossibly extraterrestrial origin. They are hellbent on ruling\nUrth. They are powerful enough and amoral enough to be\nessentially equal to gods.' } ] monsterstock_set
+
+[ 'luna_d8'
+  Monster{
+    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='d' level=8 count=1 
+    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6 timeout=12} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
+    no_exting=true pointsfac=1f 
+    desc='Strange, selenic emanations have driven this poor soul\nto eternally walk the moon-lit dungeon, whispering softly\nto the pale, round face of the Moon.' } ] monsterstock_set
+
+[ 'lyca_d8'
+  Monster{
+    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='d' level=8 count=1 
+    attack=4f defence=1.5 psyattack=0f moon=(full_moon_only->MoonDistrib) no_exting=true fast=true 
+    pointsfac=1f range=20 heatseeking=true 
+    desc='Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.' } ] monsterstock_set
+
+[ 'ufo_d8'
+  Monster{
+    skin=Skin{ char='a' color='dark_lime' } name='rigellian' branch='d' level=8 count=1 
+    attack=7f defence=22f psyattack=0.25 blink_away=5 confimmune=true psyrange=5 
+    moon=(quarter_moon_only->MoonDistrib) no_exting=true explodeimmune=true flying=true pointsfac=5f itemdrop='deathray' 
+    pointscontrib=1 fleerange=8 fireimmune=true range=25 radimmune=true 
+    poisimmune=true 
+    desc='An evil alien overlord.\nHe studies humanity and plots plans of world domination.\nHe might also be the one responsible for abductions of\nimmocents civilians and cattle.' } ] monsterstock_set
+
+[ 'priest_d8'
+  Monster{
+    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='d' level=8 count=1 
+    attack=2f defence=1f psyattack=0f flavor='wizard' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    raise_dead=NumEffect{num=15 timeout=2} pointsfac=1f fleerange=5 range=25 
+    desc='A depraved worshipper of Ba\'al-Zebub, the unclean undead god.' } ] monsterstock_set
+
+[ 'Erebus'
+  Monster{
+    skin=Skin{ char='U' color='light_pink' } name='Erebus' branch='d' level=9 count=1 
+    attack=10f defence=10f psyattack=0f fireimmune=true confimmune=true flavor='giant' 
+    explodeimmune=true pointsfac=1f no_a=true pointscontrib=1 align='cn' 
+    large=true range=15 
+    desc='A megatherian: an evil, immortal, gigantic creature of\npossibly extraterrestrial origin. They are hellbent on ruling\nUrth. They are powerful enough and amoral enough to be\nessentially equal to gods.' } ] monsterstock_set
+
+[ 'nosf_d9'
+  Monster{
+    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='d' level=9 count=1 
+    attack=7f defence=7f psyattack=0f flavor='air' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    pointsfac=1f no_a=true range=25 bloodsucker=TimedEffect{damage=0.25 timeout=50} 
+    desc='A bloodsucking walking corpse.' } ] monsterstock_set
+
+[ 'luna_d9'
+  Monster{
+    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='d' level=9 count=1 
+    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6 timeout=12} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
+    no_exting=true pointsfac=1f 
+    desc='Strange, selenic emanations have driven this poor soul\nto eternally walk the moon-lit dungeon, whispering softly\nto the pale, round face of the Moon.' } ] monsterstock_set
+
+[ 'lyca_d9'
+  Monster{
+    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='d' level=9 count=1 
+    attack=4f defence=1.5 psyattack=0f moon=(full_moon_only->MoonDistrib) no_exting=true fast=true 
+    pointsfac=1f range=20 heatseeking=true 
+    desc='Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.' } ] monsterstock_set
+
+[ 'priest_d9'
+  Monster{
+    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='d' level=9 count=1 
+    attack=2f defence=1f psyattack=0f flavor='wizard' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    raise_dead=NumEffect{num=15 timeout=2} pointsfac=1f fleerange=5 range=25 
+    desc='A depraved worshipper of Ba\'al-Zebub, the unclean undead god.' } ] monsterstock_set
+
+[ 'Arioch'
+  Monster{
+    skin=Skin{ char='U' color='light_sky' } name='Arioch' branch='d' level=10 count=1 
+    attack=10f defence=10f psyattack=0f fireimmune=true confimmune=true flavor='earthshake' 
+    explodeimmune=true pointsfac=1f no_a=true pointscontrib=1 align='le' 
+    large=true range=15 radimmune=true 
+    desc='A megatherian: an evil, immortal, gigantic creature of\npossibly extraterrestrial origin. They are hellbent on ruling\nUrth. They are powerful enough and amoral enough to be\nessentially equal to gods.' } ] monsterstock_set
+
+[ 'ufo_d10'
+  Monster{
+    skin=Skin{ char='a' color='dark_lime' } name='rigellian' branch='d' level=10 count=1 
+    attack=7f defence=22f psyattack=0.25 blink_away=5 confimmune=true psyrange=6 
+    moon=(quarter_moon_only->MoonDistrib) no_exting=true explodeimmune=true flying=true pointsfac=5f itemdrop='deathray' 
+    pointscontrib=1 fleerange=8 fireimmune=true range=25 radimmune=true 
+    poisimmune=true 
+    desc='An evil alien overlord.\nHe studies humanity and plots plans of world domination.\nHe might also be the one responsible for abductions of\nimmocents civilians and cattle.' } ] monsterstock_set
+
+[ 'Abaia'
+  Monster{
+    skin=Skin{ char='U' color='grey' } name='Abaia' branch='d' level=11 count=1 
+    attack=10f defence=10f psyattack=0f fireimmune=true confimmune=true flavor='earthshake' 
+    explodeimmune=true pointsfac=1f no_a=true itemdrop='gluegun' pointscontrib=1 align='cn' 
+    summon=Summon{mon='undine' timeout=3} large=true range=15 radimmune=true 
+    desc='A megatherian: an evil, immortal, gigantic creature of\npossibly extraterrestrial origin. They are hellbent on ruling\nUrth. They are powerful enough and amoral enough to be\nessentially equal to gods.' } ] monsterstock_set
+
+[ 'be1'
+  Monster{
+    skin=Skin{ char='0' color='gray' } name='boulder' branch='e' level=1 count=3 
+    attack=0.5 defence=0.5 psyattack=0f confimmune=true no_exting=true inanimate=true 
+    pointsfac=1f boulder=true range=11 radimmune=true poisimmune=true 
+    
+    desc='A gigantic rock of spherical shape.' } ] monsterstock_set
+
+[ 'lichen'
+  Monster{
+    skin=Skin{ char='x' color='light_purple' } name='lichen' branch='e' level=1 count=9 
+    attack=0.3 defence=0.2 psyattack=0f confimmune=true pointsfac=1f itemdrop='mushrooms' 
+    pointscontrib=1 range=1 
+    desc='Looks yummy.' } ] monsterstock_set
+
+[ 'peasant'
+  Monster{
+    skin=Skin{ char='h' color='dark_sepia' } name='peasant' branch='e' level=1 count=9 
+    attack=0.1 defence=0.2 psyattack=0f pointsfac=1f itemdrop='booze' pointscontrib=1 
+    range=3 
+    desc='He\'s dirty, suspicious and closed-minded.' } ] monsterstock_set
+
+[ 'Aquilonian marshall'
+  Monster{
+    skin=Skin{ char='h' color='dark_blue' } name='Aquilonian marshall' branch='e' level=2 count=8 
+    attack=0.5 defence=0.5 psyattack=0f flavor='humanwarrior' moon=(full_moon->MoonDistrib) pointsfac=1f 
+    pointscontrib=1 align='ng' summon=Summon{mon='Aquilonian marshall' timeout=5} range=6 
+    desc='A mercenary, sent from the Aquilonian cities on\nthe surface to partol these dangerous tunnels.' } ] monsterstock_set
+
+[ 'nosf_e2'
+  Monster{
+    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='e' level=2 count=1 
+    attack=7f defence=7f psyattack=0f flavor='air' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    pointsfac=1f no_a=true range=25 bloodsucker=TimedEffect{damage=0.25 timeout=50} 
+    desc='A bloodsucking walking corpse.' } ] monsterstock_set
+
+[ 'Turanian nomad'
+  Monster{
+    skin=Skin{ char='h' color='orange' } name='Turanian nomad' branch='e' level=2 count=8 
+    attack=1.3 defence=0.4 psyattack=0f flavor='humanwarrior' moon=(full_moon->MoonDistrib) pointsfac=1f 
+    pointscontrib=1 align='cg' range=7 
+    desc='A nomad from the boundless steppes of Turania.' } ] monsterstock_set
+
+[ 'be2'
+  Monster{
+    skin=Skin{ char='0' color='gray' } name='boulder' branch='e' level=2 count=3 
+    attack=0.5 defence=0.5 psyattack=0f confimmune=true no_exting=true inanimate=true 
+    pointsfac=1f boulder=true range=11 radimmune=true poisimmune=true 
+    
+    desc='A gigantic rock of spherical shape.' } ] monsterstock_set
+
+[ 'giant spider'
+  Monster{
+    skin=Skin{ char='X' color='gray' } name='giant spider' branch='e' level=2 count=8 
+    attack=0.7 defence=0.7 psyattack=0f flavor='snake' moon=(new_moon->MoonDistrib) pointsfac=1f 
+    pointscontrib=1 align='nn' range=5 
+    desc='A huge, very ugly and disturbing spider.' } ] monsterstock_set
+
+[ 'luna_e2'
+  Monster{
+    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='e' level=2 count=1 
+    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6 timeout=12} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
+    no_exting=true pointsfac=1f 
+    desc='Strange, selenic emanations have driven this poor soul\nto eternally walk the moon-lit dungeon, whispering softly\nto the pale, round face of the Moon.' } ] monsterstock_set
+
+[ 'lyca_e2'
+  Monster{
+    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='e' level=2 count=1 
+    attack=4f defence=1.5 psyattack=0f moon=(full_moon_only->MoonDistrib) no_exting=true fast=true 
+    pointsfac=1f range=20 heatseeking=true 
+    desc='Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.' } ] monsterstock_set
+
+[ 'ufo_e2'
+  Monster{
+    skin=Skin{ char='a' color='dark_lime' } name='rigellian' branch='e' level=2 count=1 
+    attack=7f defence=22f psyattack=0f blink_away=5 confimmune=true moon=(quarter_moon_only->MoonDistrib) 
+    no_exting=true explodeimmune=true flying=true pointsfac=5f itemdrop='deathray' pointscontrib=1 
+    fleerange=8 fireimmune=true range=25 radimmune=true poisimmune=true 
+    
+    desc='An evil alien overlord.\nHe studies humanity and plots plans of world domination.\nHe might also be the one responsible for abductions of\nimmocents civilians and cattle.' } ] monsterstock_set
+
+[ 'priest_e2'
+  Monster{
+    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='e' level=2 count=1 
+    attack=2f defence=1f psyattack=0f flavor='wizard' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    raise_dead=NumEffect{num=15 timeout=2} pointsfac=1f fleerange=5 range=25 
+    desc='A depraved worshipper of Ba\'al-Zebub, the unclean undead god.' } ] monsterstock_set
+
+[ 'Cimmerian pirate'
+  Monster{
+    skin=Skin{ char='h' color='red' } name='Cimmerian pirate' branch='e' level=3 count=8 
+    attack=1.2 defence=0.6 psyattack=0f flavor='humanwarrior' moon=(full_moon->MoonDistrib) pointsfac=1f 
+    pointscontrib=1 align='cn' summon=Summon{mon='Cimmerian pirate' timeout=4} range=7 
+    desc='A cruel-hearted Cimmerian tribesman, turned to piracy\nin search of loot and women.\nThe poor man is probably looking for treasure in these\ncaves.' } ] monsterstock_set
+
+[ 'Hyperborean barbarian'
+  Monster{
+    skin=Skin{ char='h' color='peach' } name='Hyperborean barbarian' branch='e' level=3 count=6 
+    attack=2.2 defence=0.9 psyattack=0f flavor='humanwarrior' pointsfac=1f pointscontrib=1 
+    align='cg' range=6 
+    desc='A barbarian who hails from one of the hearty tribes\nof great frosty Hyperborea.' } ] monsterstock_set
+
+[ 'nosf_e3'
+  Monster{
+    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='e' level=3 count=1 
+    attack=7f defence=7f psyattack=0f flavor='air' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    pointsfac=1f no_a=true range=25 bloodsucker=TimedEffect{damage=0.25 timeout=50} 
+    desc='A bloodsucking walking corpse.' } ] monsterstock_set
+
+[ 'be3'
+  Monster{
+    skin=Skin{ char='0' color='gray' } name='boulder' branch='e' level=3 count=3 
+    attack=0.5 defence=0.5 psyattack=0f confimmune=true no_exting=true inanimate=true 
+    pointsfac=1f boulder=true range=11 radimmune=true poisimmune=true 
+    
+    desc='A gigantic rock of spherical shape.' } ] monsterstock_set
+
+[ 'giant serpent'
+  Monster{
+    skin=Skin{ char='S' color='darkest_lime' } name='giant serpent' branch='e' level=3 count=8 
+    attack=1.8 defence=0.5 psyattack=0f flavor='snake' moon=(new_moon->MoonDistrib) pointsfac=1f 
+    pointscontrib=1 align='nn' range=9 
+    desc='A malevolent nag, a giant snake borne from the\nunholy mixture of human and cobra seed.' } ] monsterstock_set
+
+[ 'luna_e3'
+  Monster{
+    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='e' level=3 count=1 
+    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6 timeout=12} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
+    no_exting=true pointsfac=1f 
+    desc='Strange, selenic emanations have driven this poor soul\nto eternally walk the moon-lit dungeon, whispering softly\nto the pale, round face of the Moon.' } ] monsterstock_set
+
+[ 'lyca_e3'
+  Monster{
+    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='e' level=3 count=1 
+    attack=4f defence=1.5 psyattack=0f moon=(full_moon_only->MoonDistrib) no_exting=true fast=true 
+    pointsfac=1f range=20 heatseeking=true 
+    desc='Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.' } ] monsterstock_set
+
+[ 'priest_e3'
+  Monster{
+    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='e' level=3 count=1 
+    attack=2f defence=1f psyattack=0f flavor='wizard' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    raise_dead=NumEffect{num=15 timeout=2} pointsfac=1f fleerange=5 range=25 
+    desc='A depraved worshipper of Ba\'al-Zebub, the unclean undead god.' } ] monsterstock_set
+
+[ 'nosf_e4'
+  Monster{
+    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='e' level=4 count=1 
+    attack=7f defence=7f psyattack=0f flavor='air' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    pointsfac=1f no_a=true range=25 bloodsucker=TimedEffect{damage=0.25 timeout=50} 
+    desc='A bloodsucking walking corpse.' } ] monsterstock_set
+
+[ 'Stygian priest'
+  Monster{
+    skin=Skin{ char='h' color='light_sepia' } name='Stygian priest' branch='e' level=4 count=6 
+    attack=1f defence=1f psyattack=0f flavor='wizard' moon=(new_moon->MoonDistrib) pointsfac=1f 
+    pointscontrib=1 align='ln' summon=Summon{mon='giant serpent' timeout=3} range=8 
+    desc='Hailing from the banks of the river Stygs, he has\na swarthy complexion and sports a completely shaved head.\nHe is skilled in the arcane worship of the enigmatic\nStygian gods.' } ] monsterstock_set
+
+[ 'be4'
+  Monster{
+    skin=Skin{ char='0' color='gray' } name='boulder' branch='e' level=4 count=3 
+    attack=0.5 defence=0.5 psyattack=0f confimmune=true no_exting=true inanimate=true 
+    pointsfac=1f boulder=true range=11 radimmune=true poisimmune=true 
+    
+    desc='A gigantic rock of spherical shape.' } ] monsterstock_set
+
+[ 'giant slug'
+  Monster{
+    skin=Skin{ char='w' color='purple' } name='giant slug' branch='e' level=4 count=10 
+    attack=0.7 defence=2.8 psyattack=0f flavor='snake' moon=(new_moon->MoonDistrib) pointsfac=1f 
+    pointscontrib=1 align='lg' summon=Summon{mon='giant slug' timeout=2} range=4 
+    desc='It is truly giant and truly disgusting.' } ] monsterstock_set
+
+[ 'luna_e4'
+  Monster{
+    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='e' level=4 count=1 
+    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6 timeout=12} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
+    no_exting=true pointsfac=1f 
+    desc='Strange, selenic emanations have driven this poor soul\nto eternally walk the moon-lit dungeon, whispering softly\nto the pale, round face of the Moon.' } ] monsterstock_set
+
+[ 'lyca_e4'
+  Monster{
+    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='e' level=4 count=1 
+    attack=4f defence=1.5 psyattack=0f moon=(full_moon_only->MoonDistrib) no_exting=true fast=true 
+    pointsfac=1f range=20 heatseeking=true 
+    desc='Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.' } ] monsterstock_set
+
+[ 'ufo_e4'
+  Monster{
+    skin=Skin{ char='a' color='dark_lime' } name='rigellian' branch='e' level=4 count=1 
+    attack=7f defence=22f psyattack=0f blink_away=5 confimmune=true moon=(quarter_moon_only->MoonDistrib) 
+    no_exting=true explodeimmune=true flying=true pointsfac=5f itemdrop='deathray' pointscontrib=1 
+    fleerange=8 fireimmune=true range=25 radimmune=true poisimmune=true 
+    
+    desc='An evil alien overlord.\nHe studies humanity and plots plans of world domination.\nHe might also be the one responsible for abductions of\nimmocents civilians and cattle.' } ] monsterstock_set
+
+[ 'priest_e4'
+  Monster{
+    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='e' level=4 count=1 
+    attack=2f defence=1f psyattack=0f flavor='wizard' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    raise_dead=NumEffect{num=15 timeout=2} pointsfac=1f fleerange=5 range=25 
+    desc='A depraved worshipper of Ba\'al-Zebub, the unclean undead god.' } ] monsterstock_set
+
+[ 'zombie'
+  Monster{
+    skin=Skin{ char='y' color='silver' } name='zombie' branch='e' level=4 count=10 
+    attack=1.8 defence=2.9 psyattack=0f moon=(new_moon->MoonDistrib) pointsfac=1f pointscontrib=1 
+    align='ne' range=3 poisimmune=true 
+    desc='A decomposed corpse brought back to unlife by\nthe darkest arts.' } ] monsterstock_set
+
+[ 'Amazon warrior'
+  Monster{
+    skin=Skin{ char='h' color='pink' } name='Amazon warrior' branch='e' level=5 count=8 
+    attack=1.8 defence=1.8 psyattack=0f flavor='humanwarrior' moon=(full_moon->MoonDistrib) pointsfac=1f 
+    pointscontrib=1 align='ng' range=10 
+    desc='She is a woman-warrior from the enigmatic Amazonian tribe.\nShe hates men.' } ] monsterstock_set
+
+[ 'nosf_e5'
+  Monster{
+    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='e' level=5 count=1 
+    attack=7f defence=7f psyattack=0f flavor='air' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    pointsfac=1f no_a=true range=25 bloodsucker=TimedEffect{damage=0.25 timeout=50} 
+    desc='A bloodsucking walking corpse.' } ] monsterstock_set
+
+[ 'be5'
+  Monster{
+    skin=Skin{ char='0' color='gray' } name='boulder' branch='e' level=5 count=3 
+    attack=0.5 defence=0.5 psyattack=0f confimmune=true no_exting=true inanimate=true 
+    pointsfac=1f boulder=true range=11 radimmune=true poisimmune=true 
+    
+    desc='A gigantic rock of spherical shape.' } ] monsterstock_set
+
+[ 'luna_e5'
+  Monster{
+    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='e' level=5 count=1 
+    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6 timeout=12} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
+    no_exting=true pointsfac=1f 
+    desc='Strange, selenic emanations have driven this poor soul\nto eternally walk the moon-lit dungeon, whispering softly\nto the pale, round face of the Moon.' } ] monsterstock_set
+
+[ 'lyca_e5'
+  Monster{
+    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='e' level=5 count=1 
+    attack=4f defence=1.5 psyattack=0f moon=(full_moon_only->MoonDistrib) no_exting=true fast=true 
+    pointsfac=1f range=20 heatseeking=true 
+    desc='Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.' } ] monsterstock_set
+
+[ 'priest_e5'
+  Monster{
+    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='e' level=5 count=1 
+    attack=2f defence=1f psyattack=0f flavor='wizard' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    raise_dead=NumEffect{num=15 timeout=2} pointsfac=1f fleerange=5 range=25 
+    desc='A depraved worshipper of Ba\'al-Zebub, the unclean undead god.' } ] monsterstock_set
+
+[ 'wolf'
+  Monster{
+    skin=Skin{ char='q' color='silver' } name='wolf' branch='e' level=5 count=10 
+    attack=3.5 defence=3f psyattack=0f flavor='animal' moon=(full_moon->MoonDistrib) pointsfac=1f 
+    pointscontrib=1 align='lg' range=7 
+    desc='A man-eating wolf.' } ] monsterstock_set
+
+[ 'nosf_e6'
+  Monster{
+    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='e' level=6 count=1 
+    attack=7f defence=7f psyattack=0f flavor='air' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    pointsfac=1f no_a=true range=25 bloodsucker=TimedEffect{damage=0.25 timeout=50} 
+    desc='A bloodsucking walking corpse.' } ] monsterstock_set
+
+[ 'Thulian price'
+  Monster{
+    skin=Skin{ char='h' color='sky' } name='Thulian price' branch='e' level=6 count=8 
+    attack=1f defence=1f psyattack=0f flavor='humanweird' moon=(full_moon->MoonDistrib) pointsfac=1f 
+    pointscontrib=1 align='ln' summon=Summon{mon='Amazon warrior' timeout=1} range=18 
+    desc='Ultima Thule is the mystical land of fancy and dark legend.\nYou\'re not sure he is really from Thule, much less a real price.' } ] monsterstock_set
+
+[ 'be6'
+  Monster{
+    skin=Skin{ char='0' color='gray' } name='boulder' branch='e' level=6 count=3 
+    attack=0.5 defence=0.5 psyattack=0f confimmune=true no_exting=true inanimate=true 
+    pointsfac=1f boulder=true range=11 radimmune=true poisimmune=true 
+    
+    desc='A gigantic rock of spherical shape.' } ] monsterstock_set
+
+[ 'cannibal'
+  Monster{
+    skin=Skin{ char='h' color='dark_purple' } name='cannibal' branch='e' level=6 count=8 
+    attack=2f defence=2f psyattack=0f flavor='humanweird' moon=(new_moon->MoonDistrib) pointsfac=1f 
+    pointscontrib=1 align='ce' range=15 
+    desc='A deranged human who developed an unnatural, unholy\naddiction to human flesh.' } ] monsterstock_set
+
+[ 'luna_e6'
+  Monster{
+    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='e' level=6 count=1 
+    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6 timeout=12} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
+    no_exting=true pointsfac=1f 
+    desc='Strange, selenic emanations have driven this poor soul\nto eternally walk the moon-lit dungeon, whispering softly\nto the pale, round face of the Moon.' } ] monsterstock_set
+
+[ 'lyca_e6'
+  Monster{
+    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='e' level=6 count=1 
+    attack=4f defence=1.5 psyattack=0f moon=(full_moon_only->MoonDistrib) no_exting=true fast=true 
+    pointsfac=1f range=20 heatseeking=true 
+    desc='Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.' } ] monsterstock_set
+
+[ 'ufo_e6'
+  Monster{
+    skin=Skin{ char='a' color='dark_lime' } name='rigellian' branch='e' level=6 count=1 
+    attack=7f defence=22f psyattack=0.25 blink_away=5 confimmune=true psyrange=3 
+    moon=(quarter_moon_only->MoonDistrib) no_exting=true explodeimmune=true flying=true pointsfac=5f itemdrop='deathray' 
+    pointscontrib=1 fleerange=8 fireimmune=true range=25 radimmune=true 
+    poisimmune=true 
+    desc='An evil alien overlord.\nHe studies humanity and plots plans of world domination.\nHe might also be the one responsible for abductions of\nimmocents civilians and cattle.' } ] monsterstock_set
+
+[ 'priest_e6'
+  Monster{
+    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='e' level=6 count=1 
+    attack=2f defence=1f psyattack=0f flavor='wizard' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    raise_dead=NumEffect{num=15 timeout=2} pointsfac=1f fleerange=5 range=25 
+    desc='A depraved worshipper of Ba\'al-Zebub, the unclean undead god.' } ] monsterstock_set
+
+[ 'Lemurian wizard'
+  Monster{
+    skin=Skin{ char='h' color='dark_han' } name='Lemurian wizard' branch='e' level=7 count=6 
+    attack=1.2 defence=1.2 psyattack=0f flavor='wizard' moon=(new_moon->MoonDistrib) pointsfac=1f 
+    pointscontrib=1 align='le' summon=Summon{mon='cannibal' timeout=2} range=15 
+    desc='Lemuria is the mythical island-empire of evil magicians\nand demon-worshippers.' } ] monsterstock_set
+
+[ 'nosf_e7'
+  Monster{
+    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='e' level=7 count=1 
+    attack=7f defence=7f psyattack=0f flavor='air' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    pointsfac=1f no_a=true range=25 bloodsucker=TimedEffect{damage=0.25 timeout=50} 
+    desc='A bloodsucking walking corpse.' } ] monsterstock_set
+
+[ 'apeman'
+  Monster{
+    skin=Skin{ char='h' color='light_pink' } name='apeman' branch='e' level=7 count=8 
+    attack=2.5 defence=2.5 psyattack=0f flavor='humanweird' moon=(full_moon->MoonDistrib) pointsfac=1f 
+    pointscontrib=1 align='lg' range=10 
+    desc='Part human, part ape, if he has any intelligence, then his\ngaze does not betray any, only pure malevolence.' } ] monsterstock_set
+
+[ 'be7'
+  Monster{
+    skin=Skin{ char='0' color='gray' } name='boulder' branch='e' level=7 count=3 
+    attack=0.5 defence=0.5 psyattack=0f confimmune=true no_exting=true inanimate=true 
+    pointsfac=1f boulder=true range=11 radimmune=true poisimmune=true 
+    
+    desc='A gigantic rock of spherical shape.' } ] monsterstock_set
+
+[ 'luna_e7'
+  Monster{
+    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='e' level=7 count=1 
+    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6 timeout=12} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
+    no_exting=true pointsfac=1f 
+    desc='Strange, selenic emanations have driven this poor soul\nto eternally walk the moon-lit dungeon, whispering softly\nto the pale, round face of the Moon.' } ] monsterstock_set
+
+[ 'lyca_e7'
+  Monster{
+    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='e' level=7 count=1 
+    attack=4f defence=1.5 psyattack=0f moon=(full_moon_only->MoonDistrib) no_exting=true fast=true 
+    pointsfac=1f range=20 heatseeking=true 
+    desc='Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.' } ] monsterstock_set
+
+[ 'priest_e7'
+  Monster{
+    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='e' level=7 count=1 
+    attack=2f defence=1f psyattack=0f flavor='wizard' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    raise_dead=NumEffect{num=15 timeout=2} pointsfac=1f fleerange=5 range=25 
+    desc='A depraved worshipper of Ba\'al-Zebub, the unclean undead god.' } ] monsterstock_set
+
+[ 'Atlantian sorceror'
+  Monster{
+    skin=Skin{ char='h' color='light_han' } name='Atlantian sorceror' branch='e' level=8 count=6 
+    attack=1.2 defence=1.2 psyattack=0f flavor='wizard' moon=(full_moon->MoonDistrib) pointsfac=1f 
+    pointscontrib=1 align='le' summon=Summon{mon='evil demon' timeout=2} range=15 
+    desc='Atlantis is another evil island-empire, the competitor\nto Lemuria in the dark art of demon-worship.' } ] monsterstock_set
+
+[ 'nosf_e8'
+  Monster{
+    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='e' level=8 count=1 
+    attack=7f defence=7f psyattack=0f flavor='air' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    pointsfac=1f no_a=true range=25 bloodsucker=TimedEffect{damage=0.25 timeout=50} 
+    desc='A bloodsucking walking corpse.' } ] monsterstock_set
+
+[ 'be8'
+  Monster{
+    skin=Skin{ char='0' color='gray' } name='boulder' branch='e' level=8 count=3 
+    attack=0.5 defence=0.5 psyattack=0f confimmune=true no_exting=true inanimate=true 
+    pointsfac=1f boulder=true range=11 radimmune=true poisimmune=true 
+    
+    desc='A gigantic rock of spherical shape.' } ] monsterstock_set
+
+[ 'evil demon'
+  Monster{
+    skin=Skin{ char='Y' color='red' } name='evil demon' branch='e' level=8 count=6 
+    attack=1f defence=1.6 psyattack=0f fireimmune=true flavor='wizard' moon=(new_moon->MoonDistrib) 
+    pointsfac=1f pointscontrib=1 align='ne' summon=Summon{mon='wolf' timeout=2} range=10 poisimmune=true 
+    
+    desc='Summoned from the depths of Infernus to commit\nunspeakable deeds of evil and hatred.' } ] monsterstock_set
+
+[ 'luna_e8'
+  Monster{
+    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='e' level=8 count=1 
+    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6 timeout=12} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
+    no_exting=true pointsfac=1f 
+    desc='Strange, selenic emanations have driven this poor soul\nto eternally walk the moon-lit dungeon, whispering softly\nto the pale, round face of the Moon.' } ] monsterstock_set
+
+[ 'lyca_e8'
+  Monster{
+    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='e' level=8 count=1 
+    attack=4f defence=1.5 psyattack=0f moon=(full_moon_only->MoonDistrib) no_exting=true fast=true 
+    pointsfac=1f range=20 heatseeking=true 
+    desc='Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.' } ] monsterstock_set
+
+[ 'ufo_e8'
+  Monster{
+    skin=Skin{ char='a' color='dark_lime' } name='rigellian' branch='e' level=8 count=1 
+    attack=7f defence=22f psyattack=0.25 blink_away=5 confimmune=true psyrange=5 
+    moon=(quarter_moon_only->MoonDistrib) no_exting=true explodeimmune=true flying=true pointsfac=5f itemdrop='deathray' 
+    pointscontrib=1 fleerange=8 fireimmune=true range=25 radimmune=true 
+    poisimmune=true 
+    desc='An evil alien overlord.\nHe studies humanity and plots plans of world domination.\nHe might also be the one responsible for abductions of\nimmocents civilians and cattle.' } ] monsterstock_set
+
+[ 'priest_e8'
+  Monster{
+    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='e' level=8 count=1 
+    attack=2f defence=1f psyattack=0f flavor='wizard' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    raise_dead=NumEffect{num=15 timeout=2} pointsfac=1f fleerange=5 range=25 
+    desc='A depraved worshipper of Ba\'al-Zebub, the unclean undead god.' } ] monsterstock_set
+
+[ 'nosf_e9'
+  Monster{
+    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='e' level=9 count=1 
+    attack=7f defence=7f psyattack=0f flavor='air' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    pointsfac=1f no_a=true range=25 bloodsucker=TimedEffect{damage=0.25 timeout=50} 
+    desc='A bloodsucking walking corpse.' } ] monsterstock_set
+
+[ 'be9'
+  Monster{
+    skin=Skin{ char='0' color='gray' } name='boulder' branch='e' level=9 count=3 
+    attack=0.5 defence=0.5 psyattack=0f confimmune=true no_exting=true inanimate=true 
+    pointsfac=1f boulder=true range=11 radimmune=true poisimmune=true 
+    
+    desc='A gigantic rock of spherical shape.' } ] monsterstock_set
+
+[ 'carrion crawler'
+  Monster{
+    skin=Skin{ char='w' color='white' } name='carrion crawler' branch='e' level=9 count=16 
+    attack=2f defence=2f psyattack=0f flavor='snake' moon=(new_moon->MoonDistrib) pointsfac=1f 
+    itemdrop='cclarva' pointscontrib=1 align='ce' range=5 poisimmune=true 
+    
+    desc='A creature that looks like a maggot,\nonly a thousand times bigger.' } ] monsterstock_set
+
+[ 'luna_e9'
+  Monster{
+    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='e' level=9 count=1 
+    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6 timeout=12} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
+    no_exting=true pointsfac=1f 
+    desc='Strange, selenic emanations have driven this poor soul\nto eternally walk the moon-lit dungeon, whispering softly\nto the pale, round face of the Moon.' } ] monsterstock_set
+
+[ 'lyca_e9'
+  Monster{
+    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='e' level=9 count=1 
+    attack=4f defence=1.5 psyattack=0f moon=(full_moon_only->MoonDistrib) no_exting=true fast=true 
+    pointsfac=1f range=20 heatseeking=true 
+    desc='Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.' } ] monsterstock_set
+
+[ 'vampire'
+  Monster{
+    skin=Skin{ char='Y' color='blue' } name='vampire' branch='e' level=9 count=5 
+    attack=2.5 defence=2.5 psyattack=0f flavor='air' moon=(new_moon->MoonDistrib) pointsfac=1f 
+    pointscontrib=1 align='ne' summon=Summon{mon='zombie' timeout=1} range=15 poisimmune=true 
+    desc='One of the Elder Ones, the most ancient and powerful of\nvampires.' } ] monsterstock_set
+
+[ 'priest_e9'
+  Monster{
+    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='e' level=9 count=1 
+    attack=2f defence=1f psyattack=0f flavor='wizard' moon=(new_moon_only->MoonDistrib) no_exting=true 
+    raise_dead=NumEffect{num=15 timeout=2} pointsfac=1f fleerange=5 range=25 
+    desc='A depraved worshipper of Ba\'al-Zebub, the unclean undead god.' } ] monsterstock_set
+
+[ 'Conan'
+  Monster{
+    skin=Skin{ char='K' color='sepia' } name='Conan' branch='e' level=10 count=1 
+    attack=7.5 defence=5.5 psyattack=0f confimmune=true flavor='humanwarrior' pointsfac=1f 
+    no_a=true itemdrop='eyeofkali' pointscontrib=1 align='cn' range=8 
+    
+    desc='A well-muscled adventurer,\nhe looks like he just stepped off a movie poster.\nHe hates competition.' } ] monsterstock_set
+
+[ 'be10'
+  Monster{
+    skin=Skin{ char='0' color='gray' } name='boulder' branch='e' level=10 count=3 
+    attack=0.5 defence=0.5 psyattack=0f confimmune=true no_exting=true inanimate=true 
+    pointsfac=1f boulder=true range=11 radimmune=true poisimmune=true 
+    
+    desc='A gigantic rock of spherical shape.' } ] monsterstock_set
+
+[ 'ufo_e10'
+  Monster{
+    skin=Skin{ char='a' color='dark_lime' } name='rigellian' branch='e' level=10 count=1 
+    attack=7f defence=22f psyattack=0.25 blink_away=5 confimmune=true psyrange=6 
+    moon=(quarter_moon_only->MoonDistrib) no_exting=true explodeimmune=true flying=true pointsfac=5f itemdrop='deathray' 
+    pointscontrib=1 fleerange=8 fireimmune=true range=25 radimmune=true 
+    poisimmune=true 
+    desc='An evil alien overlord.\nHe studies humanity and plots plans of world domination.\nHe might also be the one responsible for abductions of\nimmocents civilians and cattle.' } ] monsterstock_set
+
+[ 'Crom'
+  Monster{
+    skin=Skin{ char='K' color='peach' } name='Crom' branch='e' level=11 count=1 
+    attack=7.5 defence=7.5 psyattack=0f fireimmune=true confimmune=true flavor='earthshake' 
+    explodeimmune=true pointsfac=1f no_a=true itemdrop='excalibur' pointscontrib=1 align='cn' 
+    summon=Summon{mon='Conan' timeout=1} large=true range=10 poisimmune=true 
+    desc='The most high god of all Cimmerians, Crom is the god\nof valor and battle. He is a dark, vengeful and\njudgemental god.' } ] monsterstock_set
+
+[ 'gremlin'
+  Monster{
+    skin=Skin{ char='f' color='green' } name='gremlin' branch='q' level=3 count=200 
+    attack=2f defence=0.5 psyattack=0f pointsfac=1f pointscontrib=1 
+    range=6 
+    desc='Your adversary in the Thunderdome.' } ] monsterstock_set
+
+[ 'kobold'
+  Monster{
+    skin=Skin{ char='h' color='lightest_green' } name='kobold' branch='q' level=3 count=200 
+    attack=1.4 defence=0.9 psyattack=0f pointsfac=1f pointscontrib=1 
+    range=9 
+    desc='Your adversary in the Thunderdome.' } ] monsterstock_set
+
+[ 'mutant turtle'
+  Monster{
+    skin=Skin{ char='o' color='green' } name='mutant turtle' branch='q' level=3 count=200 
+    attack=1.5 defence=0.2 psyattack=0f pointsfac=1f pointscontrib=1 
+    range=8 
+    desc='Your adversary in the Thunderdome.' } ] monsterstock_set
+
+[ 'dark elf'
+  Monster{
+    skin=Skin{ char='f' color='darkest_gray' } name='dark elf' branch='q' level=4 count=200 
+    attack=1f defence=0.9 psyattack=0.5 psyrange=4 pointsfac=1f pointscontrib=1 
+    range=9 
+    desc='Your adversary in the Thunderdome.' } ] monsterstock_set
+
+[ 'orc'
+  Monster{
+    skin=Skin{ char='h' color='gray' } name='orc' branch='q' level=4 count=200 
+    attack=1.7 defence=0.7 psyattack=0f pointsfac=1f pointscontrib=1 
+    range=7 
+    desc='Your adversary in the Thunderdome.' } ] monsterstock_set
+
+[ 'orge'
+  Monster{
+    skin=Skin{ char='H' color='light_gray' } name='orge' branch='q' level=4 count=200 
+    attack=2.1 defence=1.9 psyattack=0f pointsfac=1f pointscontrib=1 
+    range=5 
+    desc='Your adversary in the Thunderdome.' } ] monsterstock_set
+
+[ 'Beef Supreme'
+  Monster{
+    skin=Skin{ char='h' color='pink' } name='Beef Supreme' branch='q' level=5 count=1 
+    attack=2.7 defence=0.5 psyattack=0f pointsfac=1f no_a=true pointscontrib=1 
+    range=7 
+    desc='Your adversary in the Thunderdome.' } ] monsterstock_set
+
+[ 'Frito Pendejo'
+  Monster{
+    skin=Skin{ char='h' color='dark_sky' } name='Frito Pendejo' branch='q' level=5 count=1 
+    attack=2f defence=0.8 psyattack=0f pointsfac=1f no_a=true pointscontrib=1 
+    range=9 
+    desc='Your adversary in the Thunderdome.' } ] monsterstock_set
+
+[ 'Tylenol Jones'
+  Monster{
+    skin=Skin{ char='h' color='light_blue' } name='Tylenol Jones' branch='q' level=5 count=1 
+    attack=1.5 defence=1f psyattack=0.25 psyrange=3 pointsfac=1f no_a=true 
+    pointscontrib=1 range=8 
+    desc='Your adversary in the Thunderdome.' } ] monsterstock_set
+
+[ 'Brawndo Mutilator'
+  Monster{
+    skin=Skin{ char='z' color='silver' } name='Brawndo Mutilator' branch='q' level=6 count=1 
+    attack=3f defence=0.8 psyattack=0.5 psyrange=3 pointsfac=1f no_a=true 
+    pointscontrib=1 range=6 
+    desc='Your adversary in the Thunderdome.' } ] monsterstock_set
+
+[ 'Formica Davis'
+  Monster{
+    skin=Skin{ char='h' color='light_crimson' } name='Formica Davis' branch='q' level=6 count=1 
+    attack=2f defence=1.7 psyattack=0f pointsfac=1f no_a=true pointscontrib=1 
+    range=10 
+    desc='Your adversary in the Thunderdome.' } ] monsterstock_set
+
+[ 'Hormel Chavez'
+  Monster{
+    skin=Skin{ char='h' color='light_blue' } name='Hormel Chavez' branch='q' level=6 count=1 
+    attack=1.4 defence=2.2 psyattack=0f pointsfac=1f no_a=true pointscontrib=1 
+    range=12 
+    desc='Your adversary in the Thunderdome.' } ] monsterstock_set
+
+[ 'Buzzsaw'
+  Monster{
+    skin=Skin{ char='z' color='lightest_yellow' } name='Buzzsaw' branch='q' level=7 count=1 
+    attack=6f defence=4f psyattack=0f pointsfac=1f no_a=true slow=true 
+    pointscontrib=1 range=6 
+    desc='Your adversary in the Thunderdome.' } ] monsterstock_set
+
+[ 'Captain Electric'
+  Monster{
+    skin=Skin{ char='h' color='lightest_blue' } name='Captain Electric' branch='q' level=7 count=1 
+    attack=3f defence=1f psyattack=0.15 psyrange=7 pointsfac=1f no_a=true 
+    pointscontrib=1 range=5 
+    desc='Your adversary in the Thunderdome.' } ] monsterstock_set
+
+[ 'Meatcleaver'
+  Monster{
+    skin=Skin{ char='h' color='dark_crimson' } name='Meatcleaver' branch='q' level=7 count=1 
+    attack=3f defence=3.5 psyattack=0f pointsfac=1f no_a=true pointscontrib=1 
+    range=10 
+    desc='Your adversary in the Thunderdome.' } ] monsterstock_set
+
+[ 'Dynamo'
+  Monster{
+    skin=Skin{ char='h' color='dark_crimson' } name='Dynamo' branch='q' level=8 count=1 
+    attack=3f defence=0.5 psyattack=0.4 psyrange=5 pointsfac=1f no_a=true 
+    pointscontrib=1 range=10 
+    desc='Your adversary in the Thunderdome.' } ] monsterstock_set
+
+[ 'Master Blaster'
+  Monster{
+    skin=Skin{ char='h' color='lightest_blue' } name='Master Blaster' branch='q' level=8 count=1 
+    attack=3f defence=6f psyattack=0f pointsfac=1f no_a=true pointscontrib=1 
+    range=5 
+    desc='Your adversary in the Thunderdome.' } ] monsterstock_set
+
+[ 'President Dwayne Elizondo Mountain Dew Herbert Camacho'
+  Monster{
+    skin=Skin{ char='H' color='light_sky' } name='President Dwayne Elizondo Mountain Dew Herbert Camacho' branch='q' level=8 count=1 
+    attack=3f defence=8f psyattack=0f pointsfac=1f no_a=true pointscontrib=1 
+    range=7 
+    desc='Your adversary in the Thunderdome.' } ] monsterstock_set
+
+[ 'akali_1'
+  Monster{
+    skin=Skin{ char='h' color='gray' } name='acolyte of Kali' branch='qk' level=7 count=3 
+    attack=3.5 defence=2.5 psyattack=0.15 psyrange=6 confimmune=true pointsfac=1f 
+    pointscontrib=1 range=8 
+    desc='A bloodthirsty worshipper of Kali Ma.' } ] monsterstock_set
+
+[ 'akali_2'
+  Monster{
+    skin=Skin{ char='h' color='gray' } name='acolyte of Kali' branch='qk' level=8 count=3 
+    attack=3.5 defence=2.5 psyattack=0.2 psyrange=10 confimmune=true pointsfac=1f 
+    pointscontrib=1 range=10 
+    desc='A bloodthirsty worshipper of Kali Ma.' } ] monsterstock_set
+
+[ 'akali_3'
+  Monster{
+    skin=Skin{ char='h' color='gray' } name='acolyte of Kali' branch='qk' level=9 count=3 
+    attack=3.5 defence=2.5 psyattack=0.25 psyrange=14 confimmune=true pointsfac=1f 
+    pointscontrib=1 range=14 
+    desc='A bloodthirsty worshipper of Kali Ma.' } ] monsterstock_set
+
+[ 'akali_4'
+  Monster{
+    skin=Skin{ char='h' color='gray' } name='acolyte of Kali' branch='qk' level=10 count=3 
+    attack=3.5 defence=2.5 psyattack=0.25 psyrange=18 confimmune=true pointsfac=1f 
+    pointscontrib=1 range=18 
+    desc='A bloodthirsty worshipper of Kali Ma.' } ] monsterstock_set
+
+[ 'Harry Potter'
+  Monster{
+    skin=Skin{ char=(164 char->Sym) color='blue' } name='Harry Potter' branch='s' level=6 count=1 
+    attack=5f defence=5f psyattack=0f pointsfac=1f no_a=true pointscontrib=1 
+    range=20 
+    desc='A rich, spoiled, snooty kid who attends a prestigious school.\nNot much of a student, but at least he\'s good at athletics.' } ] monsterstock_set
+
+[ 'Robert Langdon'
+  Monster{
+    skin=Skin{ char=(131 char->Sym) color='light_green' } name='Robert Langdon' branch='s' level=6 count=1 
+    attack=7f defence=3f psyattack=0f confimmune=true pointsfac=1f no_a=true 
+    pointscontrib=1 range=18 
+    desc='A self-styled "symbolologist".\nHe\'s probably looking for clues of the Illuminati\nin these dungeons.' } ] monsterstock_set
+
+[ 'Ron Weasley'
+  Monster{
+    skin=Skin{ char=(164 char->Sym) color='light_blue' } name='Ron Weasley' branch='s' level=6 count=1 
+    attack=7f defence=4f psyattack=0f pointsfac=1f no_a=true pointscontrib=1 
+    range=15 
+    desc='A brawnier, dumber and much more low-class hanger-on \nfriend to Harry Potter.' } ] monsterstock_set
+
+[ 'Bella Swan'
+  Monster{
+    skin=Skin{ char=(152 char->Sym) color='gray' } name='Bella Swan' branch='s' level=7 count=1 
+    attack=3f defence=3f psyattack=0f pointsfac=1f no_a=true pointscontrib=1 
+    summon=Summon{mon='Edward Cullen' timeout=1} range=20 
+    desc='A clumsy and very forgettable teenage girl.\nThe only notable thing about her is that she hates\nherself enough to want to become an undead vampire.' } ] monsterstock_set
+
+[ 'Edward Cullen'
+  Monster{
+    skin=Skin{ char=(152 char->Sym) color='silver' } name='Edward Cullen' branch='s' level=7 count=1 
+    attack=8f defence=6f psyattack=0f confimmune=true pointsfac=1f no_a=true 
+    pointscontrib=1 range=20 radimmune=true poisimmune=true 
+    desc='No, he\'s not really a vegetarian!' } ] monsterstock_set
+
+[ 'Dumbledore'
+  Monster{
+    skin=Skin{ char=(146 char->Sym) color='lightest_lime' } name='Dumbledore' branch='s' level=8 count=1 
+    attack=2f defence=7f psyattack=5f psyrange=6 fireimmune=true confimmune=true 
+    sleepattack=true pointsfac=1f no_a=true pointscontrib=1 range=15 
+    poisimmune=true 
+    desc='The head of Hogwarts School of Magic.\nPurportedly a white wizard and a paragod of Good,\nthough you\'d never guess it by looking at him.' } ] monsterstock_set
+
+[ 'Shredder'
+  Monster{
+    skin=Skin{ char=(153 char->Sym) color='gray' } name='Shredder' branch='s' level=8 count=1 
+    attack=8f defence=7f psyattack=0f fireimmune=true confimmune=true explodeimmune=true 
+    pointsfac=1f no_a=true pointscontrib=1 range=25 poisimmune=true 
+    
+    desc='He hates turtles.' } ] monsterstock_set
+
+[ 'Darth Vader'
+  Monster{
+    skin=Skin{ char=(154 char->Sym) color='dark_gray' } name='Darth Vader' branch='s' level=9 count=1 
+    attack=6f defence=9f psyattack=6f psyrange=8 fireimmune=true confimmune=true 
+    flying=true pointsfac=1f no_a=true pointscontrib=1 range=30 
+    poisimmune=true 
+    desc='A dark Sith Lord and a formidable enemy.' } ] monsterstock_set
+
+[ 'Hagbard Celine'
+  Monster{
+    skin=Skin{ char=(144 char->Sym) color='gold' } name='Hagbard Celine' branch='s' level=10 count=1 
+    attack=6f defence=9f psyattack=1f psyrange=2 confimmune=true explodeimmune=true 
+    sleepattack=true pointsfac=1f no_a=true pointscontrib=1 hungerattack=true 
+    range=30 radimmune=true poisimmune=true 
+    desc='Hail Eris!' } ] monsterstock_set
+
+[ 'Iucounu'
+  Monster{
+    skin=Skin{ char=(142 char->Sym) color='purple' } name='Iucounu' branch='s' level=11 count=1 
+    attack=3f defence=11f psyattack=0f fireimmune=true confimmune=true explodeimmune=true 
+    flying=true pointsfac=1f no_a=true pointscontrib=1 range=30 
+    radimmune=true poisimmune=true 
+    desc='The Laughing Magician.' } ] monsterstock_set
+
+[ 'bmold1'
+  Monster{
+    skin=Skin{ char='x' color='gray' } name='black mold' branch='x' level=1 count=5 
+    attack=0f defence=5f psyattack=0f moldspew=MoldEffect{moldid=5 chance=3 timeout=3} static=true no_exting=true 
+    moon=(mold->MoonDistrib) is_mold=true pointsfac=0.5 no_a=true pointscontrib=1 summon=Summon{mon='bmold1' timeout=10} 
+    poisimmune=true 
+    desc='Stachybotrys chartarum, a toxic and sometimes deadly\nspecies of mold.' } ] monsterstock_set
+
+[ 'bmold1'
+  Monster{
+    skin=Skin{ char='x' color='gray' } name='black mold' branch='x' level=2 count=15 
+    attack=0f defence=5f psyattack=0f moldspew=MoldEffect{moldid=5 chance=3 timeout=3} static=true no_exting=true 
+    moon=(mold->MoonDistrib) is_mold=true pointsfac=0.5 no_a=true pointscontrib=1 summon=Summon{mon='bmold1' timeout=10} 
+    poisimmune=true 
+    desc='Stachybotrys chartarum, a toxic and sometimes deadly\nspecies of mold.' } ] monsterstock_set
+
+[ 'bmold2'
+  Monster{
+    skin=Skin{ char='x' color='gray' } name='black mold' branch='x' level=4 count=15 
+    attack=0f defence=5f psyattack=0f moldspew=MoldEffect{moldid=5 chance=3 timeout=3} static=true no_exting=true 
+    moon=(mold->MoonDistrib) is_mold=true pointsfac=0.5 no_a=true pointscontrib=1 summon=Summon{mon='bmold2' timeout=10} 
+    poisimmune=true 
+    desc='Stachybotrys chartarum, a toxic and sometimes deadly\nspecies of mold.' } ] monsterstock_set
+
+[ 'bmold3'
+  Monster{
+    skin=Skin{ char='x' color='gray' } name='black mold' branch='x' level=6 count=15 
+    attack=0f defence=5f psyattack=0f moldspew=MoldEffect{moldid=5 chance=3 timeout=3} static=true no_exting=true 
+    moon=(mold->MoonDistrib) is_mold=true pointsfac=0.5 no_a=true pointscontrib=1 summon=Summon{mon='bmold3' timeout=10} 
+    poisimmune=true 
+    desc='Stachybotrys chartarum, a toxic and sometimes deadly\nspecies of mold.' } ] monsterstock_set
+
+[ 'bmold4'
+  Monster{
+    skin=Skin{ char='x' color='gray' } name='black mold' branch='x' level=8 count=15 
+    attack=0f defence=5f psyattack=0f moldspew=MoldEffect{moldid=5 chance=3 timeout=3} static=true no_exting=true 
+    moon=(mold->MoonDistrib) is_mold=true pointsfac=0.5 no_a=true pointscontrib=1 summon=Summon{mon='mold4' timeout=10} 
+    poisimmune=true 
+    desc='Stachybotrys chartarum, a toxic and sometimes deadly\nspecies of mold.' } ] monsterstock_set
+
+.
