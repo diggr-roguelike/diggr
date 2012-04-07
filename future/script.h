@@ -149,6 +149,7 @@ struct Dungeon : public GlobalVar {};
 
 struct FeatStock : public SymMap {};
 struct PropStock : public SymMap {};
+struct MonsterStock : public SymMap {};
 
 
 /****/
@@ -412,6 +413,9 @@ struct Vm {
         vm.register_callback("featmap_set",   "[ UInt UInt Feat ]", "Void", featmap_set);
         vm.register_callback("featmap_unset", "[ UInt UInt ]",      "Void", featmap_unset);
         vm.register_callback("featmap_get",   "[ UInt UInt ]",      "Feat", featmap_get);
+
+        vm.register_callback("monsterstock_set", "[ Sym Monster ]", "Void", symmap_set<MonsterStock>);
+        vm.register_callback("monsterstock_get", "Sym", "Monster", symmap_get<MonsterStock>);
 
         vm.register_callback("get", "Void",   "Player", global_get<Player>);
         vm.register_callback("set", "Player", "Void",   global_set<Player>);

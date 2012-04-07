@@ -41,6 +41,9 @@ unset Void->Skin :- Skin{char=nil color=nil}.
 char Int->Sym :- \v $to_sym.
 
 
+/***/
+
+
 def {
   confuse
   sticky
@@ -74,6 +77,75 @@ def {
   skin: Skin
 } Feat;
 
+
+def { mon:Sym timeout:UInt } Summon;
+def { damage:Real timeout:UInt } TimedEffect;
+def { moldid:UInt chance:UInt timeout:UInt } MoldEffect;
+def { num:UInt timeout:UInt } NumEffect;
+
+def { new: UInt 
+      wax_c: UInt
+      q1: UInt
+      wax_g: UInt
+      full: UInt
+      wan_g: UInt
+      q2: UInt
+      wan_c: UInt
+    } MoonDistrib;
+
+def {
+  skin: Skin
+
+  name: Sym
+  branch: Sym
+  level: Int
+  desc: Sym
+  count: Int
+
+  flavor: Sym
+
+  psyrange: Int
+  pointscontrib: Int
+  range: Int
+  blink_away: Int
+  attack: Real
+  defence: Real
+  psyattack: Real
+  itemdrop: Sym
+  align: Sym
+  pointsfac: Real
+  fleerange: Int
+
+  summon: Summon
+  bloodsucker: TimedEffect
+  moldspew: MoldEffect
+  summononce: NumEffect
+  raise_dead: NumEffect
+  moon: MoonDistrib
+
+  straightline
+  fireimmune
+  static
+  confimmune
+  no_exting
+  inanimate
+  explodeimmune
+  flying
+  sleepattack
+  fast
+  is_mold
+  no_a
+  boulder
+  selfdestruct
+  stoneeating
+  slow
+  hungerattack
+  large
+  radimmune
+  poisimmune
+  heatseeking
+
+} Monster;
 
  
 

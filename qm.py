@@ -94,7 +94,7 @@ def printmon(prev, m):
         m = mc
 
     if prev:
-        print '[ %s (%s monsterstock_get {\n   ' % (reprr(m.idtag), reprr(prev)),
+        print '[ %s (%s monsterstock_get->Monster {\n   ' % (reprr(m.idtag), reprr(prev)),
     else:
         print '[ %s\n  Monster{\n   ' % reprr(m.idtag),
 
@@ -143,13 +143,35 @@ def printmon(prev, m):
                 print ('%s=TimedEffect{damage=%s timeout=%s}' % (v, reprr(vv[0]), reprr(vv[1]))),
             elif v == 'summononce' or v == 'raise_dead':
                 print ('%s=NumEffect{num=%s timeout=%s}' % (v, reprr(vv[0]), reprr(vv[1]))),
-            print ('%s=[ %s ]' % (v, ' '.join(reprr(x) for x in vv))),
+            elif vv == (9, 7, 5, 3, 1, 3, 5, 7):
+                print 'moon=(new_moon->MoonDistrib)',
+            elif vv == (1, 3, 5, 7, 9, 7, 5, 3):
+                print 'moon=(full_moon->MoonDistrib)',
+            elif vv == (9, 0, 0, 0, 0, 0, 0, 0):
+                print 'moon=(new_moon_only->MoonDistrib)',
+            elif vv == (0, 0, 0, 0, 9, 0, 0, 0):
+                print 'moon=(full_moon_only->MoonDistrib)',
+            elif vv == (0, 0, 9, 0, 0, 0, 9, 0):
+                print 'moon=(quarter_moon_only->MoonDistrib)',
+            elif vv == (5, 7, 2, 7, 9, 7, 2, 7):
+                print 'moon=(mold->MoonDistrib)',
+            elif vv == (5, 3, 3):
+                print 'moldspew=MoldEffect{moldid=5 chance=3 timeout=3}',
+            else:
+                print ('%s=[ %s ]' % (v, ' '.join(reprr(x) for x in vv))),
         else:
-            print ("%s=%s" % (v, reprr(vv))),
+            s = "%s=%s" % (v, reprr(vv))
+            if type(1.0) in types[v] and type(vv) == type(0):
+                s += 'f'
+            elif type(vv) == type(1.0) and '.' not in s:
+                s += 'f'
+            print s,
+
+
     if prev:
-        print '} ) ]'
+        print '} ) ] monsterstock_set'
     else:
-        print '} ]'
+        print '} ] monsterstock_set'
     print
 
 
@@ -190,6 +212,9 @@ for m in ms:
             minm = md
             minidtag = m2.idtag
 
+    if len(minm) >= 10:
+        minidtag = None
+
     if minidtag is None:
         minidtag = None
         minm = m
@@ -202,7 +227,47 @@ sortd.sort()
 
 print '-------------------------------------------------------'
 
-for b,l,n,minidtag,minm in sortd:
-    printmon(minidtag, minm)
+didm = set()
 
+while 1:
+    later = []
+    for b,l,n,minidtag,minm in sortd:
+        if minidtag is not None and minidtag not in didm:
+            later.append((b,l,n,minidtag,minm))
+            continue
+        printmon(minidtag, minm)
+        if type(minm) == type({}):
+            didm.add(minm['idtag'])
+        else:
+            didm.add(minm.idtag)
+
+    if len(later) == 0:
+        break
+
+    sortd = later
+
+
+#for b,l,n,minidtag,minm in sortd:
+#    printmon(minidtag, minm)
+
+# roots = {}
+
+# for m in ms:
+#     minm = None
+#     minidtag = None
+#     for m2 in ms:
+#         if m == m2: continue
+
+#         md = mdiffs(m, m2)
+
+#         if m.idtag not in roots:
+#             roots[m.idtag] = []
+
+#         roots[m.idtag].append((len(md), m2.idtag))
+#     print m.idtag
+
+# for k,v in roots.iteritems():
+#     v.sort()
+#     print k, v
+#     print
 
