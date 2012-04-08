@@ -4,7 +4,7 @@ project (diggr)
 
 SET(CMAKE_BUILD_TYPE "Release")
 
-SET(CMAKE_CXX_FLAGS "-Wall -std=c++0x -O3 -g -pg")
+SET(CMAKE_CXX_FLAGS "-Wall -std=c++0x -O3 -g")
 
 #include_directories(include)
 
