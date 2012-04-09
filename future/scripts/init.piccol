@@ -1,0 +1,10 @@
+
+
+init Void->Void :-
+  init_featstock
+  init_monsterstock
+
+  Player {} set
+  Dungeon {} set
+.
+

@@ -3,6 +3,10 @@ modules Void->Void :-
 
   'common.piccol' common  
 
+  <:[module] init 'init.piccol'
+             init Void->Void
+   :>
+
   <:[module] random 'random.piccol'
              pos_gauss [Real Real]->Real
              neg_gauss [Real Real]->Real
@@ -12,7 +16,6 @@ modules Void->Void :-
 
   <:[module] generate 'generate.piccol'
              generate Void->Void
-             init Void->Void
    :>
 
   <:[module] skin 'skin.piccol'
@@ -31,6 +34,7 @@ modules Void->Void :-
    :>
 
   <:[module] monsters 'monsters.piccol'
+             todo Void->Void
    :>
 
   <:[module] input 'input.piccol'

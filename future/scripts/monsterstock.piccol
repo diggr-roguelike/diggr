@@ -37,6 +37,11 @@ mold Void->MoonDistrib :- MoonDistrib{new  = 5u
 
 def [idtag:Sym mon:Monster];
 
+monsterstock_set [Sym Monster]->Void :- \\ set.
+
+monsterstock_get Sym->Monster :- \v get->Monster.
+
+/*** ***/
 
 
 init_monsterstock Void->Void :-
@@ -1234,7 +1239,7 @@ init_monsterstock Void->Void :-
     } ) ] monsterstock_set
 
 [ 'ogre' ('Master Blaster' monsterstock_get->Monster {
-    skin=Skin{ char='H' color='light_gray' } name='orge' level=4 count=200 attack=2.1 
+    skin=Skin{ char='H' color='light_gray' } name='ogre' level=4 count=200 attack=2.1 
     defence=1.9 
     } ) ] monsterstock_set
 
@@ -1359,7 +1364,7 @@ init_monsterstock Void->Void :-
     branch='e' 
     } ) ] monsterstock_set
 
-[ 'orc' ('orge' monsterstock_get->Monster {
+[ 'orc' ('ogre' monsterstock_get->Monster {
     skin=Skin{ char='h' color='gray' } name='orc' attack=1.7 defence=0.7 
     range=7 } ) ] monsterstock_set
 

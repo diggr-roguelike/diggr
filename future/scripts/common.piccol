@@ -169,6 +169,8 @@ def {
 
 /***/
 
+def [a:Sym b:Feat];
+
 
 def [a:UInt b:UInt c:UInt d:UInt];
 def [x:UInt y:UInt v:Sym];

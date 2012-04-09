@@ -253,6 +253,10 @@ inline bool dg__clear_map(CALLBACK) {
     grid::get().clear();
     neighbors::get().clear();
     grender::get().clear();
+
+    piccol::structmap<FeatMap>().clear();
+    piccol::structmap<MonsterMap>().clear();
+
     return true;
 }
 
@@ -287,8 +291,8 @@ struct Vm {
         piccol::register_map<FeatMap>(vm,      "[ UInt UInt ]", "Feat");
         piccol::register_map<MonsterMap>(vm,   "[ UInt UInt ]", "MonData");
             
-        piccol::register_map<Player>(vm,  "Void", "Player");
-        piccol::register_map<Dungeon>(vm, "Void", "Dungeon");
+        piccol::register_global<Player>(vm,  "Player");
+        piccol::register_global<Dungeon>(vm, "Dungeon");
 
         //////
 

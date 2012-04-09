@@ -44,8 +44,9 @@ def [x:UInt y:UInt a:Real];
 def [x:UInt y:UInt v:Feat];
 
 def [a:Sym b:Feat_];
-def [a:Sym b:Feat];
 def [a:Sym b:Props];
+def [a:[UInt UInt] b:Feat];
+
 def [a:Int b:Sym];
 
 
@@ -89,6 +90,8 @@ featstock_set [Sym Feat_]->Void :-
   [\a (\b->Feat(Feat{skin=\skin flags=\flags}))] set
 .
 
+featstock_set [Sym Props]->Void :- \\ set.
+
 
 /*
  *
@@ -98,18 +101,17 @@ featstock_set [Sym Feat_]->Void :-
 set_feature [UInt UInt Sym]->Void :-
   \\ ->Void(
     [\x \y (\v get->Props)] set_props fail;
-    [\x \y (\v get->Feat)] featmap_set;
-    [\x \y] featmap_unset
+    [[\x \y] (\v get->Feat)] set;
+    [\x \y] del->Feat->Void() ;
   ) 
   [\x \y] set_skin
 .
 
 feature [UInt UInt]->Skin :-
-  [\a \b] featmap_get->Feat->Skin(\skin).
+  [\a \b] get->Feat->Skin(\skin).
 
 
 /*** ***/
-
 
 init_featstock Void->Void :-
 
