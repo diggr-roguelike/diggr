@@ -85,8 +85,8 @@ set_props [UInt UInt Props]->Void :-
 .
 
 featstock_set [Sym Feat_]->Void :-
-  [\a (\b->Props(\props))] featstock_set
-  [\a (\b->Feat(Feat{skin=\skin flags=\flags}))] featstock_set
+  [\a (\b->Props(\props))] set
+  [\a (\b->Feat(Feat{skin=\skin flags=\flags}))] set
 .
 
 
@@ -97,8 +97,8 @@ featstock_set [Sym Feat_]->Void :-
 
 set_feature [UInt UInt Sym]->Void :-
   \\ ->Void(
-    [\x \y (\v featstock_get->Props)] set_props fail;
-    [\x \y (\v featstock_get->Feat)] featmap_set;
+    [\x \y (\v get->Props)] set_props fail;
+    [\x \y (\v get->Feat)] featmap_set;
     [\x \y] featmap_unset
   ) 
   [\x \y] set_skin
