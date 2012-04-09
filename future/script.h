@@ -1,9 +1,10 @@
-#ifndef __SCRIPTS_H
-#define __SCRIPTS_H
+#ifndef __SCRIPT_H
+#define __SCRIPT_H
 
 #include <unordered_map>
 
 #include "../piccol/piccol_modulum.h"
+#include "../piccol/structures.h"
 
 #include "tcod_colors.h"
 
@@ -13,144 +14,18 @@
 
 namespace scripting {
 
-using nanom::Sym;
-typedef nanom::Struct Obj;
-
-struct SymMap {
-
-    typedef std::unordered_map<Sym,Obj> stock_t;
-
-    stock_t objs;
-
-    void add(Sym s, const Obj& o) { 
-        auto i = objs.find(s);
-        if (i != objs.end())
-            throw std::runtime_error("Adding new object to stock: duplicate tag, '" + metalan::symtab().get(s) + "'");
-        objs[s] = o;
-    }
-
-    bool get(Sym s, Obj& o) const {
-        auto i = objs.find(s);
-        if (i == objs.end())
-            return false;
-        o = i->second;
-        return true;
-    }
-};
-
-
-template <typename T>
-inline T& symmap() {
-    static T ret;
-    return ret;
-}
-
-template <typename T>
-inline bool symmap_set(CALLBACK) {
-    std::cout << "XXX XXX SET: " << struc.v.size() << " " 
-              << shape.size() << " " << struc.substruct(1, shape.size()).v.size() << std::endl;
-    symmap<T>().add(struc.v[0].uint, struc.substruct(1, shape.size()));
-    return true;
-}
-
-template <typename T>
-inline bool symmap_get(CALLBACK) {
-    return symmap<T>().get(struc.v[0].uint, ret);
-}
-
-
-/*** *** ***/
-
-
-struct Featmap {
-
-    typedef std::unordered_map< std::pair<unsigned int, unsigned int>, Obj > fmap_t;
-
-    fmap_t feats;
-    
-    void set(unsigned int x, unsigned int y, const Obj& o) {
-        feats[std::make_pair(x, y)] = o;
-    }
-
-    void unset(unsigned int x, unsigned int y) {
-        feats.erase(std::make_pair(x, y));
-    }
-
-    bool get(unsigned int x, unsigned int y, Obj& o) const {
-        auto i = feats.find(std::make_pair(x, y));
-        if (i == feats.end())
-            return false;
-        o = i->second;
-        return true;
-    }
-
-    void clear() {
-        feats.clear();
-    }
-};
-
-inline Featmap& featmap() {
-    static Featmap ret;
-    return ret;
-}
-
-inline bool featmap_set(CALLBACK) {
-    featmap().set(struc.v[0].uint, 
-                  struc.v[1].uint, struc.substruct(2, shape.size()));
-    return true;
-}
-
-inline bool featmap_unset(CALLBACK) {
-    featmap().unset(struc.v[0].uint, struc.v[1].uint);
-    return true;
-}
-
-inline bool featmap_get(CALLBACK) {
-    return featmap().get(struc.v[0].uint,struc.v[1].uint, ret);
-}
-
 
 /****/
 
+struct Player;
+struct Dungeon;
 
-struct GlobalVar {
-    Obj v;
-};
+struct FeatStock;
+struct PropStock;
+struct MonsterStock;
 
-template <typename T>
-inline T& global() {
-    static T ret;
-    return ret;
-}
-
-template <typename T>
-inline bool global_set(CALLBACK) {
-    global<T>().v = struc;
-    return true;
-}
-
-template <typename T>
-inline bool global_get(CALLBACK) {
-    Obj& v = global<T>().v;
-
-    if (v.v.size() != shapeto.size()) {
-        v.v.resize(shapeto.size());
-    }
-
-    ret = v;
-    return true;
-}
-
-
-/****/
-
-struct Player : public GlobalVar {};
-struct Dungeon : public GlobalVar {};
-
-struct FeatStock : public SymMap {};
-struct PropStock : public SymMap {};
-struct MonsterStock : public SymMap {};
-
+struct FeatMap;
+struct MonsterMap;
 
 /****/
 
@@ -401,27 +276,19 @@ struct Vm {
 
     piccol::Modules vm;
 
+    typedef nanom::Struct Obj;
+
     Vm(const std::string& sysdir, 
        const std::string& appdir) : vm(sysdir, appdir, "game.modules") {
+
+        piccol::register_map<FeatStock>(vm,    "Sym",           "Feat");
+        piccol::register_map<PropStock>(vm,    "Sym",           "Props");
+        piccol::register_map<MonsterStock>(vm, "Sym",           "Monster");
+        piccol::register_map<FeatMap>(vm,      "[ UInt UInt ]", "Feat");
+        piccol::register_map<MonsterMap>(vm,   "[ UInt UInt ]", "MonData");
             
-        vm.register_callback("featstock_set", "[ Sym Feat ]",   "Void", symmap_set<FeatStock>);
-        vm.register_callback("featstock_set", "[ Sym Props ]",  "Void", symmap_set<PropStock>);
-
-        vm.register_callback("featstock_get", "Sym", "Feat",   symmap_get<FeatStock>);
-        vm.register_callback("featstock_get", "Sym", "Props",  symmap_get<PropStock>);
-
-        vm.register_callback("featmap_set",   "[ UInt UInt Feat ]", "Void", featmap_set);
-        vm.register_callback("featmap_unset", "[ UInt UInt ]",      "Void", featmap_unset);
-        vm.register_callback("featmap_get",   "[ UInt UInt ]",      "Feat", featmap_get);
-
-        vm.register_callback("monsterstock_set", "[ Sym Monster ]", "Void", symmap_set<MonsterStock>);
-        vm.register_callback("monsterstock_get", "Sym", "Monster", symmap_get<MonsterStock>);
-
-        vm.register_callback("get", "Void",   "Player", global_get<Player>);
-        vm.register_callback("set", "Player", "Void",   global_set<Player>);
-
-        vm.register_callback("get", "Void",    "Dungeon", global_get<Dungeon>);
-        vm.register_callback("set", "Dungeon", "Void",    global_set<Dungeon>);
+        piccol::register_map<Player>(vm,  "Void", "Player");
+        piccol::register_map<Dungeon>(vm, "Void", "Dungeon");
 
         //////
 
@@ -487,16 +354,25 @@ struct Vm {
         vm.check_type("OutState", {nanom::UINT, nanom::BOOL, nanom::BOOL});
     }        
 
+    void run(const std::string& name, const std::string& from, const std::string& to, 
+             nanom::Struct& inp, nanom::Struct& out) {
+
+        bool ret = vm.run(name, from, to, inp, out);
+        if (!ret) {
+            throw std::runtime_error("Calling " + name + " " + from + "->" + to + " failed");
+        }
+    }
+
     void init() {
         Obj out;
         Obj inp;
-        vm.run("init", "Void", "Void", inp, out);
+        run("init", "Void", "Void", inp, out);
     }
 
     void generate() {
         Obj out;
         Obj inp;
-        vm.run("generate", "Void", "Void", inp, out);
+        run("generate", "Void", "Void", inp, out);
     }
 
     void set_skin(unsigned int x, unsigned int y) {
@@ -505,14 +381,14 @@ struct Vm {
         Obj inp;
         inp.v.push_back((nanom::UInt)x);
         inp.v.push_back((nanom::UInt)y);
-        vm.run("set_skin", "[ UInt UInt ]", "Void", inp, out);
+        run("set_skin", "[ UInt UInt ]", "Void", inp, out);
     }
 
     void drawing_context(unsigned int& px, unsigned int& py) {
         Obj out;
         Obj inp;
 
-        vm.run("drawing_context", "Void", "[ UInt UInt ]", inp, out);
+        run("drawing_context", "Void", "[ UInt UInt ]", inp, out);
 
         px = out.v[0].uint;
         py = out.v[1].uint;
@@ -526,7 +402,7 @@ struct Vm {
         char cc[2] = { c, 0 };
         inp.v.push_back((nanom::Sym)metalan::symtab().get(cc));
 
-        vm.run("handle_input", "InState", "OutState", inp, out);
+        run("handle_input", "InState", "OutState", inp, out);
 
         ticks = out.v[0].uint;
         done = out.v[1].uint;
@@ -538,5 +414,6 @@ struct Vm {
 
 }
 
+#undef CALLBACK
 
 #endif

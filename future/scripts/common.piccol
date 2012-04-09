@@ -147,7 +147,25 @@ def {
 
 } Monster;
 
- 
+
+def {
+  species: Sym
+
+  xy: [UInt UInt]
+  known_p: Bool
+  known_pxy: [UInt UInt]
+  do_move: Bool
+  do_die: Bool
+  hp: Real
+  confused: UInt
+  glued: UInt
+  visible: Bool
+  visible_old: Bool
+  was_seen: Bool
+  onfire: Bool
+  bld_delta: [Int Int]
+  fleetimeout: UInt
+} MonData; 
 
 /***/
 

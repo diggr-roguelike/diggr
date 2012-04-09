@@ -79,6 +79,9 @@ generate_feats Void->Void :-
 generate_map Void->Void :-
   dg__clear_map
 
+  featmap_clear
+  monmap_clear
+
   is_not_quest->Bool ?
     generate_grid
     generate_feats
