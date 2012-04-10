@@ -111,6 +111,7 @@ struct Main {
 
         ticks = 1;
 
+        game.init();
         game.generate();
 
         return true;

@@ -37,12 +37,36 @@ mold Void->MoonDistrib :- MoonDistrib{new  = 5u
 
 def [idtag:Sym mon:Monster];
 def [a:MonsterKey b:Sym c:UInt];
+def [moon:Sym md:MoonDistrib];
+def [a:UInt b:Real];
+
+moon_weight [Sym MoonDistrib]->UInt :-
+  '** ' print \moon print ';\n' print
+  <: \moon == 'new'             :> ? \md->UInt(\new) ;
+  <: \moon == 'waxing crescent' :> ? \md->UInt(\wax_c) ;
+  <: \moon == 'first quarter'   :> ? \md->UInt(\q1) ;
+  <: \moon == 'waxing gibbous'  :> ? \md->UInt(\wax_g) ;
+  <: \moon == 'full'            :> ? \md->UInt(\full) ;
+  <: \moon == 'waning gibbous'  :> ? \md->UInt(\wan_g) ;
+  <: \moon == 'last quarter'    :> ? \md->UInt(\q2) ;
+  <: \moon == 'waning crescent' :> ? \md->UInt(\wan_c)
+.
+    
+moon_weight [Sym MoonDistrib]->Real :-
+  \\ moon_weight->UInt->Real(<: real(\v) / 9f :>).
+
+moon_weight_count Monster->UInt :-
+  [ \count 
+    ([ (dg_current_moon->Sym) \moon ] moon_weight->Real) ] -> UInt(
+
+      <: uint((real(\a)*\b)+0.9) :>
+  ).
 
 make Monster->MonsterKey :- MonsterKey{branch=\branch level=\level}.
 
 monsterstock_set [Sym Monster]->Void :- 
   \\ set
-  [ (\mon make->MonsterKey) (\idtag) (\mon->UInt(\count)) ] put
+  [ (\mon make->MonsterKey) (\idtag) (\mon moon_weight_count->UInt) ] put
 .
 
 monster [Sym Sym]->Skin :-

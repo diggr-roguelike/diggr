@@ -54,6 +54,7 @@ def [ a:UInt b:UInt c:UInt ];
 def [ a:MonsterKey b:UInt ];
 def [ a:[UInt UInt] b:Sym ];
 
+
 monster_level Void->UInt :-
   [ (level->UInt->Real(<: real(\v) :>)) 0.75 1u ] neg_gauss->UInt->UInt(
     [ \v (quest_minlevel->UInt) (quest_maxlevel->UInt) ]->UInt(
@@ -73,8 +74,9 @@ get MonsterKey->Sym :-
 .
 
 place_monster Sym->Void :- 
+  '... ' print \v print '\n' print
   [ (dg_grid_one_of_walk->[UInt UInt]) \\ ] -> Void(
-    \a dg_grid_add_nogen
+    [ (\a->UInt(\a)) (\a->UInt(\b)) 2u ] dg_grid_add_nogen_expand
     [ (\a->UInt(\a)) (\a->UInt(\b)) \b ] set_monster 
   ).
 

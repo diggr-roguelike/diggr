@@ -399,6 +399,28 @@ struct Map {
         nogens.insert(pt(x, y));
     }
 
+    void add_nogen_expand(unsigned int x, unsigned int y, unsigned int depth) {
+
+        std::set<pt> ng(neighbors::get()(pt(x, y)));
+        std::set<pt> proc;
+        
+        proc.insert(pt(x, y));
+
+        for (unsigned int i = 1; i < depth; ++i) {
+            
+            for (const pt& z : ng) {
+                if (proc.count(z) == 0) {
+                    proc.insert(z);
+
+                    const auto& tmp = neighbors::get()(z);
+                    ng.insert(tmp.begin(), tmp.end());
+                }
+            }
+        }
+
+        nogens.insert(ng.begin(), ng.end());
+    }
+
 
     pt _one_of(std::vector<pt>& tmp) {
         if (tmp.size() == 0) {

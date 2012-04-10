@@ -185,6 +185,14 @@ inline bool dg_grid_add_nogen(CALLBACK) {
     return true;
 }
 
+inline bool dg_grid_add_nogen_expand(CALLBACK) {
+
+    nanom::UInt x = struc.v[0].uint;
+    nanom::UInt y = struc.v[1].uint;
+    grid::get().add_nogen_expand(x, y, struc.v[2].uint);
+    return true;
+}
+
 inline bool dg_render_set_skin(CALLBACK) {
 
     nanom::UInt x = struc.v[0].uint;
@@ -334,7 +342,8 @@ struct Vm {
         vm.register_callback("dg_grid_is_water",   "[ UInt UInt ]", "Bool", dg_grid_is_water);
         vm.register_callback("dg_grid_get_height", "[ UInt UInt ]", "Real", dg_grid_get_height);
 
-        vm.register_callback("dg_grid_add_nogen",  "[ UInt UInt ]", "Void", dg_grid_add_nogen);
+        vm.register_callback("dg_grid_add_nogen",         "[ UInt UInt ]",      "Void", dg_grid_add_nogen);
+        vm.register_callback("dg_grid_add_nogen_expand",  "[ UInt UInt UInt ]", "Void", dg_grid_add_nogen_expand);
        
         vm.register_callback("dg_grid_generate", "Int", "Void", dg_grid_generate);
 
