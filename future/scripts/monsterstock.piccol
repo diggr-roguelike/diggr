@@ -36,8 +36,15 @@ mold Void->MoonDistrib :- MoonDistrib{new  = 5u
 
 
 def [idtag:Sym mon:Monster];
+def [a:MonsterKey b:Sym c:UInt];
 
-monsterstock_set [Sym Monster]->Void :- \\ set.
+make Monster->MonsterKey :- MonsterKey{branch=\branch level=\level}.
+
+monsterstock_set [Sym Monster]->Void :- 
+  \\ set
+  [ (\mon make->MonsterKey) (\idtag) (\mon->UInt(\count)) ] put
+.
+
 
 monsterstock_get Sym->Monster :- \v get->Monster.
 
@@ -48,685 +55,685 @@ init_monsterstock Void->Void :-
 
 [ 'Dinornis giganteus'
   Monster{
-    skin=Skin{ char='B' color='light_sepia' } name='Dinornis giganteus' branch='a' level=2 count=5 
+    skin=Skin{ char='B' color='light_sepia' } name='Dinornis giganteus' branch='a' level=2u count=5u 
     attack=1f defence=0.5 psyattack=0f flavor='animal' moon=(new_moon->MoonDistrib) pointsfac=1f 
-    no_a=true pointscontrib=1 align='nn' range=7 
+    no_a=true pointscontrib=1u align='nn' range=7u 
     desc='(Also known as the giant moa.)\nA gigantic flightless bird, like the modern-day\nostrich, only about twice as big.' } ] monsterstock_set
 
 [ 'Meganeura monyi'
   Monster{
-    skin=Skin{ char='X' color='light_gray' } name='Meganeura monyi' branch='a' level=2 count=7 
+    skin=Skin{ char='X' color='light_gray' } name='Meganeura monyi' branch='a' level=2u count=7u 
     attack=0.5 defence=1.7 psyattack=0f confimmune=true flavor='flying' flying=true 
-    moon=(new_moon->MoonDistrib) pointsfac=1f no_a=true pointscontrib=1 align='nn' 
-    range=5 
+    moon=(new_moon->MoonDistrib) pointsfac=1f no_a=true pointscontrib=1u align='nn' 
+    range=5u 
     desc='One of the largest insects to have ever lived,\nit is a relative of the modern-day dragonfly from\nthe Carboniferous period.\nIt\'s about the same size as a modern-day crow.' } ] monsterstock_set
 
 [ 'Sus barbatus'
   Monster{
-    skin=Skin{ char='q' color='dark_sepia' } name='Sus barbatus' branch='a' level=2 count=6 
+    skin=Skin{ char='q' color='dark_sepia' } name='Sus barbatus' branch='a' level=2u count=6u 
     attack=1.2 defence=0.6 psyattack=0f flavor='animal' moon=(full_moon->MoonDistrib) pointsfac=1f 
-    no_a=true pointscontrib=1 align='cg' range=4 
+    no_a=true pointscontrib=1u align='cg' range=4u 
     desc='(Also known as the bearded pig.)\nA species of pig. It is characterized by its beard-like\nfacial hair. It is native to the tropics.' } ] monsterstock_set
 
 [ 'Argentavis magnificens'
   Monster{
-    skin=Skin{ char='B' color='dark_blue' } name='Argentavis magnificens' branch='a' level=3 count=6 
+    skin=Skin{ char='B' color='dark_blue' } name='Argentavis magnificens' branch='a' level=3u count=6u 
     attack=3f defence=0.3 psyattack=0f flavor='flying' flying=true moon=(new_moon->MoonDistrib) 
-    pointsfac=1f no_a=true pointscontrib=1 align='ln' range=17 
+    pointsfac=1f no_a=true pointscontrib=1u align='ln' range=17u 
     
     desc='The largest flying bird to have ever lived.\nA relative of the modern-day Andean condor,\nthis bird had a wingspan of 7 meters and weighed\nup to 80 kilograms.' } ] monsterstock_set
 
 [ 'Bos primigenius'
   Monster{
-    skin=Skin{ char='Q' color='lightest_gray' } name='Bos primigenius' branch='a' level=3 count=3 
+    skin=Skin{ char='Q' color='lightest_gray' } name='Bos primigenius' branch='a' level=3u count=3u 
     attack=7f defence=1f psyattack=0f flavor='animal' moon=(full_moon->MoonDistrib) pointsfac=1f 
-    no_a=true pointscontrib=1 align='lg' range=10 
+    no_a=true pointscontrib=1u align='lg' range=10u 
     desc='(Also known as the aurochs.)\nThis magnificent animal was the ancesor of modern-day\ndomestic cattle. It is much larger and stronger than any\ndomestic bull.' } ] monsterstock_set
 
 [ 'Megatherium americanum'
   Monster{
-    skin=Skin{ char='Q' color='light_amber' } name='Megatherium americanum' branch='a' level=3 count=6 
+    skin=Skin{ char='Q' color='light_amber' } name='Megatherium americanum' branch='a' level=3u count=6u 
     attack=0.5 defence=3.5 psyattack=0f flavor='animal' moon=(full_moon->MoonDistrib) pointsfac=1f 
-    no_a=true slow=true pointscontrib=1 align='lg' large=true 
-    range=5 
+    no_a=true slow=true pointscontrib=1u align='lg' large=true 
+    range=5u 
     desc='A gigantic ground sloth from the Pliocene period.\nIt was one of the largest land animals to ever live,\nlarger than the modern-day African elephant.' } ] monsterstock_set
 
 [ 'Varanus komodoensis'
   Monster{
-    skin=Skin{ char='R' color='gray' } name='Varanus komodoensis' branch='a' level=4 count=7 
+    skin=Skin{ char='R' color='gray' } name='Varanus komodoensis' branch='a' level=4u count=7u 
     attack=2f defence=2f psyattack=0f flavor='snake' moon=(new_moon->MoonDistrib) pointsfac=1f 
-    no_a=true pointscontrib=1 align='ne' range=9 
+    no_a=true pointscontrib=1u align='ne' range=9u 
     desc='(Also known as the Komodo dragon.)\nNot as large as a crocodile, this truly huge\nlizard is still a fearsome opponent.' } ] monsterstock_set
 
 [ 'Colossochelys atlas'
   Monster{
-    skin=Skin{ char='O' color='darkest_green' } name='Colossochelys atlas' branch='a' level=5 count=4 
+    skin=Skin{ char='O' color='darkest_green' } name='Colossochelys atlas' branch='a' level=5u count=4u 
     attack=1f defence=24f psyattack=0f confimmune=true flavor='giant' explodeimmune=true 
-    moon=(full_moon->MoonDistrib) pointsfac=1f no_a=true slow=true pointscontrib=1 align='ng' 
-    large=true range=10 
+    moon=(full_moon->MoonDistrib) pointsfac=1f no_a=true slow=true pointscontrib=1u align='ng' 
+    large=true range=10u 
     desc='The largest land turtle, ever.\nFound in the Pleistoce perood, it is the size and weight\nof your average SUV vehicle.' } ] monsterstock_set
 
 [ 'Gigantophis garstini'
   Monster{
-    skin=Skin{ char='S' color='green' } name='Gigantophis garstini' branch='a' level=5 count=9 
+    skin=Skin{ char='S' color='green' } name='Gigantophis garstini' branch='a' level=5u count=9u 
     attack=4f defence=1f psyattack=0f confimmune=true flavor='snake' moon=(new_moon->MoonDistrib) 
-    pointsfac=1f no_a=true pointscontrib=1 align='ln' range=20 
+    pointsfac=1f no_a=true pointscontrib=1u align='ln' range=20u 
     heatseeking=true 
     desc='One of the largest snakes known, it is an almost\n10 meter long ancient relative of the modern boa constrictor.' } ] monsterstock_set
 
 [ 'Arctotherium bonariense'
   Monster{
-    skin=Skin{ char='Q' color='dark_sepia' } name='Arctotherium bonariense' branch='a' level=6 count=3 
+    skin=Skin{ char='Q' color='dark_sepia' } name='Arctotherium bonariense' branch='a' level=6u count=3u 
     attack=10f defence=2f psyattack=0f flavor='carnivore' moon=(full_moon->MoonDistrib) pointsfac=1f 
-    no_a=true pointscontrib=1 align='le' large=true range=10 
+    no_a=true pointscontrib=1u align='le' large=true range=10u 
     
     desc='The most fearsome mammal to have ever lived, this bear\nlived during the Pleistocene epoch.\nIt is more than twice the size of the modern-day grizzly bear.' } ] monsterstock_set
 
 [ 'Glyptodon perforatus'
   Monster{
-    skin=Skin{ char='o' color='brass' } name='Glyptodon perforatus' branch='a' level=6 count=7 
+    skin=Skin{ char='o' color='brass' } name='Glyptodon perforatus' branch='a' level=6u count=7u 
     attack=0.2 defence=20f psyattack=0f flavor='giant' explodeimmune=true moon=(full_moon->MoonDistrib) 
-    pointsfac=1f no_a=true pointscontrib=1 align='ng' large=true 
-    range=7 heatseeking=true 
+    pointsfac=1f no_a=true pointscontrib=1u align='ng' large=true 
+    range=7u heatseeking=true 
     desc='A relative of the armadillo from the Pleistocene epoch.\nUnlike the modern armadillos, this armored monstrocity is\nthe size and weight of a car.' } ] monsterstock_set
 
 [ 'Hippopotamus gorgops'
   Monster{
-    skin=Skin{ char='Q' color='light_azure' } name='Hippopotamus gorgops' branch='a' level=7 count=5 
+    skin=Skin{ char='Q' color='light_azure' } name='Hippopotamus gorgops' branch='a' level=7u count=5u 
     attack=8f defence=2f psyattack=0f flavor='animal' moon=(full_moon->MoonDistrib) pointsfac=1f 
-    no_a=true pointscontrib=1 align='ng' large=true range=4 
+    no_a=true pointscontrib=1u align='ng' large=true range=4u 
     
     desc='This hippo from the Miocene period was much, much larger than\nits modern-day living relatives.' } ] monsterstock_set
 
 [ 'Titanoceratops ouranos'
   Monster{
-    skin=Skin{ char='D' color='sepia' } name='Titanoceratops ouranos' branch='a' level=8 count=8 
+    skin=Skin{ char='D' color='sepia' } name='Titanoceratops ouranos' branch='a' level=8u count=8u 
     attack=11f defence=4f psyattack=0f flavor='giant' moon=(full_moon->MoonDistrib) pointsfac=1f 
-    no_a=true pointscontrib=1 align='cn' large=true range=3 
+    no_a=true pointscontrib=1u align='cn' large=true range=3u 
     
     desc='The largest of many species of triceratops.\nYou recognize the familiar triceratops profile from\nnumerous film, cartoon and book descriptions of this\ndinosaur.' } ] monsterstock_set
 
 [ 'Velociraptor mongoliensis'
   Monster{
-    skin=Skin{ char='d' color='yellow' } name='Velociraptor mongoliensis' branch='a' level=8 count=24 
+    skin=Skin{ char='d' color='yellow' } name='Velociraptor mongoliensis' branch='a' level=8u count=24u 
     attack=1.5 defence=1f psyattack=0f flavor='animal' pointsfac=1f no_a=true 
-    pointscontrib=1 align='ce' summon=Summon{mon='Velociraptor mongoliensis' timeout=4} range=20 
+    pointscontrib=1u align='ce' summon=Summon{mon='Velociraptor mongoliensis' timeout=4u} range=20u 
     desc='A small theropod from the Cretaceous period.\nIt is about the size of a chicken and is covered with\nbright, feathery plumage. It has a relatively large, \ndangerous-looking beak.\nIt was also a vicious pack-hunting carnivore.' } ] monsterstock_set
 
 [ 'Mammuthus primigenius'
   Monster{
-    skin=Skin{ char='Q' color='darker_amber' } name='Mammuthus primigenius' branch='a' level=9 count=6 
+    skin=Skin{ char='Q' color='darker_amber' } name='Mammuthus primigenius' branch='a' level=9u count=6u 
     attack=3f defence=4f psyattack=0f flavor='giant' moon=(new_moon->MoonDistrib) pointsfac=1f 
-    no_a=true pointscontrib=1 align='lg' large=true range=6 
+    no_a=true pointscontrib=1u align='lg' large=true range=6u 
     
     desc='Also known as the wooly mammoth.' } ] monsterstock_set
 
 [ 'Tyrannosaurus rex'
   Monster{
-    skin=Skin{ char='D' color='light_lime' } name='Tyrannosaurus rex' branch='a' level=10 count=1 
+    skin=Skin{ char='D' color='light_lime' } name='Tyrannosaurus rex' branch='a' level=10u count=1u 
     attack=15f defence=15f psyattack=0f confimmune=true flavor='carnivore' moon=(new_moon->MoonDistrib) 
-    pointsfac=1f no_a=true pointscontrib=1 align='ce' large=true 
-    range=20 
+    pointsfac=1f no_a=true pointscontrib=1u align='ce' large=true 
+    range=20u 
     desc='The Tyrant Lizard King, in person. No introduction necessary.' } ] monsterstock_set
 
 [ 'Sauroposeidon proteles'
   Monster{
-    skin=Skin{ char='D' color='light_azure' } name='Sauroposeidon proteles' branch='a' level=11 count=1 
+    skin=Skin{ char='D' color='light_azure' } name='Sauroposeidon proteles' branch='a' level=11u count=1u 
     attack=1f defence=64f psyattack=0f confimmune=true flavor='earthshake' explodeimmune=true 
-    moon=(full_moon->MoonDistrib) pointsfac=1f no_a=true slow=true pointscontrib=1 align='cn' 
-    large=true range=10 radimmune=true 
+    moon=(full_moon->MoonDistrib) pointsfac=1f no_a=true slow=true pointscontrib=1u align='cn' 
+    large=true range=10u radimmune=true 
     desc='The Earthshaker-Lizard. A sauropod so truly, veritably huge that\nit might have indeed caused earthquakes merely by walking.\nAlso, the World\'s Largest Dinosaur.\nFor a creature so large, researchers have wondered how it survived\nwith its tiny brain.' } ] monsterstock_set
 
 [ 'pixie'
   Monster{
-    skin=Skin{ char='h' color='green' } name='pixie' branch='b' level=2 count=4 
+    skin=Skin{ char='h' color='green' } name='pixie' branch='b' level=2u count=4u 
     attack=1f defence=0.7 psyattack=0f flavor='faerie' moon=(full_moon->MoonDistrib) pointsfac=1f 
-    pointscontrib=1 align='lg' range=6 
+    pointscontrib=1u align='lg' range=6u 
     desc='A magical creature that has been driven underground\nby human pollution and habitat loss.' } ] monsterstock_set
 
 [ 'sprite'
   Monster{
-    skin=Skin{ char='f' color='light_lime' } name='sprite' branch='b' level=2 count=3 
+    skin=Skin{ char='f' color='light_lime' } name='sprite' branch='b' level=2u count=3u 
     attack=0.5 defence=0.9 psyattack=0f flavor='faerie' moon=(new_moon->MoonDistrib) pointsfac=1f 
-    pointscontrib=1 align='le' range=8 poisimmune=true 
+    pointscontrib=1u align='le' range=8u poisimmune=true 
     desc='A ghost of a dead faerie.' } ] monsterstock_set
 
 [ 'ghost'
   Monster{
-    skin=Skin{ char='h' color='dark_grey' } name='ghost' branch='b' level=3 count=3 
+    skin=Skin{ char='h' color='dark_grey' } name='ghost' branch='b' level=3u count=3u 
     attack=0.5 defence=2.5 psyattack=0f fireimmune=true flavor='air' moon=(new_moon->MoonDistrib) 
-    pointsfac=1f pointscontrib=1 hungerattack=true range=7 poisimmune=true 
+    pointsfac=1f pointscontrib=1u hungerattack=true range=7u poisimmune=true 
     
     desc='A spirit of an adventurer that perished in these\nterrible and wondorous caves.\nIts eyes are glowing with a malignant hunger.' } ] monsterstock_set
 
 [ 'nematode'
   Monster{
-    skin=Skin{ char='w' color='yellow' } name='nematode' branch='b' level=3 count=5 
-    attack=0f defence=0.1 psyattack=2f psyrange=4 flavor='snake' moon=(new_moon->MoonDistrib) 
-    pointsfac=1f pointscontrib=1 align='ce' range=30 
+    skin=Skin{ char='w' color='yellow' } name='nematode' branch='b' level=3u count=5u 
+    attack=0f defence=0.1 psyattack=2f psyrange=4u flavor='snake' moon=(new_moon->MoonDistrib) 
+    pointsfac=1f pointscontrib=1u align='ce' range=30u 
     desc='A gigantic (5 meter long) yellow worm.\nIt has no visible eyes, but instead has a \ngiant, bulging, pulsating brain.' } ] monsterstock_set
 
 [ 'shoggoth'
   Monster{
-    skin=Skin{ char='x' color='dark_sepia' } name='shoggoth' branch='b' level=3 count=3 
-    attack=0.7 defence=0.6 psyattack=0.5 psyrange=3 flavor='weird' moon=(new_moon->MoonDistrib) 
-    pointsfac=1f pointscontrib=1 align='cn' range=5 
+    skin=Skin{ char='x' color='dark_sepia' } name='shoggoth' branch='b' level=3u count=3u 
+    attack=0.7 defence=0.6 psyattack=0.5 psyrange=3u flavor='weird' moon=(new_moon->MoonDistrib) 
+    pointsfac=1f pointscontrib=1u align='cn' range=5u 
     desc='A creature of a terrible servant race created by the\nElder Things. A shapeless congeries of protoplasmic\nbubbles, faintly self-luminous.' } ] monsterstock_set
 
 [ 'sylphid'
   Monster{
-    skin=Skin{ char='f' color='light_blue' } name='sylphid' branch='b' level=4 count=4 
-    attack=1.4 defence=1.4 psyattack=0.1 psyrange=10 flavor='air' moon=(full_moon->MoonDistrib) 
-    pointsfac=1f pointscontrib=1 align='ln' range=4 
+    skin=Skin{ char='f' color='light_blue' } name='sylphid' branch='b' level=4u count=4u 
+    attack=1.4 defence=1.4 psyattack=0.1 psyrange=10u flavor='air' moon=(full_moon->MoonDistrib) 
+    pointsfac=1f pointscontrib=1u align='ln' range=4u 
     desc='An air elemental. It takes the form of a beautiful\nyoung woman.' } ] monsterstock_set
 
 [ 'chthonian'
   Monster{
-    skin=Skin{ char='W' color='dark_blue' } name='chthonian' branch='b' level=5 count=4 
-    attack=4f defence=1f psyattack=2f straightline=true psyrange=2 flavor='weird' 
-    stoneeating=true moon=(new_moon->MoonDistrib) pointsfac=1f pointscontrib=1 align='ne' 
-    range=8 
+    skin=Skin{ char='W' color='dark_blue' } name='chthonian' branch='b' level=5u count=4u 
+    attack=4f defence=1f psyattack=2f straightline=true psyrange=2u flavor='weird' 
+    stoneeating=true moon=(new_moon->MoonDistrib) pointsfac=1f pointscontrib=1u align='ne' 
+    range=8u 
     desc='An immense squid-like creature that burrows in the\ndark, loathsome depths of the Earth\'s crust.\nIt is covered in slime and is accompanied by a faint\nchanting sound.' } ] monsterstock_set
 
 [ 'aelf'
   Monster{
-    skin=Skin{ char='f' color='green' } name='aelf' branch='b' level=6 count=5 
+    skin=Skin{ char='f' color='green' } name='aelf' branch='b' level=6u count=5u 
     attack=3f defence=2f psyattack=0f fireimmune=true confimmune=true flavor='faerie' 
-    flying=true moon=(full_moon->MoonDistrib) pointsfac=1f pointscontrib=1 align='ln' 
-    range=20 
+    flying=true moon=(full_moon->MoonDistrib) pointsfac=1f pointscontrib=1u align='ln' 
+    range=20u 
     desc='A faery creature from the elemental plane of Aelfrice.' } ] monsterstock_set
 
 [ 'sleep faerie'
   Monster{
-    skin=Skin{ char='f' color='light_pink' } name='sleep faerie' branch='b' level=6 count=5 
+    skin=Skin{ char='f' color='light_pink' } name='sleep faerie' branch='b' level=6u count=5u 
     attack=1f defence=1f psyattack=0f flavor='faerie' flying=true moon=(full_moon->MoonDistrib) 
-    sleepattack=true pointsfac=1f pointscontrib=1 align='ng' range=9 
+    sleepattack=true pointsfac=1f pointscontrib=1u align='ng' range=9u 
     
     desc='A tiny fay creature dressed in pink ballet clothes.\nIt looks adorable.' } ] monsterstock_set
 
 [ 'black knight'
   Monster{
-    skin=Skin{ char='k' color='darker_grey' } name='black knight' branch='b' level=7 count=6 
+    skin=Skin{ char='k' color='darker_grey' } name='black knight' branch='b' level=7u count=6u 
     attack=6f defence=4.5 psyattack=0f flavor='humanwarrior' moon=(new_moon->MoonDistrib) pointsfac=1f 
-    pointscontrib=1 align='cn' range=8 
+    pointscontrib=1u align='cn' range=8u 
     desc='An evil humanoid in black cast-iron armor.\nHe is armed with a longsword.' } ] monsterstock_set
 
 [ 'leipreachan'
   Monster{
-    skin=Skin{ char='f' color='azure' } name='leipreachan' branch='b' level=7 count=5 
+    skin=Skin{ char='f' color='azure' } name='leipreachan' branch='b' level=7u count=5u 
     attack=2.5 defence=1.5 psyattack=0f flavor='faerie' moon=(full_moon->MoonDistrib) pointsfac=1f 
-    pointscontrib=1 hungerattack=true align='ng' range=9 
+    pointscontrib=1u hungerattack=true align='ng' range=9u 
     desc='A fay creature in the form of a dirty, lecherous old man.' } ] monsterstock_set
 
 [ 'frost giant'
   Monster{
-    skin=Skin{ char='k' color='lighter_sky' } name='frost giant' branch='b' level=8 count=5 
+    skin=Skin{ char='k' color='lighter_sky' } name='frost giant' branch='b' level=8u count=5u 
     attack=6f defence=4.5 psyattack=0f flavor='giant' moon=(full_moon->MoonDistrib) pointsfac=1f 
-    pointscontrib=1 align='ne' large=true range=8 
+    pointscontrib=1u align='ne' large=true range=8u 
     desc='A humanoid about twice the size of a human.\nHe is an evil, emotionless immigrant from the dark\nplanes of Jotunheim.' } ] monsterstock_set
 
 [ 'Caliban'
   Monster{
-    skin=Skin{ char='H' color='sea' } name='Caliban' branch='b' level=9 count=1 
+    skin=Skin{ char='H' color='sea' } name='Caliban' branch='b' level=9u count=1u 
     attack=7f defence=7f psyattack=0f confimmune=true flavor='humanweird' moon=(full_moon->MoonDistrib) 
-    pointsfac=1f no_a=true pointscontrib=1 align='cg' range=10 
+    pointsfac=1f no_a=true pointscontrib=1u align='cg' range=10u 
     
     desc='A deformed beast-man. Half-devil on his father\'s side,he is a resentful slave of Prospero.' } ] monsterstock_set
 
 [ 'Oberon'
   Monster{
-    skin=Skin{ char='F' color='purple' } name='Oberon' branch='b' level=9 count=1 
-    attack=3f defence=3f psyattack=2f psyrange=8 confimmune=true flavor='faerie' 
-    explodeimmune=true flying=true moon=(full_moon->MoonDistrib) pointsfac=1f no_a=true pointscontrib=1 
-    align='cg' large=true range=10 
+    skin=Skin{ char='F' color='purple' } name='Oberon' branch='b' level=9u count=1u 
+    attack=3f defence=3f psyattack=2f psyrange=8u confimmune=true flavor='faerie' 
+    explodeimmune=true flying=true moon=(full_moon->MoonDistrib) pointsfac=1f no_a=true pointscontrib=1u 
+    align='cg' large=true range=10u 
     desc='A faerie king.\nHe takes on the appearance of a 2 meter tall\nhandsome man, wearing a delicate crown.' } ] monsterstock_set
 
 [ 'Prospero'
   Monster{
-    skin=Skin{ char='H' color='purple' } name='Prospero' branch='b' level=10 count=1 
-    attack=2f defence=7f psyattack=2f psyrange=2 confimmune=true explodeimmune=true 
-    flying=true moon=(full_moon->MoonDistrib) pointsfac=1f no_a=true pointscontrib=1 align='nn' 
-    summon=Summon{mon='black knight' timeout=2} large=true range=20 poisimmune=true 
+    skin=Skin{ char='H' color='purple' } name='Prospero' branch='b' level=10u count=1u 
+    attack=2f defence=7f psyattack=2f psyrange=2u confimmune=true explodeimmune=true 
+    flying=true moon=(full_moon->MoonDistrib) pointsfac=1f no_a=true pointscontrib=1u align='nn' 
+    summon=Summon{mon='black knight' timeout=2u} large=true range=20u poisimmune=true 
     desc='Self-styled royalty, self-styled wizard, self-styled\nruler of this dungeon.\nHe has instilled unthinking loyalty into his subjects\nand slaves.' } ] monsterstock_set
 
 [ 'Yog-Sothoth'
   Monster{
-    skin=Skin{ char='X' color='pink' } name='Yog-Sothoth' branch='b' level=11 count=1 
-    attack=2f defence=7f psyattack=2f psyrange=20 fireimmune=true confimmune=true 
+    skin=Skin{ char='X' color='pink' } name='Yog-Sothoth' branch='b' level=11u count=1u 
+    attack=2f defence=7f psyattack=2f psyrange=20u fireimmune=true confimmune=true 
     flavor='weird' explodeimmune=true flying=true moon=(new_moon->MoonDistrib) pointsfac=1f no_a=true 
-    pointscontrib=1 align='ce' summon=Summon{mon='Prospero' timeout=2} large=true range=20 poisimmune=true 
+    pointscontrib=1u align='ce' summon=Summon{mon='Prospero' timeout=2u} large=true range=20u poisimmune=true 
     
     desc='An Outer God: The Lurker at the Threshold, The Key and the Gate,\nThe Beyond One, Opener of the Way, The All-in-One\nand the One-in-All.\n "Only a congeries of iridescent globes, yet stupendous\n  in its malign suggestiveness."' } ] monsterstock_set
 
 [ 'snorlax'
   Monster{
-    skin=Skin{ char='v' color='purple' } name='snorlax' branch='c' level=2 count=5 
+    skin=Skin{ char='v' color='purple' } name='snorlax' branch='c' level=2u count=5u 
     attack=1f defence=1.2 psyattack=0f flavor='digital' moon=(full_moon->MoonDistrib) pointsfac=1f 
-    slow=true pointscontrib=1 align='cg' range=5 
+    slow=true pointscontrib=1u align='cg' range=5u 
     desc='A 2 meter tall, enourmously obese creature of\nsome indeterminate cat-bear-dog race. It has\na pinkish-purple hide.' } ] monsterstock_set
 
 [ 'squirtle'
   Monster{
-    skin=Skin{ char='v' color='light_blue' } name='squirtle' branch='c' level=2 count=7 
+    skin=Skin{ char='v' color='light_blue' } name='squirtle' branch='c' level=2u count=7u 
     attack=0.4 defence=1f psyattack=0f flavor='digital' moon=(full_moon->MoonDistrib) pointsfac=1f 
-    pointscontrib=1 align='le' range=6 heatseeking=true 
+    pointscontrib=1u align='le' range=6u heatseeking=true 
     desc='A bluish creature of indeterminate race.\nIt looks like a cute turtle.' } ] monsterstock_set
 
 [ 'memetic virus'
   Monster{
-    skin=Skin{ char='v' color='dark_gray' } name='memetic virus' branch='c' level=3 count=16 
+    skin=Skin{ char='v' color='dark_gray' } name='memetic virus' branch='c' level=3u count=16u 
     attack=0.3 defence=0.3 psyattack=0f fireimmune=true explodeimmune=true moon=(full_moon->MoonDistrib) 
-    pointsfac=1f pointscontrib=1 align='nn' summon=Summon{mon='memetic virus' timeout=5} range=30 radimmune=true 
+    pointsfac=1f pointscontrib=1u align='nn' summon=Summon{mon='memetic virus' timeout=5u} range=30u radimmune=true 
     poisimmune=true 
     desc='It doesn\'t exist. It\'s a memetic virus.' } ] monsterstock_set
 
 [ 'scavenger drone'
   Monster{
-    skin=Skin{ char='Z' color='silver' } name='scavenger drone' branch='c' level=3 count=4 
+    skin=Skin{ char='Z' color='silver' } name='scavenger drone' branch='c' level=3u count=4u 
     attack=1f defence=24f psyattack=0f fireimmune=true confimmune=true flavor='robot' 
-    explodeimmune=true moon=(new_moon->MoonDistrib) pointsfac=1f slow=true pointscontrib=1 align='ng' 
-    range=10 poisimmune=true 
+    explodeimmune=true moon=(new_moon->MoonDistrib) pointsfac=1f slow=true pointscontrib=1u align='ng' 
+    range=10u poisimmune=true 
     desc='A remotely-controlled robot used for exploring the dungeon.' } ] monsterstock_set
 
 [ 'spore plant'
   Monster{
-    skin=Skin{ char='x' color='dark_yellow' } name='spore plant' branch='c' level=3 count=7 
+    skin=Skin{ char='x' color='dark_yellow' } name='spore plant' branch='c' level=3u count=7u 
     attack=0.3 defence=0.2 psyattack=0f confimmune=true moon=(new_moon->MoonDistrib) pointsfac=1f 
-    itemdrop='bomb' pointscontrib=1 align='cg' range=7 heatseeking=true 
+    itemdrop='bomb' pointscontrib=1u align='cg' range=7u heatseeking=true 
     
     desc='A large plantlike carnivorous creature.\nIt has large bulbous appendages growing out of its stalk.\nIt looks like it is radiating heat from the inside.' } ] monsterstock_set
 
 [ 'spore'
   Monster{
-    skin=Skin{ char='x' color='pink' } name='spore' branch='c' level=4 count=7 
+    skin=Skin{ char='x' color='pink' } name='spore' branch='c' level=4u count=7u 
     attack=0f defence=0.2 psyattack=0f confimmune=true flavor='air' flying=true 
-    moon=(new_moon->MoonDistrib) pointsfac=1f selfdestruct=true itemdrop='bomb' pointscontrib=1 
-    range=30 heatseeking=true 
+    moon=(new_moon->MoonDistrib) pointsfac=1f selfdestruct=true itemdrop='bomb' pointscontrib=1u 
+    range=30u heatseeking=true 
     desc='A pulsating pink spherical spore, about 1 meter in diameter.\nIt is levitating.\nIt looks like it is radiating heat from the inside.' } ] monsterstock_set
 
 [ 'xenomorph'
   Monster{
-    skin=Skin{ char='X' color='silver' } name='xenomorph' branch='c' level=4 count=2 
+    skin=Skin{ char='X' color='silver' } name='xenomorph' branch='c' level=4u count=2u 
     attack=7f defence=7f psyattack=0f fireimmune=true confimmune=true flavor='snake' 
-    moon=(new_moon->MoonDistrib) pointsfac=1f pointscontrib=1 align='ce' range=5 
+    moon=(new_moon->MoonDistrib) pointsfac=1f pointscontrib=1u align='ce' range=5u 
     radimmune=true poisimmune=true 
     desc='A horrifying alien creature. It looks like a giant,\nvery evil insect. It is truly scary.' } ] monsterstock_set
 
 [ 'cthulhumon'
   Monster{
-    skin=Skin{ char='v' color='gray' } name='cthulhumon' branch='c' level=5 count=4 
-    attack=3f defence=1f psyattack=2f psyrange=8 confimmune=true flavor='digital' 
-    moon=(new_moon->MoonDistrib) pointsfac=1f pointscontrib=1 align='le' range=8 
+    skin=Skin{ char='v' color='gray' } name='cthulhumon' branch='c' level=5u count=4u 
+    attack=3f defence=1f psyattack=2f psyrange=8u confimmune=true flavor='digital' 
+    moon=(new_moon->MoonDistrib) pointsfac=1f pointscontrib=1u align='le' range=8u 
     
     desc='The other Pokemon nobody told you about.' } ] monsterstock_set
 
 [ 'cyberdemon'
   Monster{
-    skin=Skin{ char='Z' color='red' } name='cyberdemon' branch='c' level=5 count=2 
+    skin=Skin{ char='Z' color='red' } name='cyberdemon' branch='c' level=5u count=2u 
     attack=7f defence=2f psyattack=0f flavor='robot' explodeimmune=true moon=(new_moon->MoonDistrib) 
-    pointsfac=1f pointscontrib=1 align='ce' summon=Summon{mon='spore' timeout=2} large=true range=4 
+    pointsfac=1f pointscontrib=1u align='ce' summon=Summon{mon='spore' timeout=2u} large=true range=4u 
     
     desc='A 3 meter tall hellish demon-robot hybrid.\nFleshy parts of its demonic body have rotted away,\nto be replaced with crude stainless-steel robotic parts.' } ] monsterstock_set
 
 [ 'klingon'
   Monster{
-    skin=Skin{ char='k' color='brass' } name='klingon' branch='c' level=6 count=5 
+    skin=Skin{ char='k' color='brass' } name='klingon' branch='c' level=6u count=5u 
     attack=5f defence=0.5 psyattack=0f flavor='humanwarrior' moon=(full_moon->MoonDistrib) pointsfac=1f 
-    pointscontrib=1 align='lg' range=5 
+    pointscontrib=1u align='lg' range=5u 
     desc='A member of a chivalrous warrior race of extraterrestrial aliens.' } ] monsterstock_set
 
 [ 'shai-hulud'
   Monster{
-    skin=Skin{ char='W' color='gray' } name='shai-hulud' branch='c' level=6 count=4 
+    skin=Skin{ char='W' color='gray' } name='shai-hulud' branch='c' level=6u count=4u 
     attack=2f defence=4.5 psyattack=0f straightline=true flavor='giant' stoneeating=true 
-    explodeimmune=true moon=(full_moon->MoonDistrib) pointsfac=1f pointscontrib=1 align='lg' 
-    large=true range=30 heatseeking=true 
+    explodeimmune=true moon=(full_moon->MoonDistrib) pointsfac=1f pointscontrib=1u align='lg' 
+    large=true range=30u heatseeking=true 
     desc='A giant worm. It is gray in color and has a skin made of something like granite.\nIt is about 15 meters in length.' } ] monsterstock_set
 
 [ 'T-1 terminator'
   Monster{
-    skin=Skin{ char='z' color='lightest_sepia' } name='T-1 terminator' branch='c' level=7 count=7 
+    skin=Skin{ char='z' color='lightest_sepia' } name='T-1 terminator' branch='c' level=7u count=7u 
     attack=0.4 defence=0.4 psyattack=0f fireimmune=true confimmune=true flavor='robot' 
-    moon=(new_moon->MoonDistrib) pointsfac=1f itemdrop='radblob' pointscontrib=1 range=7 
+    moon=(new_moon->MoonDistrib) pointsfac=1f itemdrop='radblob' pointscontrib=1u range=7u 
     radimmune=true poisimmune=true heatseeking=true 
     desc='The very first model in Cyberdine\'s robot-killer lineup.\n(Brought to you by Skynet.)' } ] monsterstock_set
 
 [ 'decepticon'
   Monster{
-    skin=Skin{ char='z' color='dark_gray' } name='decepticon' branch='c' level=8 count=7 
+    skin=Skin{ char='z' color='dark_gray' } name='decepticon' branch='c' level=8u count=7u 
     attack=1.5 defence=1.5 psyattack=0f confimmune=true flavor='robot' explodeimmune=true 
-    moon=(new_moon->MoonDistrib) pointsfac=1f pointscontrib=1 align='ne' summon=Summon{mon='autobot' timeout=3} range=15 
+    moon=(new_moon->MoonDistrib) pointsfac=1f pointscontrib=1u align='ne' summon=Summon{mon='autobot' timeout=3u} range=15u 
     radimmune=true poisimmune=true 
     desc='An extraterrestrial sentient robot from the planet\nCybertron. Powered by the energy source Nucleon,\nhe fights for intergalactic Evil.' } ] monsterstock_set
 
 [ 'triffid'
   Monster{
-    skin=Skin{ char='x' color='peach' } name='triffid' branch='c' level=8 count=16 
+    skin=Skin{ char='x' color='peach' } name='triffid' branch='c' level=8u count=16u 
     attack=2f defence=2f psyattack=0f confimmune=true moon=(full_moon->MoonDistrib) pointsfac=1f 
-    itemdrop='triffidlarva' pointscontrib=1 align='cn' range=5 
+    itemdrop='triffidlarva' pointscontrib=1u align='cn' range=5u 
     desc='A carnivorous plant. It is a sneaky pest that is very\nhard to get rid of.' } ] monsterstock_set
 
 [ 'Wintermute'
   Monster{
-    skin=Skin{ char='V' color='azure' } name='Wintermute' branch='c' level=9 count=2 
+    skin=Skin{ char='V' color='azure' } name='Wintermute' branch='c' level=9u count=2u 
     attack=0.5 defence=4f psyattack=0f fireimmune=true confimmune=true flavor='digital' 
     explodeimmune=true flying=true moon=(new_moon->MoonDistrib) sleepattack=true pointsfac=1f no_a=true 
-    pointscontrib=1 align='cn' large=true range=30 radimmune=true 
+    pointscontrib=1u align='cn' large=true range=30u radimmune=true 
     poisimmune=true 
     desc='A manifestation of the powerful AI construct named \'Wintermute\'.' } ] monsterstock_set
 
 [ 'mosura-chan'
   Monster{
-    skin=Skin{ char='x' color='dark_lime' } name='mosura-chan' branch='c' level=9 count=16 
+    skin=Skin{ char='x' color='dark_lime' } name='mosura-chan' branch='c' level=9u count=16u 
     attack=0f defence=0.2 psyattack=0f confimmune=true flavor='flying' explodeimmune=true 
     flying=true moon=(full_moon->MoonDistrib) pointsfac=1f no_a=true selfdestruct=true itemdrop='radblob' 
-    pointscontrib=1 align='nn' range=30 radimmune=true 
+    pointscontrib=1u align='nn' range=30u radimmune=true 
     desc='A bird-sized, moth-like creature.\nIt has a strange green glow.' } ] monsterstock_set
 
 [ 'Voltron'
   Monster{
-    skin=Skin{ char='Z' color='white' } name='Voltron' branch='c' level=10 count=1 
+    skin=Skin{ char='Z' color='white' } name='Voltron' branch='c' level=10u count=1u 
     attack=6f defence=5f psyattack=0f fireimmune=true confimmune=true flavor='robot' 
-    explodeimmune=true moon=(full_moon->MoonDistrib) pointsfac=1f no_a=true pointscontrib=1 align='ln' 
-    large=true range=5 poisimmune=true heatseeking=true 
+    explodeimmune=true moon=(full_moon->MoonDistrib) pointsfac=1f no_a=true pointscontrib=1u align='ln' 
+    large=true range=5u poisimmune=true heatseeking=true 
     desc='Defender of the Universe.' } ] monsterstock_set
 
 [ 'Gojira-sama'
   Monster{
-    skin=Skin{ char='G' color='green' } name='Gojira-sama' branch='c' level=11 count=1 
+    skin=Skin{ char='G' color='green' } name='Gojira-sama' branch='c' level=11u count=1u 
     attack=6f defence=5f psyattack=0f flavor='earthshake' explodeimmune=true moon=(new_moon->MoonDistrib) 
-    pointsfac=1f no_a=true itemdrop='radsuit' pointscontrib=1 align='ne' summon=Summon{mon='mosura-chan' timeout=3} 
-    large=true range=10 radimmune=true 
+    pointsfac=1f no_a=true itemdrop='radsuit' pointscontrib=1u align='ne' summon=Summon{mon='mosura-chan' timeout=3u} 
+    large=true range=10u radimmune=true 
     desc='She really hates Japan after what they did\nto the nuclear power plant.' } ] monsterstock_set
 
 [ 'omophagist'
   Monster{
-    skin=Skin{ char='h' color='dark_purple' } name='omophagist' branch='d' level=1 count=4 
-    attack=0.3 defence=0.1 psyattack=0f pointsfac=1f pointscontrib=1 
-    range=4 
+    skin=Skin{ char='h' color='dark_purple' } name='omophagist' branch='d' level=1u count=4u 
+    attack=0.3 defence=0.1 psyattack=0f pointsfac=1f pointscontrib=1u 
+    range=4u 
     desc='A poor, degenerate inhabitant of the poorest parts of the City.\n(Those parts that are composed of mostly ancient ruins.)\nHe might be a little insane and a cannibal, as well.' } ] monsterstock_set
 
 [ 'exultant'
   Monster{
-    skin=Skin{ char='h' color='gold' } name='exultant' branch='d' level=2 count=3 
-    attack=0.5 defence=0.5 psyattack=0f flavor='humanwarrior' pointsfac=1f pointscontrib=1 
-    align='lg' summon=Summon{mon='armiger' timeout=2} range=8 
+    skin=Skin{ char='h' color='gold' } name='exultant' branch='d' level=2u count=3u 
+    attack=0.5 defence=0.5 psyattack=0f flavor='humanwarrior' pointsfac=1f pointscontrib=1u 
+    align='lg' summon=Summon{mon='armiger' timeout=2u} range=8u 
     desc='A member of the nobility caste.' } ] monsterstock_set
 
 [ 'aquastor'
   Monster{
-    skin=Skin{ char='v' color='gray' } name='aquastor' branch='d' level=3 count=4 
+    skin=Skin{ char='v' color='gray' } name='aquastor' branch='d' level=3u count=4u 
     attack=1.5 defence=1f psyattack=0f flying=true moon=(new_moon->MoonDistrib) pointsfac=1f 
-    pointscontrib=1 hungerattack=true align='lg' range=10 poisimmune=true 
+    pointscontrib=1u hungerattack=true align='lg' range=10u poisimmune=true 
     
     desc='An entity formed by the power of a concentrated thought\nand which assumed a physical form.' } ] monsterstock_set
 
 [ 'eidolon'
   Monster{
-    skin=Skin{ char='v' color='white' } name='eidolon' branch='d' level=3 count=4 
-    attack=0f defence=2f psyattack=1.5 psyrange=7 fireimmune=true flavor='faerie' 
-    flying=true moon=(full_moon->MoonDistrib) pointsfac=1f pointscontrib=1 align='ln' 
-    range=8 poisimmune=true 
+    skin=Skin{ char='v' color='white' } name='eidolon' branch='d' level=3u count=4u 
+    attack=0f defence=2f psyattack=1.5 psyrange=7u fireimmune=true flavor='faerie' 
+    flying=true moon=(full_moon->MoonDistrib) pointsfac=1f pointscontrib=1u align='ln' 
+    range=8u poisimmune=true 
     desc='A spirit-image of a living or dead person;\na shade or phantom look-alike of the human form.' } ] monsterstock_set
 
 [ 'cacogen'
   Monster{
-    skin=Skin{ char='u' color='silver' } name='cacogen' branch='d' level=4 count=3 
+    skin=Skin{ char='u' color='silver' } name='cacogen' branch='d' level=4u count=3u 
     attack=0.5 defence=1f psyattack=0f flavor='humanweird' moon=(full_moon->MoonDistrib) pointsfac=1f 
-    itemdrop='radblob' pointscontrib=1 align='ln' summon=Summon{mon='eidolon' timeout=2} range=10 poisimmune=true 
+    itemdrop='radblob' pointscontrib=1u align='ln' summon=Summon{mon='eidolon' timeout=2u} range=10u poisimmune=true 
     
     desc='In fact an extraterrestrial who disguises itself as an\nurthly monster.' } ] monsterstock_set
 
 [ 'ascian'
   Monster{
-    skin=Skin{ char='h' color='gray' } name='ascian' branch='d' level=5 count=4 
-    attack=2f defence=1f psyattack=1.5 psyrange=10 flavor='weird' moon=(new_moon->MoonDistrib) 
-    pointsfac=1f pointscontrib=1 align='ne' range=5 
+    skin=Skin{ char='h' color='gray' } name='ascian' branch='d' level=5u count=4u 
+    attack=2f defence=1f psyattack=1.5 psyrange=10u flavor='weird' moon=(new_moon->MoonDistrib) 
+    pointsfac=1f pointscontrib=1u align='ne' range=5u 
     desc='A human from Ascia, the tyrannical empire ruled\nby the evil Abaia. His mind is warped to the point\nwhere he cannot any longer speak or understand any\nreal human language.' } ] monsterstock_set
 
 [ 'smilodon'
   Monster{
-    skin=Skin{ char='Q' color='dark_orange' } name='smilodon' branch='d' level=5 count=3 
+    skin=Skin{ char='Q' color='dark_orange' } name='smilodon' branch='d' level=5u count=3u 
     attack=2.5 defence=1.5 psyattack=0f flavor='carnivore' moon=(full_moon->MoonDistrib) pointsfac=1f 
-    pointscontrib=1 align='nn' range=12 
+    pointscontrib=1u align='nn' range=12u 
     desc='An ancient genetically-engineered feline animal.\nIt looks somewhat like the familiar sabre-toothed tiger.' } ] monsterstock_set
 
 [ 'undine'
   Monster{
-    skin=Skin{ char='u' color='darkest_blue' } name='undine' branch='d' level=6 count=5 
+    skin=Skin{ char='u' color='darkest_blue' } name='undine' branch='d' level=6u count=5u 
     attack=0.7 defence=3f psyattack=0f flavor='snake' moon=(new_moon->MoonDistrib) sleepattack=true 
-    pointsfac=1f pointscontrib=1 align='ce' large=true range=10 
+    pointsfac=1f pointscontrib=1u align='ce' large=true range=10u 
     
     desc='A monstrous slave-servant of its megetherian overlords.\nIt looks like humongous, deformed mermaid.' } ] monsterstock_set
 
 [ 'Abaia'
   Monster{
-    skin=Skin{ char='U' color='grey' } name='Abaia' branch='d' level=11 count=1 
+    skin=Skin{ char='U' color='grey' } name='Abaia' branch='d' level=11u count=1u 
     attack=10f defence=10f psyattack=0f fireimmune=true confimmune=true flavor='earthshake' 
-    explodeimmune=true pointsfac=1f no_a=true itemdrop='gluegun' pointscontrib=1 align='cn' 
-    summon=Summon{mon='undine' timeout=3} large=true range=15 radimmune=true 
+    explodeimmune=true pointsfac=1f no_a=true itemdrop='gluegun' pointscontrib=1u align='cn' 
+    summon=Summon{mon='undine' timeout=3u} large=true range=15u radimmune=true 
     desc='A megatherian: an evil, immortal, gigantic creature of\npossibly extraterrestrial origin. They are hellbent on ruling\nUrth. They are powerful enough and amoral enough to be\nessentially equal to gods.' } ] monsterstock_set
 
 [ 'Cimmerian pirate'
   Monster{
-    skin=Skin{ char='h' color='red' } name='Cimmerian pirate' branch='e' level=3 count=8 
+    skin=Skin{ char='h' color='red' } name='Cimmerian pirate' branch='e' level=3u count=8u 
     attack=1.2 defence=0.6 psyattack=0f flavor='humanwarrior' moon=(full_moon->MoonDistrib) pointsfac=1f 
-    pointscontrib=1 align='cn' summon=Summon{mon='Cimmerian pirate' timeout=4} range=7 
+    pointscontrib=1u align='cn' summon=Summon{mon='Cimmerian pirate' timeout=4u} range=7u 
     desc='A cruel-hearted Cimmerian tribesman, turned to piracy\nin search of loot and women.\nThe poor man is probably looking for treasure in these\ncaves.' } ] monsterstock_set
 
 [ 'Hyperborean barbarian'
   Monster{
-    skin=Skin{ char='h' color='peach' } name='Hyperborean barbarian' branch='e' level=3 count=6 
-    attack=2.2 defence=0.9 psyattack=0f flavor='humanwarrior' pointsfac=1f pointscontrib=1 
-    align='cg' range=6 
+    skin=Skin{ char='h' color='peach' } name='Hyperborean barbarian' branch='e' level=3u count=6u 
+    attack=2.2 defence=0.9 psyattack=0f flavor='humanwarrior' pointsfac=1f pointscontrib=1u 
+    align='cg' range=6u 
     desc='A barbarian who hails from one of the hearty tribes\nof great frosty Hyperborea.' } ] monsterstock_set
 
 [ 'giant serpent'
   Monster{
-    skin=Skin{ char='S' color='darkest_lime' } name='giant serpent' branch='e' level=3 count=8 
+    skin=Skin{ char='S' color='darkest_lime' } name='giant serpent' branch='e' level=3u count=8u 
     attack=1.8 defence=0.5 psyattack=0f flavor='snake' moon=(new_moon->MoonDistrib) pointsfac=1f 
-    pointscontrib=1 align='nn' range=9 
+    pointscontrib=1u align='nn' range=9u 
     desc='A malevolent nag, a giant snake borne from the\nunholy mixture of human and cobra seed.' } ] monsterstock_set
 
 [ 'Stygian priest'
   Monster{
-    skin=Skin{ char='h' color='light_sepia' } name='Stygian priest' branch='e' level=4 count=6 
+    skin=Skin{ char='h' color='light_sepia' } name='Stygian priest' branch='e' level=4u count=6u 
     attack=1f defence=1f psyattack=0f flavor='wizard' moon=(new_moon->MoonDistrib) pointsfac=1f 
-    pointscontrib=1 align='ln' summon=Summon{mon='giant serpent' timeout=3} range=8 
+    pointscontrib=1u align='ln' summon=Summon{mon='giant serpent' timeout=3u} range=8u 
     desc='Hailing from the banks of the river Stygs, he has\na swarthy complexion and sports a completely shaved head.\nHe is skilled in the arcane worship of the enigmatic\nStygian gods.' } ] monsterstock_set
 
 [ 'giant slug'
   Monster{
-    skin=Skin{ char='w' color='purple' } name='giant slug' branch='e' level=4 count=10 
+    skin=Skin{ char='w' color='purple' } name='giant slug' branch='e' level=4u count=10u 
     attack=0.7 defence=2.8 psyattack=0f flavor='snake' moon=(new_moon->MoonDistrib) pointsfac=1f 
-    pointscontrib=1 align='lg' summon=Summon{mon='giant slug' timeout=2} range=4 
+    pointscontrib=1u align='lg' summon=Summon{mon='giant slug' timeout=2u} range=4u 
     desc='It is truly giant and truly disgusting.' } ] monsterstock_set
 
 [ 'zombie'
   Monster{
-    skin=Skin{ char='y' color='silver' } name='zombie' branch='e' level=4 count=10 
-    attack=1.8 defence=2.9 psyattack=0f moon=(new_moon->MoonDistrib) pointsfac=1f pointscontrib=1 
-    align='ne' range=3 poisimmune=true 
+    skin=Skin{ char='y' color='silver' } name='zombie' branch='e' level=4u count=10u 
+    attack=1.8 defence=2.9 psyattack=0f moon=(new_moon->MoonDistrib) pointsfac=1f pointscontrib=1u 
+    align='ne' range=3u poisimmune=true 
     desc='A decomposed corpse brought back to unlife by\nthe darkest arts.' } ] monsterstock_set
 
 [ 'wolf'
   Monster{
-    skin=Skin{ char='q' color='silver' } name='wolf' branch='e' level=5 count=10 
+    skin=Skin{ char='q' color='silver' } name='wolf' branch='e' level=5u count=10u 
     attack=3.5 defence=3f psyattack=0f flavor='animal' moon=(full_moon->MoonDistrib) pointsfac=1f 
-    pointscontrib=1 align='lg' range=7 
+    pointscontrib=1u align='lg' range=7u 
     desc='A man-eating wolf.' } ] monsterstock_set
 
 [ 'Thulian price'
   Monster{
-    skin=Skin{ char='h' color='sky' } name='Thulian price' branch='e' level=6 count=8 
+    skin=Skin{ char='h' color='sky' } name='Thulian price' branch='e' level=6u count=8u 
     attack=1f defence=1f psyattack=0f flavor='humanweird' moon=(full_moon->MoonDistrib) pointsfac=1f 
-    pointscontrib=1 align='ln' summon=Summon{mon='Amazon warrior' timeout=1} range=18 
+    pointscontrib=1u align='ln' summon=Summon{mon='Amazon warrior' timeout=1u} range=18u 
     desc='Ultima Thule is the mystical land of fancy and dark legend.\nYou\'re not sure he is really from Thule, much less a real price.' } ] monsterstock_set
 
 [ 'cannibal'
   Monster{
-    skin=Skin{ char='h' color='dark_purple' } name='cannibal' branch='e' level=6 count=8 
+    skin=Skin{ char='h' color='dark_purple' } name='cannibal' branch='e' level=6u count=8u 
     attack=2f defence=2f psyattack=0f flavor='humanweird' moon=(new_moon->MoonDistrib) pointsfac=1f 
-    pointscontrib=1 align='ce' range=15 
+    pointscontrib=1u align='ce' range=15u 
     desc='A deranged human who developed an unnatural, unholy\naddiction to human flesh.' } ] monsterstock_set
 
 [ 'Atlantian sorceror'
   Monster{
-    skin=Skin{ char='h' color='light_han' } name='Atlantian sorceror' branch='e' level=8 count=6 
+    skin=Skin{ char='h' color='light_han' } name='Atlantian sorceror' branch='e' level=8u count=6u 
     attack=1.2 defence=1.2 psyattack=0f flavor='wizard' moon=(full_moon->MoonDistrib) pointsfac=1f 
-    pointscontrib=1 align='le' summon=Summon{mon='evil demon' timeout=2} range=15 
+    pointscontrib=1u align='le' summon=Summon{mon='evil demon' timeout=2u} range=15u 
     desc='Atlantis is another evil island-empire, the competitor\nto Lemuria in the dark art of demon-worship.' } ] monsterstock_set
 
 [ 'evil demon'
   Monster{
-    skin=Skin{ char='Y' color='red' } name='evil demon' branch='e' level=8 count=6 
+    skin=Skin{ char='Y' color='red' } name='evil demon' branch='e' level=8u count=6u 
     attack=1f defence=1.6 psyattack=0f fireimmune=true flavor='wizard' moon=(new_moon->MoonDistrib) 
-    pointsfac=1f pointscontrib=1 align='ne' summon=Summon{mon='wolf' timeout=2} range=10 poisimmune=true 
+    pointsfac=1f pointscontrib=1u align='ne' summon=Summon{mon='wolf' timeout=2u} range=10u poisimmune=true 
     
     desc='Summoned from the depths of Infernus to commit\nunspeakable deeds of evil and hatred.' } ] monsterstock_set
 
 [ 'nosf_e9'
   Monster{
-    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='e' level=9 count=1 
+    skin=Skin{ char='y' color='han' } name='Nosferatu' branch='e' level=9u count=1u 
     attack=7f defence=7f psyattack=0f flavor='air' moon=(new_moon_only->MoonDistrib) no_exting=true 
-    pointsfac=1f no_a=true range=25 bloodsucker=TimedEffect{damage=0.25 timeout=50} 
+    pointsfac=1f no_a=true range=25u bloodsucker=TimedEffect{damage=0.25 timeout=50u} 
     desc='A bloodsucking walking corpse.' } ] monsterstock_set
 
 [ 'carrion crawler'
   Monster{
-    skin=Skin{ char='w' color='white' } name='carrion crawler' branch='e' level=9 count=16 
+    skin=Skin{ char='w' color='white' } name='carrion crawler' branch='e' level=9u count=16u 
     attack=2f defence=2f psyattack=0f flavor='snake' moon=(new_moon->MoonDistrib) pointsfac=1f 
-    itemdrop='cclarva' pointscontrib=1 align='ce' range=5 poisimmune=true 
+    itemdrop='cclarva' pointscontrib=1u align='ce' range=5u poisimmune=true 
     
     desc='A creature that looks like a maggot,\nonly a thousand times bigger.' } ] monsterstock_set
 
 [ 'luna_e9'
   Monster{
-    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='e' level=9 count=1 
-    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6 timeout=12} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
+    skin=Skin{ char='h' color='desaturated_blue' } name='lunatic' branch='e' level=9u count=1u 
+    attack=1f defence=2.2 psyattack=0f summononce=NumEffect{num=6u timeout=12u} flavor='humanweird' moon=(full_moon_only->MoonDistrib) 
     no_exting=true pointsfac=1f 
     desc='Strange, selenic emanations have driven this poor soul\nto eternally walk the moon-lit dungeon, whispering softly\nto the pale, round face of the Moon.' } ] monsterstock_set
 
 [ 'lyca_e9'
   Monster{
-    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='e' level=9 count=1 
+    skin=Skin{ char='l' color='gray' } name='lycanthrope' branch='e' level=9u count=1u 
     attack=4f defence=1.5 psyattack=0f moon=(full_moon_only->MoonDistrib) no_exting=true fast=true 
-    pointsfac=1f range=20 heatseeking=true 
+    pointsfac=1f range=20u heatseeking=true 
     desc='Idem: a werewolf, a shapeshifter, warg, lycan, versipellis.' } ] monsterstock_set
 
 [ 'vampire'
   Monster{
-    skin=Skin{ char='Y' color='blue' } name='vampire' branch='e' level=9 count=5 
+    skin=Skin{ char='Y' color='blue' } name='vampire' branch='e' level=9u count=5u 
     attack=2.5 defence=2.5 psyattack=0f flavor='air' moon=(new_moon->MoonDistrib) pointsfac=1f 
-    pointscontrib=1 align='ne' summon=Summon{mon='zombie' timeout=1} range=15 poisimmune=true 
+    pointscontrib=1u align='ne' summon=Summon{mon='zombie' timeout=1u} range=15u poisimmune=true 
     desc='One of the Elder Ones, the most ancient and powerful of\nvampires.' } ] monsterstock_set
 
 [ 'priest_e9'
   Monster{
-    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='e' level=9 count=1 
+    skin=Skin{ char='p' color='crimson' } name='vile priest of Ba\'al-Zebub' branch='e' level=9u count=1u 
     attack=2f defence=1f psyattack=0f flavor='wizard' moon=(new_moon_only->MoonDistrib) no_exting=true 
-    raise_dead=NumEffect{num=15 timeout=2} pointsfac=1f fleerange=5 range=25 
+    raise_dead=NumEffect{num=15u timeout=2u} pointsfac=1f fleerange=5u range=25u 
     desc='A depraved worshipper of Ba\'al-Zebub, the unclean undead god.' } ] monsterstock_set
 
 [ 'Conan'
   Monster{
-    skin=Skin{ char='K' color='sepia' } name='Conan' branch='e' level=10 count=1 
+    skin=Skin{ char='K' color='sepia' } name='Conan' branch='e' level=10u count=1u 
     attack=7.5 defence=5.5 psyattack=0f confimmune=true flavor='humanwarrior' pointsfac=1f 
-    no_a=true itemdrop='eyeofkali' pointscontrib=1 align='cn' range=8 
+    no_a=true itemdrop='eyeofkali' pointscontrib=1u align='cn' range=8u 
     
     desc='A well-muscled adventurer,\nhe looks like he just stepped off a movie poster.\nHe hates competition.' } ] monsterstock_set
 
 [ 'be10'
   Monster{
-    skin=Skin{ char='0' color='gray' } name='boulder' branch='e' level=10 count=3 
+    skin=Skin{ char='0' color='gray' } name='boulder' branch='e' level=10u count=3u 
     attack=0.5 defence=0.5 psyattack=0f confimmune=true no_exting=true inanimate=true 
-    pointsfac=1f boulder=true range=11 radimmune=true poisimmune=true 
+    pointsfac=1f boulder=true range=11u radimmune=true poisimmune=true 
     
     desc='A gigantic rock of spherical shape.' } ] monsterstock_set
 
 [ 'ufo_e10'
   Monster{
-    skin=Skin{ char='a' color='dark_lime' } name='rigellian' branch='e' level=10 count=1 
-    attack=7f defence=22f psyattack=0.25 blink_away=5 confimmune=true psyrange=6 
+    skin=Skin{ char='a' color='dark_lime' } name='rigellian' branch='e' level=10u count=1u 
+    attack=7f defence=22f psyattack=0.25 blink_away=5u confimmune=true psyrange=6u 
     moon=(quarter_moon_only->MoonDistrib) no_exting=true explodeimmune=true flying=true pointsfac=5f itemdrop='deathray' 
-    pointscontrib=1 fleerange=8 fireimmune=true range=25 radimmune=true 
+    pointscontrib=1u fleerange=8u fireimmune=true range=25u radimmune=true 
     poisimmune=true 
     desc='An evil alien overlord.\nHe studies humanity and plots plans of world domination.\nHe might also be the one responsible for abductions of\nimmocents civilians and cattle.' } ] monsterstock_set
 
 [ 'Crom'
   Monster{
-    skin=Skin{ char='K' color='peach' } name='Crom' branch='e' level=11 count=1 
+    skin=Skin{ char='K' color='peach' } name='Crom' branch='e' level=11u count=1u 
     attack=7.5 defence=7.5 psyattack=0f fireimmune=true confimmune=true flavor='earthshake' 
-    explodeimmune=true pointsfac=1f no_a=true itemdrop='excalibur' pointscontrib=1 align='cn' 
-    summon=Summon{mon='Conan' timeout=1} large=true range=10 poisimmune=true 
+    explodeimmune=true pointsfac=1f no_a=true itemdrop='excalibur' pointscontrib=1u align='cn' 
+    summon=Summon{mon='Conan' timeout=1u} large=true range=10u poisimmune=true 
     desc='The most high god of all Cimmerians, Crom is the god\nof valor and battle. He is a dark, vengeful and\njudgemental god.' } ] monsterstock_set
 
 [ 'akali_4'
   Monster{
-    skin=Skin{ char='h' color='gray' } name='acolyte of Kali' branch='qk' level=10 count=3 
-    attack=3.5 defence=2.5 psyattack=0.25 psyrange=18 confimmune=true pointsfac=1f 
-    pointscontrib=1 range=18 
+    skin=Skin{ char='h' color='gray' } name='acolyte of Kali' branch='qk' level=10u count=3u 
+    attack=3.5 defence=2.5 psyattack=0.25 psyrange=18u confimmune=true pointsfac=1f 
+    pointscontrib=1u range=18u 
     desc='A bloodthirsty worshipper of Kali Ma.' } ] monsterstock_set
 
 [ 'Bella Swan'
   Monster{
-    skin=Skin{ char=(152 char->Sym) color='gray' } name='Bella Swan' branch='s' level=7 count=1 
-    attack=3f defence=3f psyattack=0f pointsfac=1f no_a=true pointscontrib=1 
-    summon=Summon{mon='Edward Cullen' timeout=1} range=20 
+    skin=Skin{ char=(152 char->Sym) color='gray' } name='Bella Swan' branch='s' level=7u count=1u 
+    attack=3f defence=3f psyattack=0f pointsfac=1f no_a=true pointscontrib=1u 
+    summon=Summon{mon='Edward Cullen' timeout=1u} range=20u 
     desc='A clumsy and very forgettable teenage girl.\nThe only notable thing about her is that she hates\nherself enough to want to become an undead vampire.' } ] monsterstock_set
 
 [ 'Edward Cullen'
   Monster{
-    skin=Skin{ char=(152 char->Sym) color='silver' } name='Edward Cullen' branch='s' level=7 count=1 
+    skin=Skin{ char=(152 char->Sym) color='silver' } name='Edward Cullen' branch='s' level=7u count=1u 
     attack=8f defence=6f psyattack=0f confimmune=true pointsfac=1f no_a=true 
-    pointscontrib=1 range=20 radimmune=true poisimmune=true 
+    pointscontrib=1u range=20u radimmune=true poisimmune=true 
     desc='No, he\'s not really a vegetarian!' } ] monsterstock_set
 
 [ 'Dumbledore'
   Monster{
-    skin=Skin{ char=(146 char->Sym) color='lightest_lime' } name='Dumbledore' branch='s' level=8 count=1 
-    attack=2f defence=7f psyattack=5f psyrange=6 fireimmune=true confimmune=true 
-    sleepattack=true pointsfac=1f no_a=true pointscontrib=1 range=15 
+    skin=Skin{ char=(146 char->Sym) color='lightest_lime' } name='Dumbledore' branch='s' level=8u count=1u 
+    attack=2f defence=7f psyattack=5f psyrange=6u fireimmune=true confimmune=true 
+    sleepattack=true pointsfac=1f no_a=true pointscontrib=1u range=15u 
     poisimmune=true 
     desc='The head of Hogwarts School of Magic.\nPurportedly a white wizard and a paragod of Good,\nthough you\'d never guess it by looking at him.' } ] monsterstock_set
 
 [ 'Shredder'
   Monster{
-    skin=Skin{ char=(153 char->Sym) color='gray' } name='Shredder' branch='s' level=8 count=1 
+    skin=Skin{ char=(153 char->Sym) color='gray' } name='Shredder' branch='s' level=8u count=1u 
     attack=8f defence=7f psyattack=0f fireimmune=true confimmune=true explodeimmune=true 
-    pointsfac=1f no_a=true pointscontrib=1 range=25 poisimmune=true 
+    pointsfac=1f no_a=true pointscontrib=1u range=25u poisimmune=true 
     
     desc='He hates turtles.' } ] monsterstock_set
 
 [ 'Darth Vader'
   Monster{
-    skin=Skin{ char=(154 char->Sym) color='dark_gray' } name='Darth Vader' branch='s' level=9 count=1 
-    attack=6f defence=9f psyattack=6f psyrange=8 fireimmune=true confimmune=true 
-    flying=true pointsfac=1f no_a=true pointscontrib=1 range=30 
+    skin=Skin{ char=(154 char->Sym) color='dark_gray' } name='Darth Vader' branch='s' level=9u count=1u 
+    attack=6f defence=9f psyattack=6f psyrange=8u fireimmune=true confimmune=true 
+    flying=true pointsfac=1f no_a=true pointscontrib=1u range=30u 
     poisimmune=true 
     desc='A dark Sith Lord and a formidable enemy.' } ] monsterstock_set
 
 [ 'Hagbard Celine'
   Monster{
-    skin=Skin{ char=(144 char->Sym) color='gold' } name='Hagbard Celine' branch='s' level=10 count=1 
-    attack=6f defence=9f psyattack=1f psyrange=2 confimmune=true explodeimmune=true 
-    sleepattack=true pointsfac=1f no_a=true pointscontrib=1 hungerattack=true 
-    range=30 radimmune=true poisimmune=true 
+    skin=Skin{ char=(144 char->Sym) color='gold' } name='Hagbard Celine' branch='s' level=10u count=1u 
+    attack=6f defence=9f psyattack=1f psyrange=2u confimmune=true explodeimmune=true 
+    sleepattack=true pointsfac=1f no_a=true pointscontrib=1u hungerattack=true 
+    range=30u radimmune=true poisimmune=true 
     desc='Hail Eris!' } ] monsterstock_set
 
 [ 'Iucounu'
   Monster{
-    skin=Skin{ char=(142 char->Sym) color='purple' } name='Iucounu' branch='s' level=11 count=1 
+    skin=Skin{ char=(142 char->Sym) color='purple' } name='Iucounu' branch='s' level=11u count=1u 
     attack=3f defence=11f psyattack=0f fireimmune=true confimmune=true explodeimmune=true 
-    flying=true pointsfac=1f no_a=true pointscontrib=1 range=30 
+    flying=true pointsfac=1f no_a=true pointscontrib=1u range=30u 
     radimmune=true poisimmune=true 
     desc='The Laughing Magician.' } ] monsterstock_set
 
 [ 'bmold5'
   Monster{
-    skin=Skin{ char='x' color='gray' } name='black mold' branch='x' level=8 count=15 
-    attack=0f defence=5f psyattack=0f moldspew=MoldEffect{moldid=5 chance=3 timeout=3} static=true no_exting=true 
-    moon=(mold->MoonDistrib) is_mold=true pointsfac=0.5 no_a=true pointscontrib=1 summon=Summon{mon='bmold5' timeout=10} 
+    skin=Skin{ char='x' color='gray' } name='black mold' branch='x' level=8u count=15u 
+    attack=0f defence=5f psyattack=0f moldspew=MoldEffect{moldid=5u chance=3u timeout=3u} static=true no_exting=true 
+    moon=(mold->MoonDistrib) is_mold=true pointsfac=0.5 no_a=true pointscontrib=1u summon=Summon{mon='bmold5' timeout=10u} 
     poisimmune=true 
     desc='Stachybotrys chartarum, a toxic and sometimes deadly\nspecies of mold.' } ] monsterstock_set
 
@@ -736,57 +743,57 @@ init_monsterstock Void->Void :-
     } ) ] monsterstock_set
 
 [ 'Pteranodon longiceps' ('Mammuthus primigenius' monsterstock_get->Monster {
-    skin=Skin{ char='B' color='lightest_lime' } name='Pteranodon longiceps' level=7 count=8 align='le' 
-    range=10 flavor='flying' desc='A flying reptile that had a wingspan of over 6 meters!\nIt was a very common animal during the Cretaceous period.' 
+    skin=Skin{ char='B' color='lightest_lime' } name='Pteranodon longiceps' level=7u count=8u align='le' 
+    range=10u flavor='flying' desc='A flying reptile that had a wingspan of over 6 meters!\nIt was a very common animal during the Cretaceous period.' 
     } ) ] monsterstock_set
 
 [ 'Indricotherium transouralicum' ('Mammuthus primigenius' monsterstock_get->Monster {
     skin=Skin{ char='Q' color='sepia' } name='Indricotherium transouralicum' attack=1f defence=6f align='cg' 
-    moon=(full_moon->MoonDistrib) range=7 desc='Named after the mystical Indrik-Beast, this is the \nlargest land mammal ever to have lived!\nA relative of the rhinoceros, it looks like a ridiculously\nmuscled cross between wooly mammoth and a giraffe.\nIts long neck reaches to 8 meters in height, more than\na 3-story building!' 
+    moon=(full_moon->MoonDistrib) range=7u desc='Named after the mystical Indrik-Beast, this is the \nlargest land mammal ever to have lived!\nA relative of the rhinoceros, it looks like a ridiculously\nmuscled cross between wooly mammoth and a giraffe.\nIts long neck reaches to 8 meters in height, more than\na 3-story building!' 
     } ) ] monsterstock_set
 
 [ 'brownie' ('pixie' monsterstock_get->Monster {
-    skin=Skin{ char='h' color='light_red' } name='brownie' attack=1.5 defence=0.2 range=8 
+    skin=Skin{ char='h' color='light_red' } name='brownie' attack=1.5 defence=0.2 range=8u 
     desc='Once a friendly house spirit, this small fey humanoid\nhas been driven to hate humanity after years of neglect\nand abuse by its master.' 
     } ) ] monsterstock_set
 
 [ 'gnophkeh' ('ascian' monsterstock_get->Monster {
     name='gnophkeh' branch='b' attack=7f psyattack=0f align='le' 
-    range=18 desc='A member of a race of disgusting, hairy cannibal humanoids.' 
+    range=18u desc='A member of a race of disgusting, hairy cannibal humanoids.' 
     } ) ] monsterstock_set
 
 [ 'cyberpunk' ('omophagist' monsterstock_get->Monster {
-    skin=Skin{ char='h' color='light_purple' } name='cyberpunk' branch='c' count=6 attack=0.2 
+    skin=Skin{ char='h' color='light_purple' } name='cyberpunk' branch='c' count=6u attack=0.2 
     itemdrop='booze' desc='Stoned out of his gourd, he is chatting with his avatar\nin cyberspace while wearing VR glasses.' 
     } ) ] monsterstock_set
 
 [ 'charizard' ('snorlax' monsterstock_get->Monster {
-    skin=Skin{ char='v' color='green' } name='charizard' defence=0.4 align='ng' range=8 
+    skin=Skin{ char='v' color='green' } name='charizard' defence=0.4 align='ng' range=8u 
     desc='A creature of indeterminate race, looking like\nsome sort of small dragonish flying reptile.\nIt is greenish in color.' 
     } ) ] monsterstock_set
 
 [ 'autobot' ('decepticon' monsterstock_get->Monster {
-    skin=Skin{ char='z' color='silver' } name='autobot' level=7 align='ln' 
+    skin=Skin{ char='z' color='silver' } name='autobot' level=7u align='ln' 
     moon=(full_moon->MoonDistrib) itemdrop='bomb' desc='An extraterrestrial sentient robot from the planet\nCybertron. Powered by the energy source Nucleon,\nhe fights for intergalactic Good.' 
     } ) ] monsterstock_set
 
 [ 'avern' ('omophagist' monsterstock_get->Monster {
     skin=Skin{ char='x' color='green' } name='avern' defence=0.01 itemdrop='avern' confimmune=true 
-    range=1 desc='A poisonous, carnivorous species of plant.\n(It might actually be at least in part an animal.)' 
+    range=1u desc='A poisonous, carnivorous species of plant.\n(It might actually be at least in part an animal.)' 
     } ) ] monsterstock_set
 
 [ 'armiger' ('exultant' monsterstock_get->Monster {
-    skin=Skin{ char='k' color='silver' } name='armiger' count=4 attack=2f defence=1f 
+    skin=Skin{ char='k' color='silver' } name='armiger' count=4u attack=2f defence=1f 
     align='ng' desc='A member of the warrior caste.' 
     } ) ] monsterstock_set
 
 [ 'destrier' ('smilodon' monsterstock_get->Monster {
-    skin=Skin{ char='q' color='dark_gray' } name='destrier' level=4 range=6 desc='A mount; A highly modified horse, possessing\nclawed feet (for better traction) and large canine teeth.\nIt is carnivorous.' 
+    skin=Skin{ char='q' color='dark_gray' } name='destrier' level=4u range=6u desc='A mount; A highly modified horse, possessing\nclawed feet (for better traction) and large canine teeth.\nIt is carnivorous.' 
     } ) ] monsterstock_set
 
 [ 'alzabo' ('cannibal' monsterstock_get->Monster {
-    skin=Skin{ char='u' color='darkest_red' } name='alzabo' branch='d' count=3 itemdrop='alzabobrain' 
-    range=12 flavor='carnivore' desc=' "The red orbs of the alzabo were something more, neither\n  the intelligence of humankind nor the the innocence of\n  the brutes. So a fiend might look, I thought, when it had\n  at last struggled up from the pit of some dark star."' 
+    skin=Skin{ char='u' color='darkest_red' } name='alzabo' branch='d' count=3u itemdrop='alzabobrain' 
+    range=12u flavor='carnivore' desc=' "The red orbs of the alzabo were something more, neither\n  the intelligence of humankind nor the the innocence of\n  the brutes. So a fiend might look, I thought, when it had\n  at last struggled up from the pit of some dark star."' 
     } ) ] monsterstock_set
 
 [ 'nosf_d9' ('nosf_e9' monsterstock_get->Monster {
@@ -806,7 +813,7 @@ init_monsterstock Void->Void :-
     } ) ] monsterstock_set
 
 [ 'Arioch' ('Abaia' monsterstock_get->Monster {
-    skin=Skin{ char='U' color='light_sky' } name='Arioch' level=10 align='le' 
+    skin=Skin{ char='U' color='light_sky' } name='Arioch' level=10u align='le' 
     } ) ] monsterstock_set
 
 [ 'ufo_d10' ('ufo_e10' monsterstock_get->Monster {
@@ -814,58 +821,58 @@ init_monsterstock Void->Void :-
     } ) ] monsterstock_set
 
 [ 'lichen' ('avern' monsterstock_get->Monster {
-    skin=Skin{ char='x' color='light_purple' } name='lichen' branch='e' count=9 defence=0.2 
+    skin=Skin{ char='x' color='light_purple' } name='lichen' branch='e' count=9u defence=0.2 
     itemdrop='mushrooms' desc='Looks yummy.' 
     } ) ] monsterstock_set
 
 [ 'Turanian nomad' ('Cimmerian pirate' monsterstock_get->Monster {
-    skin=Skin{ char='h' color='orange' } name='Turanian nomad' level=2 attack=1.3 defence=0.4 
+    skin=Skin{ char='h' color='orange' } name='Turanian nomad' level=2u attack=1.3 defence=0.4 
     align='cg' desc='A nomad from the boundless steppes of Turania.' 
     } ) ] monsterstock_set
 
 [ 'giant spider' ('giant serpent' monsterstock_get->Monster {
-    skin=Skin{ char='X' color='gray' } name='giant spider' level=2 attack=0.7 defence=0.7 
-    range=5 desc='A huge, very ugly and disturbing spider.' 
+    skin=Skin{ char='X' color='gray' } name='giant spider' level=2u attack=0.7 defence=0.7 
+    range=5u desc='A huge, very ugly and disturbing spider.' 
     } ) ] monsterstock_set
 
 [ 'Lemurian wizard' ('Atlantian sorceror' monsterstock_get->Monster {
-    skin=Skin{ char='h' color='dark_han' } name='Lemurian wizard' level=7 summon=Summon{mon='cannibal' timeout=2} moon=(new_moon->MoonDistrib) 
+    skin=Skin{ char='h' color='dark_han' } name='Lemurian wizard' level=7u summon=Summon{mon='cannibal' timeout=2u} moon=(new_moon->MoonDistrib) 
     desc='Lemuria is the mythical island-empire of evil magicians\nand demon-worshippers.' 
     } ) ] monsterstock_set
 
 [ 'ufo_e8' ('ufo_e10' monsterstock_get->Monster {
-    level=8 psyrange=5 
+    level=8u psyrange=5u 
     } ) ] monsterstock_set
 
 [ 'be9' ('be10' monsterstock_get->Monster {
-    level=9 
+    level=9u 
     } ) ] monsterstock_set
 
 [ 'akali_3' ('akali_4' monsterstock_get->Monster {
-    level=9 range=14 psyrange=14 
+    level=9u range=14u psyrange=14u 
     } ) ] monsterstock_set
 
 [ 'Ron Weasley' ('Bella Swan' monsterstock_get->Monster {
-    skin=Skin{ char=(164 char->Sym) color='light_blue' } name='Ron Weasley' level=6 attack=7f defence=4f 
-    range=15 desc='A brawnier, dumber and much more low-class hanger-on \nfriend to Harry Potter.' 
+    skin=Skin{ char=(164 char->Sym) color='light_blue' } name='Ron Weasley' level=6u attack=7f defence=4f 
+    range=15u desc='A brawnier, dumber and much more low-class hanger-on \nfriend to Harry Potter.' 
     } ) ] monsterstock_set
 
 [ 'bmold4' ('bmold5' monsterstock_get->Monster {
-    level=6 
-    summon=Summon{mon='bmold4' timeout=10} } ) ] monsterstock_set
+    level=6u 
+    summon=Summon{mon='bmold4' timeout=10u} } ) ] monsterstock_set
 
 [ 'gibbering maniac' ('cyberpunk' monsterstock_get->Monster {
-    skin=Skin{ char='h' color='gray' } name='gibbering maniac' branch='b' count=7 attack=0.3 
-    range=3 desc='Eldritch horrors have driven this poor wretch\nto the cusp of insanity.\nHe\'s probably an alumnus of Miskatonic University.' 
+    skin=Skin{ char='h' color='gray' } name='gibbering maniac' branch='b' count=7u attack=0.3 
+    range=3u desc='Eldritch horrors have driven this poor wretch\nto the cusp of insanity.\nHe\'s probably an alumnus of Miskatonic University.' 
     } ) ] monsterstock_set
 
 [ 'satyr' ('gnophkeh' monsterstock_get->Monster {
-    skin=Skin{ char='h' color='light_sepia' } name='satyr' level=4 defence=0.01 align='ce' 
-    moon=(full_moon->MoonDistrib) range=5 desc='A savage worshipper of the Mad God Dionysus.\nHe is completely naked and gibbering wildly.' 
+    skin=Skin{ char='h' color='light_sepia' } name='satyr' level=4u defence=0.01 align='ce' 
+    moon=(full_moon->MoonDistrib) range=5u desc='A savage worshipper of the Mad God Dionysus.\nHe is completely naked and gibbering wildly.' 
     } ) ] monsterstock_set
 
 [ 'cramration' ('lichen' monsterstock_get->Monster {
-    skin=Skin{ char='x' color='pink' } name='cramration' branch='c' count=6 attack=0f 
+    skin=Skin{ char='x' color='pink' } name='cramration' branch='c' count=6u attack=0f 
     desc='A mushroom/pork genetically engineered vegetarian\nfood ration. It sports tiny legs.' 
     } ) ] monsterstock_set
 
@@ -882,7 +889,7 @@ init_monsterstock Void->Void :-
     } ) ] monsterstock_set
 
 [ 'bb8' ('be9' monsterstock_get->Monster {
-    skin=Skin{ char='0' color='dark_blue' } name='rollerball' branch='c' count=10 desc='A huge metal ball with sharp spikes all over it.' 
+    skin=Skin{ char='0' color='dark_blue' } name='rollerball' branch='c' count=10u desc='A huge metal ball with sharp spikes all over it.' 
     } ) ] monsterstock_set
 
 [ 'priest_c9' ('priest_d9' monsterstock_get->Monster {
@@ -898,62 +905,62 @@ init_monsterstock Void->Void :-
     } ) ] monsterstock_set
 
 [ 'Erebus' ('Arioch' monsterstock_get->Monster {
-    skin=Skin{ char='U' color='light_pink' } name='Erebus' level=9 align='cn' 
+    skin=Skin{ char='U' color='light_pink' } name='Erebus' level=9u align='cn' 
     flavor='giant' } ) ] monsterstock_set
 
 [ 'peasant' ('gibbering maniac' monsterstock_get->Monster {
-    skin=Skin{ char='h' color='dark_sepia' } name='peasant' branch='e' count=9 attack=0.1 
+    skin=Skin{ char='h' color='dark_sepia' } name='peasant' branch='e' count=9u attack=0.1 
     defence=0.2 desc='He\'s dirty, suspicious and closed-minded.' 
     } ) ] monsterstock_set
 
 [ 'Aquilonian marshall' ('Turanian nomad' monsterstock_get->Monster {
     skin=Skin{ char='h' color='dark_blue' } name='Aquilonian marshall' attack=0.5 defence=0.5 align='ng' 
-    summon=Summon{mon='Aquilonian marshall' timeout=5} range=6 desc='A mercenary, sent from the Aquilonian cities on\nthe surface to partol these dangerous tunnels.' 
+    summon=Summon{mon='Aquilonian marshall' timeout=5u} range=6u desc='A mercenary, sent from the Aquilonian cities on\nthe surface to partol these dangerous tunnels.' 
     } ) ] monsterstock_set
 
 [ 'Amazon warrior' ('Aquilonian marshall' monsterstock_get->Monster {
-    skin=Skin{ char='h' color='pink' } name='Amazon warrior' level=5 attack=1.8 defence=1.8 
-    range=10 desc='She is a woman-warrior from the enigmatic Amazonian tribe.\nShe hates men.' 
+    skin=Skin{ char='h' color='pink' } name='Amazon warrior' level=5u attack=1.8 defence=1.8 
+    range=10u desc='She is a woman-warrior from the enigmatic Amazonian tribe.\nShe hates men.' 
     } ) ] monsterstock_set
 
 [ 'ufo_e6' ('ufo_e8' monsterstock_get->Monster {
-    level=6 psyrange=3 
+    level=6u psyrange=3u 
     } ) ] monsterstock_set
 
 [ 'apeman' ('Amazon warrior' monsterstock_get->Monster {
-    skin=Skin{ char='h' color='light_pink' } name='apeman' level=7 attack=2.5 defence=2.5 
+    skin=Skin{ char='h' color='light_pink' } name='apeman' level=7u attack=2.5 defence=2.5 
     align='lg' flavor='humanweird' desc='Part human, part ape, if he has any intelligence, then his\ngaze does not betray any, only pure malevolence.' 
     } ) ] monsterstock_set
 
 [ 'be8' ('be9' monsterstock_get->Monster {
-    level=8 
+    level=8u 
     } ) ] monsterstock_set
 
 [ 'akali_2' ('akali_3' monsterstock_get->Monster {
-    level=8 psyattack=0.2 range=10 psyrange=10 
+    level=8u psyattack=0.2 range=10u psyrange=10u 
     } ) ] monsterstock_set
 
 [ 'Harry Potter' ('Ron Weasley' monsterstock_get->Monster {
-    skin=Skin{ char=(164 char->Sym) color='blue' } name='Harry Potter' attack=5f defence=5f range=20 
+    skin=Skin{ char=(164 char->Sym) color='blue' } name='Harry Potter' attack=5f defence=5f range=20u 
     desc='A rich, spoiled, snooty kid who attends a prestigious school.\nNot much of a student, but at least he\'s good at athletics.' 
     } ) ] monsterstock_set
 
 [ 'Robert Langdon' ('Ron Weasley' monsterstock_get->Monster {
-    skin=Skin{ char=(131 char->Sym) color='light_green' } name='Robert Langdon' defence=3f range=18 confimmune=true 
+    skin=Skin{ char=(131 char->Sym) color='light_green' } name='Robert Langdon' defence=3f range=18u confimmune=true 
     desc='A self-styled "symbolologist".\nHe\'s probably looking for clues of the Illuminati\nin these dungeons.' 
     } ) ] monsterstock_set
 
 [ 'bmold3' ('bmold4' monsterstock_get->Monster {
-    level=4 
-    summon=Summon{mon='bmold3' timeout=10} } ) ] monsterstock_set
+    level=4u 
+    summon=Summon{mon='bmold3' timeout=10u} } ) ] monsterstock_set
 
 [ 'Australopithecus afarensis' ('peasant' monsterstock_get->Monster {
-    skin=Skin{ char='h' color='sepia' } name='Australopithecus afarensis' branch='a' defence=0.3 range=4 
+    skin=Skin{ char='h' color='sepia' } name='Australopithecus afarensis' branch='a' defence=0.3 range=4u 
     no_a=true desc='An early hominid, this creature walked upright\nbut lacked the intelligence of the modern human.' 
     } ) ] monsterstock_set
 
 [ 'Calvatia gigantea' ('cramration' monsterstock_get->Monster {
-    skin=Skin{ char='x' color='white' } name='Calvatia gigantea' branch='a' count=8 no_a=true 
+    skin=Skin{ char='x' color='white' } name='Calvatia gigantea' branch='a' count=8u no_a=true 
     desc='(Also known as the giant puffball.)\nAn edible mushroom about the same size, color and texture\nas a volleyball.' 
     } ) ] monsterstock_set
 
@@ -986,7 +993,7 @@ init_monsterstock Void->Void :-
     } ) ] monsterstock_set
 
 [ 'bb7' ('bb8' monsterstock_get->Monster {
-    level=8 count=9 
+    level=8u count=9u 
     } ) ] monsterstock_set
 
 [ 'ufo_d6' ('ufo_e6' monsterstock_get->Monster {
@@ -994,29 +1001,29 @@ init_monsterstock Void->Void :-
     } ) ] monsterstock_set
 
 [ 'Uroboros' ('Erebus' monsterstock_get->Monster {
-    skin=Skin{ char='U' color='light_green' } name='Uroboros' level=8 align='ne' 
+    skin=Skin{ char='U' color='light_green' } name='Uroboros' level=8u align='ne' 
     } ) ] monsterstock_set
 
 [ 'ufo_e4' ('ufo_e6' monsterstock_get->Monster {
-    level=4 psyattack=0f 
+    level=4u psyattack=0f 
     } ) ] monsterstock_set
 
 [ 'be7' ('be8' monsterstock_get->Monster {
-    level=7 
+    level=7u 
     } ) ] monsterstock_set
 
 [ 'President Dwayne Elizondo Mountain Dew Herbert Camacho' ('Harry Potter' monsterstock_get->Monster {
-    skin=Skin{ char='H' color='light_sky' } name='President Dwayne Elizondo Mountain Dew Herbert Camacho' branch='q' level=8 attack=3f 
-    defence=8f range=7 desc='Your adversary in the Thunderdome.' 
+    skin=Skin{ char='H' color='light_sky' } name='President Dwayne Elizondo Mountain Dew Herbert Camacho' branch='q' level=8u attack=3f 
+    defence=8f range=7u desc='Your adversary in the Thunderdome.' 
     } ) ] monsterstock_set
 
 [ 'akali_1' ('akali_2' monsterstock_get->Monster {
-    level=7 psyattack=0.15 range=8 psyrange=6 
+    level=7u psyattack=0.15 range=8u psyrange=6u 
     } ) ] monsterstock_set
 
 [ 'bmold2' ('bmold3' monsterstock_get->Monster {
-    level=2 
-    summon=Summon{mon='bmold2' timeout=10} } ) ] monsterstock_set
+    level=2u 
+    summon=Summon{mon='bmold2' timeout=10u} } ) ] monsterstock_set
 
 [ 'ba7' ('be7' monsterstock_get->Monster {
     branch='a' 
@@ -1043,7 +1050,7 @@ init_monsterstock Void->Void :-
     } ) ] monsterstock_set
 
 [ 'bc5' ('ba7' monsterstock_get->Monster {
-    skin=Skin{ char='0' color='red' } name='mountain of meat' branch='b' count=2 desc='A mountain of quivering, perverse, vomitous flesh.' 
+    skin=Skin{ char='0' color='red' } name='mountain of meat' branch='b' count=2u desc='A mountain of quivering, perverse, vomitous flesh.' 
     } ) ] monsterstock_set
 
 [ 'ufo_b8' ('ufo_c8' monsterstock_get->Monster {
@@ -1055,7 +1062,7 @@ init_monsterstock Void->Void :-
     } ) ] monsterstock_set
 
 [ 'bb6' ('bb7' monsterstock_get->Monster {
-    level=7 count=8 
+    level=7u count=8u 
     } ) ] monsterstock_set
 
 [ 'ufo_d4' ('ufo_e4' monsterstock_get->Monster {
@@ -1063,51 +1070,51 @@ init_monsterstock Void->Void :-
     } ) ] monsterstock_set
 
 [ 'Scylla' ('Uroboros' monsterstock_get->Monster {
-    skin=Skin{ char='U' color='white' } name='Scylla' level=7 align='le' 
+    skin=Skin{ char='U' color='white' } name='Scylla' level=7u align='le' 
     } ) ] monsterstock_set
 
 [ 'bd6' ('ba7' monsterstock_get->Monster {
-    branch='d' count=1 
+    branch='d' count=1u 
     } ) ] monsterstock_set
 
 [ 'Master Blaster' ('President Dwayne Elizondo Mountain Dew Herbert Camacho' monsterstock_get->Monster {
-    skin=Skin{ char='h' color='lightest_blue' } name='Master Blaster' defence=6f range=5 
+    skin=Skin{ char='h' color='lightest_blue' } name='Master Blaster' defence=6f range=5u 
     } ) ] monsterstock_set
 
 [ 'bmold1' ('bmold2' monsterstock_get->Monster {
-    level=1 count=5 
-    summon=Summon{mon='bmold1' timeout=10} } ) ] monsterstock_set
+    level=1u count=5u 
+    summon=Summon{mon='bmold1' timeout=10u} } ) ] monsterstock_set
 
 [ 'ba1' ('ba7' monsterstock_get->Monster {
-    level=1 
+    level=1u 
     } ) ] monsterstock_set
 
 [ 'ba4' ('ba1' monsterstock_get->Monster {
-    level=4 count=8 
+    level=4u count=8u 
     } ) ] monsterstock_set
 
 [ 'ba5' ('ba1' monsterstock_get->Monster {
-    level=5 count=5 
+    level=5u count=5u 
     } ) ] monsterstock_set
 
 [ 'ba6' ('ba1' monsterstock_get->Monster {
-    level=6 count=4 
+    level=6u count=4u 
     } ) ] monsterstock_set
 
 [ 'nosf_a8' ('nosf_a9' monsterstock_get->Monster {
-    level=8 
+    level=8u 
     } ) ] monsterstock_set
 
 [ 'ba8' ('ba1' monsterstock_get->Monster {
-    level=8 count=2 
+    level=8u count=2u 
     } ) ] monsterstock_set
 
 [ 'luna_a8' ('luna_a9' monsterstock_get->Monster {
-    level=8 
+    level=8u 
     } ) ] monsterstock_set
 
 [ 'lyca_a8' ('lyca_a9' monsterstock_get->Monster {
-    level=8 
+    level=8u 
     } ) ] monsterstock_set
 
 [ 'ufo_a8' ('ufo_b8' monsterstock_get->Monster {
@@ -1115,19 +1122,19 @@ init_monsterstock Void->Void :-
     } ) ] monsterstock_set
 
 [ 'priest_a8' ('priest_a9' monsterstock_get->Monster {
-    level=8 
+    level=8u 
     } ) ] monsterstock_set
 
 [ 'bc1' ('bc5' monsterstock_get->Monster {
-    level=3 
+    level=3u 
     } ) ] monsterstock_set
 
 [ 'bc3' ('bc1' monsterstock_get->Monster {
-    level=5 count=12 
+    level=5u count=12u 
     } ) ] monsterstock_set
 
 [ 'bc4' ('bc1' monsterstock_get->Monster {
-    level=6 count=4 
+    level=6u count=4u 
     } ) ] monsterstock_set
 
 [ 'ufo_b6' ('ufo_c6' monsterstock_get->Monster {
@@ -1155,7 +1162,7 @@ init_monsterstock Void->Void :-
     } ) ] monsterstock_set
 
 [ 'bb5' ('bb6' monsterstock_get->Monster {
-    level=6 count=7 
+    level=6u count=7u 
     } ) ] monsterstock_set
 
 [ 'nosf_c8' ('nosf_a8' monsterstock_get->Monster {
@@ -1175,11 +1182,11 @@ init_monsterstock Void->Void :-
     } ) ] monsterstock_set
 
 [ 'bd3' ('ba4' monsterstock_get->Monster {
-    branch='d' count=6 
+    branch='d' count=6u 
     } ) ] monsterstock_set
 
 [ 'bd5' ('ba6' monsterstock_get->Monster {
-    branch='d' count=2 
+    branch='d' count=2u 
     } ) ] monsterstock_set
 
 [ 'nosf_d8' ('nosf_a8' monsterstock_get->Monster {
@@ -1203,23 +1210,23 @@ init_monsterstock Void->Void :-
     } ) ] monsterstock_set
 
 [ 'be2' ('be1' monsterstock_get->Monster {
-    level=2 
+    level=2u 
     } ) ] monsterstock_set
 
 [ 'be3' ('be1' monsterstock_get->Monster {
-    level=3 
+    level=3u 
     } ) ] monsterstock_set
 
 [ 'be4' ('be1' monsterstock_get->Monster {
-    level=4 
+    level=4u 
     } ) ] monsterstock_set
 
 [ 'be5' ('be1' monsterstock_get->Monster {
-    level=5 
+    level=5u 
     } ) ] monsterstock_set
 
 [ 'be6' ('be1' monsterstock_get->Monster {
-    level=6 
+    level=6u 
     } ) ] monsterstock_set
 
 [ 'nosf_e8' ('nosf_a8' monsterstock_get->Monster {
@@ -1239,25 +1246,25 @@ init_monsterstock Void->Void :-
     } ) ] monsterstock_set
 
 [ 'ogre' ('Master Blaster' monsterstock_get->Monster {
-    skin=Skin{ char='H' color='light_gray' } name='ogre' level=4 count=200 attack=2.1 
+    skin=Skin{ char='H' color='light_gray' } name='ogre' level=4u count=200u attack=2.1 
     defence=1.9 
     } ) ] monsterstock_set
 
 [ 'Captain Electric' ('Master Blaster' monsterstock_get->Monster {
-    name='Captain Electric' level=7 defence=1f psyattack=0.15 
-    psyrange=7 } ) ] monsterstock_set
+    name='Captain Electric' level=7u defence=1f psyattack=0.15 
+    psyrange=7u } ) ] monsterstock_set
 
 [ 'Dynamo' ('Master Blaster' monsterstock_get->Monster {
-    skin=Skin{ char='h' color='dark_crimson' } name='Dynamo' defence=0.5 psyattack=0.4 psyrange=5 
+    skin=Skin{ char='h' color='dark_crimson' } name='Dynamo' defence=0.5 psyattack=0.4 psyrange=5u 
     
-    range=10 } ) ] monsterstock_set
+    range=10u } ) ] monsterstock_set
 
 [ 'ba2' ('ba5' monsterstock_get->Monster {
-    level=2 
+    level=2u 
     } ) ] monsterstock_set
 
 [ 'ba3' ('ba4' monsterstock_get->Monster {
-    level=3 
+    level=3u 
     } ) ] monsterstock_set
 
 [ 'ufo_a6' ('ufo_b6' monsterstock_get->Monster {
@@ -1265,23 +1272,23 @@ init_monsterstock Void->Void :-
     } ) ] monsterstock_set
 
 [ 'nosf_a7' ('nosf_a8' monsterstock_get->Monster {
-    level=7 
+    level=7u 
     } ) ] monsterstock_set
 
 [ 'luna_a7' ('luna_a8' monsterstock_get->Monster {
-    level=7 
+    level=7u 
     } ) ] monsterstock_set
 
 [ 'lyca_a7' ('lyca_a8' monsterstock_get->Monster {
-    level=7 
+    level=7u 
     } ) ] monsterstock_set
 
 [ 'priest_a7' ('priest_a8' monsterstock_get->Monster {
-    level=7 
+    level=7u 
     } ) ] monsterstock_set
 
 [ 'bc2' ('bc4' monsterstock_get->Monster {
-    level=4 
+    level=4u 
     } ) ] monsterstock_set
 
 [ 'ufo_b4' ('ufo_c4' monsterstock_get->Monster {
@@ -1305,7 +1312,7 @@ init_monsterstock Void->Void :-
     } ) ] monsterstock_set
 
 [ 'bb4' ('bb5' monsterstock_get->Monster {
-    level=5 count=6 
+    level=5u count=6u 
     } ) ] monsterstock_set
 
 [ 'nosf_c7' ('nosf_a7' monsterstock_get->Monster {
@@ -1325,7 +1332,7 @@ init_monsterstock Void->Void :-
     } ) ] monsterstock_set
 
 [ 'bd2' ('bd3' monsterstock_get->Monster {
-    level=3 
+    level=3u 
     } ) ] monsterstock_set
 
 [ 'bd4' ('be5' monsterstock_get->Monster {
@@ -1366,10 +1373,10 @@ init_monsterstock Void->Void :-
 
 [ 'orc' ('ogre' monsterstock_get->Monster {
     skin=Skin{ char='h' color='gray' } name='orc' attack=1.7 defence=0.7 
-    range=7 } ) ] monsterstock_set
+    range=7u } ) ] monsterstock_set
 
 [ 'Meatcleaver' ('Dynamo' monsterstock_get->Monster {
-    name='Meatcleaver' level=7 defence=3.5 psyattack=0f 
+    name='Meatcleaver' level=7u defence=3.5 psyattack=0f 
     } ) ] monsterstock_set
 
 [ 'ufo_a4' ('ufo_b4' monsterstock_get->Monster {
@@ -1377,19 +1384,19 @@ init_monsterstock Void->Void :-
     } ) ] monsterstock_set
 
 [ 'nosf_a6' ('nosf_a7' monsterstock_get->Monster {
-    level=6 
+    level=6u 
     } ) ] monsterstock_set
 
 [ 'luna_a6' ('luna_a7' monsterstock_get->Monster {
-    level=6 
+    level=6u 
     } ) ] monsterstock_set
 
 [ 'lyca_a6' ('lyca_a7' monsterstock_get->Monster {
-    level=6 
+    level=6u 
     } ) ] monsterstock_set
 
 [ 'priest_a6' ('priest_a7' monsterstock_get->Monster {
-    level=6 
+    level=6u 
     } ) ] monsterstock_set
 
 [ 'nosf_b6' ('nosf_a6' monsterstock_get->Monster {
@@ -1409,7 +1416,7 @@ init_monsterstock Void->Void :-
     } ) ] monsterstock_set
 
 [ 'bb3' ('bb4' monsterstock_get->Monster {
-    level=4 count=5 
+    level=4u count=5u 
     } ) ] monsterstock_set
 
 [ 'nosf_c6' ('nosf_a6' monsterstock_get->Monster {
@@ -1429,7 +1436,7 @@ init_monsterstock Void->Void :-
     } ) ] monsterstock_set
 
 [ 'bd1' ('bd2' monsterstock_get->Monster {
-    level=2 
+    level=2u 
     } ) ] monsterstock_set
 
 [ 'nosf_d6' ('nosf_a6' monsterstock_get->Monster {
@@ -1465,38 +1472,38 @@ init_monsterstock Void->Void :-
     } ) ] monsterstock_set
 
 [ 'mutant turtle' ('orc' monsterstock_get->Monster {
-    skin=Skin{ char='o' color='green' } name='mutant turtle' level=3 attack=1.5 defence=0.2 
+    skin=Skin{ char='o' color='green' } name='mutant turtle' level=3u attack=1.5 defence=0.2 
     
-    range=8 } ) ] monsterstock_set
+    range=8u } ) ] monsterstock_set
 
 [ 'Hormel Chavez' ('Meatcleaver' monsterstock_get->Monster {
-    skin=Skin{ char='h' color='light_blue' } name='Hormel Chavez' level=6 attack=1.4 defence=2.2 
+    skin=Skin{ char='h' color='light_blue' } name='Hormel Chavez' level=6u attack=1.4 defence=2.2 
     
-    range=12 } ) ] monsterstock_set
+    range=12u } ) ] monsterstock_set
 
 [ 'Buzzsaw' ('Meatcleaver' monsterstock_get->Monster {
-    skin=Skin{ char='z' color='lightest_yellow' } name='Buzzsaw' attack=6f defence=4f range=6 
+    skin=Skin{ char='z' color='lightest_yellow' } name='Buzzsaw' attack=6f defence=4f range=6u 
     
     slow=true } ) ] monsterstock_set
 
 [ 'ufo_a2' ('ufo_a4' monsterstock_get->Monster {
-    level=2 
+    level=2u 
     } ) ] monsterstock_set
 
 [ 'nosf_a5' ('nosf_a6' monsterstock_get->Monster {
-    level=5 
+    level=5u 
     } ) ] monsterstock_set
 
 [ 'luna_a5' ('luna_a6' monsterstock_get->Monster {
-    level=5 
+    level=5u 
     } ) ] monsterstock_set
 
 [ 'lyca_a5' ('lyca_a6' monsterstock_get->Monster {
-    level=5 
+    level=5u 
     } ) ] monsterstock_set
 
 [ 'priest_a5' ('priest_a6' monsterstock_get->Monster {
-    level=5 
+    level=5u 
     } ) ] monsterstock_set
 
 [ 'ufo_b2' ('ufo_a2' monsterstock_get->Monster {
@@ -1524,7 +1531,7 @@ init_monsterstock Void->Void :-
     } ) ] monsterstock_set
 
 [ 'bb2' ('bb3' monsterstock_get->Monster {
-    level=3 count=4 
+    level=3u count=4u 
     } ) ] monsterstock_set
 
 [ 'nosf_c5' ('nosf_a5' monsterstock_get->Monster {
@@ -1585,31 +1592,31 @@ init_monsterstock Void->Void :-
 
 [ 'kobold' ('mutant turtle' monsterstock_get->Monster {
     skin=Skin{ char='h' color='lightest_green' } name='kobold' attack=1.4 defence=0.9 
-    range=9 } ) ] monsterstock_set
+    range=9u } ) ] monsterstock_set
 
 [ 'dark elf' ('kobold' monsterstock_get->Monster {
-    skin=Skin{ char='f' color='darkest_gray' } name='dark elf' level=4 attack=1f psyattack=0.5 
+    skin=Skin{ char='f' color='darkest_gray' } name='dark elf' level=4u attack=1f psyattack=0.5 
     
-    psyrange=4 } ) ] monsterstock_set
+    psyrange=4u } ) ] monsterstock_set
 
 [ 'Formica Davis' ('Hormel Chavez' monsterstock_get->Monster {
     skin=Skin{ char='h' color='light_crimson' } name='Formica Davis' attack=2f defence=1.7 
-    range=10 } ) ] monsterstock_set
+    range=10u } ) ] monsterstock_set
 
 [ 'nosf_a4' ('nosf_a5' monsterstock_get->Monster {
-    level=4 
+    level=4u 
     } ) ] monsterstock_set
 
 [ 'luna_a4' ('luna_a5' monsterstock_get->Monster {
-    level=4 
+    level=4u 
     } ) ] monsterstock_set
 
 [ 'lyca_a4' ('lyca_a5' monsterstock_get->Monster {
-    level=4 
+    level=4u 
     } ) ] monsterstock_set
 
 [ 'priest_a4' ('priest_a5' monsterstock_get->Monster {
-    level=4 
+    level=4u 
     } ) ] monsterstock_set
 
 [ 'nosf_b4' ('nosf_a4' monsterstock_get->Monster {
@@ -1629,7 +1636,7 @@ init_monsterstock Void->Void :-
     } ) ] monsterstock_set
 
 [ 'bb1' ('bb2' monsterstock_get->Monster {
-    level=2 count=3 
+    level=2u count=3u 
     } ) ] monsterstock_set
 
 [ 'nosf_c4' ('nosf_a4' monsterstock_get->Monster {
@@ -1682,31 +1689,31 @@ init_monsterstock Void->Void :-
 
 [ 'gremlin' ('kobold' monsterstock_get->Monster {
     skin=Skin{ char='f' color='green' } name='gremlin' attack=2f defence=0.5 
-    range=6 } ) ] monsterstock_set
+    range=6u } ) ] monsterstock_set
 
 [ 'Frito Pendejo' ('Formica Davis' monsterstock_get->Monster {
-    skin=Skin{ char='h' color='dark_sky' } name='Frito Pendejo' level=5 defence=0.8 
-    range=9 } ) ] monsterstock_set
+    skin=Skin{ char='h' color='dark_sky' } name='Frito Pendejo' level=5u defence=0.8 
+    range=9u } ) ] monsterstock_set
 
 [ 'Brawndo Mutilator' ('Frito Pendejo' monsterstock_get->Monster {
-    skin=Skin{ char='z' color='silver' } name='Brawndo Mutilator' level=6 attack=3f psyattack=0.5 
-    psyrange=3 
-    range=6 } ) ] monsterstock_set
+    skin=Skin{ char='z' color='silver' } name='Brawndo Mutilator' level=6u attack=3f psyattack=0.5 
+    psyrange=3u 
+    range=6u } ) ] monsterstock_set
 
 [ 'nosf_a3' ('nosf_a4' monsterstock_get->Monster {
-    level=3 
+    level=3u 
     } ) ] monsterstock_set
 
 [ 'luna_a3' ('luna_a4' monsterstock_get->Monster {
-    level=3 
+    level=3u 
     } ) ] monsterstock_set
 
 [ 'lyca_a3' ('lyca_a4' monsterstock_get->Monster {
-    level=3 
+    level=3u 
     } ) ] monsterstock_set
 
 [ 'priest_a3' ('priest_a4' monsterstock_get->Monster {
-    level=3 
+    level=3u 
     } ) ] monsterstock_set
 
 [ 'nosf_b3' ('nosf_a3' monsterstock_get->Monster {
@@ -1775,27 +1782,27 @@ init_monsterstock Void->Void :-
 
 [ 'Beef Supreme' ('Frito Pendejo' monsterstock_get->Monster {
     skin=Skin{ char='h' color='pink' } name='Beef Supreme' attack=2.7 defence=0.5 
-    range=7 } ) ] monsterstock_set
+    range=7u } ) ] monsterstock_set
 
 [ 'Tylenol Jones' ('Beef Supreme' monsterstock_get->Monster {
     skin=Skin{ char='h' color='light_blue' } name='Tylenol Jones' attack=1.5 defence=1f psyattack=0.25 
-    psyrange=3 
-    range=8 } ) ] monsterstock_set
+    psyrange=3u 
+    range=8u } ) ] monsterstock_set
 
 [ 'nosf_a2' ('nosf_a3' monsterstock_get->Monster {
-    level=2 
+    level=2u 
     } ) ] monsterstock_set
 
 [ 'luna_a2' ('luna_a3' monsterstock_get->Monster {
-    level=2 
+    level=2u 
     } ) ] monsterstock_set
 
 [ 'lyca_a2' ('lyca_a3' monsterstock_get->Monster {
-    level=2 
+    level=2u 
     } ) ] monsterstock_set
 
 [ 'priest_a2' ('priest_a3' monsterstock_get->Monster {
-    level=2 
+    level=2u 
     } ) ] monsterstock_set
 
 [ 'nosf_b2' ('nosf_a2' monsterstock_get->Monster {

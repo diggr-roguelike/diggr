@@ -287,9 +287,12 @@ struct Vm {
 
         piccol::register_map<FeatStock>(vm,    "Sym",           "Feat");
         piccol::register_map<PropStock>(vm,    "Sym",           "Props");
-        piccol::register_map<MonsterStock>(vm, "Sym",           "Monster");
         piccol::register_map<FeatMap>(vm,      "[ UInt UInt ]", "Feat");
-        piccol::register_map<MonsterMap>(vm,   "[ UInt UInt ]", "MonData");
+
+        piccol::register_map<MonsterStock>(vm,  "Sym",        "Monster");
+        piccol::register_pool<MonsterStock>(vm, "MonsterKey", "Sym");
+
+        piccol::register_map<MonsterMap>(vm,    "[ UInt UInt ]", "MonsterVal");
             
         piccol::register_global<Player>(vm,  "Player");
         piccol::register_global<Dungeon>(vm, "Dungeon");

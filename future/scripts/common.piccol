@@ -94,27 +94,33 @@ def { new: UInt
     } MoonDistrib;
 
 def {
+  branch: Sym
+  level: UInt
+
+} MonsterKey;
+
+def {
   skin: Skin
 
   name: Sym
   branch: Sym
-  level: Int
+  level: UInt
   desc: Sym
-  count: Int
+  count: UInt
 
   flavor: Sym
 
-  psyrange: Int
-  pointscontrib: Int
-  range: Int
-  blink_away: Int
+  psyrange: UInt
+  pointscontrib: UInt
+  range: UInt
+  blink_away: UInt
   attack: Real
   defence: Real
   psyattack: Real
   itemdrop: Sym
   align: Sym
   pointsfac: Real
-  fleerange: Int
+  fleerange: UInt
 
   summon: Summon
   bloodsucker: TimedEffect
@@ -147,7 +153,6 @@ def {
 
 } Monster;
 
-
 def {
   species: Sym
 
@@ -165,7 +170,7 @@ def {
   onfire: Bool
   bld_delta: [Int Int]
   fleetimeout: UInt
-} MonData; 
+} MonsterVal; 
 
 /***/
 
