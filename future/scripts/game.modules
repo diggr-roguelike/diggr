@@ -12,6 +12,7 @@ modules Void->Void :-
              neg_gauss [Real Real]->Real
              pos_gauss [Real Real UInt]->UInt
              neg_gauss [Real Real UInt]->UInt
+             rand_n UInt->UInt
    :>
 
   <:[module] generate 'generate.piccol'
@@ -34,7 +35,8 @@ modules Void->Void :-
    :>
 
   <:[module] monsters 'monsters.piccol'
-             todo Void->Void
+             monster [UInt UInt]->Skin
+             set_monster [UInt UInt Sym]->Void
    :>
 
   <:[module] input 'input.piccol'

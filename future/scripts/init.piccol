@@ -5,6 +5,6 @@ init Void->Void :-
   init_monsterstock
 
   Player {} set
-  Dungeon {} set
+  Dungeon {level=1u} set
 .
 

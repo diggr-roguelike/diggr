@@ -271,6 +271,11 @@ inline bool _print2(CALLBACK) {
 }
 
 inline bool _print3(CALLBACK) {
+    std::cout << struc.v[0].real;
+    return true;
+}
+
+inline bool _print4(CALLBACK) {
     std::cout << metalan::symtab().get(struc.v[0].uint);
     return true;
 }
@@ -283,7 +288,7 @@ struct Vm {
     typedef nanom::Struct Obj;
 
     Vm(const std::string& sysdir, 
-       const std::string& appdir) : vm(sysdir, appdir, "game.modules") {
+       const std::string& appdir, bool verbose = false) : vm(sysdir, appdir, "game.modules", verbose) {
 
         piccol::register_map<FeatStock>(vm,    "Sym",           "Feat");
         piccol::register_map<PropStock>(vm,    "Sym",           "Props");
@@ -345,7 +350,8 @@ struct Vm {
 
         vm.register_callback("print", "UInt", "Void", _print1);
         vm.register_callback("print", "Int",  "Void", _print2);
-        vm.register_callback("print", "Sym",  "Void", _print3);
+        vm.register_callback("print", "Real", "Void", _print3);
+        vm.register_callback("print", "Sym",  "Void", _print4);
 
         ////// 
 

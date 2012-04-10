@@ -17,6 +17,95 @@ choose_branch Void->Void :-
   )
 .
 
+branch Void->Sym :- get->Dungeon->Sym(\branch).
+
+level Void->UInt :- get->Dungeon->UInt(\level).
+
+/* TODO. */
+
+quest_moncount Void->UInt :- 
+  is_quest->Bool ? branch->Sym->UInt (
+    <: \v == 'q' :> ? level->UInt->UInt ( 
+       <: \v == 3u :> ? 1u ;
+       <: \v == 4u :> ? 1u ;
+       <: \v == 5u :> ? 2u ;
+       <: \v == 6u :> ? 2u ;
+       <: \v == 7u :> ? 3u ) ;
+    <: \v == 'qk' :> ? 15u
+  ).
+
+quest_minlevel Void->UInt :- 
+  is_quest->Bool ? branch->Sym->UInt (
+    <: \v == 'q' :> ? 3u ;
+    <: \v == 'qk' :> ? 8u
+  ).
+
+quest_maxlevel Void->UInt :- 
+  is_quest->Bool ? branch->Sym->UInt (
+    <: \v == 'q' :> ? 8u ;
+    <: \v == 'qk' :> ? 11u
+  ).
+
+
+/* Monsters. */
+
+def [ a:Sym b:Monster ];
+def [ a:UInt b:UInt c:UInt ];
+def [ a:MonsterKey b:UInt ];
+def [ a:[UInt UInt] b:Sym ];
+
+monster_level Void->UInt :-
+  [ (level->UInt->Real(<: real(\v) :>)) 0.75 1u ] neg_gauss->UInt->UInt(
+    [ \v (quest_minlevel->UInt) (quest_maxlevel->UInt) ]->UInt(
+       <: \a < \b :> ? \b ;
+       <: \a > \c :> ? \c ;
+       \a
+    ) ;
+    \v )
+.
+
+get MonsterKey->Sym :-
+  <: \level > 0u :> ? 
+    \\->Sym(
+      [ \\ (\\ size->UInt rand_n->UInt) ] get->Sym;
+      \\ {level=(<: \level-1u :>)} get->Sym
+    )
+.
+
+place_monster Sym->Void :- 
+  [ (dg_grid_one_of_walk->[UInt UInt]) \\ ] -> Void(
+    \a dg_grid_add_nogen
+    [ (\a->UInt(\a)) (\a->UInt(\b)) \b ] set_monster 
+  ).
+
+generate_monsters UInt->Void :-
+  <: \v == 0u :> ? ;
+  MonsterKey{branch=(branch->Sym) level=(monster_level->UInt)} 
+  get->Sym ->Bool (
+       \\ place_monster
+       \\ get->Monster->Bool(\inanimate)
+   ) ? \v generate_monsters ; 
+   <: \v - 1u :> generate_monsters
+.
+
+generate_monsters Void->Void :-
+  quest_moncount->UInt generate_monsters ;
+  [8f 1f 1u] neg_gauss->UInt generate_monsters
+.
+
+generate_mold Void->Void :-
+  is_quest->Bool ? ;
+  [ 0f 1f ] pos_gauss->Real ->Void(
+     <: \v < 0f :> ? 
+       MonsterKey{branch='x' level=(level->UInt)}
+       get->Sym place_monster 
+     ;
+  ).
+
+
+/* Grid and features. */
+
+
 def [a:Sym b:Real];
 
 generate_grid Void->Void :-
@@ -85,6 +174,9 @@ generate_map Void->Void :-
 .
 
 
+/* Player. */
+
+
 place_player Void->Void :-
   dg_grid_one_of_walk->[UInt UInt]->Void(get->Player {x=\a y=\b} set)
 .
@@ -97,6 +189,8 @@ generate Void->Void :-
 
   choose_branch
   generate_map
+  generate_monsters
+  generate_mold
   place_player
 .
 

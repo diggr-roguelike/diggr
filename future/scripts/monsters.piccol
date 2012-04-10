@@ -1,3 +1,20 @@
 
+def [ a:Sym b:Monster ];
 
-todo Void->Void :- .
+def [ a:[UInt UInt] b:MonsterVal ];
+
+make [Sym Monster]->MonsterVal :-
+  MonsterVal {species=\a}.
+
+/*** ***/
+
+set_monster [UInt UInt Sym]->Void :-
+  [ [\x \y] ([\v (\v get->Monster)] make->MonsterVal) ] -> Void(
+    \\ set
+    \a set_skin
+  ).
+
+monster [UInt UInt]->Skin :-
+  [\a \b] get->MonsterVal->Skin(\species get->Monster->Skin(\skin)).
+
+

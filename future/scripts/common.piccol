@@ -5,6 +5,7 @@ def {
 } Player;
 
 def {
+  level: UInt
   branch: Sym
   is_quest: Bool
   exit: [UInt UInt]

@@ -10,7 +10,7 @@ struct Game {
 
     scripting::Vm vm;
 
-    Game() : vm("piccol/", "future/scripts/") {
+    Game(bool verbose = false) : vm("piccol/", "future/scripts/", verbose) {
 
         vm.init();
     }
