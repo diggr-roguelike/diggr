@@ -187,6 +187,7 @@ init_monsterstock Void->Void :-
     skin=(['d' 'yellow'] monster->Skin) name='Velociraptor mongoliensis' branch='a' level=8u count=24u 
     attack=1.5 defence=1f psyattack=0f flavor='animal' pointsfac=1f no_a=true 
     pointscontrib=1u align='ce' summon=Summon{mon='Velociraptor mongoliensis' timeout=4u} range=20u 
+    moon=(default->MoonDistrib)
     desc='A small theropod from the Cretaceous period.\nIt is about the size of a chicken and is covered with\nbright, feathery plumage. It has a relatively large, \ndangerous-looking beak.\nIt was also a vicious pack-hunting carnivore.' } ] monsterstock_set
 
 [ 'Mammuthus primigenius'
@@ -479,14 +480,14 @@ init_monsterstock Void->Void :-
   Monster{
     skin=(['h' 'dark_purple'] monster->Skin) name='omophagist' branch='d' level=1u count=4u 
     attack=0.3 defence=0.1 psyattack=0f pointsfac=1f pointscontrib=1u 
-    range=4u 
+    range=4u moon=(default->MoonDistrib)
     desc='A poor, degenerate inhabitant of the poorest parts of the City.\n(Those parts that are composed of mostly ancient ruins.)\nHe might be a little insane and a cannibal, as well.' } ] monsterstock_set
 
 [ 'exultant'
   Monster{
     skin=(['h' 'gold'] monster->Skin) name='exultant' branch='d' level=2u count=3u 
     attack=0.5 defence=0.5 psyattack=0f flavor='humanwarrior' pointsfac=1f pointscontrib=1u 
-    align='lg' summon=Summon{mon='armiger' timeout=2u} range=8u 
+    align='lg' summon=Summon{mon='armiger' timeout=2u} range=8u moon=(default->MoonDistrib)
     desc='A member of the nobility caste.' } ] monsterstock_set
 
 [ 'aquastor'
@@ -541,6 +542,7 @@ init_monsterstock Void->Void :-
     attack=10f defence=10f psyattack=0f fireimmune=true confimmune=true flavor='earthshake' 
     explodeimmune=true pointsfac=1f no_a=true itemdrop='gluegun' pointscontrib=1u align='cn' 
     summon=Summon{mon='undine' timeout=3u} large=true range=15u radimmune=true 
+    moon=(default->MoonDistrib) 
     desc='A megatherian: an evil, immortal, gigantic creature of\npossibly extraterrestrial origin. They are hellbent on ruling\nUrth. They are powerful enough and amoral enough to be\nessentially equal to gods.' } ] monsterstock_set
 
 [ 'Cimmerian pirate'
@@ -554,7 +556,7 @@ init_monsterstock Void->Void :-
   Monster{
     skin=(['h' 'peach'] monster->Skin) name='Hyperborean barbarian' branch='e' level=3u count=6u 
     attack=2.2 defence=0.9 psyattack=0f flavor='humanwarrior' pointsfac=1f pointscontrib=1u 
-    align='cg' range=6u 
+    align='cg' range=6u moon=(default->MoonDistrib)
     desc='A barbarian who hails from one of the hearty tribes\nof great frosty Hyperborea.' } ] monsterstock_set
 
 [ 'giant serpent'
@@ -669,7 +671,7 @@ init_monsterstock Void->Void :-
     skin=(['K' 'sepia'] monster->Skin) name='Conan' branch='e' level=10u count=1u 
     attack=7.5 defence=5.5 psyattack=0f confimmune=true flavor='humanwarrior' pointsfac=1f 
     no_a=true itemdrop='eyeofkali' pointscontrib=1u align='cn' range=8u 
-    
+    moon=(default->MoonDistrib) 
     desc='A well-muscled adventurer,\nhe looks like he just stepped off a movie poster.\nHe hates competition.' } ] monsterstock_set
 
 [ 'be10'
@@ -677,7 +679,7 @@ init_monsterstock Void->Void :-
     skin=(['0' 'gray'] monster->Skin) name='boulder' branch='e' level=10u count=3u 
     attack=0.5 defence=0.5 psyattack=0f confimmune=true no_exting=true inanimate=true 
     pointsfac=1f boulder=true range=11u radimmune=true poisimmune=true 
-    
+    moon=(default->MoonDistrib)
     desc='A gigantic rock of spherical shape.' } ] monsterstock_set
 
 [ 'ufo_e10'
@@ -695,27 +697,29 @@ init_monsterstock Void->Void :-
     attack=7.5 defence=7.5 psyattack=0f fireimmune=true confimmune=true flavor='earthshake' 
     explodeimmune=true pointsfac=1f no_a=true itemdrop='excalibur' pointscontrib=1u align='cn' 
     summon=Summon{mon='Conan' timeout=1u} large=true range=10u poisimmune=true 
+    moon=(default->MoonDistrib)
     desc='The most high god of all Cimmerians, Crom is the god\nof valor and battle. He is a dark, vengeful and\njudgemental god.' } ] monsterstock_set
 
 [ 'akali_4'
   Monster{
     skin=(['h' 'gray'] monster->Skin) name='acolyte of Kali' branch='qk' level=10u count=3u 
     attack=3.5 defence=2.5 psyattack=0.25 psyrange=18u confimmune=true pointsfac=1f 
-    pointscontrib=1u range=18u 
+    pointscontrib=1u range=18u moon=(default->MoonDistrib)
     desc='A bloodthirsty worshipper of Kali Ma.' } ] monsterstock_set
 
 [ 'Bella Swan'
   Monster{
     skin=Skin{ char=(152 char->Sym) color='gray' } name='Bella Swan' branch='s' level=7u count=1u 
     attack=3f defence=3f psyattack=0f pointsfac=1f no_a=true pointscontrib=1u 
-    summon=Summon{mon='Edward Cullen' timeout=1u} range=20u 
+    summon=Summon{mon='Edward Cullen' timeout=1u} range=20u
+    moon=(default->MoonDistrib) 
     desc='A clumsy and very forgettable teenage girl.\nThe only notable thing about her is that she hates\nherself enough to want to become an undead vampire.' } ] monsterstock_set
 
 [ 'Edward Cullen'
   Monster{
     skin=Skin{ char=(152 char->Sym) color='silver' } name='Edward Cullen' branch='s' level=7u count=1u 
     attack=8f defence=6f psyattack=0f confimmune=true pointsfac=1f no_a=true 
-    pointscontrib=1u range=20u radimmune=true poisimmune=true 
+    pointscontrib=1u range=20u radimmune=true poisimmune=true moon=(default->MoonDistrib)
     desc='No, he\'s not really a vegetarian!' } ] monsterstock_set
 
 [ 'Dumbledore'
@@ -723,7 +727,7 @@ init_monsterstock Void->Void :-
     skin=Skin{ char=(146 char->Sym) color='lightest_lime' } name='Dumbledore' branch='s' level=8u count=1u 
     attack=2f defence=7f psyattack=5f psyrange=6u fireimmune=true confimmune=true 
     sleepattack=true pointsfac=1f no_a=true pointscontrib=1u range=15u 
-    poisimmune=true 
+    poisimmune=true moon=(default->MoonDistrib)
     desc='The head of Hogwarts School of Magic.\nPurportedly a white wizard and a paragod of Good,\nthough you\'d never guess it by looking at him.' } ] monsterstock_set
 
 [ 'Shredder'
