@@ -16,7 +16,7 @@ class Item:
                  rangeexplode=False, springy=False, detector=False,
                  detect_monsters=False, detect_items=False, food=None,
                  wishing=False, repelrange=None, selfdestruct=None,
-                 digray=None, jinni=False, heatbonus=0, use_an=False,
+                 digray_x=False, digray_y=False, jinni=False, heatbonus=0, use_an=False,
                  stackrange=None, mapper=None, converts=None, jumprange=None,
                  explodeimmune=False, telepathyrange=0, makestrap=False,
                  summon=None, radimmune=False, radexplode=False, fires=False,
@@ -63,7 +63,8 @@ class Item:
         self.wishing = wishing
         self.repelrange = repelrange
         self.selfdestruct = selfdestruct
-        self.digray = digray
+        self.digray_x = digray_x
+        self.digray_y = digray_y
         self.jinni = jinni
         self.heatbonus = heatbonus
         self.use_an = use_an
@@ -239,7 +240,7 @@ class ItemStock:
                             desc=['A big white pill with a large red cross drawn on one side.'])
 
         self.herbalmed = Item("herbal palliative$s", slot='d', skin=('%', libtcod.light_green),
-                              rarity=13, applies=True, healingsleep=(150, 25.0),
+                              rarity=13, applies=True, healingsleep=(150, 25),
                               cursedchance=(1,-0.8), stackrange=5, count=1,
                               desc=['A large, green grassy-smelling pill.'])
 
@@ -401,11 +402,11 @@ class ItemStock:
                             desc=['A magic wand.'])
 
         self.digwandh = Item('wand of digging', slot='e', skin=('/', libtcod.azure),
-                             applies=True, digray=(1,0), rarity=4,
+                             applies=True, digray_x=True, rarity=4,
                              desc=['A magic wand.'])
 
         self.digwandv = Item('wand of digging', slot='e', skin=('/', libtcod.azure),
-                             applies=True, digray=(0,1), rarity=4,
+                             applies=True, digray_y=True, rarity=4,
                              desc=['A magic wand.'])
 
         self.repellerarmor = Item('repeller armor', slot='c', skin=('[', libtcod.white),

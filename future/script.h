@@ -23,9 +23,11 @@ struct Dungeon;
 struct FeatStock;
 struct PropStock;
 struct MonsterStock;
+struct ItemStock;
 
 struct FeatMap;
 struct MonsterMap;
+struct ItemMap;
 
 /****/
 
@@ -264,6 +266,7 @@ inline bool dg__clear_map(CALLBACK) {
 
     piccol::structmap<FeatMap>().clear();
     piccol::structmap<MonsterMap>().clear();
+    piccol::structmap<ItemMap>().clear();
 
     return true;
 }
@@ -306,6 +309,11 @@ struct Vm {
         piccol::register_pool<MonsterStock>(vm, "MonsterKey", "Sym");
 
         piccol::register_map<MonsterMap>(vm,    "[ UInt UInt ]", "MonsterVal");
+
+        piccol::register_map<ItemStock>(vm,  "Sym", "Item");
+        piccol::register_pool<ItemStock>(vm, "Sym", "Sym");
+
+        piccol::register_map<ItemMap>(vm,    "[ UInt UInt ]", "ItemVal");
             
         piccol::register_global<Player>(vm,  "Player");
         piccol::register_global<Dungeon>(vm, "Dungeon");
@@ -398,7 +406,6 @@ struct Vm {
     }
 
     void set_skin(unsigned int x, unsigned int y) {
-        std::cout << "!!!! set_skin" << std::endl;
         Obj out;
         Obj inp;
         inp.v.push_back((nanom::UInt)x);

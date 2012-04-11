@@ -118,6 +118,18 @@ for j in i.__dict__:
         elif f == 'craft':
             print 'craft=%s' % (reprr(vv[0])),
             crafts.append(vv)
+        elif f == 'cursedchance':
+            print '%s=GaussChance{stddev=%s thold=%s}' % (f, reprr(float(vv[0])), reprr(float(vv[1]))),
+        elif f == 'winning':
+            print '%s=Achievement{name=%s desc=%s}' % (f, reprr(vv[0]), reprr(vv[1])),
+        elif f == 'selfdestruct' or f == 'confattack' or f == 'healingsleep':
+            print '%s=GaussNat{mean=%s stddev=%s}' % (f, reprr(vv[0]), reprr(vv[1])),
+        elif f == 'food' or f == 'healing':
+            print '%s=Gauss{mean=%s stddev=%s}' % (f, reprr(float(vv[0])), reprr(float(vv[1]))),
+        elif f == 'ammochance' or f == 'range':
+            print '%s=Range{lo=%s hi=%s}' % (f, reprr(vv[0]), reprr(vv[1])),
+        elif f == 'summon':
+            print '%s=SummonN{mon=%s count=%s}' % (f, reprr(vv[0]), reprr(vv[1])),
         else:
             print '%s=%s' % (f, reprr(vv)),
 
@@ -125,16 +137,17 @@ for j in i.__dict__:
     print
 
 print 'check_craft [Sym Sym]->Sym :- '
+print '  <:[case] \\a : '
 cc = []
 for f,to in crafts:
-    t = "  <: \\a == '%s' :> ? ->Sym(\n" % f
+    t = "    '%s' ? \\b->Sym( <:[case] \\v : \n" % f
     l = []
     for k,v in to.iteritems():
-        l.append("    <: \\b == '%s' :> ? '%s'" % (k, v))
+        l.append("      '%s' ? '%s'" % (k, v))
     t += ';\n'.join(l)
-    t += ')'
+    t += ':>)'
     cc.append(t)
 print ';\n'.join(cc)
-print '.'
+print ':>.'
 
 

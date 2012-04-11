@@ -71,7 +71,8 @@ monster_level Void->UInt :-
 get MonsterKey->Sym :-
   <: \level > 0u :> ? 
     \\->Sym(
-      [ \\ (\\ size->UInt rand_n->UInt) ] get->Sym;
+      '...1 ' print \\ size->UInt print '\n' print
+      [ \\ (\\ size->UInt rand_n->UInt->UInt('...2 ' print \v print '\n' print \v)) ] get->Sym;
       \\ {level=(<: \level-1u :>)} get->Sym
     )
 .
@@ -84,6 +85,7 @@ place_monster Sym->Void :-
   ).
 
 generate_monsters UInt->Void :-
+  'XX... ' print \v print '\n' print
   <: \v == 0u :> ? ;
   MonsterKey{branch=(branch->Sym) level=(monster_level->UInt)} 
   get->Sym ->Bool (

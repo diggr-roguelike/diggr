@@ -34,6 +34,10 @@ modules Void->Void :-
              init_monsterstock Void->Void
    :>
 
+  <:[module] itemstock 'itemstock.piccol'
+             init_itemstock Void->Void
+   :>
+
   <:[module] monsters 'monsters.piccol'
              monster [UInt UInt]->Skin
              set_monster [UInt UInt Sym]->Void

@@ -3,6 +3,7 @@
 init Void->Void :-
   init_featstock
   init_monsterstock
+  init_itemstock
 
   Player {} set
   Dungeon {level=1u} set

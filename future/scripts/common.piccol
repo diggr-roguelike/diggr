@@ -79,6 +79,9 @@ def {
 } Feat;
 
 
+/***/
+
+
 def { mon:Sym timeout:UInt } Summon;
 def { damage:Real timeout:UInt } TimedEffect;
 def { moldid:UInt chance:UInt timeout:UInt } MoldEffect;
@@ -172,6 +175,132 @@ def {
   bld_delta: [Int Int]
   fleetimeout: UInt
 } MonsterVal; 
+
+
+/***/
+
+
+def {
+  stddev: Real
+  thold: Real
+} GaussChance;
+
+def {
+  name: Sym
+  desc: Sym
+} Achievement;
+
+def {
+  mean: UInt
+  stddev: UInt
+} GaussNat;
+
+def {
+  mean: Real
+  stddev: Real
+} Gauss;
+
+def {
+  lo: UInt
+  hi: UInt
+} Range;
+
+def {
+ mon: Sym
+ count: UInt
+} SummonN;
+
+def {
+  skin: Skin
+  slot: Sym
+  rarity: UInt
+
+  radius: UInt
+  lightradius: UInt
+  camorange: UInt
+  throwrange: UInt
+  telepathyrange: UInt
+  liveexplode: UInt
+  airfreshener: UInt
+  count: UInt
+  mapper: UInt
+  stackrange: UInt
+  jumprange: UInt
+  doppel: UInt
+  repelrange: UInt
+
+  heatbonus: Real
+  rangeattack: Real
+  digbonus: Real
+  defence: Real
+  attack: Real
+
+  healing: Gauss
+  food: Gauss
+  healingsleep: GaussNat
+  selfdestruct: GaussNat
+  confattack: GaussNat
+  cursedchance: GaussChance
+  ammochance: Range
+  range: Range
+  summon: SummonN
+  winning: Achievement
+
+  special: Sym
+  craft: Sym
+  desc: Sym
+  resource: Sym
+  name: Sym
+  align: Sym
+  converts: Sym
+  switch_moon: Sym
+
+  trapcloud
+  straightline
+  use_an
+  wishing
+  homing
+  springy
+  nodoz
+  throwable
+  sounding
+  jinni
+  explodeimmune
+  detect_monsters
+  psyimmune
+  detect_items
+  cooling
+  digging
+  ebola
+  detector
+  booze
+  radexplode
+  swampgas
+  hide_count
+  makestrap
+  applies_in_slot
+  explodes
+  smoke
+  glueimmune
+  radimmune
+  fires
+  rangeexplode
+  applies
+  digray_x
+  digray_y
+
+} Item;
+
+def {
+  item: Sym
+  
+  count: UInt
+  corpse: Sym
+  ammo: UInt
+  tag: Bool
+  cursed: Bool
+  
+} ItemVal;
 
 /***/
 

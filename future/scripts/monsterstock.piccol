@@ -41,7 +41,6 @@ def [moon:Sym md:MoonDistrib];
 def [a:UInt b:Real];
 
 moon_weight [Sym MoonDistrib]->UInt :-
-  '** ' print \moon print ';\n' print
   <: \moon == 'new'             :> ? \md->UInt(\new) ;
   <: \moon == 'waxing crescent' :> ? \md->UInt(\wax_c) ;
   <: \moon == 'first quarter'   :> ? \md->UInt(\q1) ;
@@ -59,10 +58,11 @@ moon_weight_count Monster->UInt :-
   [ \count 
     ([ (dg_current_moon->Sym) \moon ] moon_weight->Real) ] -> UInt(
 
-      <: uint((real(\a)*\b)+0.9) :>
+      <: uint((real(\a)*\b)+0.9) :> 
   ).
 
-make Monster->MonsterKey :- MonsterKey{branch=\branch level=\level}.
+make Monster->MonsterKey :- 
+  MonsterKey{branch=\branch level=\level}.
 
 monsterstock_set [Sym Monster]->Void :- 
   \\ set

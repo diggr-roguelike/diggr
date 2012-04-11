@@ -1,100 +1,151 @@
-----------
-('trapcloud', set([<type 'bool'>]))
-('digray', set([<type 'tuple'>, <type 'NoneType'>]))
-('radius', set([<type 'int'>]))
-('lightradius', set([<type 'int'>]))
-('straightline', set([<type 'bool'>]))
-('use_an', set([<type 'bool'>]))
-('wishing', set([<type 'bool'>]))
-('homing', set([<type 'bool'>]))
-('heatbonus', set([<type 'float'>, <type 'int'>]))
-('cursedchance', set([<type 'tuple'>, <type 'NoneType'>]))
-('springy', set([<type 'bool'>]))
-('rangeattack', set([<type 'int'>, <type 'float'>]))
-('nodoz', set([<type 'bool'>]))
-('skin', set([<type 'tuple'>]))
-('ammochance', set([<type 'tuple'>, <type 'NoneType'>]))
-('throwable', set([<type 'bool'>]))
-('sounding', set([<type 'bool'>]))
-('special', set([<type 'str'>, <type 'NoneType'>]))
-('slot', set([<type 'str'>]))
-('jinni', set([<type 'bool'>]))
-('defence', set([<type 'float'>, <type 'int'>]))
-('explodeimmune', set([<type 'bool'>]))
-('detect_monsters', set([<type 'bool'>]))
-('attack', set([<type 'int'>, <type 'float'>]))
-('psyimmune', set([<type 'bool'>]))
-('winning', set([<type 'tuple'>, <type 'NoneType'>]))
-('detect_items', set([<type 'bool'>]))
-('bonus', set([<type 'int'>]))
-('cooling', set([<type 'bool'>]))
-('telepathyrange', set([<type 'int'>]))
-('digging', set([<type 'bool'>]))
-('ebola', set([<type 'bool'>]))
-('detector', set([<type 'bool'>]))
-('healingsleep', set([<type 'tuple'>, <type 'NoneType'>]))
-('booze', set([<type 'bool'>]))
-('selfdestruct', set([<type 'tuple'>, <type 'NoneType'>]))
-('radexplode', set([<type 'bool'>]))
-('liveexplode', set([<type 'int'>, <type 'NoneType'>]))
-('food', set([<type 'tuple'>, <type 'NoneType'>]))
-('swampgas', set([<type 'bool'>]))
-('airfreshener', set([<type 'int'>, <type 'NoneType'>]))
-('digbonus', set([<type 'int'>, <type 'float'>]))
-('hide_count', set([<type 'bool'>]))
-('craft', set([<type 'tuple'>, <type 'NoneType'>]))
-('camorange', set([<type 'int'>]))
-('healing', set([<type 'tuple'>, <type 'NoneType'>]))
-('makestrap', set([<type 'bool'>]))
-('gencount', set([<type 'int'>]))
-('range', set([<type 'tuple'>, <type 'NoneType'>]))
-('applies_in_slot', set([<type 'bool'>]))
-('explodes', set([<type 'bool'>]))
-('desc', set([<type 'list'>]))
-('count', set([<type 'int'>, <type 'NoneType'>]))
-('mapper', set([<type 'int'>, <type 'NoneType'>]))
-('smoke', set([<type 'bool'>]))
-('rarity', set([<type 'int'>, <type 'NoneType'>]))
-('resource', set([<type 'str'>, <type 'NoneType'>]))
-('name', set([<type 'str'>]))
-('glueimmune', set([<type 'bool'>]))
-('throwrange', set([<type 'int'>]))
-('radimmune', set([<type 'bool'>]))
-('align', set([<type 'str'>, <type 'NoneType'>]))
-('fires', set([<type 'bool'>]))
-('rangeexplode', set([<type 'bool'>]))
-('summon', set([<type 'tuple'>, <type 'NoneType'>]))
-('stackrange', set([<type 'int'>, <type 'NoneType'>]))
-('jumprange', set([<type 'int'>, <type 'NoneType'>]))
-('tag', set([<type 'NoneType'>]))
-('doppel', set([<type 'int'>, <type 'NoneType'>]))
-('applies', set([<type 'bool'>]))
-('converts', set([<type 'str'>, <type 'NoneType'>]))
-('switch_moon', set([<type 'int'>, <type 'NoneType'>]))
-('confattack', set([<type 'tuple'>, <type 'NoneType'>]))
-('corpse', set([<type 'NoneType'>]))
-('ammo', set([<type 'NoneType'>]))
-('repelrange', set([<type 'int'>, <type 'NoneType'>]))
-----------
-('digray', set([2]))
-('selfdestruct', set([2]))
-('food', set([2]))
-('range', set([2]))
-('winning', set([2]))
-('cursedchance', set([2]))
-('craft', set([2]))
-('healing', set([2]))
-('skin', set([2]))
-('ammochance', set([2]))
-('summon', set([2]))
-('confattack', set([2]))
-('healingsleep', set([2]))
-[ 'furcoat' Item{
-  name='fur coat' skin=(['[' 'gray'] item->Skin) slot='c' 
-  rarity=5u heatbonus=0.01 defence=0.15 camorange=1001u 
-  throwrange=8u 
-  desc='A shaggy coat made of fur. You would look like a true barbarian in it.'
-  }] itemstock_set
+
+
+def [idtag:Sym item:Item];
+def [a:Sym b:Sym c:UInt];
+
+itemstock_set [Sym Item]->Void :-
+  \\ set
+  [ nil \idtag (\item->UInt(\rarity)) ] put
+.
+
+
+item [Sym Sym]->Skin :-
+  Skin{ char=\a color=\b visible=true }.
+
+
+
+/*** ***/
+
+
+check_craft [Sym Sym]->Sym :- 
+  <:[case] \a : 
+    'n4' ? \b->Sym( <:[case] \v : 
+      'z' ? 'craft_a4':>);
+    'nu' ? \b->Sym( <:[case] \v : 
+      'b' ? 'craft_n2':>);
+    'ft' ? \b->Sym( <:[case] \v : 
+      'a' ? 'craft_n3';
+      'g' ? 'craft_n8':>);
+    'fg' ? \b->Sym( <:[case] \v : 
+      't' ? 'craft_n8':>);
+    'df' ? \b->Sym( <:[case] \v : 
+      'a' ? 'craft_n4':>);
+    'n3' ? \b->Sym( <:[case] \v : 
+      'z' ? 'craft_a3':>);
+    'n2' ? \b->Sym( <:[case] \v : 
+      'z' ? 'craft_a2':>);
+    'n1' ? \b->Sym( <:[case] \v : 
+      'z' ? 'craft_a1':>);
+    'n7' ? \b->Sym( <:[case] \v : 
+      'z' ? 'craft_a7':>);
+    'n6' ? \b->Sym( <:[case] \v : 
+      'z' ? 'craft_a6':>);
+    'n5' ? \b->Sym( <:[case] \v : 
+      'z' ? 'craft_a5':>);
+    'n8' ? \b->Sym( <:[case] \v : 
+      'z' ? 'craft_a8':>);
+    'gt' ? \b->Sym( <:[case] \v : 
+      'u' ? 'craft_n1';
+      'f' ? 'craft_n8':>);
+    'gu' ? \b->Sym( <:[case] \v : 
+      't' ? 'craft_n1':>);
+    't' ? \b->Sym( <:[case] \v : 
+      'a' ? 'craft_at';
+      'u' ? 'craft_tu';
+      'g' ? 'craft_gt';
+      'f' ? 'craft_ft':>);
+    'u' ? \b->Sym( <:[case] \v : 
+      't' ? 'craft_tu';
+      'b' ? 'craft_bu';
+      'd' ? 'craft_du';
+      'g' ? 'craft_gu';
+      'n' ? 'craft_nu':>);
+    'a' ? \b->Sym( <:[case] \v : 
+      't' ? 'craft_at';
+      'n' ? 'craft_an';
+      'd' ? 'craft_ad';
+      'f' ? 'craft_af':>);
+    'b' ? \b->Sym( <:[case] \v : 
+      'u' ? 'craft_bu';
+      'd' ? 'craft_bd';
+      'g' ? 'craft_bg';
+      'n' ? 'craft_bn':>);
+    'd' ? \b->Sym( <:[case] \v : 
+      'a' ? 'craft_ad';
+      'n' ? 'craft_dn';
+      'b' ? 'craft_bd';
+      'u' ? 'craft_du';
+      'f' ? 'craft_df':>);
+    'f' ? \b->Sym( <:[case] \v : 
+      'a' ? 'craft_af';
+      'd' ? 'craft_df';
+      'g' ? 'craft_fg';
+      't' ? 'craft_ft':>);
+    'g' ? \b->Sym( <:[case] \v : 
+      'n' ? 'craft_gn';
+      'b' ? 'craft_bg';
+      'u' ? 'craft_gu';
+      't' ? 'craft_gt';
+      'f' ? 'craft_fg':>);
+    'n' ? \b->Sym( <:[case] \v : 
+      'a' ? 'craft_an';
+      'b' ? 'craft_bn';
+      'u' ? 'craft_nu';
+      'd' ? 'craft_dn';
+      'g' ? 'craft_gn':>);
+    'dn' ? \b->Sym( <:[case] \v : 
+      'a' ? 'craft_n6':>);
+    'tu' ? \b->Sym( <:[case] \v : 
+      'g' ? 'craft_n1':>);
+    'gn' ? \b->Sym( <:[case] \v : 
+      'b' ? 'craft_n5':>);
+    'bu' ? \b->Sym( <:[case] \v : 
+      'd' ? 'craft_n7';
+      'n' ? 'craft_n2':>);
+    'bg' ? \b->Sym( <:[case] \v : 
+      'n' ? 'craft_n5':>);
+    'bd' ? \b->Sym( <:[case] \v : 
+      'u' ? 'craft_n7':>);
+    'cthm1' ? \b->Sym( <:[case] \v : 
+      'cthm2' ? 'cthulhu_m3':>);
+    'cthm3' ? \b->Sym( <:[case] \v : 
+      'ctho3' ? 'ccthulhu':>);
+    'cthm2' ? \b->Sym( <:[case] \v : 
+      'cthm1' ? 'cthulhu_m3':>);
+    'bn' ? \b->Sym( <:[case] \v : 
+      'u' ? 'craft_n2';
+      'g' ? 'craft_n5':>);
+    'af' ? \b->Sym( <:[case] \v : 
+      'd' ? 'craft_n4';
+      't' ? 'craft_n3':>);
+    'ctho3' ? \b->Sym( <:[case] \v : 
+      'cthm3' ? 'ccthulhu':>);
+    'ctho2' ? \b->Sym( <:[case] \v : 
+      'ctho2' ? 'cthulhu_m2':>);
+    'ctho1' ? \b->Sym( <:[case] \v : 
+      'ctho1' ? 'cthulhu_m1':>);
+    'an' ? \b->Sym( <:[case] \v : 
+      'd' ? 'craft_n6':>);
+    'ad' ? \b->Sym( <:[case] \v : 
+      'n' ? 'craft_n6';
+      'f' ? 'craft_n4':>);
+    'du' ? \b->Sym( <:[case] \v : 
+      'b' ? 'craft_n7':>);
+    'at' ? \b->Sym( <:[case] \v : 
+      'f' ? 'craft_n3':>);
+    'z' ? \b->Sym( <:[case] \v : 
+      'n8' ? 'craft_a8';
+      'n1' ? 'craft_a1';
+      'n2' ? 'craft_a2';
+      'n3' ? 'craft_a3';
+      'n4' ? 'craft_a4';
+      'n5' ? 'craft_a5';
+      'n6' ? 'craft_a6';
+      'n7' ? 'craft_a7':>)
+:>.
+
+
+init_itemstock Void->Void :-
 
 [ 'bomb' Item{
   name='exploding spore' skin=(['!' 'yellow'] item->Skin) slot='d' 
@@ -132,7 +183,7 @@
 
 [ 'booze' Item{
   name='potion$s of booze' skin=(['!' 'green'] item->Skin) slot='d' 
-  rarity=10u cursedchance=!!!<type 'tuple'> camorange=1001u count=1u 
+  rarity=10u cursedchance=GaussChance{stddev=1f thold=-1f} camorange=1001u count=1u 
   throwrange=8u booze=true stackrange=2u applies=true 
   desc='Sweet, sweet aqua vitae.\nIt helps keep one warm in these horrible caves.'
   }] itemstock_set
@@ -146,7 +197,7 @@
 
 [ 'rootpwd' Item{
   name='the root password' skin=(['!' 'white'] item->Skin) slot='' 
-  rarity=0u camorange=1001u winning=!!!<type 'tuple'> explodes=true 
+  rarity=0u camorange=1001u winning=Achievement{name='winroot' desc='Hacked for the root password'} explodes=true 
   count=0u throwrange=8u applies=true radius=5u 
   desc='Must be something extremely important.'
   }] itemstock_set
@@ -166,7 +217,7 @@
 
 [ 'tinfoilcrystal' Item{
   name='crystal of tin' skin=(['{' 'gray'] item->Skin) slot='d' 
-  rarity=6u psyimmune=true selfdestruct=!!!<type 'tuple'> camorange=1001u 
+  rarity=6u psyimmune=true selfdestruct=GaussNat{mean=3000u stddev=500u} camorange=1001u 
   throwrange=8u 
   desc='A magical crystal of tin.\nIt acts much the same as a tin foil hat.'
   }] itemstock_set
@@ -195,7 +246,7 @@
 [ 'full_moon' Item{
   name='prism of the Full Moon' skin=(['~' 'blue'] item->Skin) slot='' 
   rarity=2u camorange=1001u throwrange=8u applies=true 
-  switch_moon=5u 
+  switch_moon='full' 
   desc='An ancient and very powerful artifact.\nRumor has it that it affects the very fabric of space\nand time.'
   }] itemstock_set
 
@@ -292,7 +343,7 @@
 
 [ 'digwandv' Item{
   name='wand of digging' skin=(['/' 'azure'] item->Skin) slot='e' 
-  rarity=4u digray=!!!<type 'tuple'> camorange=1001u throwrange=8u 
+  rarity=4u digray_y=true camorange=1001u throwrange=8u 
   applies=true 
   desc='A magic wand.'
   }] itemstock_set
@@ -347,8 +398,8 @@
 
 [ 'killerwand' Item{
   name='killer wand' skin=(['/' 'red'] item->Skin) slot='e' 
-  rarity=5u ammochance=!!!<type 'tuple'> camorange=1001u explodes=true 
-  throwrange=8u rangeexplode=true range=!!!<type 'tuple'> applies=true 
+  rarity=5u ammochance=Range{lo=1u hi=1u} camorange=1001u explodes=true 
+  throwrange=8u rangeexplode=true range=Range{lo=1u hi=3u} applies=true 
   desc='A metallic wand with a skull-and-crossbones embossed on it.\nThere is an annoying blinking LED light mounted in the handle.'
   }] itemstock_set
 
@@ -361,7 +412,7 @@
 
 [ 'cclarva' Item{
   name='carrion crawler larva' skin=([',' 'white'] item->Skin) slot='' 
-  rarity=0u throwable=true summon=!!!<type 'tuple'> liveexplode=4u 
+  rarity=0u throwable=true summon=SummonN{mon='carrion crawler' count=2u} liveexplode=4u 
   camorange=1001u throwrange=8u 
   desc='A tiny larva of the carrion crawler species.'
   }] itemstock_set
@@ -395,15 +446,15 @@
 
 [ 'halolamp' Item{
   name='halogen lamp' skin=(['~' 'yellow'] item->Skin) slot='b' 
-  rarity=3u lightradius=12u selfdestruct=!!!<type 'tuple'> camorange=1001u 
+  rarity=3u lightradius=12u selfdestruct=GaussNat{mean=1000u stddev=100u} camorange=1001u 
   throwrange=8u 
   desc='A lamp that is somewhat brighter than a generic lamp.'
   }] itemstock_set
 
 [ 'deathray' Item{
   name='death ray gun' skin=(['/' 'sky'] item->Skin) slot='e' 
-  rarity=0u straightline=true ammochance=!!!<type 'tuple'> camorange=1001u 
-  throwrange=8u rangeexplode=true range=!!!<type 'tuple'> applies=true 
+  rarity=0u straightline=true ammochance=Range{lo=50u hi=50u} camorange=1001u 
+  throwrange=8u rangeexplode=true range=Range{lo=1u hi=6u} applies=true 
   desc='A futuristic raygun from a faraway galaxy.'
   }] itemstock_set
 
@@ -416,8 +467,8 @@
 
 [ 'minirockets' Item{
   name='minirocket launcher' skin=(['(' 'light_red'] item->Skin) slot='e' 
-  rarity=8u ammochance=!!!<type 'tuple'> camorange=1001u explodes=true 
-  throwrange=8u rangeexplode=true range=!!!<type 'tuple'> applies=true 
+  rarity=8u ammochance=Range{lo=3u hi=3u} camorange=1001u explodes=true 
+  throwrange=8u rangeexplode=true range=Range{lo=4u hi=15u} applies=true 
   radius=2u 
   desc='A shoulder-mounted rocket launcher that holds\nthree tiny rockets.'
   }] itemstock_set
@@ -478,21 +529,21 @@
 
 [ 'boulder1' Item{
   name='scroll of boulder fort' skin=(['{' 'desaturated_cyan'] item->Skin) slot='d' 
-  rarity=3u summon=!!!<type 'tuple'> camorange=1001u throwrange=8u 
+  rarity=3u summon=SummonN{mon='ba4' count=8u} camorange=1001u throwrange=8u 
   applies=true 
   desc='It\'s labeled HACKEM MUCHE. Whatever that means...'
   }] itemstock_set
 
 [ 'boulder3' Item{
   name='scroll of boulder fort' skin=(['{' 'desaturated_cyan'] item->Skin) slot='d' 
-  rarity=3u summon=!!!<type 'tuple'> camorange=1001u throwrange=8u 
+  rarity=3u summon=SummonN{mon='bb8' count=8u} camorange=1001u throwrange=8u 
   applies=true 
   desc='It\'s labeled HACKEM MUCHE. Whatever that means...'
   }] itemstock_set
 
 [ 'boulder2' Item{
   name='scroll of boulder fort' skin=(['{' 'desaturated_cyan'] item->Skin) slot='d' 
-  rarity=3u summon=!!!<type 'tuple'> camorange=1001u throwrange=8u 
+  rarity=3u summon=SummonN{mon='bc3' count=8u} camorange=1001u throwrange=8u 
   applies=true 
   desc='It\'s labeled HACKEM MUCHE. Whatever that means...'
   }] itemstock_set
@@ -577,7 +628,7 @@
 
 [ 'repellerarmor' Item{
   name='repeller armor' skin=(['[' 'white'] item->Skin) slot='c' 
-  rarity=3u defence=0.01 selfdestruct=!!!<type 'tuple'> camorange=1001u 
+  rarity=3u defence=0.01 selfdestruct=GaussNat{mean=1000u stddev=100u} camorange=1001u 
   throwrange=8u repelrange=3u 
   desc='A vest that provides a portable force-field shield.'
   }] itemstock_set
@@ -599,7 +650,7 @@
 [ 'new_moon' Item{
   name='prism of the New Moon' skin=(['~' 'dark_crimson'] item->Skin) slot='' 
   rarity=2u camorange=1001u throwrange=8u applies=true 
-  switch_moon=1u 
+  switch_moon='new' 
   desc='An ancient and very powerful artifact.\nRumor has it that it affects the very fabric of space\nand time.'
   }] itemstock_set
 
@@ -612,7 +663,7 @@
 
 [ 'alzabobrain' Item{
   name='alzabo brain matter' skin=([',' 'darkest_red'] item->Skin) slot='' 
-  rarity=0u throwable=true summon=!!!<type 'tuple'> liveexplode=4u 
+  rarity=0u throwable=true summon=SummonN{mon='alzabo' count=1u} liveexplode=4u 
   camorange=1001u count=0u throwrange=8u 
   desc='Bits and pieces of the alzabo\'s brain.'
   }] itemstock_set
@@ -626,7 +677,7 @@
 
 [ 'avern' Item{
   name='avern' skin=(['(' 'dark_green'] item->Skin) slot='e' 
-  rarity=0u attack=6f selfdestruct=!!!<type 'tuple'> camorange=1001u 
+  rarity=0u attack=6f selfdestruct=GaussNat{mean=500u stddev=100u} camorange=1001u 
   throwrange=8u 
   desc='A makeshift weapon made from the poisonous avern plant.'
   }] itemstock_set
@@ -647,7 +698,7 @@
 
 [ 'triffidlarva' Item{
   name='triffid seed' skin=([',' 'peach'] item->Skin) slot='' 
-  rarity=0u throwable=true summon=!!!<type 'tuple'> liveexplode=4u 
+  rarity=0u throwable=true summon=SummonN{mon='triffid' count=1u} liveexplode=4u 
   camorange=1001u throwrange=8u 
   desc='A tiny larva of the carrion crawler species.'
   }] itemstock_set
@@ -675,21 +726,21 @@
 
 [ 'herbalmed' Item{
   name='herbal palliative$s' skin=(['%' 'light_green'] item->Skin) slot='d' 
-  rarity=13u cursedchance=!!!<type 'tuple'> healingsleep=!!!<type 'tuple'> camorange=1001u 
+  rarity=13u cursedchance=GaussChance{stddev=1f thold=-0.8} healingsleep=GaussNat{mean=150u stddev=25u} camorange=1001u 
   count=1u throwrange=8u stackrange=5u applies=true 
   desc='A large, green grassy-smelling pill.'
   }] itemstock_set
 
 [ 'digwandh' Item{
   name='wand of digging' skin=(['/' 'azure'] item->Skin) slot='e' 
-  rarity=4u digray=!!!<type 'tuple'> camorange=1001u throwrange=8u 
+  rarity=4u digray_x=true camorange=1001u throwrange=8u 
   applies=true 
   desc='A magic wand.'
   }] itemstock_set
 
 [ 'mushrooms' Item{
   name='mushroom$s' skin=(['%' 'light_orange'] item->Skin) slot='d' 
-  rarity=20u cursedchance=!!!<type 'tuple'> food=!!!<type 'tuple'> camorange=1001u 
+  rarity=20u cursedchance=GaussChance{stddev=1f thold=-0.8} food=Gauss{mean=3f stddev=0.5} camorange=1001u 
   count=1u throwrange=8u stackrange=3u applies=true 
   desc='A mushroom growing on the cave floor.'
   }] itemstock_set
@@ -711,8 +762,8 @@
 
 [ 'rpg' Item{
   name='RPG launcher' skin=(['(' 'red'] item->Skin) slot='e' 
-  rarity=15u use_an=true ammochance=!!!<type 'tuple'> camorange=1001u 
-  explodes=true throwrange=8u rangeexplode=true range=!!!<type 'tuple'> 
+  rarity=15u use_an=true ammochance=Range{lo=1u hi=1u} camorange=1001u 
+  explodes=true throwrange=8u rangeexplode=true range=Range{lo=4u hi=15u} 
   applies=true radius=3u 
   desc='A metal tube that holds a single explosive rocket.'
   }] itemstock_set
@@ -747,8 +798,8 @@
 
 [ 'mauser' Item{
   name='Mauser C96' skin=(['(' 'blue'] item->Skin) slot='e' 
-  rarity=15u straightline=true rangeattack=7f ammochance=!!!<type 'tuple'> 
-  camorange=1001u throwrange=8u range=!!!<type 'tuple'> applies=true 
+  rarity=15u straightline=true rangeattack=7f ammochance=Range{lo=0u hi=10u} 
+  camorange=1001u throwrange=8u range=Range{lo=0u hi=15u} applies=true 
   desc='This antique beauty is a powerful handgun, \nthough a bit rusty for some reason.'
   }] itemstock_set
 
@@ -761,8 +812,8 @@
 
 [ 'ak47' Item{
   name='AK-47' skin=(['(' 'desaturated_blue'] item->Skin) slot='e' 
-  rarity=15u straightline=true rangeattack=3.5 ammochance=!!!<type 'tuple'> 
-  camorange=1001u throwrange=8u range=!!!<type 'tuple'> applies=true 
+  rarity=15u straightline=true rangeattack=3.5 ammochance=Range{lo=9u hi=30u} 
+  camorange=1001u throwrange=8u range=Range{lo=0u hi=7u} applies=true 
   desc='A semi-automatic rifle.'
   }] itemstock_set
 
@@ -797,8 +848,8 @@
 
 [ 'flamethrower' Item{
   name='flamethrower' skin=(['(' 'orange'] item->Skin) slot='e' 
-  rarity=15u straightline=true ammochance=!!!<type 'tuple'> fires=true 
-  camorange=1001u throwrange=8u range=!!!<type 'tuple'> applies=true 
+  rarity=15u straightline=true ammochance=Range{lo=4u hi=13u} fires=true 
+  camorange=1001u throwrange=8u range=Range{lo=2u hi=8u} applies=true 
   desc='A device for setting monsters on fire.\nTruly ingenious.'
   }] itemstock_set
 
@@ -818,15 +869,15 @@
 
 [ 'airfresh' Item{
   name='air freshener' skin=([')' 'blue'] item->Skin) slot='d' 
-  rarity=8u ammochance=!!!<type 'tuple'> airfreshener=4u camorange=1001u 
-  throwrange=8u applies=true 
+  rarity=8u ammochance=Range{lo=20u hi=45u} camorange=1001u throwrange=8u 
+  airfreshener=4u applies=true 
   desc='Used for cleaning up noxious fumes, gases and spores.'
   }] itemstock_set
 
 [ 'mmissile' Item{
   name='amulet of magic missile' skin=(['(' 'light_azure'] item->Skin) slot='b' 
-  rarity=7u straightline=true rangeattack=7f ammochance=!!!<type 'tuple'> 
-  camorange=1001u applies_in_slot=true throwrange=8u range=!!!<type 'tuple'> 
+  rarity=7u straightline=true rangeattack=7f ammochance=Range{lo=5u hi=25u} 
+  camorange=1001u applies_in_slot=true throwrange=8u range=Range{lo=0u hi=15u} 
   applies=true 
   desc='A magical amulet that holds a clip ofmagically-induced mini-missiles.'
   }] itemstock_set
@@ -855,20 +906,20 @@
 [ 'tazer' Item{
   name='tazer' skin=(['(' 'gray'] item->Skin) slot='e' 
   rarity=5u attack=1f camorange=1001u throwrange=8u 
-  confattack=!!!<type 'tuple'> 
+  confattack=GaussNat{mean=10u stddev=1u} 
   desc='Very useful for subduing enemies.'
   }] itemstock_set
 
 [ 'tinfoilhat' Item{
   name='tin foil hat' skin=(['[' 'gray'] item->Skin) slot='a' 
-  rarity=6u psyimmune=true selfdestruct=!!!<type 'tuple'> camorange=1001u 
+  rarity=6u psyimmune=true selfdestruct=GaussNat{mean=3000u stddev=500u} camorange=1001u 
   throwrange=8u 
   desc='A metallic hat that protects against attempts of \nmind control by various crazies.'
   }] itemstock_set
 
 [ 'nodoz' Item{
   name='No-Doz pep pill$s' skin=(['%' 'light_red'] item->Skin) slot='d' 
-  rarity=20u cursedchance=!!!<type 'tuple'> nodoz=true camorange=1001u 
+  rarity=20u cursedchance=GaussChance{stddev=1f thold=-0.5} nodoz=true camorange=1001u 
   count=1u throwrange=8u stackrange=7u applies=true 
   desc='An over-the-counter medicine that helps combat sleep deprivation.'
   }] itemstock_set
@@ -889,9 +940,9 @@
 
 [ 'bigdartgun' Item{
   name='elephant sedative' skin=(['(' 'crimson'] item->Skin) slot='e' 
-  rarity=3u straightline=true rangeattack=4.5 ammochance=!!!<type 'tuple'> 
-  attack=0.1 camorange=1001u throwrange=8u range=!!!<type 'tuple'> 
-  applies=true confattack=!!!<type 'tuple'> 
+  rarity=3u straightline=true rangeattack=4.5 ammochance=Range{lo=2u hi=4u} 
+  attack=0.1 camorange=1001u throwrange=8u range=Range{lo=0u hi=4u} 
+  applies=true confattack=GaussNat{mean=150u stddev=5u} 
   desc='An applicator used for delivering \nsedative darts to elephants.It looks like a small rocket launcher.'
   }] itemstock_set
 
@@ -903,8 +954,8 @@
 
 [ 'craft_a8' Item{
   name='everlasting rocket launcher' skin=(['(' 'pink'] item->Skin) slot='e' 
-  rarity=0u ammochance=!!!<type 'tuple'> camorange=1001u throwrange=8u 
-  rangeexplode=true range=!!!<type 'tuple'> applies=true radius=3u 
+  rarity=0u ammochance=Range{lo=0u hi=0u} camorange=1001u throwrange=8u 
+  rangeexplode=true range=Range{lo=4u hi=15u} applies=true radius=3u 
   desc='A magic RPG launcher that never runs out of ammo.'
   }] itemstock_set
 
@@ -924,14 +975,14 @@
 
 [ 'craft_a1' Item{
   name='everlasting shotgun' skin=(['(' 'yellow'] item->Skin) slot='e' 
-  rarity=0u straightline=true rangeattack=14f ammochance=!!!<type 'tuple'> 
-  camorange=1001u throwrange=8u range=!!!<type 'tuple'> applies=true 
+  rarity=0u straightline=true rangeattack=14f ammochance=Range{lo=0u hi=0u} 
+  camorange=1001u throwrange=8u range=Range{lo=2u hi=6u} applies=true 
   desc='A magical shotgun than never runs out of bullets.'
   }] itemstock_set
 
 [ 'craft_a6' Item{
   name='medi-nanites' skin=(['%' 'pink'] item->Skin) slot='d' 
-  rarity=0u healingsleep=!!!<type 'tuple'> camorange=1001u count=0u 
+  rarity=0u healingsleep=GaussNat{mean=50u stddev=1u} camorange=1001u count=0u 
   throwrange=8u applies=true repelrange=2u 
   desc='An endless supply of advanced healing ointments.'
   }] itemstock_set
@@ -946,8 +997,8 @@
 [ 'craft_a4' Item{
   name='Brahmic medallion' skin=(['"' 'yellow'] item->Skin) slot='b' 
   rarity=0u lightradius=8u straightline=true rangeattack=7f 
-  ammochance=!!!<type 'tuple'> camorange=4u applies_in_slot=true throwrange=8u 
-  range=!!!<type 'tuple'> applies=true 
+  ammochance=Range{lo=0u hi=0u} camorange=4u applies_in_slot=true throwrange=8u 
+  range=Range{lo=0u hi=15u} applies=true 
   desc='An amulet of neverending magical missiles that also\nprovides godlike stealth.'
   }] itemstock_set
 
@@ -968,7 +1019,7 @@
 [ 'redgloves' Item{
   name='red hand gloves' skin=(['(' 'dark_red'] item->Skin) slot='d' 
   rarity=3u attack=0.1 camorange=1001u count=0u 
-  throwrange=8u confattack=!!!<type 'tuple'> 
+  throwrange=8u confattack=GaussNat{mean=10u stddev=1u} 
   desc='These magical gloves have a very confusing red glow.'
   }] itemstock_set
 
@@ -1009,14 +1060,14 @@
 
 [ 'bombsuit' Item{
   name='bomb suit' skin=(['[' 'lightest_yellow'] item->Skin) slot='c' 
-  rarity=3u defence=0.1 explodeimmune=true selfdestruct=!!!<type 'tuple'> 
+  rarity=3u defence=0.1 explodeimmune=true selfdestruct=GaussNat{mean=300u stddev=50u} 
   camorange=1001u throwrange=8u 
   desc='The standard protective suit for bomb squads.'
   }] itemstock_set
 
 [ 'tinfoil' Item{
   name='tin foil' skin=(['[' 'lightest_sepia'] item->Skin) slot='a' 
-  rarity=12u psyimmune=true selfdestruct=!!!<type 'tuple'> camorange=1001u 
+  rarity=12u psyimmune=true selfdestruct=GaussNat{mean=450u stddev=100u} camorange=1001u 
   count=0u throwrange=8u 
   desc='Not as good as a real tin foil hat, but will still help in emergencies.'
   }] itemstock_set
@@ -1051,7 +1102,7 @@
 
 [ 'medpack' Item{
   name='magic pill$s' skin=(['%' 'white'] item->Skin) slot='d' 
-  rarity=13u cursedchance=!!!<type 'tuple'> camorange=1001u healing=!!!<type 'tuple'> 
+  rarity=13u cursedchance=GaussChance{stddev=1f thold=-0.8} camorange=1001u healing=Gauss{mean=3f stddev=0.5} 
   count=1u throwrange=8u stackrange=5u applies=true 
   desc='A big white pill with a large red cross drawn on one side.'
   }] itemstock_set
@@ -1072,9 +1123,9 @@
 
 [ 'dartgun' Item{
   name='dart gun' skin=(['(' 'light_crimson'] item->Skin) slot='e' 
-  rarity=5u straightline=true rangeattack=0.5 ammochance=!!!<type 'tuple'> 
-  attack=0.5 camorange=1001u throwrange=8u range=!!!<type 'tuple'> 
-  applies=true confattack=!!!<type 'tuple'> 
+  rarity=5u straightline=true rangeattack=0.5 ammochance=Range{lo=10u hi=30u} 
+  attack=0.5 camorange=1001u throwrange=8u range=Range{lo=0u hi=5u} 
+  applies=true confattack=GaussNat{mean=30u stddev=5u} 
   desc='A small plastic gun loaded with suspicious-looking darts.'
   }] itemstock_set
 
@@ -1087,22 +1138,22 @@
 
 [ 'radsuit' Item{
   name='radiation suit' skin=(['[' 'dark_lime'] item->Skin) slot='c' 
-  rarity=0u defence=0.1 selfdestruct=!!!<type 'tuple'> camorange=1001u 
+  rarity=0u defence=0.1 selfdestruct=GaussNat{mean=1000u stddev=50u} camorange=1001u 
   throwrange=8u radimmune=true 
   desc='A very special piece of equipment that protects against radiation.'
   }] itemstock_set
 
 [ 'ccthulhu' Item{
   name='the Call of Cthulhu' skin=(['~' 'red'] item->Skin) slot='' 
-  rarity=0u camorange=1001u winning=!!!<type 'tuple'> count=0u 
+  rarity=0u camorange=1001u winning=Achievement{name='wincthulhu' desc='Called upon Cthulhu'} count=0u 
   throwrange=8u applies=true 
   desc='An eldritch medallion of R\'lyeh.\nAncient beyond measure and just as evil.'
   }] itemstock_set
 
 [ 'shotgun' Item{
   name='shotgun' skin=(['(' 'turquoise'] item->Skin) slot='e' 
-  rarity=15u straightline=true rangeattack=14f ammochance=!!!<type 'tuple'> 
-  camorange=1001u throwrange=8u range=!!!<type 'tuple'> applies=true 
+  rarity=15u straightline=true rangeattack=14f ammochance=Range{lo=1u hi=4u} 
+  camorange=1001u throwrange=8u range=Range{lo=2u hi=5u} applies=true 
   desc='A powerful, killer weapon.\nYou learned that much from playing videogames.'
   }] itemstock_set
 
@@ -1115,7 +1166,7 @@
 
 [ 'camo' Item{
   name='nanoparticle camouflage' skin=(['[' 'dark_green'] item->Skin) slot='c' 
-  rarity=3u defence=0.01 selfdestruct=!!!<type 'tuple'> camorange=3u 
+  rarity=3u defence=0.01 selfdestruct=GaussNat{mean=1000u stddev=100u} camorange=3u 
   count=0u throwrange=8u 
   desc='An ultra-hightech piece of camoflage clothing.\nIt\'s made of nanoparticles that render the wearer\npractically invisible.'
   }] itemstock_set
@@ -1141,128 +1192,4 @@
   desc='This special item needs to be combined with another very\nspecial item to make something very interesting.'
   }] itemstock_set
 
-check_craft [Sym Sym]->Sym :- 
-  <: \a == 'n4' :> ? ->Sym(
-    <: \b == 'z' :> ? 'craft_a4');
-  <: \a == 'nu' :> ? ->Sym(
-    <: \b == 'b' :> ? 'craft_n2');
-  <: \a == 'ft' :> ? ->Sym(
-    <: \b == 'a' :> ? 'craft_n3';
-    <: \b == 'g' :> ? 'craft_n8');
-  <: \a == 'fg' :> ? ->Sym(
-    <: \b == 't' :> ? 'craft_n8');
-  <: \a == 'df' :> ? ->Sym(
-    <: \b == 'a' :> ? 'craft_n4');
-  <: \a == 'n3' :> ? ->Sym(
-    <: \b == 'z' :> ? 'craft_a3');
-  <: \a == 'n2' :> ? ->Sym(
-    <: \b == 'z' :> ? 'craft_a2');
-  <: \a == 'n1' :> ? ->Sym(
-    <: \b == 'z' :> ? 'craft_a1');
-  <: \a == 'n7' :> ? ->Sym(
-    <: \b == 'z' :> ? 'craft_a7');
-  <: \a == 'n6' :> ? ->Sym(
-    <: \b == 'z' :> ? 'craft_a6');
-  <: \a == 'n5' :> ? ->Sym(
-    <: \b == 'z' :> ? 'craft_a5');
-  <: \a == 'n8' :> ? ->Sym(
-    <: \b == 'z' :> ? 'craft_a8');
-  <: \a == 'gt' :> ? ->Sym(
-    <: \b == 'u' :> ? 'craft_n1';
-    <: \b == 'f' :> ? 'craft_n8');
-  <: \a == 'gu' :> ? ->Sym(
-    <: \b == 't' :> ? 'craft_n1');
-  <: \a == 't' :> ? ->Sym(
-    <: \b == 'a' :> ? 'craft_at';
-    <: \b == 'u' :> ? 'craft_tu';
-    <: \b == 'g' :> ? 'craft_gt';
-    <: \b == 'f' :> ? 'craft_ft');
-  <: \a == 'u' :> ? ->Sym(
-    <: \b == 't' :> ? 'craft_tu';
-    <: \b == 'b' :> ? 'craft_bu';
-    <: \b == 'd' :> ? 'craft_du';
-    <: \b == 'g' :> ? 'craft_gu';
-    <: \b == 'n' :> ? 'craft_nu');
-  <: \a == 'a' :> ? ->Sym(
-    <: \b == 't' :> ? 'craft_at';
-    <: \b == 'n' :> ? 'craft_an';
-    <: \b == 'd' :> ? 'craft_ad';
-    <: \b == 'f' :> ? 'craft_af');
-  <: \a == 'b' :> ? ->Sym(
-    <: \b == 'u' :> ? 'craft_bu';
-    <: \b == 'd' :> ? 'craft_bd';
-    <: \b == 'g' :> ? 'craft_bg';
-    <: \b == 'n' :> ? 'craft_bn');
-  <: \a == 'd' :> ? ->Sym(
-    <: \b == 'a' :> ? 'craft_ad';
-    <: \b == 'n' :> ? 'craft_dn';
-    <: \b == 'b' :> ? 'craft_bd';
-    <: \b == 'u' :> ? 'craft_du';
-    <: \b == 'f' :> ? 'craft_df');
-  <: \a == 'f' :> ? ->Sym(
-    <: \b == 'a' :> ? 'craft_af';
-    <: \b == 'd' :> ? 'craft_df';
-    <: \b == 'g' :> ? 'craft_fg';
-    <: \b == 't' :> ? 'craft_ft');
-  <: \a == 'g' :> ? ->Sym(
-    <: \b == 'n' :> ? 'craft_gn';
-    <: \b == 'b' :> ? 'craft_bg';
-    <: \b == 'u' :> ? 'craft_gu';
-    <: \b == 't' :> ? 'craft_gt';
-    <: \b == 'f' :> ? 'craft_fg');
-  <: \a == 'n' :> ? ->Sym(
-    <: \b == 'a' :> ? 'craft_an';
-    <: \b == 'b' :> ? 'craft_bn';
-    <: \b == 'u' :> ? 'craft_nu';
-    <: \b == 'd' :> ? 'craft_dn';
-    <: \b == 'g' :> ? 'craft_gn');
-  <: \a == 'dn' :> ? ->Sym(
-    <: \b == 'a' :> ? 'craft_n6');
-  <: \a == 'tu' :> ? ->Sym(
-    <: \b == 'g' :> ? 'craft_n1');
-  <: \a == 'gn' :> ? ->Sym(
-    <: \b == 'b' :> ? 'craft_n5');
-  <: \a == 'bu' :> ? ->Sym(
-    <: \b == 'd' :> ? 'craft_n7';
-    <: \b == 'n' :> ? 'craft_n2');
-  <: \a == 'bg' :> ? ->Sym(
-    <: \b == 'n' :> ? 'craft_n5');
-  <: \a == 'bd' :> ? ->Sym(
-    <: \b == 'u' :> ? 'craft_n7');
-  <: \a == 'cthm1' :> ? ->Sym(
-    <: \b == 'cthm2' :> ? 'cthulhu_m3');
-  <: \a == 'cthm3' :> ? ->Sym(
-    <: \b == 'ctho3' :> ? 'ccthulhu');
-  <: \a == 'cthm2' :> ? ->Sym(
-    <: \b == 'cthm1' :> ? 'cthulhu_m3');
-  <: \a == 'bn' :> ? ->Sym(
-    <: \b == 'u' :> ? 'craft_n2';
-    <: \b == 'g' :> ? 'craft_n5');
-  <: \a == 'af' :> ? ->Sym(
-    <: \b == 'd' :> ? 'craft_n4';
-    <: \b == 't' :> ? 'craft_n3');
-  <: \a == 'ctho3' :> ? ->Sym(
-    <: \b == 'cthm3' :> ? 'ccthulhu');
-  <: \a == 'ctho2' :> ? ->Sym(
-    <: \b == 'ctho2' :> ? 'cthulhu_m2');
-  <: \a == 'ctho1' :> ? ->Sym(
-    <: \b == 'ctho1' :> ? 'cthulhu_m1');
-  <: \a == 'an' :> ? ->Sym(
-    <: \b == 'd' :> ? 'craft_n6');
-  <: \a == 'ad' :> ? ->Sym(
-    <: \b == 'n' :> ? 'craft_n6';
-    <: \b == 'f' :> ? 'craft_n4');
-  <: \a == 'du' :> ? ->Sym(
-    <: \b == 'b' :> ? 'craft_n7');
-  <: \a == 'at' :> ? ->Sym(
-    <: \b == 'f' :> ? 'craft_n3');
-  <: \a == 'z' :> ? ->Sym(
-    <: \b == 'n8' :> ? 'craft_a8';
-    <: \b == 'n1' :> ? 'craft_a1';
-    <: \b == 'n2' :> ? 'craft_a2';
-    <: \b == 'n3' :> ? 'craft_a3';
-    <: \b == 'n4' :> ? 'craft_a4';
-    <: \b == 'n5' :> ? 'craft_a5';
-    <: \b == 'n6' :> ? 'craft_a6';
-    <: \b == 'n7' :> ? 'craft_a7')
 .
