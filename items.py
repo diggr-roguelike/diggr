@@ -1,5 +1,5 @@
 import tcod_colors as libtcod
-import libdiggrpy as dg
+#import libdiggrpy as dg
 import copy
 
 import moon
@@ -7,7 +7,7 @@ import moon
 
 class Item:
     def __init__(self, name, slot='', bonus=0, count=None, 
-                 skin=('~', libtcod.yellow), lightradius=0, explodes=0,
+                 skin=('~', libtcod.yellow), lightradius=0, explodes=False,
                  applies=False, liveexplode=None, radius=0, attack=0,
                  defence=0, desc=None, throwable=False, throwrange=8, booze=False,
                  cursedchance=None, range=None, ammochance=None, rangeattack=0,
