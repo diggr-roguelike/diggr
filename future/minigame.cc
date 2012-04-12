@@ -58,10 +58,9 @@ struct Game {
 
     void process_world(size_t& ticks, bool& done, bool& dead, bool& need_input) {
 
-        std::ostringstream ss;
-        ss << "Turn " << ticks;
-
-        grender::get().do_message(ss.str(), false);
+        //std::ostringstream ss;
+        //ss << "Turn " << ticks;
+        //grender::get().do_message(ss.str(), false);
 
         need_input = true;
     }
@@ -69,21 +68,14 @@ struct Game {
     void handle_input(size_t& ticks, bool& done, bool& dead, int vk, char c) {
 
         std::cout << "!" << ticks << " " << vk << " [" << c << "]" << std::endl;
+
+        bool regen = false;
         
-        vm.handle_input(ticks, vk, c, done, dead);
+        vm.handle_input(ticks, vk, c, done, dead, regen);
 
-        /*
-        if (c == 'Q') {
-            dead = true;
-            done = true;
-
-        } else if (c == 'S') {
-            done = true;
-
-        } else if (c == '.') {
-            ticks++;
+        if (regen) {
+            generate();
         }
-        */
     }
 };
 

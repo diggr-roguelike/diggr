@@ -22,6 +22,7 @@ def {
   ticks: UInt
   done: Bool
   dead: Bool
+  regenerate: Bool
 } OutState;
 
 /***/
@@ -58,8 +59,8 @@ def {
   warm
   b_shrine
 
-  lightbonus: Int
-  explode: Int
+  lightbonus: UInt
+  explode: UInt
   stairs: Int
 
   poison: Real
@@ -304,7 +305,7 @@ def {
 
 /***/
 
-def [a:Sym b:Feat];
+def [a:Sym b:Bool];
 
 
 def [a:UInt b:UInt c:UInt d:UInt];

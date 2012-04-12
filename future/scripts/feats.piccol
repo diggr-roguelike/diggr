@@ -37,6 +37,7 @@ def {
 } Feat_;
 
 
+
 def [x:UInt y:UInt props:Props];
 def [x:UInt y:UInt a:Bool];
 def [x:UInt y:UInt a:Bool b:UInt];
@@ -48,6 +49,8 @@ def [a:Sym b:Props];
 def [a:[UInt UInt] b:Feat];
 
 def [a:Int b:Sym];
+def [a:Sym b:Feat];
+
 
 
 floor Void->Props :- 
@@ -111,6 +114,10 @@ feature [UInt UInt]->Skin :-
   [\a \b] get->Feat->Skin(\skin).
 
 
+get [UInt UInt]->FeatFlags :-
+  \\ get->Feat->FeatFlags(\flags).
+
+
 /*** ***/
 
 init_featstock Void->Void :-
@@ -130,7 +137,7 @@ init_featstock Void->Void :-
 [ '&' 
   Feat_{ props=(floor->Props)
          skin=('darkest_blue' background->Skin { is_lit=true })
-         flags=FeatFlags{explode=3 queasy=0.1 name='swamp gas' } } ] featstock_set
+         flags=FeatFlags{explode=3u queasy=0.1 name='swamp gas' } } ] featstock_set
 
 [ 'e' 
   Feat_{ props=(floor->Props)
@@ -459,7 +466,7 @@ init_featstock Void->Void :-
 [ 'dd' 
   Feat_{ props=(floor->Props)
         skin=(['^' 'white'] skin->Skin { is_lit=true })
-        flags=FeatFlags{lightbonus=7 name='a dolmen' } } ] featstock_set
+        flags=FeatFlags{lightbonus=7u name='a dolmen' } } ] featstock_set
 
 [ '!f' 
   Feat_{ props=(floor->Props)

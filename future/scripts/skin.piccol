@@ -56,14 +56,17 @@ set_renderskin [UInt UInt UInt Skin]->Void :-
 
 dungeontheme Void->Sym :- 
   get->Dungeon->Sym(
-    <: \branch == 'a' :> ? 'lime';
-    <: \branch == 'b' :> ? 'red';
-    <: \branch == 'c' :> ? 'sky';
-    <: \branch == 'd' :> ? 'darkest_gray';
-    <: \branch == 'e' :> ? 'lightest_yellow';
-    <: \branch == 's' :> ? 'darkest_blue';
-    <: \branch == 'q' :> ? 'white';
-    <: \branch == 'qk' :> ? 'grey')
+    <:[case] \branch :
+
+      'a'  ? 'lime';
+      'b'  ? 'red';
+      'c'  ? 'sky';
+      'd'  ? 'darkest_gray';
+      'e'  ? 'lightest_yellow';
+      's'  ? 'darkest_blue';
+      'q'  ? 'white';
+      'qk' ? 'grey'
+   :>)
 .
 
 default Void->Renderskin :- 

@@ -4,7 +4,13 @@ px Void->UInt :- get->Player->UInt(\x).
 py Void->UInt :- get->Player->UInt(\y).  
 
 def { x:UInt y:UInt dx:Int dy:Int } XyPair;
-def [ a:UInt b:UInt c:Int d:Int ];
+def [a:UInt b:UInt c:Int d:Int];
+def [a:UInt b:Bool];
+def [a:UInt b:Int];
+
+go UInt->OutState :- OutState{ticks=(<: \v + 1u :>) done=false dead=false}.
+
+regen [UInt Bool]->OutState :- \a go->OutState {regenerate=\b}.
 
 
 add XyPair->XyPair :- XyPair{ x=\x y=\y dx=(<:int(\x)+\dx:>) dy=(<:int(\y)+\dy:>) }.
@@ -23,8 +29,22 @@ move [Int Int]->Void :-
           [ \a \b \c \d ] move_player))
 .
 
+add [UInt Int]->UInt :-
+  <: int(\a) + \b :> ->UInt( <: \v >= 0 :> ? <: uint(\v) :>; 0u ).
 
-go UInt->OutState :- OutState{ticks=(<: \v + 1u :>) done=false dead=false}.
+dlevel Void->UInt :- get->Dungeon->UInt(\level).
+
+get Void->FeatFlags :- [ (px->UInt) (py->UInt) ] get->FeatFlags.
+
+descend Void->Bool :-
+  get->FeatFlags->Int(<: \stairs > 0 :> ? \stairs)->Bool(
+     'You climb down the hole.' msg
+     [ (dlevel->UInt) \v ] add->UInt->Bool( get->Dungeon {level=\v} set true )
+  )
+;
+  'You can\'t descend, there is no hole here.' msg
+  false
+.
 
 
 /***/
@@ -106,21 +126,25 @@ remap InState->InState :-
 handle_input InState->OutState :-
 
   \\ remap->InState->OutState (
+    <:[case] \c :
 
-  <: \c == 'S' :> ? OutState{ticks=\ticks done=true dead=false} ;
-  <: \c == 'Q' :> ? OutState{ticks=\ticks done=true dead=true} ;
-  <: \c == '.' :> ? \ticks go->OutState ;
+       'S' ? OutState{ticks=\ticks done=true dead=false} ;
+       'Q' ? OutState{ticks=\ticks done=true dead=true} ;
 
-  <: \c == 'h' :> ? [-1  0] move \ticks go->OutState ;
-  <: \c == 'j' :> ? [ 0  1] move \ticks go->OutState ;
-  <: \c == 'k' :> ? [ 0 -1] move \ticks go->OutState ;
-  <: \c == 'l' :> ? [ 1  0] move \ticks go->OutState ;
-  <: \c == 'y' :> ? [-1 -1] move \ticks go->OutState ;
-  <: \c == 'u' :> ? [ 1 -1] move \ticks go->OutState ;
-  <: \c == 'b' :> ? [-1  1] move \ticks go->OutState ;
-  <: \c == 'n' :> ? [ 1  1] move \ticks go->OutState ;
+       '.' ? \ticks go->OutState ;
 
-  OutState{ticks=\ticks done=false dead=false} 
+       'h' ? [-1  0] move \ticks go->OutState ;
+       'j' ? [ 0  1] move \ticks go->OutState ;
+       'k' ? [ 0 -1] move \ticks go->OutState ;
+       'l' ? [ 1  0] move \ticks go->OutState ;
+       'y' ? [-1 -1] move \ticks go->OutState ;
+       'u' ? [ 1 -1] move \ticks go->OutState ;
+       'b' ? [-1  1] move \ticks go->OutState ;
+       'n' ? [ 1  1] move \ticks go->OutState ;
+
+       '>' ? [\ticks (descend->Bool)] regen->OutState;
+    :>
+    OutState{ticks=\ticks done=false dead=false} 
   )
 .
 

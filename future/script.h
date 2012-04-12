@@ -257,17 +257,8 @@ inline bool dg_current_moon(CALLBACK) {
     return true;
 }
 
-inline bool dg__clear_map(CALLBACK) {
-
-    celauto::get().clear();
-    grid::get().clear();
-    neighbors::get().clear();
-    grender::get().clear();
-
-    piccol::structmap<FeatMap>().clear();
-    piccol::structmap<MonsterMap>().clear();
-    piccol::structmap<ItemMap>().clear();
-
+inline bool dg_render_message(CALLBACK) {
+    grender::get().do_message(metalan::symtab().get(struc.v[0].uint), struc.v[1].uint);
     return true;
 }
 
@@ -363,7 +354,7 @@ struct Vm {
 
         vm.register_callback("dg_current_moon", "Void", "Sym", dg_current_moon);
 
-        vm.register_callback("dg__clear_map", "Void", "Void", dg__clear_map);
+        vm.register_callback("dg_render_message", "[ Sym Bool ]", "Void", dg_render_message);
 
         vm.register_callback("print", "UInt", "Void", _print1);
         vm.register_callback("print", "Int",  "Void", _print2);
@@ -381,7 +372,7 @@ struct Vm {
         vm.init();
 
         vm.check_type("InState",  {nanom::UINT, nanom::INT, nanom::SYMBOL});
-        vm.check_type("OutState", {nanom::UINT, nanom::BOOL, nanom::BOOL});
+        vm.check_type("OutState", {nanom::UINT, nanom::BOOL, nanom::BOOL, nanom::BOOL});
     }        
 
     void run(const std::string& name, const std::string& from, const std::string& to, 
@@ -402,6 +393,16 @@ struct Vm {
     void generate() {
         Obj out;
         Obj inp;
+
+        celauto::get().clear();
+        grid::get().clear();
+        neighbors::get().clear();
+        grender::get().clear();
+
+        piccol::structmap<FeatMap>().clear();
+        piccol::structmap<MonsterMap>().clear();
+        piccol::structmap<ItemMap>().clear();
+
         run("generate", "Void", "Void", inp, out);
     }
 
@@ -423,7 +424,7 @@ struct Vm {
         py = out.v[1].uint;
     }
 
-    void handle_input(size_t& ticks, int vk, char c, bool& done, bool& dead) {
+    void handle_input(size_t& ticks, int vk, char c, bool& done, bool& dead, bool& regen) {
         Obj out;
         Obj inp;
         inp.v.push_back((nanom::UInt)ticks);
@@ -436,6 +437,7 @@ struct Vm {
         ticks = out.v[0].uint;
         done = out.v[1].uint;
         dead = out.v[2].uint;
+        regen = out.v[3].uint;
     }
 
 };

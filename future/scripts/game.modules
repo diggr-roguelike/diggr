@@ -28,6 +28,7 @@ modules Void->Void :-
              init_featstock Void->Void
              set_feature [UInt UInt Sym]->Void
              feature [UInt UInt]->Skin
+             get [UInt UInt]->FeatFlags
    :>
 
   <:[module] monsterstock 'monsterstock.piccol'
@@ -50,5 +51,10 @@ modules Void->Void :-
 
   <:[module] stats 'stats.piccol'
              luck Void->Real
+   :>
+
+  <:[module] output 'output.piccol'
+             msg Sym->Void
+             msg [Sym Bool]->Void
    :>
 .

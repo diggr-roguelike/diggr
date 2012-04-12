@@ -1,0 +1,5 @@
+
+
+msg Sym->Void :- [\v false] dg_render_message.
+
+msg [Sym Bool]->Void :- \\ dg_render_message.

@@ -1,5 +1,14 @@
 
 
+default Void->MoonDistrib :- MoonDistrib{new  = 5u 
+                                         wax_c= 5u 
+                                         q1   = 5u 
+                                         wax_g= 5u 
+                                         full = 5u 
+                                         wan_g= 5u 
+                                         q2   = 5u 
+                                         wan_c= 5u}.
+
 new_moon Void->MoonDistrib :- MoonDistrib{new  = 9u 
                                           wax_c= 7u 
                                           q1   = 5u 
@@ -41,14 +50,17 @@ def [moon:Sym md:MoonDistrib];
 def [a:UInt b:Real];
 
 moon_weight [Sym MoonDistrib]->UInt :-
-  <: \moon == 'new'             :> ? \md->UInt(\new) ;
-  <: \moon == 'waxing crescent' :> ? \md->UInt(\wax_c) ;
-  <: \moon == 'first quarter'   :> ? \md->UInt(\q1) ;
-  <: \moon == 'waxing gibbous'  :> ? \md->UInt(\wax_g) ;
-  <: \moon == 'full'            :> ? \md->UInt(\full) ;
-  <: \moon == 'waning gibbous'  :> ? \md->UInt(\wan_g) ;
-  <: \moon == 'last quarter'    :> ? \md->UInt(\q2) ;
-  <: \moon == 'waning crescent' :> ? \md->UInt(\wan_c)
+  <:[case] \moon :
+
+     'new'             ? \md->UInt(\new) ;
+     'waxing crescent' ? \md->UInt(\wax_c) ;
+     'first quarter'   ? \md->UInt(\q1) ;
+     'waxing gibbous'  ? \md->UInt(\wax_g) ;
+     'full'            ? \md->UInt(\full) ;
+     'waning gibbous'  ? \md->UInt(\wan_g) ;
+     'last quarter'    ? \md->UInt(\q2) ;
+     'waning crescent' ? \md->UInt(\wan_c)
+  :>
 .
     
 moon_weight [Sym MoonDistrib]->Real :-

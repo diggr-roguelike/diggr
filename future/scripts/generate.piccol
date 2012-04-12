@@ -17,8 +17,9 @@ choose_branch Void->Void :-
        4 ? 'd' switch_branch;
        5 ? 'e' switch_branch
      :>)
-  )
+  ; )
 .
+
 
 branch Void->Sym :- get->Dungeon->Sym(\branch).
 
@@ -28,26 +29,36 @@ level Void->UInt :- get->Dungeon->UInt(\level).
 
 quest_moncount Void->UInt :- 
   is_quest->Bool ? branch->Sym->UInt (
-    <: \v == 'q' :> ? level->UInt->UInt ( 
-       <: \v == 3u :> ? 1u ;
-       <: \v == 4u :> ? 1u ;
-       <: \v == 5u :> ? 2u ;
-       <: \v == 6u :> ? 2u ;
-       <: \v == 7u :> ? 3u ) ;
-    <: \v == 'qk' :> ? 15u
-  ).
+    <:[case] \v :
+     
+    'q' ? level->UInt->UInt ( 
+        <:[case] \v :
+           3u ? 1u ;
+           4u ? 1u ;
+           5u ? 2u ;
+           6u ? 2u ;
+           7u ? 3u :>) ;
+
+    'qk' ? 15u
+
+    :>)
+.
 
 quest_minlevel Void->UInt :- 
   is_quest->Bool ? branch->Sym->UInt (
-    <: \v == 'q' :> ? 3u ;
-    <: \v == 'qk' :> ? 8u
-  ).
+    <:[case] \v :
+      'q'  ? 3u ;
+      'qk' ? 8u
+    :>)
+.
 
 quest_maxlevel Void->UInt :- 
   is_quest->Bool ? branch->Sym->UInt (
-    <: \v == 'q' :> ? 8u ;
-    <: \v == 'qk' :> ? 11u
-  ).
+    <:[case] \v :
+      'q'  ? 8u ;
+      'qk' ? 11u
+    :>)
+.
 
 
 /* Monsters. */
@@ -117,8 +128,12 @@ def [a:Sym b:Real];
 
 generate_grid Void->Void :-
   dg_current_moon->Sym->Int(
-     <: \v == 'new' || \v == 'full' :> ? 1;
-     <: \v == 'first quarter' || \v == 'last quarter' :> ? -1;
+     <:[case] \v :
+        'new'  ? 1;
+        'full' ? 1;
+        'first quarter' ? -1;
+        'last quarter'  ? -1;
+     :>
      0)
   dg_grid_generate
 .
@@ -140,11 +155,12 @@ generate_founts UInt->Void :-
   <: \v > 0u :> ?
     [1 5] dg_random_range->Int
       ->Sym(
-        <: \v == 1 :> ? 'C';
-        <: \v == 2 :> ? 'V';
-        <: \v == 3 :> ? 'B';
-        <: \v == 4 :> ? 'N';
-        <: \v == 5 :> ? 'M'
+        <:[case] \v :
+          1 ? 'C';
+          2 ? 'V';
+          3 ? 'B';
+          4 ? 'N';
+          5 ? 'M' :>
       ) random_water_feature
   <: \v - 1u :> generate_founts.
 
@@ -167,7 +183,6 @@ generate_feats Void->Void :-
 
 
 generate_map Void->Void :-
-  dg__clear_map
 
   is_not_quest->Bool ?
     generate_grid
