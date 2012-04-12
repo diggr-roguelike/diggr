@@ -223,26 +223,38 @@ inline bool dg_grid_generate(CALLBACK) {
 
 inline bool dg_grid_one_of_floor(CALLBACK) {
     
-    grid::pt xy = grid::get().one_of_floor();
-    ret.v.push_back((nanom::UInt)xy.first);
-    ret.v.push_back((nanom::UInt)xy.second);
-    return true;
+    grid::pt xy;
+    bool r = grid::get().one_of_floor(xy);
+
+    if (r) {
+        ret.v.push_back((nanom::UInt)xy.first);
+        ret.v.push_back((nanom::UInt)xy.second);
+    }
+    return r;
 }
 
 inline bool dg_grid_one_of_water(CALLBACK) {
     
-    grid::pt xy = grid::get().one_of_water();
-    ret.v.push_back((nanom::UInt)xy.first);
-    ret.v.push_back((nanom::UInt)xy.second);
-    return true;
+    grid::pt xy;
+    bool r = grid::get().one_of_water(xy);
+
+    if (r) {
+        ret.v.push_back((nanom::UInt)xy.first);
+        ret.v.push_back((nanom::UInt)xy.second);
+    }
+    return r;
 }
 
 inline bool dg_grid_one_of_walk(CALLBACK) {
     
-    grid::pt xy = grid::get().one_of_walk();
-    ret.v.push_back((nanom::UInt)xy.first);
-    ret.v.push_back((nanom::UInt)xy.second);
-    return true;
+    grid::pt xy;
+    bool r = grid::get().one_of_walk(xy);
+
+    if (r) {
+        ret.v.push_back((nanom::UInt)xy.first);
+        ret.v.push_back((nanom::UInt)xy.second);
+    }
+    return r;
 }
 
 inline bool dg_neighbors_linked(CALLBACK) {
@@ -304,7 +316,7 @@ struct Vm {
         piccol::register_map<ItemStock>(vm,  "Sym", "Item");
         piccol::register_pool<ItemStock>(vm, "Sym", "Sym");
 
-        piccol::register_map<ItemMap>(vm,    "[ UInt UInt ]", "ItemVal");
+        piccol::register_stack<ItemMap>(vm,    "[ UInt UInt ]", "ItemVal");
             
         piccol::register_global<Player>(vm,  "Player");
         piccol::register_global<Dungeon>(vm, "Dungeon");

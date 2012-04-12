@@ -49,6 +49,8 @@ struct Map {
         w = _w;
         h = _h;
 
+        std::cout << "GRID INIT " << std::endl;
+
         grid.resize(w*h);
         walkmap.clear();
         watermap.clear();
@@ -408,31 +410,40 @@ struct Map {
 
         for (unsigned int i = 1; i < depth; ++i) {
             
+            std::set<pt> ngtmp;
+
             for (const pt& z : ng) {
                 if (proc.count(z) == 0) {
                     proc.insert(z);
 
                     const auto& tmp = neighbors::get()(z);
-                    ng.insert(tmp.begin(), tmp.end());
+                    ngtmp.insert(tmp.begin(), tmp.end());
+
+                    std::cout << "   . " << z.first << "," << z.second << " : " << ng.size() << " " << tmp.size() << std::endl;
                 }
             }
+
+            ng.insert(ngtmp.begin(), ngtmp.end());
+
+            std::cout << "EXPAND " << proc.size() << " " << ng.size() << " " << i << ":" << depth << std::endl;
         }
 
         nogens.insert(ng.begin(), ng.end());
     }
 
 
-    pt _one_of(std::vector<pt>& tmp) {
+    bool _one_of(std::vector<pt>& tmp, pt& ret) {
         if (tmp.size() == 0) {
-            return pt(rnd::get().range((unsigned int)0, w-1),
-                      rnd::get().range((unsigned int)0, h-1));
+            std::cout << "FAIL!!" << std::endl;
+            return false;
         }
 
         std::sort(tmp.begin(), tmp.end());
-        return tmp[rnd::get().range(0, (int)tmp.size()-1)];
+        ret = tmp[rnd::get().range(0, (int)tmp.size()-1)];
+        return true;
     }
 
-    pt one_of_floor() {
+    bool one_of_floor(pt& ret) {
         std::vector<pt> tmp;
 
         for (const pt& v : walkmap) {
@@ -443,10 +454,10 @@ struct Map {
             tmp.push_back(v);
         }
 
-        return _one_of(tmp);
+        return _one_of(tmp, ret);
     }
 
-    pt one_of_water() {
+    bool one_of_water(pt& ret) {
         std::vector<pt> tmp;
 
         for (const pt& v : watermap) {
@@ -457,11 +468,11 @@ struct Map {
             tmp.push_back(v);
         }
 
-        return _one_of(tmp);
+        return _one_of(tmp, ret);
     }
 
 
-    pt one_of_walk() {
+    bool one_of_walk(pt& ret) {
         std::vector<pt> tmp;
 
         for (const pt& v : walkmap) {
@@ -471,7 +482,9 @@ struct Map {
             tmp.push_back(v);
         }
 
-        return _one_of(tmp);
+        std::cout << "WALK : " << walkmap.size() << " " << nogens.size() << " " << tmp.size() << std::endl;
+
+        return _one_of(tmp, ret);
     }
 
 

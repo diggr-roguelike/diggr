@@ -200,7 +200,7 @@ generate_map Void->Void :-
 
 
 place_player Void->Void :-
-  dg_grid_one_of_walk->[UInt UInt]->Void(get->Player {x=\a y=\b} set)
+  dg_grid_one_of_walk->[UInt UInt]->Void(<:[print] '/// ' \a ' ' \b :> get->Player {x=\a y=\b} set)
 .
 
 
