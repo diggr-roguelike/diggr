@@ -735,7 +735,7 @@ init_monsterstock Void->Void :-
     skin=Skin{ char=(153 char->Sym) color='gray' } name='Shredder' branch='s' level=8u count=1u 
     attack=8f defence=7f psyattack=0f fireimmune=true confimmune=true explodeimmune=true 
     pointsfac=1f no_a=true pointscontrib=1u range=25u poisimmune=true 
-    
+    moon=(default->MoonDistrib) 
     desc='He hates turtles.' } ] monsterstock_set
 
 [ 'Darth Vader'
@@ -743,7 +743,7 @@ init_monsterstock Void->Void :-
     skin=Skin{ char=(154 char->Sym) color='dark_gray' } name='Darth Vader' branch='s' level=9u count=1u 
     attack=6f defence=9f psyattack=6f psyrange=8u fireimmune=true confimmune=true 
     flying=true pointsfac=1f no_a=true pointscontrib=1u range=30u 
-    poisimmune=true 
+    poisimmune=true moon=(default->MoonDistrib) 
     desc='A dark Sith Lord and a formidable enemy.' } ] monsterstock_set
 
 [ 'Hagbard Celine'
@@ -751,7 +751,7 @@ init_monsterstock Void->Void :-
     skin=Skin{ char=(144 char->Sym) color='gold' } name='Hagbard Celine' branch='s' level=10u count=1u 
     attack=6f defence=9f psyattack=1f psyrange=2u confimmune=true explodeimmune=true 
     sleepattack=true pointsfac=1f no_a=true pointscontrib=1u hungerattack=true 
-    range=30u radimmune=true poisimmune=true 
+    range=30u radimmune=true poisimmune=true moon=(default->MoonDistrib) 
     desc='Hail Eris!' } ] monsterstock_set
 
 [ 'Iucounu'
@@ -759,7 +759,7 @@ init_monsterstock Void->Void :-
     skin=Skin{ char=(142 char->Sym) color='purple' } name='Iucounu' branch='s' level=11u count=1u 
     attack=3f defence=11f psyattack=0f fireimmune=true confimmune=true explodeimmune=true 
     flying=true pointsfac=1f no_a=true pointscontrib=1u range=30u 
-    radimmune=true poisimmune=true 
+    radimmune=true poisimmune=true moon=(default->MoonDistrib) 
     desc='The Laughing Magician.' } ] monsterstock_set
 
 [ 'bmold5'
@@ -772,12 +772,14 @@ init_monsterstock Void->Void :-
 
 [ 'Crocodylus porosus' ('Varanus komodoensis' monsterstock_get->Monster {
     skin=(['R' 'green'] monster->Skin) name='Crocodylus porosus' attack=5f defence=3f slow=true 
-    heatseeking=true desc='(Also known as the saltwater crocodile.)\nThe largest of all living reptiles.' 
+    heatseeking=true 
+    desc='(Also known as the saltwater crocodile.)\nThe largest of all living reptiles.' 
     } ) ] monsterstock_set
 
 [ 'Pteranodon longiceps' ('Mammuthus primigenius' monsterstock_get->Monster {
     skin=(['B' 'lightest_lime'] monster->Skin) name='Pteranodon longiceps' level=7u count=8u align='le' 
-    range=10u flavor='flying' desc='A flying reptile that had a wingspan of over 6 meters!\nIt was a very common animal during the Cretaceous period.' 
+    range=10u flavor='flying' 
+    desc='A flying reptile that had a wingspan of over 6 meters!\nIt was a very common animal during the Cretaceous period.' 
     } ) ] monsterstock_set
 
 [ 'Indricotherium transouralicum' ('Mammuthus primigenius' monsterstock_get->Monster {
