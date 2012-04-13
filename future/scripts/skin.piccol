@@ -126,6 +126,8 @@ set_skin [UInt UInt]->Void :-
 
   [ \a \b 1u ([\a \b] feature->Skin) ] set_renderskin fail;
 
+  [ \a \b 5u ([\a \b] item->Skin) ] set_renderskin fail;
+
   [ \a \b 6u ([\a \b] monster->Skin) ] set_renderskin fail;
 
   [ \a \b 7u ([\a \b] player->Renderskin) ] set_renderskin fail; 

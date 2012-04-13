@@ -314,7 +314,7 @@ struct Vm {
         piccol::register_map<MonsterMap>(vm,    "[ UInt UInt ]", "MonsterVal");
 
         piccol::register_map<ItemStock>(vm,  "Sym", "Item");
-        piccol::register_pool<ItemStock>(vm, "Sym", "Sym");
+        piccol::register_pool<ItemStock>(vm, "ItemKey", "Sym");
 
         piccol::register_stack<ItemMap>(vm,    "[ UInt UInt ]", "ItemVal");
             
@@ -413,7 +413,7 @@ struct Vm {
 
         piccol::structmap<FeatMap>().clear();
         piccol::structmap<MonsterMap>().clear();
-        piccol::structmap<ItemMap>().clear();
+        piccol::structstack<ItemMap>().clear();
 
         run("generate", "Void", "Void", inp, out);
     }

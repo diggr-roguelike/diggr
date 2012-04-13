@@ -39,34 +39,39 @@ quest_moncount Void->UInt :-
            6u ? 2u ;
            7u ? 3u :>) ;
 
-    'qk' ? 15u
+    'qk' ? 10u
 
-    :>)
-.
+    :>).
 
 quest_minlevel Void->UInt :- 
   is_quest->Bool ? branch->Sym->UInt (
     <:[case] \v :
       'q'  ? 3u ;
       'qk' ? 8u
-    :>)
-.
+    :>).
 
 quest_maxlevel Void->UInt :- 
   is_quest->Bool ? branch->Sym->UInt (
     <:[case] \v :
       'q'  ? 8u ;
       'qk' ? 11u
-    :>)
-.
+    :>).
+
+quest_itemcount Void->UInt :-
+   is_quest->Bool ? branch->Sym->UInt (
+     <:[case] \v :
+       'q'  ? 1u ;
+       'qk' ? 10u
+     :>).
 
 
 /* Monsters. */
 
-def [ a:Sym b:Monster ];
-def [ a:UInt b:UInt c:UInt ];
-def [ a:MonsterKey b:UInt ];
-def [ a:[UInt UInt] b:Sym ];
+def [a:Sym b:Monster];
+def [a:UInt b:UInt c:UInt];
+def [a:MonsterKey b:UInt];
+def [a:ItemKey b:UInt];
+def [a:[UInt UInt] b:Sym];
 
 
 monster_level Void->UInt :-
@@ -119,6 +124,32 @@ generate_mold Void->Void :-
        get->Sym place_monster 
      ;
   ).
+
+
+/* Items. */
+
+
+place_item Sym->Void :-
+  [ (dg_grid_one_of_walk->[UInt UInt]) \v ]->Void(
+    [ (\a->UInt(\a)) (\a->UInt(\b)) \b ] set_item
+  )
+.
+
+generate_items UInt->Void :-
+  <: \v == 0u :> ? ;
+  \v->UInt(<:[print] 'GENERATE_ITEMS ' \v :> \v)
+  ->Void (
+     [ ItemKey{} (ItemKey{} size->UInt rand_n->UInt) ] get->Sym place_item ;
+
+     /* TODO: Handle failure to generate an item here. */
+  )
+  <: \v - 1u :> generate_items
+.
+
+generate_items Void->Void :-
+  quest_itemcount->UInt generate_items ;
+  [ (level->UInt->Real(<: real(\v) + 3f :>)) 1.5 1u ] pos_gauss->UInt generate_items
+.
 
 
 /* Grid and features. */
@@ -213,6 +244,7 @@ generate Void->Void :-
   generate_map
   generate_monsters
   generate_mold
+  generate_items
   place_player
 .
 

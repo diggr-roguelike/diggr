@@ -1,7 +1,7 @@
 
-def [ a:Sym b:Monster ];
+def [a:Sym b:Monster];
 
-def [ a:[UInt UInt] b:MonsterVal ];
+def [a:[UInt UInt] b:MonsterVal];
 
 make [Sym Monster]->MonsterVal :-
   MonsterVal {species=\a}.

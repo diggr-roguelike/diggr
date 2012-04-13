@@ -1,4 +1,15 @@
 
+to Int->UInt :- <: uint(\v) :>.
+to UInt->Int :- <: int(\v) :>.
+to Real->UInt :- <: uint(\v) :>.
+to UInt->Real :- <: real(\v) :>.
+to Real->Int :- <: int(\v) :>.
+to Int->Real :- <: real(\v) :>.
+
+
+/***/
+
+
 def { 
   x: UInt
   y: UInt 
@@ -180,6 +191,8 @@ def {
 
 /***/
 
+def { } ItemKey;
+
 
 def {
   stddev: Real
@@ -297,9 +310,10 @@ def {
   
   count: UInt
   corpse: Sym
-  ammo: UInt
+  ammo: Int
   tag: Bool
   cursed: Bool
+  selfdestruct: UInt
   
 } ItemVal;
 

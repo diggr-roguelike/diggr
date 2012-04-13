@@ -17,14 +17,14 @@ add XyPair->XyPair :- XyPair{ x=\x y=\y dx=(<:int(\x)+\dx:>) dy=(<:int(\y)+\dy:>
 
 walkable XyPair->Bool :-
   [ \x \y \dx \dy ] dg_neighbors_linked->Bool ? 
-  [ (<:uint(\dx):>) (<:uint(\dy):>) ] dg_render_is_walkblock->Bool $not ? true;
+  [ (\dx to->UInt) (\dy to->UInt) ] dg_render_is_walkblock->Bool $not ? true;
   false
 .
 
 move [Int Int]->Void :-
   XyPair{ x=(px->UInt) y=(py->UInt) dx=\a dy=\b } add->XyPair->Void( 
     \\ walkable->Bool ? 
-      [ \x \y (<:uint(\dx):>) (<:uint(\dy):>) ]->Void (
+      [ \x \y (\dx to->UInt) (\dy to->UInt) ]->Void (
           get->Player {x=\c y=\d} set
           [ \a \b \c \d ] move_player))
 .

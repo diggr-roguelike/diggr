@@ -44,6 +44,11 @@ modules Void->Void :-
              set_monster [UInt UInt Sym]->Void
    :>
 
+  <:[module] items 'items.piccol'
+             item [UInt UInt]->Skin
+             set_item [UInt UInt Sym]->Void
+   :>
+
   <:[module] input 'input.piccol'
              handle_input InState->OutState
              drawing_context Void->[UInt UInt]

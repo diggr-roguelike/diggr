@@ -3,14 +3,16 @@
 def [idtag:Sym item:Item];
 def [a:Sym b:Sym c:UInt];
 
+def [a:ItemKey b:Sym c:UInt];
+
 itemstock_set [Sym Item]->Void :-
   \\ set
-  [ nil \idtag (\item->UInt(\rarity)) ] put
+  [ ItemKey{} \idtag (\item->UInt(\rarity)) ] put
 .
 
 
 item [Sym Sym]->Skin :-
-  Skin{ char=\a color=\b visible=true }.
+  Skin{ char=\a color=\b visible=true walkable=true }.
 
 
 

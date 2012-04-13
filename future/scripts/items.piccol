@@ -1,0 +1,36 @@
+
+def [a:Sym b:Item];
+
+def [a:[UInt UInt] b:ItemVal];
+
+def [a:[UInt UInt] b:UInt];
+
+
+make [Sym Item]->ItemVal :-
+  ItemVal{ item=\a 
+
+           count=(\b->UInt(<: \count == 0u :> ? 1u ; \count))
+
+           ammo=(\b->Int(\ammochance->Int(<: \lo == 0u && \hi == 0u :> ? -1 ;
+                                          [ (\lo to->Int) (\hi to->Int) ] dg_random_range->Int)))
+
+           cursed=(\b->Bool(\cursedchance->Bool(
+                            [ \thold ([ 0f \stddev ] pos_gauss->Real)]->Bool(<: \b < \a :> ? true ; false))))
+
+           selfdestruct=(\b->UInt(\selfdestruct->UInt(
+                                  [ (\mean to->Real) (\stddev to->Real) 1u ] pos_gauss->UInt)))
+         }.
+
+
+/*** ***/
+
+set_item [UInt UInt Sym]->Void :-
+  <:[print] 'SET_ITEM ' \x ' ' \y ' ' \v :>
+  [ [\x \y] ([\v (\v get->Item)] make->ItemVal) ] -> Void(
+    \\ put
+    \a set_skin
+  ).
+
+item [UInt UInt]->Skin :-
+  [[\a \b] 0u] get->ItemVal->Skin(\item get->Item->Skin(\skin)).
+
