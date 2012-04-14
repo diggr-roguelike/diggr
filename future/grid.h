@@ -49,8 +49,6 @@ struct Map {
         w = _w;
         h = _h;
 
-        std::cout << "GRID INIT " << std::endl;
-
         grid.resize(w*h);
         walkmap.clear();
         watermap.clear();
@@ -418,14 +416,10 @@ struct Map {
 
                     const auto& tmp = neighbors::get()(z);
                     ngtmp.insert(tmp.begin(), tmp.end());
-
-                    std::cout << "   . " << z.first << "," << z.second << " : " << ng.size() << " " << tmp.size() << std::endl;
                 }
             }
 
             ng.insert(ngtmp.begin(), ngtmp.end());
-
-            std::cout << "EXPAND " << proc.size() << " " << ng.size() << " " << i << ":" << depth << std::endl;
         }
 
         nogens.insert(ng.begin(), ng.end());
@@ -434,7 +428,6 @@ struct Map {
 
     bool _one_of(std::vector<pt>& tmp, pt& ret) {
         if (tmp.size() == 0) {
-            std::cout << "FAIL!!" << std::endl;
             return false;
         }
 
@@ -481,8 +474,6 @@ struct Map {
 
             tmp.push_back(v);
         }
-
-        std::cout << "WALK : " << walkmap.size() << " " << nogens.size() << " " << tmp.size() << std::endl;
 
         return _one_of(tmp, ret);
     }
