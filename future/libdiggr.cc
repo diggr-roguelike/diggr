@@ -6,7 +6,6 @@
 #include "random.h"
 #include "grid.h"
 
-#include "script.h"
 
 #ifdef __MINGW32__
 #define EXPORT extern "C" __declspec(dllexport)
@@ -91,7 +90,7 @@ EXPORT void dg_render_wait_for_key(int* vk, char* c) {
 
 EXPORT void dg_render_draw_window(const char** _msg, size_t n, int* vk, char* c) {
     std::vector<std::string> msg;
-    for (int i = 0; i < n; ++i) {
+    for (size_t i = 0; i < n; ++i) {
         msg.push_back(_msg[i]);
     }
     grender::Grid::keypress k = grender::get().draw_window(msg);
@@ -137,23 +136,23 @@ EXPORT void dg_render_set_env(uint8 r, uint8 g, uint8 b, double intensity) {
     grender::get().set_env(color, intensity);
 }
 
-EXPORT void dg_render_set_back(unsigned int x, unsigned int y, uint8 r, uint8 g, uint8 b) {
+EXPORT void dg_render_set_back(unsigned int x, unsigned int y, unsigned int z, uint8 r, uint8 g, uint8 b) {
     TCOD_color_t back;
     back.r = r;
     back.g = g;
     back.b = b;
-    grender::get().set_back(x, y, back);
+    grender::get().set_back(x, y, z, back);
 }
 
-EXPORT void dg_render_set_is_lit(unsigned int x, unsigned int y, bool is_lit) {
-    grender::get().set_is_lit(x, y, is_lit);
+EXPORT void dg_render_set_is_lit(unsigned int x, unsigned int y, unsigned int z, bool is_lit) {
+    grender::get().set_is_lit(x, y, z, is_lit);
 }
 
-EXPORT void dg_render_push_skin(unsigned int x, unsigned int y,
-				    uint8 fr, uint8 fg, uint8 fb, 
-				    unsigned char c,
-				    uint8 f2r, uint8 f2g, uint8 f2b, 
-				    int fore_interp, bool is_terrain) {
+EXPORT void dg_render_set_skin(unsigned int x, unsigned int y, unsigned int z,
+                               uint8 fr, uint8 fg, uint8 fb, 
+                               unsigned char c,
+                               uint8 f2r, uint8 f2g, uint8 f2b, 
+                               int fore_interp, bool is_terrain) {
     TCOD_color_t fore;
     TCOD_color_t fore2;
     fore.r = fr;
@@ -162,27 +161,11 @@ EXPORT void dg_render_push_skin(unsigned int x, unsigned int y,
     fore2.r = f2r;
     fore2.g = f2g;
     fore2.b = f2b;
-    grender::get().push_skin(x, y, fore, c, fore2, fore_interp, is_terrain);
+    grender::get().set_skin(x, y, z, fore, c, fore2, fore_interp, is_terrain);
 }
 
-EXPORT void dg_render_set_skin(unsigned int x, unsigned int y,
-				   uint8 fr, uint8 fg, uint8 fb, 
-				   unsigned char c,
-				    uint8 f2r, uint8 f2g, uint8 f2b, 
-				   int fore_interp, bool is_terrain) {
-    TCOD_color_t fore;
-    TCOD_color_t fore2;
-    fore.r = fr;
-    fore.g = fg;
-    fore.b = fb;
-    fore2.r = f2r;
-    fore2.g = f2g;
-    fore2.b = f2b;
-    grender::get().set_skin(x, y, fore, c, fore2, fore_interp, is_terrain);
-}
-
-EXPORT void dg_render_pop_skin(unsigned int x, unsigned int y) {
-    grender::get().pop_skin(x, y);
+EXPORT void dg_render_unset_skin(unsigned int x, unsigned int y, unsigned int z) {
+    grender::get().unset_skin(x, y, z);
 }
 
 EXPORT bool dg_render_is_in_fov(unsigned int x, unsigned int y) {
@@ -197,12 +180,12 @@ EXPORT void dg_render_set_is_walkblock(unsigned int x, unsigned int y, bool t, u
     grender::get().set_is_walkblock(x, y, t, bit);
 }
 
-EXPORT bool dg_render_draw(unsigned int t,
-			       unsigned int px, unsigned int py, 
-			       unsigned int hlx, unsigned int hly,
-			       unsigned int rmin, unsigned int rmax,
-			       unsigned int lr, bool do_hud) {
-    return grender::get().draw(t, px, py, hlx, hly, rmin, rmax, lr, do_hud);
+EXPORT void dg_render_draw(unsigned int t,
+                           unsigned int px, unsigned int py, 
+                           unsigned int hlx, unsigned int hly,
+                           unsigned int rmin, unsigned int rmax,
+                           unsigned int lr, bool do_hud) {
+    grender::get().draw(t, px, py, hlx, hly, rmin, rmax, lr, do_hud);
 }
 
 EXPORT void dg_render_push_hud_line(char* label, uint8 lr, uint8 lg, uint8 lb,
@@ -346,20 +329,26 @@ EXPORT void dg_grid_add_nogen(unsigned int x, unsigned int y) {
     grid::get().add_nogen(x, y);
 }
 
-EXPORT void dg_grid_one_of_floor(unsigned int* x, unsigned int* y) {
-    grid::pt xy = grid::get().one_of_floor();
+EXPORT bool dg_grid_one_of_floor(unsigned int* x, unsigned int* y) {
+    grid::pt xy; 
+    bool ret = grid::get().one_of_floor(xy);
     *x = xy.first;
     *y = xy.second;
+    return ret;
 }
 
-EXPORT void dg_grid_one_of_water(unsigned int* x, unsigned int* y) {
-    grid::pt xy = grid::get().one_of_water();
+EXPORT bool dg_grid_one_of_water(unsigned int* x, unsigned int* y) {
+    grid::pt xy;
+    bool ret = grid::get().one_of_water(xy);
     *x = xy.first;
     *y = xy.second;
+    return ret;
 }
 
-EXPORT void dg_grid_one_of_walk(unsigned int* x, unsigned int* y) {
-    grid::pt xy = grid::get().one_of_walk();
+EXPORT bool dg_grid_one_of_walk(unsigned int* x, unsigned int* y) {
+    grid::pt xy;
+    bool ret = grid::get().one_of_walk(xy);
     *x = xy.first;
     *y = xy.second;
+    return ret;
 }

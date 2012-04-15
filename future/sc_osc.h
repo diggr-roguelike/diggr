@@ -137,6 +137,7 @@ struct SC_OSC {
 
 int _handler(const char* path, const char* types, lo_arg** argv,
              int argc, void* data, void* user_data) {
+    return 0;
 }
 
 

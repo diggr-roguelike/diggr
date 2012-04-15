@@ -449,14 +449,14 @@ class Game:
             feat = self.d.featmap[xy]
 
         if feat and feat.lit:
-            dg.render_set_is_lit(x, y, True)
+            dg.render_set_is_lit(x, y, 0, True)
         else:
-            dg.render_set_is_lit(x, y, False)
+            dg.render_set_is_lit(x, y, 0, False)
 
         if feat and feat.back:
-            dg.render_set_back(x, y, feat.back)
+            dg.render_set_back(x, y, 0, feat.back)
         else:
-            dg.render_set_back(x, y, libtcod.black)
+            dg.render_set_back(x, y, 0, libtcod.black)
 
         fore = self.theme[self.d.branch][0]
         fore2 = fore
@@ -485,7 +485,7 @@ class Game:
             c = 176
             is_terrain = True
 
-        dg.render_set_skin(x, y, fore, c, fore2, fore_i, is_terrain)
+        dg.render_set_skin(x, y, 0, fore, c, fore2, fore_i, is_terrain)
 
         ## 
         if feat:
@@ -580,6 +580,9 @@ class Game:
             for x in xrange(10):
                 d = dg.grid_one_of_floor()
 
+                if xy_none(d):
+                    return
+
                 xy0 = xy_sub(d, v.anchor)
 
                 if xy_outside(xy0, (v.w, v.h), 0, 0, self.d.w, self.d.h):
@@ -644,6 +647,9 @@ class Game:
 
         d = dg.grid_one_of_floor()
 
+        if xy_none(d):
+            raise Exception("Could not place down stairs")
+
         self.set_feature(d, '>')
         self.d.exit = d
 
@@ -651,28 +657,32 @@ class Game:
 
         if self.d.moon == moon.NEW:
             d = dg.grid_one_of_floor()
-            self.set_feature(d, 'bb')
+            if not xy_none(d):
+                self.set_feature(d, 'bb')
 
         elif self.d.moon == moon.FULL:
             d = dg.grid_one_of_floor()
-            self.set_feature(d, 'dd')
-            self.paste_celauto(d, self.celautostock.FERN)
+            if not xy_none(d):
+                self.set_feature(d, 'dd')
+                self.paste_celauto(d, self.celautostock.FERN)
 
         else:
             a = dg.random_range(-1, 1)
             d = dg.grid_one_of_floor()
-            if a == -1:
-                self.set_feature(d, 's')
-            elif a == 0:
-                self.set_feature(d, 'b')
-            elif a == 1:
-                self.set_feature(d, 'v')
+            if not xy_none(d):
+                if a == -1:
+                    self.set_feature(d, 's')
+                elif a == 0:
+                    self.set_feature(d, 'b')
+                elif a == 1:
+                    self.set_feature(d, 'v')
 
         nfounts = self.biased_nat_gauss(self.w.coef.numfounts, 1, 1)
 
         for tmp in xrange(nfounts):
             d = dg.grid_one_of_water()
-            self.set_feature(d, ['C','V','B','N','M'][dg.random_n(5)])
+            if not xy_none(d):
+                self.set_feature(d, ['C','V','B','N','M'][dg.random_n(5)])
 
 
     def place_monster(self, xy, mon):
@@ -716,6 +726,8 @@ class Game:
 
             while 1:
                 xy = dg.grid_one_of_walk()
+                if xy_none(xy):
+                    return
                 if xy not in self.d.monmap: break
 
             m = self.w.monsterstock.generate(self.d.branch, lev, self.w.itemstock, self.luck(), self.d.moon)
@@ -735,6 +747,8 @@ class Game:
 
         if self.biased_gauss((0, self.w.coef.moldchance[0]), 1) < self.w.coef.moldchance[1]:
             xy = dg.grid_one_of_floor()
+            if xy_none(xy):
+                return
             m = self.w.monsterstock.generate('x', self.d.dlev, self.w.itemstock, self.luck(), self.d.moon)
             if m:
                 self.place_monster(xy, m)
@@ -755,6 +769,8 @@ class Game:
             lev = self.biased_nat_gauss((self.d.dlev, self.w.coef.itemlevel), 1, 1)
 
             xy = dg.grid_one_of_walk()
+            if xy_none(xy):
+                return
             item = self.w.itemstock.generate(lev, self.luck())
             if item:
                 self.set_item(xy, [item])
@@ -768,6 +784,8 @@ class Game:
                 itm2 = [copy.copy(i) for i in itm]
 
                 xy = dg.grid_one_of_walk()
+                if xy_none(xy):
+                    return
 
                 self.set_item(xy, itm2)
 
@@ -790,6 +808,8 @@ class Game:
             dg.grid_add_nogen(k[0], k[1])
 
         xy = dg.grid_one_of_walk()
+        if xy_none(xy):
+            raise Exception("Could not place player")
         self.d.pc = xy
 
         
@@ -1889,7 +1909,7 @@ class Game:
             # HACK
             for x in xrange(self.d.w):
                 for y in xrange(self.d.h):
-                    dg.render_set_is_lit(x, y, True)
+                    dg.render_set_is_lit(x, y, 1, True)
 
             self.p.achievements.use(item)
             return None
@@ -3165,7 +3185,7 @@ class Game:
                 self.set_feature(xy, ca.floorfeaturetoggle)
 
         if ca.littoggle is not None and dg.grid_is_walk(x, y):
-            dg.render_set_is_lit(x, y, True)
+            dg.render_set_is_lit(x, y, 2, True)
 
     def celauto_off(self, xy, ca):
         x, y = xy
@@ -3178,7 +3198,7 @@ class Game:
             self.unset_feature(xy)
 
         if ca.littoggle is not None and dg.grid_is_walk(x, y):
-            dg.render_set_is_lit(x, y, False)
+            dg.render_set_is_lit(x, y, 2, False)
 
 
     def process_world(self):
@@ -3475,7 +3495,7 @@ class Game:
                 # HACK
                 for x in xrange(self.d.w):
                     for y in xrange(self.d.h):
-                        dg.render_set_is_lit(x, y, False)
+                        dg.render_set_is_lit(x, y, 1, False)
 
 
         if withtime:
@@ -3501,26 +3521,26 @@ class Game:
             itm = v[0]
 
             if itm.corpse:
-                dg.render_push_skin(k[0], k[1], itm.corpse.skin[1], itm.skin[0], libtcod.black, 0, False)
+                dg.render_set_skin(k[0], k[1], 1, itm.corpse.skin[1], itm.skin[0], libtcod.black, 0, False)
             else:
-                dg.render_push_skin(k[0], k[1], itm.skin[1], itm.skin[0], libtcod.black, 0, False)
+                dg.render_set_skin(k[0], k[1], 1, itm.skin[1], itm.skin[0], libtcod.black, 0, False)
 
 
         if self.d.doppeltime > 0:
-            dg.render_push_skin(self.d.doppelpoint[0], self.d.doppelpoint[1],
-                                libtcod.white, '@', libtcod.black, 0, False)
+            dg.render_set_skin(self.d.doppelpoint[0], self.d.doppelpoint[1], 2,
+                               libtcod.white, '@', libtcod.black, 0, False)
 
         lit_mons = set()
 
         for k,v in sorted(self.d.monmap.iteritems()):
-            dg.render_push_skin(k[0], k[1], v.skin[1], v.skin[0], libtcod.black, 0, v.boulder)
+            dg.render_set_skin(k[0], k[1], 3, v.skin[1], v.skin[0], libtcod.black, 0, v.boulder)
 
             if telerange and not v.inanimate:
                 d = xy_dist(self.d.pc, k)
 
                 if d <= telerange:
                     lit_mons.add(k)
-                    dg.render_set_is_lit(k[0], k[1], True)
+                    dg.render_set_is_lit(k[0], k[1], 3, True)
 
 
         pc = '@'
@@ -3536,7 +3556,7 @@ class Game:
         pccol = libtcod.white
         if self.p.onfire:
             pccol = libtcod.amber
-        dg.render_push_skin(self.d.pc[0], self.d.pc[1], pccol, pc, libtcod.black, 0, False)
+        dg.render_set_skin(self.d.pc[0], self.d.pc[1], 4, pccol, pc, libtcod.black, 0, False)
 
         ###
         
@@ -3544,20 +3564,22 @@ class Game:
         if do_hud:
             self.draw_hud()
 
-        did_highlight = dg.render_draw(self.w.t, self.d.pc[0], self.d.pc[1], 
-                                       _hlxy[0], _hlxy[1], range[0], range[1], lightradius,
-                                       do_hud)
-        
+        dg.render_draw(self.w.t, self.d.pc[0], self.d.pc[1], 
+                       _hlxy[0], _hlxy[1], range[0], range[1], lightradius,
+                       do_hud)
+
+        did_highlight = dg.render_is_in_fov(_hlxy[0], _hlxy[1])
+
         ###
 
-        dg.render_pop_skin(self.d.pc[0], self.d.pc[1])
+        dg.render_unset_skin(self.d.pc[0], self.d.pc[1], 4)
 
         self.new_visibles = False
 
         for k,v in sorted(self.d.monmap.iteritems()):
-            dg.render_pop_skin(k[0], k[1])
+            dg.render_unset_skin(k[0], k[1], 3)
             if k in lit_mons:
-                dg.render_set_is_lit(k[0], k[1], False)
+                dg.render_set_is_lit(k[0], k[1], 3, False)
 
             if do_m_i_v and dg.render_is_in_fov(k[0], k[1]):
                 self.monsters_in_view.append(v)
@@ -3569,10 +3591,10 @@ class Game:
 
 
         if self.d.doppeltime > 0:
-            dg.render_pop_skin(self.d.doppelpoint[0], self.d.doppelpoint[1])
+            dg.render_unset_skin(self.d.doppelpoint[0], self.d.doppelpoint[1], 2)
 
         for k,v in sorted(self.d.itemap.iteritems()):
-            dg.render_pop_skin(k[0], k[1])
+            dg.render_unset_skin(k[0], k[1], 1)
 
         ### 
 

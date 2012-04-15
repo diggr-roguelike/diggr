@@ -101,11 +101,11 @@ def render_stop_keypress_replay():
 def render_set_env(color, intensity):
     _dg.dg_render_set_env(c_ubyte(color.r), c_ubyte(color.g), c_ubyte(color.b), c_double(intensity))
 
-def render_set_back(x, y, back):
-    _dg.dg_render_set_back(c_uint(x), c_uint(y), c_ubyte(back.r), c_ubyte(back.g), c_ubyte(back.b))
+def render_set_back(x, y, z, back):
+    _dg.dg_render_set_back(c_uint(x), c_uint(y), c_uint(z), c_ubyte(back.r), c_ubyte(back.g), c_ubyte(back.b))
 
-def render_set_is_lit(x, y, is_lit):
-    _dg.dg_render_set_is_lit(c_uint(x), c_uint(y), c_bool(is_lit))
+def render_set_is_lit(x, y, z, is_lit):
+    _dg.dg_render_set_is_lit(c_uint(x), c_uint(y), c_uint(z), c_bool(is_lit))
 
 def render_set_is_viewblock(x, y, t, bit):
     _dg.dg_render_set_is_viewblock(c_uint(x), c_uint(y), c_bool(t), c_uint(bit))
@@ -113,26 +113,18 @@ def render_set_is_viewblock(x, y, t, bit):
 def render_set_is_walkblock(x, y, t, bit):
     _dg.dg_render_set_is_walkblock(c_uint(x), c_uint(y), c_bool(t), c_uint(bit))
 
-def render_push_skin(x, y, fore, c, fore2, fore_i, is_terrain):
+def render_set_skin(x, y, z, fore, c, fore2, fore_i, is_terrain):
     if type(c) == type(1):
         c = chr(c)
-    _dg.dg_render_push_skin(c_uint(x), c_uint(y), c_ubyte(fore.r), c_ubyte(fore.g), c_ubyte(fore.b), 
+    _dg.dg_render_push_skin(c_uint(x), c_uint(y), c_uint(z),
+                            c_ubyte(fore.r), c_ubyte(fore.g), c_ubyte(fore.b), 
                             c_char(c), 
                             c_ubyte(fore2.r), c_ubyte(fore2.g), c_ubyte(fore2.b), 
                             c_int(fore_i), 
                             c_bool(is_terrain))
 
-def render_set_skin(x, y, fore, c, fore2, fore_i, is_terrain):
-    if type(c) == type(1):
-        c = chr(c)
-    _dg.dg_render_set_skin(c_uint(x), c_uint(y), c_ubyte(fore.r), c_ubyte(fore.g), c_ubyte(fore.b), 
-                           c_char(c), 
-                           c_ubyte(fore2.r), c_ubyte(fore2.g), c_ubyte(fore2.b), 
-                           c_int(fore_i), 
-                           c_bool(is_terrain))
-
-def render_pop_skin(x, y):
-    _dg.dg_render_pop_skin(c_uint(x), c_uint(y))
+def render_unset_skin(x, y, z):
+    _dg.dg_render_pop_skin(c_uint(x), c_uint(y), c_uint(z))
 
 
 _dg.dg_render_is_in_fov.restype = c_bool
@@ -143,9 +135,9 @@ def render_is_in_fov(x, y):
 _dg.dg_render_draw.restype = c_bool
 
 def render_draw(t, px, py, hlx, hly, rmin, rmax, lr, do_hud):
-    return _dg.dg_render_draw(c_uint(t), c_uint(px), c_uint(py),
-                              c_uint(hlx), c_uint(hly), c_uint(rmin), c_uint(rmax),
-                              c_uint(lr), c_bool(do_hud))
+    _dg.dg_render_draw(c_uint(t), c_uint(px), c_uint(py),
+                       c_uint(hlx), c_uint(hly), c_uint(rmin), c_uint(rmax),
+                       c_uint(lr), c_bool(do_hud))
 
 def render_push_hud_line(label, labelcolor, signed, npips, style):
     _dg.dg_render_push_hud_line(c_char_p(label), 
@@ -292,17 +284,23 @@ def grid_add_nogen(x, y):
 def grid_one_of_floor():
     x = c_uint()
     y = c_uint()
-    _dg.dg_grid_one_of_floor(byref(x), byref(y))
+    ret = _dg.dg_grid_one_of_floor(byref(x), byref(y))
+    if not ret:
+        return (None, None)
     return x.value, y.value
 
 def grid_one_of_water():
     x = c_uint()
     y = c_uint()
-    _dg.dg_grid_one_of_water(byref(x), byref(y))
+    ret = _dg.dg_grid_one_of_water(byref(x), byref(y))
+    if not ret:
+        return (None, None)
     return x.value, y.value
 
 def grid_one_of_walk():
     x = c_uint()
     y = c_uint()
-    _dg.dg_grid_one_of_walk(byref(x), byref(y))
+    ret = _dg.dg_grid_one_of_walk(byref(x), byref(y))
+    if not ret:
+        return (None, None)
     return x.value, y.value
