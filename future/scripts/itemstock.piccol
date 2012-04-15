@@ -14,7 +14,8 @@ itemstock_set [Sym Item]->Void :-
 item [Sym Sym]->Skin :-
   Skin{ char=\a color=\b visible=true walkable=true }.
 
-
+name Sym->ItemName       :- ItemName{one=\v many=\v}.
+name [Sym Sym]->ItemName :- ItemName{one=\a many=\b}.
 
 /*** ***/
 
@@ -150,325 +151,372 @@ check_craft [Sym Sym]->Sym :-
 init_itemstock Void->Void :-
 
 [ 'bomb' Item{
-  name='exploding spore' skin=(['!' 'yellow'] item->Skin) slot='d' 
+  name=(['an exploding spore' 'exploding spores'] name->ItemName)
+  skin=(['!' 'yellow'] item->Skin) slot='d' 
   rarity=0u throwable=true liveexplode=4u camorange=1001u 
   explodes=true throwrange=8u radius=3u 
   desc='Uh-oh.'
   }] itemstock_set
 
 [ 'shield' Item{
-  name='shield' skin=(['[' 'dark_green'] item->Skin) slot='d' 
+  name=(['a shield' 'shields'] name->ItemName)
+  skin=(['[' 'dark_green'] item->Skin) slot='d' 
   rarity=5u defence=1f camorange=1001u throwrange=8u 
   desc='A sturdy wooden shield.'
   }] itemstock_set
 
 [ 'craft_n4' Item{
-  name='lifeless Brahmic medallion' skin=(['$' 'yellow'] item->Skin) slot='' 
+  name=(['a lifeless Brahmic medallion' 'lifeless Brahmic medallions'] name->ItemName) 
+  skin=(['$' 'yellow'] item->Skin) slot='' 
   rarity=0u camorange=1001u throwrange=8u craft='n4' 
   applies=true 
   desc='This item won\'t work until you apply a magic spark.'
   }] itemstock_set
 
 [ 'wishing' Item{
-  name='wand of wishes' skin=(['/' 'gray'] item->Skin) slot='e' 
+  name=(['a wand of wishes' 'wands of wishes'] name->ItemName)
+  skin=(['/' 'gray'] item->Skin) slot='e' 
   rarity=2u wishing=true camorange=1001u throwrange=8u 
   applies=true 
   desc='A magic wand.'
   }] itemstock_set
 
 [ 'yellow' Item{
-  name='yellow potion' skin=([':' 'dark_yellow'] item->Skin) slot='' 
+  name=(['a yellow potion' 'yellow potions'] name->ItemName) 
+  skin=([':' 'dark_yellow'] item->Skin) slot='' 
   rarity=3u camorange=1001u resource='y' throwrange=8u 
   applies=true 
   desc='A flask containing a yellow liquid.'
   }] itemstock_set
 
 [ 'booze' Item{
-  name='potion$s of booze' skin=(['!' 'green'] item->Skin) slot='d' 
-  rarity=10u cursedchance=GaussChance{stddev=1f thold=-1f} camorange=1001u count=1u 
+  name=(['a potion of booze' 'potions of booze'] name->ItemName)
+  skin=(['!' 'green'] item->Skin) slot='d' 
+  rarity=10u cursedchance=GaussChance{stddev=1f thold=-1f} camorange=1001u 
   throwrange=8u booze=true stackrange=2u applies=true 
   desc='Sweet, sweet aqua vitae.\nIt helps keep one warm in these horrible caves.'
   }] itemstock_set
 
 [ 'craft_nu' Item{
-  name='nanite buckshot' skin=(['$' 'dark_yellow'] item->Skin) slot='' 
-  rarity=0u camorange=1001u count=0u throwrange=8u 
+  name=(['some nanite buckshot' 'piles of nanite buckshot'] name->ItemName)
+  skin=(['$' 'dark_yellow'] item->Skin) slot='' 
+  rarity=0u camorange=1001u throwrange=8u 
   craft='nu' applies=true 
   desc='A useless contraption. It needs to be combined with\nbootsoles to become something very interesting.'
   }] itemstock_set
 
 [ 'rootpwd' Item{
-  name='the root password' skin=(['!' 'white'] item->Skin) slot='' 
+  name=(['the root password' 'root passwords'] name->ItemName)
+  skin=(['!' 'white'] item->Skin) slot='' 
   rarity=0u camorange=1001u winning=Achievement{name='winroot' desc='Hacked for the root password'} explodes=true 
-  count=0u throwrange=8u applies=true radius=5u 
+  throwrange=8u applies=true radius=5u 
   desc='Must be something extremely important.'
   }] itemstock_set
 
 [ 'longsword' Item{
-  name='longsword' skin=(['(' 'silver'] item->Skin) slot='e' 
+  name=(['a longsword' 'longswords'] name->ItemName) 
+  skin=(['(' 'silver'] item->Skin) slot='e' 
   rarity=8u attack=6f camorange=1001u throwrange=8u 
   desc='Ye olde assault weapon.'
   }] itemstock_set
 
 [ 'litgbomb' Item{
-  name='activated gamma bomb' skin=(['!' 'yellow'] item->Skin) slot='d' 
+  name=(['an activated gamma bomb' 'activated gamma bombs'] name->ItemName) 
+  skin=(['!' 'yellow'] item->Skin) slot='d' 
   rarity=0u throwable=true radexplode=true liveexplode=5u 
   camorange=1001u throwrange=8u radius=12u 
   desc='Watch out!!'
   }] itemstock_set
 
 [ 'tinfoilcrystal' Item{
-  name='crystal of tin' skin=(['{' 'gray'] item->Skin) slot='d' 
+  name=(['a crystal of tin' 'crystals of tin'] name->ItemName)
+  skin=(['{' 'gray'] item->Skin) slot='d' 
   rarity=6u psyimmune=true selfdestruct=GaussNat{mean=3000u stddev=500u} camorange=1001u 
   throwrange=8u 
   desc='A magical crystal of tin.\nIt acts much the same as a tin foil hat.'
   }] itemstock_set
 
 [ 'craft_ft' Item{
-  name='titanium phial' skin=(['$' 'dark_yellow'] item->Skin) slot='' 
+  name=(['a titanium phial' 'titanium phials'] name->ItemName) 
+  skin=(['$' 'dark_yellow'] item->Skin) slot='' 
   rarity=0u camorange=1001u throwrange=8u craft='ft' 
   applies=true 
   desc='A useless contraption. It needs to be combined with\nanointing oil or gunpowder to become something very interesting.'
   }] itemstock_set
 
 [ 'huitzilopochtli' Item{
-  name='the serpent staff of Huitzilopochtli' skin=(['/' 'red'] item->Skin) slot='d' 
+  name=(['the serpent staff of Huitzilopochtli' 'serpent staves of Huitzilopochtli'] name->ItemName)
+  skin=(['/' 'red'] item->Skin) slot='d' 
   rarity=1u align='le' psyimmune=true attack=0.05 
-  camorange=1001u count=0u throwrange=8u 
+  camorange=1001u throwrange=8u 
   desc='A staff of fine jade, wielded by the high priests of\nHuitzilopochtli while commiting horrific rites of\nhuman sacrifice.\nThe suffering of thousands of dying human beings and\nthe iron will of Huitzilopochtli has imbued this staff\nwith protective powers, especially against psionic attacks.'
   }] itemstock_set
 
 [ 'craft_fg' Item{
-  name='powderphial' skin=(['$' 'dark_yellow'] item->Skin) slot='' 
+  name=(['a powderphial' 'powderphials'] name->ItemName) 
+  skin=(['$' 'dark_yellow'] item->Skin) slot='' 
   rarity=0u camorange=1001u throwrange=8u craft='fg' 
   applies=true 
   desc='A useless contraption. It needs to be combined with\na titanium rod to become something very interesting.'
   }] itemstock_set
 
 [ 'full_moon' Item{
-  name='prism of the Full Moon' skin=(['~' 'blue'] item->Skin) slot='' 
+  name=(['a prism of the Full Moon' 'prisms of the Full Moon'] name->ItemName)
+  skin=(['~' 'blue'] item->Skin) slot='' 
   rarity=2u camorange=1001u throwrange=8u applies=true 
   switch_moon='full' 
   desc='An ancient and very powerful artifact.\nRumor has it that it affects the very fabric of space\nand time.'
   }] itemstock_set
 
 [ 'excalibur' Item{
-  name='Excalibur' skin=(['(' 'silver'] item->Skin) slot='e' 
-  rarity=0u attack=7.5 camorange=1001u count=0u 
+  name=('Excalibur' name->ItemName)
+  skin=(['(' 'silver'] item->Skin) slot='e' 
+  rarity=0u attack=7.5 camorange=1001u 
   throwrange=8u 
   desc='A larger-than-life sword.'
   }] itemstock_set
 
 [ 'craft_df' Item{
-  name='dragon\'s phial' skin=(['$' 'dark_yellow'] item->Skin) slot='' 
+  name=(['a dragon\'s phial' 'dragon phials'] name->ItemName) 
+  skin=(['$' 'dark_yellow'] item->Skin) slot='' 
   rarity=0u camorange=1001u throwrange=8u craft='df' 
   applies=true 
   desc='A useless contraption. It needs to be combined with\nanointing oil to become something very interesting.'
   }] itemstock_set
 
 [ 'eyeofkali' Item{
-  name='the Eye of Kali' skin=(['*' 'red'] item->Skin) slot='' 
-  rarity=0u special='kali' camorange=1001u count=0u 
+  name=(['the Eye of Kali' 'Eyes of Kali'] name->ItemName) 
+  skin=(['*' 'red'] item->Skin) slot='' 
+  rarity=0u special='kali' camorange=1001u 
   throwrange=8u 
   desc='A gigantic ruby.\nIt is said that this magical jewel is \nbathed in the blood of virgins.'
   }] itemstock_set
 
 [ 'metalboots' Item{
-  name='sabatons' skin=(['[' 'brass'] item->Skin) slot='g' 
-  rarity=5u defence=0.5 camorange=1001u count=0u 
+  name=(['sabatons' 'pairs of sabatons'] name->ItemName)
+  skin=(['[' 'brass'] item->Skin) slot='g' 
+  rarity=5u defence=0.5 camorange=1001u 
   throwrange=8u 
   desc='Heavy boots made out of a single piece of sheet metal.'
   }] itemstock_set
 
 [ 'craft_n3' Item{
-  name='lifeless flaming sword' skin=(['$' 'yellow'] item->Skin) slot='' 
+  name=(['a lifeless flaming sword' 'lifeless flaming swords'] name->ItemName)
+  skin=(['$' 'yellow'] item->Skin) slot='' 
   rarity=0u camorange=1001u throwrange=8u craft='n3' 
   applies=true 
   desc='This item won\'t work until you apply a magic spark.'
   }] itemstock_set
 
 [ 'craft_n2' Item{
-  name='broken camouflage nanoboots' skin=(['$' 'yellow'] item->Skin) slot='' 
-  rarity=0u camorange=1001u count=0u throwrange=8u 
+  name=(['broken camouflage nanoboots' 'pairs of broken camouflage nanoboots'] name->ItemName)
+  skin=(['$' 'yellow'] item->Skin) slot='' 
+  rarity=0u camorange=1001u throwrange=8u 
   craft='n2' applies=true 
   desc='This item won\'t work until you apply a magic spark.'
   }] itemstock_set
 
 [ 'craft_n1' Item{
-  name='broken everlasting shotgun' skin=(['$' 'yellow'] item->Skin) slot='' 
+  name=(['a broken everlasting shotgun' 'broken everlasting shotguns'] name->ItemName) 
+  skin=(['$' 'yellow'] item->Skin) slot='' 
   rarity=0u camorange=1001u throwrange=8u craft='n1' 
   applies=true 
   desc='This item won\'t work until you apply a magic spark.'
   }] itemstock_set
 
 [ 'craft_n7' Item{
-  name='broken everlasting portable hole' skin=(['$' 'yellow'] item->Skin) slot='' 
+  name=(['a broken everlasting portable hole' 'broken everlasting portable holes'] name->ItemName) 
+  skin=(['$' 'yellow'] item->Skin) slot='' 
   rarity=0u camorange=1001u throwrange=8u craft='n7' 
   applies=true 
   desc='This item won\'t work until you apply a magic spark.'
   }] itemstock_set
 
 [ 'craft_n6' Item{
-  name='lifeless medi-nanites' skin=(['$' 'yellow'] item->Skin) slot='' 
-  rarity=0u camorange=1001u count=0u throwrange=8u 
+  name=(['some lifeless medi-nanites' 'packs of lifeless medi-nanites'] name->ItemName) 
+  skin=(['$' 'yellow'] item->Skin) slot='' 
+  rarity=0u camorange=1001u throwrange=8u 
   craft='n6' applies=true 
   desc='This item won\'t work until you apply a magic spark.'
   }] itemstock_set
 
 [ 'craft_n5' Item{
-  name='broken gluebot machine' skin=(['$' 'yellow'] item->Skin) slot='' 
+  name=(['a broken gluebot machine' 'broken gluebot machines'] name->ItemName) 
+  skin=(['$' 'yellow'] item->Skin) slot='' 
   rarity=0u camorange=1001u throwrange=8u craft='n5' 
   applies=true 
   desc='This item won\'t work until you apply a magic spark.'
   }] itemstock_set
 
 [ 'portablehole' Item{
-  name='portable hole$s' skin=(['`' 'sepia'] item->Skin) slot='d' 
+  name=(['a portable hole' 'portable holes'] name->ItemName) 
+  skin=(['`' 'sepia'] item->Skin) slot='d' 
   rarity=6u jumprange=3u camorange=1001u count=2u 
   throwrange=8u stackrange=5u applies=true 
   desc='A portable hole. Used as an escape device.'
   }] itemstock_set
 
 [ 'craft_n8' Item{
-  name='broken everlasting rocket launcher' skin=(['$' 'yellow'] item->Skin) slot='' 
+  name=(['a broken everlasting rocket launcher' 'broken everlasting rocket launchers'] name->ItemName) 
+  skin=(['$' 'yellow'] item->Skin) slot='' 
   rarity=0u camorange=1001u throwrange=8u craft='n8' 
   applies=true 
   desc='This item won\'t work until you apply a magic spark.'
   }] itemstock_set
 
 [ 'gbomb' Item{
-  name='gamma bomb$s' skin=(['!' 'azure'] item->Skin) slot='' 
+  name=(['a gamma bomb' 'gamma bombs'] name->ItemName) 
+  skin=(['!' 'azure'] item->Skin) slot='' 
   rarity=5u converts='litgbomb' camorange=1001u count=5u 
   throwrange=8u stackrange=5u applies=true 
   desc='An object that looks something like a grenade, \nbut with a \'radiation sickness\' sign painted on it.'
   }] itemstock_set
 
 [ 'digwandv' Item{
-  name='wand of digging' skin=(['/' 'azure'] item->Skin) slot='e' 
+  name=(['a wand of digging' 'wands of digging'] name->ItemName)
+  skin=(['/' 'azure'] item->Skin) slot='e' 
   rarity=4u digray_y=true camorange=1001u throwrange=8u 
   applies=true 
   desc='A magic wand.'
   }] itemstock_set
 
 [ 'necklamp' Item{
-  name='miner\'s lamp' skin=(['~' 'yellow'] item->Skin) slot='b' 
+  name=(['a miner\'s lamp' 'miner\'s lamps'] name->ItemName) 
+  skin=(['~' 'yellow'] item->Skin) slot='b' 
   rarity=8u lightradius=8u camorange=1001u throwrange=8u 
   desc='A lamp that provides light while you are cave-crawling.'
   }] itemstock_set
 
 [ 'craft_gt' Item{
-  name='gunpowder titanium' skin=(['$' 'dark_yellow'] item->Skin) slot='' 
-  rarity=0u camorange=1001u count=0u throwrange=8u 
+  name=(['some gunpowder titanium' 'piles of gunpowder titanium'] name->ItemName)
+  skin=(['$' 'dark_yellow'] item->Skin) slot='' 
+  rarity=0u camorange=1001u throwrange=8u 
   craft='gt' applies=true 
   desc='A useless contraption. It needs to be combined with\nbuckshot or a flaming phial to become something very interesting.'
   }] itemstock_set
 
 [ 'craft_gu' Item{
-  name='gunpowder buckshot' skin=(['$' 'dark_yellow'] item->Skin) slot='' 
-  rarity=0u camorange=1001u count=0u throwrange=8u 
+  name=(['some gunpowder buckshot' 'piles of gunpowder buckshot'] name->ItemName) 
+  skin=(['$' 'dark_yellow'] item->Skin) slot='' 
+  rarity=0u camorange=1001u throwrange=8u 
   craft='gu' applies=true 
   desc='A useless contraption. It needs to be combined with\na titanium rod to become something very interesting.'
   }] itemstock_set
 
 [ 'magicmapper' Item{
-  name='magic mapper' skin=(['"' 'light_yellow'] item->Skin) slot='e' 
+  name=(['a magic mapper' 'magic mappers'] name->ItemName) 
+  skin=(['"' 'light_yellow'] item->Skin) slot='e' 
   rarity=6u camorange=1001u mapper=4u throwrange=8u 
   applies=true 
   desc='A strange device that looks something like a large fishing sonar.'
   }] itemstock_set
 
 [ 'red' Item{
-  name='red potion' skin=([':' 'dark_red'] item->Skin) slot='' 
+  name=(['a red potion' 'red potions'] name->ItemName) 
+  skin=([':' 'dark_red'] item->Skin) slot='' 
   rarity=3u camorange=1001u resource='r' throwrange=8u 
   applies=true 
   desc='A flask containing a red liquid.'
   }] itemstock_set
 
 [ 'doppel' Item{
-  name='doppelganger' skin=(['{' 'dark_blue'] item->Skin) slot='' 
+  name=(['a doppelganger' 'doppelgangers'] name->ItemName) 
+  skin=(['{' 'dark_blue'] item->Skin) slot='' 
   rarity=6u doppel=16u camorange=1001u throwrange=8u 
   applies=true 
   desc='A holographic depiction of a player character.\nUseful for tricking monsters.'
   }] itemstock_set
 
 [ 'sonar' Item{
-  name='rock sonar' skin=([')' 'darker_cyan'] item->Skin) slot='d' 
+  name=(['a rock sonar' 'rock sonars'] name->ItemName) 
+  skin=([')' 'darker_cyan'] item->Skin) slot='d' 
   rarity=7u sounding=true camorange=1001u throwrange=8u 
   applies=true 
   desc='A device that uses sonar for discovering rock thickness.'
   }] itemstock_set
 
 [ 'killerwand' Item{
-  name='killer wand' skin=(['/' 'red'] item->Skin) slot='e' 
+  name=(['a killer wand' 'killer wands'] name->ItemName) 
+  skin=(['/' 'red'] item->Skin) slot='e' 
   rarity=5u ammochance=Range{lo=1u hi=1u} camorange=1001u explodes=true 
   throwrange=8u rangeexplode=true range=Range{lo=1u hi=3u} applies=true 
   desc='A metallic wand with a skull-and-crossbones embossed on it.\nThere is an annoying blinking LED light mounted in the handle.'
   }] itemstock_set
 
 [ 'portabletunnel' Item{
-  name='portable tunnel$s' skin=(['`' 'dark_sepia'] item->Skin) slot='d' 
-  rarity=4u jumprange=12u camorange=1001u count=1u 
+  name=(['a portable tunnel' 'portable tunnels'] name->ItemName)
+  skin=(['`' 'dark_sepia'] item->Skin) slot='d' 
+  rarity=4u jumprange=12u camorange=1001u 
   throwrange=8u stackrange=2u applies=true 
   desc='Like a portable hole, but much larger.'
   }] itemstock_set
 
 [ 'cclarva' Item{
-  name='carrion crawler larva' skin=([',' 'white'] item->Skin) slot='' 
+  name=(['a carrion crawler larva' 'carrion crawler larvae'] name->ItemName) 
+  skin=([',' 'white'] item->Skin) slot='' 
   rarity=0u throwable=true summon=SummonN{mon='carrion crawler' count=2u} liveexplode=4u 
   camorange=1001u throwrange=8u 
   desc='A tiny larva of the carrion crawler species.'
   }] itemstock_set
 
 [ 'helmetlamp' Item{
-  name='flashlight helmet' skin=(['[' 'orange'] item->Skin) slot='a' 
+  name=(['a flashlight helmet' 'flashlight helmets'] name->ItemName) 
+  skin=(['[' 'orange'] item->Skin) slot='a' 
   rarity=8u lightradius=4u defence=0.15 camorange=1001u 
   throwrange=8u 
   desc='A plastic helmet with a lamp mounted on it.'
   }] itemstock_set
 
 [ 'ebolastrain' Item{
-  name='Ebola strain' skin=(['{' 'red'] item->Skin) slot='e' 
+  name=(['the Ebola strain' 'Ebola strains'] name->ItemName) 
+  skin=(['{' 'red'] item->Skin) slot='e' 
   rarity=8u ebola=true camorange=1001u throwrange=8u 
   applies=true 
   desc='A container with biohazard signs pasted all over it.\nIt contains genetically-modified strains of the\nEbola virus. Releasing the virus into the environment\ncould have potentially disastrous consequences!'
   }] itemstock_set
 
 [ 'ringmail' Item{
-  name='ring mail' skin=(['[' 'gold'] item->Skin) slot='c' 
+  name=(['ring mail' 'ring mails'] name->ItemName) 
+  skin=(['[' 'gold'] item->Skin) slot='c' 
   rarity=5u defence=2f camorange=1001u throwrange=8u 
   desc='Ye olde body protection armor.'
   }] itemstock_set
 
 [ 'litminibomb' Item{
-  name='armed minibomb' skin=(['!' 'yellow'] item->Skin) slot='d' 
+  name=(['an armed minibomb' 'armed minibombs'] name->ItemName) 
+  skin=(['!' 'yellow'] item->Skin) slot='d' 
   rarity=0u throwable=true liveexplode=2u camorange=1001u 
   explodes=true throwrange=8u radius=1u 
   desc='Watch out!!'
   }] itemstock_set
 
 [ 'halolamp' Item{
-  name='halogen lamp' skin=(['~' 'yellow'] item->Skin) slot='b' 
+  name=(['a halogen lamp' 'halogen lamps'] name->ItemName) 
+  skin=(['~' 'yellow'] item->Skin) slot='b' 
   rarity=3u lightradius=12u selfdestruct=GaussNat{mean=1000u stddev=100u} camorange=1001u 
   throwrange=8u 
   desc='A lamp that is somewhat brighter than a generic lamp.'
   }] itemstock_set
 
 [ 'deathray' Item{
-  name='death ray gun' skin=(['/' 'sky'] item->Skin) slot='e' 
+  name=(['a death ray gun' 'death ray guns'] name->ItemName) 
+  skin=(['/' 'sky'] item->Skin) slot='e' 
   rarity=0u straightline=true ammochance=Range{lo=50u hi=50u} camorange=1001u 
   throwrange=8u rangeexplode=true range=Range{lo=1u hi=6u} applies=true 
   desc='A futuristic raygun from a faraway galaxy.'
   }] itemstock_set
 
 [ 'springboots' Item{
-  name='springy boots' skin=(['[' 'pink'] item->Skin) slot='g' 
+  name=(['springy boots' 'pairs of springy boots'] name->ItemName)
+  skin=(['[' 'pink'] item->Skin) slot='g' 
   rarity=3u springy=true defence=0.01 camorange=1001u 
-  count=0u throwrange=8u 
+  throwrange=8u 
   desc='Strange boots with giant springs attached to the soles.'
   }] itemstock_set
 
 [ 'minirockets' Item{
-  name='minirocket launcher' skin=(['(' 'light_red'] item->Skin) slot='e' 
+  name=(['a minirocket launcher' 'minirocket launchers'] name->ItemName) 
+  skin=(['(' 'light_red'] item->Skin) slot='e' 
   rarity=8u ammochance=Range{lo=3u hi=3u} camorange=1001u explodes=true 
   throwrange=8u rangeexplode=true range=Range{lo=4u hi=15u} applies=true 
   radius=2u 
@@ -476,286 +524,327 @@ init_itemstock Void->Void :-
   }] itemstock_set
 
 [ 'smokemachine' Item{
-  name='smoke machine' skin=(['{' 'silver'] item->Skin) slot='' 
+  name=(['a smoke machine' 'smoke machines'] name->ItemName) 
+  skin=(['{' 'silver'] item->Skin) slot='' 
   rarity=3u camorange=1001u smoke=true throwrange=8u 
   applies=true 
   desc='A machine that produces very confusing\nshape-shifting clouds of smoke.'
   }] itemstock_set
 
 [ 'psyhelmet' Item{
-  name='crystal helmet' skin=(['[' 'white'] item->Skin) slot='a' 
+  name=(['a crystal helmet' 'crystal helmets'] name->ItemName) 
+  skin=(['[' 'white'] item->Skin) slot='a' 
   rarity=6u telepathyrange=6u camorange=1001u throwrange=8u 
   desc='An ornate helmet made of crystal.\nIt is a powerful artifact of psyonic magic.'
   }] itemstock_set
 
 [ 'blue' Item{
-  name='blue potion' skin=([':' 'dark_blue'] item->Skin) slot='' 
+  name=(['a blue potion' 'blue potions'] name->ItemName) 
+  skin=([':' 'dark_blue'] item->Skin) slot='' 
   rarity=3u camorange=1001u resource='b' throwrange=8u 
   applies=true 
   desc='A flask containing a blue liquid.'
   }] itemstock_set
 
 [ 'radblob' Item{
-  name='radiation blob' skin=(['!' 'yellow'] item->Skin) slot='d' 
+  name=(['a radiation blob' 'radiation blobs'] name->ItemName) 
+  skin=(['!' 'yellow'] item->Skin) slot='d' 
   rarity=0u throwable=true radexplode=true liveexplode=4u 
   camorange=1001u throwrange=8u radius=8u 
   desc='Uh-oh.'
   }] itemstock_set
 
 [ 'craft_t' Item{
-  name='titanium rod' skin=(['$' 'green'] item->Skin) slot='' 
+  name=(['a titanium rod' 'titanium rods'] name->ItemName) 
+  skin=(['$' 'green'] item->Skin) slot='' 
   rarity=4u camorange=1001u throwrange=8u craft='t' 
   applies=true 
   desc='This special item needs to be combined with\nanointing oil, buckshot, a flaming phial or gunpowder\nspecial item to make something very interesting.'
   }] itemstock_set
 
 [ 'craft_u' Item{
-  name='buckshot' skin=(['$' 'green'] item->Skin) slot='' 
-  rarity=4u camorange=1001u count=0u throwrange=8u 
+  name=(['some buckshot' 'piles of buckshot'] name->ItemName) 
+  skin=(['$' 'green'] item->Skin) slot='' 
+  rarity=4u camorange=1001u throwrange=8u 
   craft='u' applies=true 
   desc='This special item needs to be combined with\nbootsoles, dragon\'s blood, gunpowder, nanite compound or a titanium rod\nto make something very interesting.'
   }] itemstock_set
 
 [ 'purple' Item{
-  name='purple potion' skin=([':' 'dark_purple'] item->Skin) slot='' 
+  name=(['a purple potion' 'purple potions'] name->ItemName) 
+  skin=([':' 'dark_purple'] item->Skin) slot='' 
   rarity=3u camorange=1001u resource='p' throwrange=8u 
   applies=true 
   desc='A flask containing a purple liquid.'
   }] itemstock_set
 
 [ 'corpse' Item{
-  name='corpse' skin=([(21 char->Sym) 'yellow'] item->Skin) slot='' 
+  name=(['a corpse' 'corpses'] name->ItemName)
+  skin=([(21 char->Sym) 'yellow'] item->Skin) slot='' 
   rarity=0u camorange=1001u throwrange=8u 
   desc=''
   }] itemstock_set
 
 [ 'boulder1' Item{
-  name='scroll of boulder fort' skin=(['{' 'desaturated_cyan'] item->Skin) slot='d' 
+  name=(['a scroll of boulder fort' 'scrolls of boulder fort'] name->ItemName) 
+  skin=(['{' 'desaturated_cyan'] item->Skin) slot='d' 
   rarity=3u summon=SummonN{mon='ba4' count=8u} camorange=1001u throwrange=8u 
   applies=true 
   desc='It\'s labeled HACKEM MUCHE. Whatever that means...'
   }] itemstock_set
 
 [ 'boulder3' Item{
-  name='scroll of boulder fort' skin=(['{' 'desaturated_cyan'] item->Skin) slot='d' 
+  name=(['a scroll of boulder fort' 'scrolls of boulder fort'] name->ItemName) 
+  skin=(['{' 'desaturated_cyan'] item->Skin) slot='d' 
   rarity=3u summon=SummonN{mon='bb8' count=8u} camorange=1001u throwrange=8u 
   applies=true 
   desc='It\'s labeled HACKEM MUCHE. Whatever that means...'
   }] itemstock_set
 
 [ 'boulder2' Item{
-  name='scroll of boulder fort' skin=(['{' 'desaturated_cyan'] item->Skin) slot='d' 
+  name=(['a scroll of boulder fort' 'scrolls of boulder fort'] name->ItemName) 
+  skin=(['{' 'desaturated_cyan'] item->Skin) slot='d' 
   rarity=3u summon=SummonN{mon='bc3' count=8u} camorange=1001u throwrange=8u 
   applies=true 
   desc='It\'s labeled HACKEM MUCHE. Whatever that means...'
   }] itemstock_set
 
 [ 'craft_a' Item{
-  name='anointing oil' skin=(['$' 'green'] item->Skin) slot='' 
-  rarity=4u camorange=1001u count=0u throwrange=8u 
+  name=(['some anointing oil' 'packets of anointing oil'] name->ItemName) 
+  skin=(['$' 'green'] item->Skin) slot='' 
+  rarity=4u camorange=1001u throwrange=8u 
   craft='a' applies=true 
   desc='This special item needs to be combined with\ndragon\'s blood, a flaming phial, nanite compound or a titanium rod\nto make something very interesting.'
   }] itemstock_set
 
 [ 'craft_b' Item{
-  name='bootsoles' skin=(['$' 'green'] item->Skin) slot='' 
-  rarity=4u camorange=1001u count=0u throwrange=8u 
+  name=(['bootsoles' 'pairs of bootsoles'] name->ItemName)
+  skin=(['$' 'green'] item->Skin) slot='' 
+  rarity=4u camorange=1001u throwrange=8u 
   craft='b' applies=true 
   desc='This special item needs to be combined with\nbuckshot, dragon\'s blood, gunpowder or nanite compound\nto make something very interesting.'
   }] itemstock_set
 
 [ 'pelorusim' Item{
-  name='pelorus' skin=(['"' 'gray'] item->Skin) slot='b' 
+  name=(['a pelorus' 'pelori'] name->ItemName) 
+  skin=(['"' 'gray'] item->Skin) slot='b' 
   rarity=2u detect_monsters=true detect_items=true detector=true 
   camorange=1001u throwrange=8u applies=true 
   desc='A device that looks somewhat like an old cellphone.\nIt comes with a necklace strap, a display and a large antenna.'
   }] itemstock_set
 
 [ 'craft_d' Item{
-  name='dragon\'s blood' skin=(['$' 'green'] item->Skin) slot='' 
-  rarity=4u camorange=1001u count=0u throwrange=8u 
+  name=(['dragon\'s blood' 'bloods of dragon'] name->ItemName) 
+  skin=(['$' 'green'] item->Skin) slot='' 
+  rarity=4u camorange=1001u throwrange=8u 
   craft='d' applies=true 
   desc='This special item needs to be combined with\nanointing oil, bootsoles, buckshot, a flaming phial or nanite compound\nto make something very interesting.'
   }] itemstock_set
 
 [ 'craft_f' Item{
-  name='flaming phial' skin=(['$' 'green'] item->Skin) slot='' 
+  name=(['a flaming phial' 'flaming phials'] name->ItemName) 
+  skin=(['$' 'green'] item->Skin) slot='' 
   rarity=4u camorange=1001u throwrange=8u craft='f' 
   applies=true 
   desc='This special item needs to be combined with\nanointing oil, dragon\'s blood, gunpowder or a titanium rod\nto make something very interesting.'
   }] itemstock_set
 
 [ 'craft_g' Item{
-  name='gunpowder' skin=(['$' 'green'] item->Skin) slot='' 
-  rarity=4u camorange=1001u count=0u throwrange=8u 
-  craft='g' applies=true 
+  name=(['gunpowder' 'gunpowder flasks'] name->ItemName) 
+  skin=(['$' 'green'] item->Skin) slot='' 
+  rarity=4u camorange=1001u throwrange=8u 
+  craft='g' applies=true explodes=true radius=1u
   desc='This special item needs to be combined with\nbootsoles, buckshot, a flaming phial, nanite compound or a titanium rod\nto make something very interesting.'
   }] itemstock_set
 
 [ 'tinstaff' Item{
-  name='eldritch staff' skin=(['/' 'gray'] item->Skin) slot='e' 
+  name=(['an eldritch staff' 'eldritch staves'] name->ItemName) 
+  skin=(['/' 'gray'] item->Skin) slot='e' 
   rarity=5u psyimmune=true attack=0.01 camorange=1001u 
   throwrange=8u 
   desc='A staff covered with ornate carvings of lovecraftian horrors.\nIt seems to be a powerful psyonic artefact, albeit a useless weapon.'
   }] itemstock_set
 
 [ 'craft_n' Item{
-  name='nanite compound' skin=(['$' 'green'] item->Skin) slot='' 
+  name=(['nanite compound' 'nanite compound packets'] name->ItemName) 
+  skin=(['$' 'green'] item->Skin) slot='' 
   rarity=4u camorange=1001u throwrange=8u craft='n' 
   applies=true 
   desc='This special item needs to be combined with\nanointing oil, bootsoles, buckshot, dragon\'s blood or gunpowder\nto make something very interesting.'
   }] itemstock_set
 
 [ 'craft_dn' Item{
-  name='dragon nanites' skin=(['$' 'dark_yellow'] item->Skin) slot='' 
-  rarity=0u camorange=1001u count=0u throwrange=8u 
+  name=(['dragon nanites' 'dragon nanite packets'] name->ItemName) 
+  skin=(['$' 'dark_yellow'] item->Skin) slot='' 
+  rarity=0u camorange=1001u throwrange=8u 
   craft='dn' applies=true 
   desc='A useless contraption. It needs to be combined with\nanointing oil to become something very interesting.'
   }] itemstock_set
 
 [ 'pachamama' Item{
-  name='the stone hammer of Pachamama' skin=(['(' 'gray'] item->Skin) slot='e' 
+  name=(['the stone hammer of Pachamama' 'stone hammers of Pachamama'] name->ItemName) 
+  skin=(['(' 'gray'] item->Skin) slot='e' 
   rarity=1u align='ng' attack=2.5 digging=true 
-  digbonus=0.2 camorange=1001u count=0u throwrange=8u 
+  digbonus=0.2 camorange=1001u throwrange=8u 
   applies=true 
   desc='A sacred stone-age tool, once wielded by the priestesses\nof Pachamama, the Earth Mother goddess of the ancient\ninhabitants of these caverns.\nThis hammer is made of precious obsidian and can\nbe used to break apart even the toughest rocks.'
   }] itemstock_set
 
 [ 'homing' Item{
-  name='dowsing rod' skin=([')' 'cyan'] item->Skin) slot='d' 
+  name=(['a dowsing rod' 'dowsing rods'] name->ItemName) 
+  skin=([')' 'cyan'] item->Skin) slot='d' 
   rarity=8u camorange=1001u throwrange=8u homing=true 
   applies=true 
   desc='A low-tech device for finding holes.'
   }] itemstock_set
 
 [ 'repellerarmor' Item{
-  name='repeller armor' skin=(['[' 'white'] item->Skin) slot='c' 
+  name=(['repeller armor' 'repeller armors'] name->ItemName)
+  skin=(['[' 'white'] item->Skin) slot='c' 
   rarity=3u defence=0.01 selfdestruct=GaussNat{mean=1000u stddev=100u} camorange=1001u 
   throwrange=8u repelrange=3u 
   desc='A vest that provides a portable force-field shield.'
   }] itemstock_set
 
 [ 'pickaxe' Item{
-  name='miner\'s pickaxe' skin=(['(' 'gray'] item->Skin) slot='e' 
+  name=(['a miner\'s pickaxe' 'miner\'s pickaxes'] name->ItemName)
+  skin=(['(' 'gray'] item->Skin) slot='e' 
   rarity=8u attack=2f digging=true digbonus=0.1 
   camorange=1001u throwrange=8u applies=true 
   desc='Ostensibly to be used as an aid in traversing the caves,\nthis sporting item is a good makeshift weapon.'
   }] itemstock_set
 
 [ 'craft_tu' Item{
-  name='titanium shot' skin=(['$' 'dark_yellow'] item->Skin) slot='' 
-  rarity=0u camorange=1001u count=0u throwrange=8u 
+  name=(['some titanium shot' 'titanium shot cartridges'] name->ItemName)
+  skin=(['$' 'dark_yellow'] item->Skin) slot='' 
+  rarity=0u camorange=1001u throwrange=8u 
   craft='tu' applies=true 
   desc='A useless contraption. It needs to be combined with\ngunpowder to become something very interesting.'
   }] itemstock_set
 
 [ 'new_moon' Item{
-  name='prism of the New Moon' skin=(['~' 'dark_crimson'] item->Skin) slot='' 
+  name=(['a prism of the New Moon' 'prisms of the New Moon'] name->ItemName) 
+  skin=(['~' 'dark_crimson'] item->Skin) slot='' 
   rarity=2u camorange=1001u throwrange=8u applies=true 
   switch_moon='new' 
   desc='An ancient and very powerful artifact.\nRumor has it that it affects the very fabric of space\nand time.'
   }] itemstock_set
 
 [ 'stickyglue' Item{
-  name='sticky glue$s' skin=(['{' 'light_yellow'] item->Skin) slot='d' 
-  rarity=8u camorange=1001u count=1u throwrange=8u 
+  name=(['some sticky glue' 'sticky glue packets'] name->ItemName) 
+  skin=(['{' 'light_yellow'] item->Skin) slot='d' 
+  rarity=8u camorange=1001u throwrange=8u 
   stackrange=4u applies=true makestrap=true 
   desc='A tube of very sticky glue. It can be used to make traps.'
   }] itemstock_set
 
 [ 'alzabobrain' Item{
-  name='alzabo brain matter' skin=([',' 'darkest_red'] item->Skin) slot='' 
+  name=(['some alzabo brain matter' 'alzabo brain matter nuggets'] name->ItemName) 
+  skin=([',' 'darkest_red'] item->Skin) slot='' 
   rarity=0u throwable=true summon=SummonN{mon='alzabo' count=1u} liveexplode=4u 
-  camorange=1001u count=0u throwrange=8u 
+  camorange=1001u throwrange=8u 
   desc='Bits and pieces of the alzabo\'s brain.'
   }] itemstock_set
 
 [ 'craft_gn' Item{
-  name='nanite powder' skin=(['$' 'dark_yellow'] item->Skin) slot='' 
-  rarity=0u camorange=1001u count=0u throwrange=8u 
+  name=(['nanite powder' 'nanite powder packets'] name->ItemName) 
+  skin=(['$' 'dark_yellow'] item->Skin) slot='' 
+  rarity=0u camorange=1001u throwrange=8u 
   craft='gn' applies=true 
   desc='A useless contraption. It needs to be combined with\nbootsoles to become something very interesting.'
   }] itemstock_set
 
 [ 'avern' Item{
-  name='avern' skin=(['(' 'dark_green'] item->Skin) slot='e' 
+  name=(['an avern' 'averns'] name->ItemName) 
+  skin=(['(' 'dark_green'] item->Skin) slot='e' 
   rarity=0u attack=6f selfdestruct=GaussNat{mean=500u stddev=100u} camorange=1001u 
   throwrange=8u 
   desc='A makeshift weapon made from the poisonous avern plant.'
   }] itemstock_set
 
 [ 'magiclamp' Item{
-  name='magic lamp' skin=(['(' 'gold'] item->Skin) slot='d' 
+  name=(['a magic lamp' 'magic lamps'] name->ItemName) 
+  skin=(['(' 'gold'] item->Skin) slot='d' 
   rarity=4u jinni=true camorange=1001u throwrange=8u 
   applies=true 
   desc='Rub me for a surprise!'
   }] itemstock_set
 
 [ 'legarmor' Item{
-  name='cuisses and schynbalds' skin=(['[' 'copper'] item->Skin) slot='f' 
-  rarity=5u defence=0.5 camorange=1001u count=0u 
+  name=(['cuisses and schynbalds' 'pairs of cuisses and schynbalds'] name->ItemName)
+  skin=(['[' 'copper'] item->Skin) slot='f' 
+  rarity=5u defence=0.5 camorange=1001u 
   throwrange=8u 
   desc='Protective iron plates that go on your thighs and shins.'
   }] itemstock_set
 
 [ 'triffidlarva' Item{
-  name='triffid seed' skin=([',' 'peach'] item->Skin) slot='' 
+  name=(['a triffid seed' 'triffid seeds'] name->ItemName) 
+  skin=([',' 'peach'] item->Skin) slot='' 
   rarity=0u throwable=true summon=SummonN{mon='triffid' count=1u} liveexplode=4u 
   camorange=1001u throwrange=8u 
   desc='A tiny larva of the carrion crawler species.'
   }] itemstock_set
 
 [ 'gasspore' Item{
-  name='swamp gas spore' skin=([',' 'dark_blue'] item->Skin) slot='' 
+  name=(['a swamp gas spore' 'swamp gas spores'] name->ItemName) 
+  skin=([',' 'dark_blue'] item->Skin) slot='' 
   rarity=5u throwable=true liveexplode=3u swampgas=true 
   camorange=1001u throwrange=8u 
   desc='A concentrated globe of pent-up swamp gas.'
   }] itemstock_set
 
 [ 'deusex' Item{
-  name='Deus ex machina' skin=([(236 char->Sym) 'yellow'] item->Skin) slot='' 
+  name=('Deus ex machina' name->ItemName)
+  skin=([(236 char->Sym) 'yellow'] item->Skin) slot='' 
   rarity=0u wishing=true hide_count=true camorange=1001u 
   count=7u throwrange=8u applies=true 
   desc='Translated from the Latin, literally:\n"the god from the machine".'
   }] itemstock_set
 
 [ 'litdynamite' Item{
-  name='burning stick of dynamite' skin=(['!' 'yellow'] item->Skin) slot='d' 
+  name=(['a burning stick of dynamite' 'burning sticks of dynamite'] name->ItemName) 
+  skin=(['!' 'yellow'] item->Skin) slot='d' 
   rarity=0u throwable=true liveexplode=7u camorange=1001u 
   explodes=true throwrange=8u radius=4u 
   desc='Watch out!!'
   }] itemstock_set
 
 [ 'herbalmed' Item{
-  name='herbal palliative$s' skin=(['%' 'light_green'] item->Skin) slot='d' 
+  name=(['a herbal palliative' 'herbal palliatives'] name->ItemName) 
+  skin=(['%' 'light_green'] item->Skin) slot='d' 
   rarity=13u cursedchance=GaussChance{stddev=1f thold=-0.8} healingsleep=GaussNat{mean=150u stddev=25u} camorange=1001u 
-  count=1u throwrange=8u stackrange=5u applies=true 
+  throwrange=8u stackrange=5u applies=true 
   desc='A large, green grassy-smelling pill.'
   }] itemstock_set
 
 [ 'digwandh' Item{
-  name='wand of digging' skin=(['/' 'azure'] item->Skin) slot='e' 
+  name=(['a wand of digging' 'wands of digging'] name->ItemName) 
+  skin=(['/' 'azure'] item->Skin) slot='e' 
   rarity=4u digray_x=true camorange=1001u throwrange=8u 
   applies=true 
   desc='A magic wand.'
   }] itemstock_set
 
 [ 'mushrooms' Item{
-  name='mushroom$s' skin=(['%' 'light_orange'] item->Skin) slot='d' 
+  name=(['a mushroom' 'mushrooms'] name->ItemName) 
+  skin=(['%' 'light_orange'] item->Skin) slot='d' 
   rarity=20u cursedchance=GaussChance{stddev=1f thold=-0.8} food=Gauss{mean=3f stddev=0.5} camorange=1001u 
-  count=1u throwrange=8u stackrange=3u applies=true 
+  throwrange=8u stackrange=3u applies=true 
   desc='A mushroom growing on the cave floor.'
   }] itemstock_set
 
 [ 'tlaloc' Item{
-  name='the water stone of Tlaloc' skin=(['*' 'gray'] item->Skin) slot='' 
-  rarity=1u align='cn' camorange=1001u count=0u 
+  name=(['the water stone of Tlaloc' 'water stones of Tlaloc'] name->ItemName) 
+  skin=(['*' 'gray'] item->Skin) slot='' 
+  rarity=1u align='cn' camorange=1001u 
   throwrange=8u 
   desc='A stone washed up from the stygian depths\nof the world\'s oceans, it has been imbued\nwith the spiritual energy of Tlaloc, the\nfearsome cthonic god of water and lightning.'
   }] itemstock_set
 
 [ 'minibomb' Item{
-  name='minibomb$s' skin=(['(' 'pink'] item->Skin) slot='' 
+  name=(['a minibomb' 'minibombs'] name->ItemName) 
+  skin=(['(' 'pink'] item->Skin) slot='' 
   rarity=8u converts='litminibomb' camorange=1001u explodes=true 
   count=3u throwrange=8u stackrange=3u applies=true 
   radius=1u 
@@ -763,71 +852,81 @@ init_itemstock Void->Void :-
   }] itemstock_set
 
 [ 'rpg' Item{
-  name='RPG launcher' skin=(['(' 'red'] item->Skin) slot='e' 
-  rarity=15u use_an=true ammochance=Range{lo=1u hi=1u} camorange=1001u 
+  name=(['an RPG launcher' 'RPG launchers'] name->ItemName) 
+  skin=(['(' 'red'] item->Skin) slot='e' 
+  rarity=15u ammochance=Range{lo=1u hi=1u} camorange=1001u 
   explodes=true throwrange=8u rangeexplode=true range=Range{lo=4u hi=15u} 
   applies=true radius=3u 
   desc='A metal tube that holds a single explosive rocket.'
   }] itemstock_set
 
 [ 'craft_bu' Item{
-  name='buckshot bootsoles' skin=(['$' 'dark_yellow'] item->Skin) slot='' 
-  rarity=0u camorange=1001u count=0u throwrange=8u 
+  name=(['buckshot bootsoles' 'pairs of buckshot bootsoles'] name->ItemName)
+  skin=(['$' 'dark_yellow'] item->Skin) slot='' 
+  rarity=0u camorange=1001u throwrange=8u 
   craft='bu' applies=true 
   desc='A useless contraption. It needs to be combined with\ndragon\'s blood or nanite compound to become something very interesting.'
   }] itemstock_set
 
 [ 'kokopelli' Item{
-  name='the winged sandals of Kokopelli' skin=(['[' 'desaturated_amber'] item->Skin) slot='g' 
+  name=(['the winged sandals of Kokopelli' 'pairs of winged sandals of Kokopelli'] name->ItemName) 
+  skin=(['[' 'desaturated_amber'] item->Skin) slot='g' 
   rarity=1u align='nn' springy=true defence=0.05 
-  camorange=1001u count=0u throwrange=8u 
+  camorange=1001u throwrange=8u 
   desc='The sandals said to have once belonged to Kokopelli,\nthe trickster character of ancient legend.\nKokopelli might have been a god, a hero or even an insectoid\nmonster; little is known of this ever-shifting and multifaceted\ncreature.'
   }] itemstock_set
 
 [ 'xibalba' Item{
-  name='the skull crown of Xibalba' skin=(['[' 'gray'] item->Skin) slot='a' 
+  name=(['the skull crown of Xibalba' 'skull crowns of Xibalba'] name->ItemName) 
+  skin=(['[' 'gray'] item->Skin) slot='a' 
   rarity=1u align='ne' telepathyrange=4u camorange=1001u 
-  count=0u throwrange=8u 
+  throwrange=8u 
   desc='A crown made out of a human skull.\nIt is the mark of an officer in the ranks of the\ndemon horde of Xibalba.'
   }] itemstock_set
 
 [ 'craft_bg' Item{
-  name='powderboots' skin=(['$' 'dark_yellow'] item->Skin) slot='' 
-  rarity=0u camorange=1001u count=0u throwrange=8u 
+  name=(['powderboots' 'pairs of powderboots'] name->ItemName) 
+  skin=(['$' 'dark_yellow'] item->Skin) slot='' 
+  rarity=0u camorange=1001u throwrange=8u 
   craft='bg' applies=true 
   desc='A useless contraption. It needs to be combined with\nnanite compound to become something very interesting.'
   }] itemstock_set
 
 [ 'mauser' Item{
-  name='Mauser C96' skin=(['(' 'blue'] item->Skin) slot='e' 
+  name=(['a Mauser C96' 'Mauser C96\'s'] name->ItemName) 
+  skin=(['(' 'blue'] item->Skin) slot='e' 
   rarity=15u straightline=true rangeattack=7f ammochance=Range{lo=0u hi=10u} 
   camorange=1001u throwrange=8u range=Range{lo=0u hi=15u} applies=true 
   desc='This antique beauty is a powerful handgun, \nthough a bit rusty for some reason.'
   }] itemstock_set
 
 [ 'craft_bd' Item{
-  name='dragon boots' skin=(['$' 'dark_yellow'] item->Skin) slot='' 
-  rarity=0u camorange=1001u count=0u throwrange=8u 
+  name=(['dragon boots' 'pairs of dragon boots'] name->ItemName) 
+  skin=(['$' 'dark_yellow'] item->Skin) slot='' 
+  rarity=0u camorange=1001u throwrange=8u 
   craft='bd' applies=true 
   desc='A useless contraption. It needs to be combined with\nbuckshot to become something very interesting.'
   }] itemstock_set
 
 [ 'ak47' Item{
-  name='AK-47' skin=(['(' 'desaturated_blue'] item->Skin) slot='e' 
+  name=(['an AK-47' 'AK-47\'s'] name->ItemName) 
+  skin=(['(' 'desaturated_blue'] item->Skin) slot='e' 
   rarity=15u straightline=true rangeattack=3.5 ammochance=Range{lo=9u hi=30u} 
   camorange=1001u throwrange=8u range=Range{lo=0u hi=7u} applies=true 
   desc='A semi-automatic rifle.'
   }] itemstock_set
 
 [ 'cthulhu_m1' Item{
-  name='unholy amulet' skin=(['"' 'pink'] item->Skin) slot='' 
+  name=(['an unholy amulet' 'unholy amulets'] name->ItemName) 
+  skin=(['"' 'pink'] item->Skin) slot='' 
   rarity=0u camorange=1001u throwrange=8u craft='cthm1' 
   applies=true 
   desc='A depraved amulet to mark one as an unholy acolyte of R\'lyeh.'
   }] itemstock_set
 
 [ 'dynamite' Item{
-  name='stick$s of dynamite' skin=(['!' 'red'] item->Skin) slot='' 
+  name=(['a stick of dynamite' 'sticks of dynamite'] name->ItemName) 
+  skin=(['!' 'red'] item->Skin) slot='' 
   rarity=8u converts='litdynamite' camorange=1001u explodes=true 
   count=3u throwrange=8u stackrange=3u applies=true 
   radius=4u 
@@ -835,49 +934,56 @@ init_itemstock Void->Void :-
   }] itemstock_set
 
 [ 'cthulhu_m3' Item{
-  name='eldritch crystal' skin=(['"' 'pink'] item->Skin) slot='' 
+  name=(['an eldritch crystal' 'eldritch crystals'] name->ItemName) 
+  skin=(['"' 'pink'] item->Skin) slot='' 
   rarity=0u camorange=1001u throwrange=8u craft='cthm3' 
   applies=true 
   desc='An evil artifact. It pulsates with the unholy\npsychic energies of ancient, eldritch horror.'
   }] itemstock_set
 
 [ 'cthulhu_m2' Item{
-  name='eldritch skull' skin=(['"' 'pink'] item->Skin) slot='' 
+  name=(['an eldritch skull' 'eldritch skulls'] name->ItemName) 
+  skin=(['"' 'pink'] item->Skin) slot='' 
   rarity=0u camorange=1001u throwrange=8u craft='cthm2' 
   applies=true 
   desc='A remnant of a tormented spirit, sacrificed\nto appease the unholy gods of R\'lyeh.'
   }] itemstock_set
 
 [ 'flamethrower' Item{
-  name='flamethrower' skin=(['(' 'orange'] item->Skin) slot='e' 
+  name=(['a flamethrower' 'flamethrowers'] name->ItemName) 
+  skin=(['(' 'orange'] item->Skin) slot='e' 
   rarity=15u straightline=true ammochance=Range{lo=4u hi=13u} fires=true 
   camorange=1001u throwrange=8u range=Range{lo=2u hi=8u} applies=true 
   desc='A device for setting monsters on fire.\nTruly ingenious.'
   }] itemstock_set
 
 [ 'manitou' Item{
-  name='the spirit pendant of Manitou' skin=(['~' 'green'] item->Skin) slot='b' 
+  name=(['the spirit pendant of Manitou' 'spirit pendants of Manitou'] name->ItemName) 
+  skin=(['~' 'green'] item->Skin) slot='b' 
   rarity=1u lightradius=9u align='lg' camorange=1001u 
-  count=0u throwrange=8u 
+  throwrange=8u 
   desc='An ancient pendant, made of tree bark and buffalo sinew.\nIt is imbued with the spirit essence of Manitou.'
   }] itemstock_set
 
 [ 'quetzalcoatl' Item{
-  name='the feathered coat of Quetzalcoatl' skin=(['[' 'light_green'] item->Skin) slot='c' 
+  name=(['the feathered coat of Quetzalcoatl' 'feathered coats of Quetzalcoatl'] name->ItemName) 
+  skin=(['[' 'light_green'] item->Skin) slot='c' 
   rarity=1u align='ln' defence=1.5 camorange=1001u 
-  count=0u throwrange=8u 
+  throwrange=8u 
   desc='A fanciful and complex body armor made of fine satin\nand precious quetzal feathers.\nIt has been said that it once belonged to the earthly\nmanifestation of the Feathered Serpent himself.'
   }] itemstock_set
 
 [ 'airfresh' Item{
-  name='air freshener' skin=([')' 'blue'] item->Skin) slot='d' 
+  name=(['an air freshener' 'air fresheners'] name->ItemName) 
+  skin=([')' 'blue'] item->Skin) slot='d' 
   rarity=8u ammochance=Range{lo=20u hi=45u} camorange=1001u throwrange=8u 
   airfreshener=4u applies=true 
   desc='Used for cleaning up noxious fumes, gases and spores.'
   }] itemstock_set
 
 [ 'mmissile' Item{
-  name='amulet of magic missile' skin=(['(' 'light_azure'] item->Skin) slot='b' 
+  name=(['an amulet of magic missile' 'amulets of magic missile'] name->ItemName) 
+  skin=(['(' 'light_azure'] item->Skin) slot='b' 
   rarity=7u straightline=true rangeattack=7f ammochance=Range{lo=5u hi=25u} 
   camorange=1001u applies_in_slot=true throwrange=8u range=Range{lo=0u hi=15u} 
   applies=true 
@@ -885,63 +991,72 @@ init_itemstock Void->Void :-
   }] itemstock_set
 
 [ 'shinypants' Item{
-  name='shiny pants' skin=(['[' 'lightest_yellow'] item->Skin) slot='f' 
+  name=(['shiny pants' 'pairs of shiny pants'] name->ItemName) 
+  skin=(['[' 'lightest_yellow'] item->Skin) slot='f' 
   rarity=5u lightradius=3u defence=0.01 camorange=1001u 
-  count=0u throwrange=8u 
+  throwrange=8u 
   desc='These pants a completely covered in spiffy sparkles and shiny LED\'s.\nHere in the caves there is nothing to be ashamed of, really.'
   }] itemstock_set
 
 [ 'craft_bn' Item{
-  name='nanite boots' skin=(['$' 'dark_yellow'] item->Skin) slot='' 
-  rarity=0u camorange=1001u count=0u throwrange=8u 
+  name=(['nanite boots' 'pairs of nanite boots'] name->ItemName) 
+  skin=(['$' 'dark_yellow'] item->Skin) slot='' 
+  rarity=0u camorange=1001u throwrange=8u 
   craft='bn' applies=true 
   desc='A useless contraption. It needs to be combined with\nbuckshot or gunpowder to become something very interesting.'
   }] itemstock_set
 
 [ 'craft_af' Item{
-  name='torch phial' skin=(['$' 'dark_yellow'] item->Skin) slot='' 
+  name=(['a torch phial' 'torch phials'] name->ItemName) 
+  skin=(['$' 'dark_yellow'] item->Skin) slot='' 
   rarity=0u camorange=1001u throwrange=8u craft='af' 
   applies=true 
   desc='A useless contraption. It needs to be combined with\ndragon\'s blood or a titanium rod to become something very interesting.'
   }] itemstock_set
 
 [ 'tazer' Item{
-  name='tazer' skin=(['(' 'gray'] item->Skin) slot='e' 
+  name=(['a tazer' 'tazers'] name->ItemName) 
+  skin=(['(' 'gray'] item->Skin) slot='e' 
   rarity=5u attack=1f camorange=1001u throwrange=8u 
   confattack=GaussNat{mean=10u stddev=1u} 
   desc='Very useful for subduing enemies.'
   }] itemstock_set
 
 [ 'tinfoilhat' Item{
-  name='tin foil hat' skin=(['[' 'gray'] item->Skin) slot='a' 
+  name=(['a tin foil hat' 'tin foil hats'] name->ItemName) 
+  skin=(['[' 'gray'] item->Skin) slot='a' 
   rarity=6u psyimmune=true selfdestruct=GaussNat{mean=3000u stddev=500u} camorange=1001u 
   throwrange=8u 
   desc='A metallic hat that protects against attempts of \nmind control by various crazies.'
   }] itemstock_set
 
 [ 'nodoz' Item{
-  name='No-Doz pep pill$s' skin=(['%' 'light_red'] item->Skin) slot='d' 
+  name=(['a No-Doz pep pill' 'No-Doz pep pills'] name->ItemName) 
+  skin=(['%' 'light_red'] item->Skin) slot='d' 
   rarity=20u cursedchance=GaussChance{stddev=1f thold=-0.5} nodoz=true camorange=1001u 
-  count=1u throwrange=8u stackrange=7u applies=true 
+  throwrange=8u stackrange=7u applies=true 
   desc='An over-the-counter medicine that helps combat sleep deprivation.'
   }] itemstock_set
 
 [ 'trapcloud' Item{
-  name='glue nanobots' skin=(['{' 'dark_yellow'] item->Skin) slot='d' 
-  rarity=4u trapcloud=true camorange=1001u count=0u 
+  name=('glue nanobots' name->ItemName)
+  skin=(['{' 'dark_yellow'] item->Skin) slot='d' 
+  rarity=4u trapcloud=true camorange=1001u 
   throwrange=8u applies=true 
   desc='Microscopic nanobots that are used in construction work.\nThey are good at quickly covering large areas in glue.'
   }] itemstock_set
 
 [ 'wendigo' Item{
-  name='a cannibal corpse of Wendigo' skin=(['%' 'dark_gray'] item->Skin) slot='' 
-  rarity=1u align='ce' camorange=1001u count=0u 
+  name=(['a cannibal corpse of Wendigo' 'cannibal corpses of Wendigo'] name->ItemName) 
+  skin=(['%' 'dark_gray'] item->Skin) slot='' 
+  rarity=1u align='ce' camorange=1001u 
   throwrange=8u 
   desc='An atrocious shrunken head of some fang-toothed midget.\nThis horrible token is a secret mark worn by the\nWendigo cannibals.'
   }] itemstock_set
 
 [ 'bigdartgun' Item{
-  name='elephant sedative' skin=(['(' 'crimson'] item->Skin) slot='e' 
+  name=(['an elephant sedative' 'elephant sedatives'] name->ItemName) 
+  skin=(['(' 'crimson'] item->Skin) slot='e' 
   rarity=3u straightline=true rangeattack=4.5 ammochance=Range{lo=2u hi=4u} 
   attack=0.1 camorange=1001u throwrange=8u range=Range{lo=0u hi=4u} 
   applies=true confattack=GaussNat{mean=150u stddev=5u} 
@@ -949,55 +1064,63 @@ init_itemstock Void->Void :-
   }] itemstock_set
 
 [ 'vikinghelmet' Item{
-  name='viking helmet' skin=(['[' 'green'] item->Skin) slot='a' 
+  name=(['a viking helmet' 'viking helmets'] name->ItemName) 
+  skin=(['[' 'green'] item->Skin) slot='a' 
   rarity=5u defence=0.5 camorange=1001u throwrange=8u 
   desc='An iron helmet with large horns, for extra protection.'
   }] itemstock_set
 
 [ 'craft_a8' Item{
-  name='everlasting rocket launcher' skin=(['(' 'pink'] item->Skin) slot='e' 
+  name=(['an everlasting rocket launcher' 'everlasting rocket launchers'] name->ItemName) 
+  skin=(['(' 'pink'] item->Skin) slot='e' 
   rarity=0u ammochance=Range{lo=0u hi=0u} camorange=1001u throwrange=8u 
   rangeexplode=true range=Range{lo=4u hi=15u} applies=true radius=3u 
   desc='A magic RPG launcher that never runs out of ammo.'
   }] itemstock_set
 
 [ 'craft_a2' Item{
-  name='camouflage nanoboots' skin=(['[' 'pink'] item->Skin) slot='g' 
+  name=(['camouflage nanoboots' 'pairs of camouflage nanoboots'] name->ItemName) 
+  skin=(['[' 'pink'] item->Skin) slot='g' 
   rarity=0u springy=true defence=0.1 camorange=3u 
-  count=0u throwrange=8u 
+  throwrange=8u 
   desc='Nanotechnological wonderfootwear that provides exceptional\nspeed *and* stealth.'
   }] itemstock_set
 
 [ 'craft_a3' Item{
-  name='flaming sword ' skin=(['(' 'yellow'] item->Skin) slot='e' 
+  name=(['a flaming sword' 'flaming swords'] name->ItemName) 
+  skin=(['(' 'yellow'] item->Skin) slot='e' 
   rarity=0u lightradius=6u fires=true attack=6f 
   camorange=1001u throwrange=8u 
   desc='A giant sword of flame.'
   }] itemstock_set
 
 [ 'craft_a1' Item{
-  name='everlasting shotgun' skin=(['(' 'yellow'] item->Skin) slot='e' 
+  name=(['an everlasting shotgun' 'everlasting shotguns'] name->ItemName) 
+  skin=(['(' 'yellow'] item->Skin) slot='e' 
   rarity=0u straightline=true rangeattack=14f ammochance=Range{lo=0u hi=0u} 
   camorange=1001u throwrange=8u range=Range{lo=2u hi=6u} applies=true 
   desc='A magical shotgun than never runs out of bullets.'
   }] itemstock_set
 
 [ 'craft_a6' Item{
-  name='medi-nanites' skin=(['%' 'pink'] item->Skin) slot='d' 
-  rarity=0u healingsleep=GaussNat{mean=50u stddev=1u} camorange=1001u count=0u 
+  name=('medi-nanites' name->ItemName)
+  skin=(['%' 'pink'] item->Skin) slot='d' 
+  rarity=0u healingsleep=GaussNat{mean=50u stddev=1u} camorange=1001u 
   throwrange=8u applies=true repelrange=2u 
   desc='An endless supply of advanced healing ointments.'
   }] itemstock_set
 
 [ 'craft_a7' Item{
-  name='everlasting portable hole' skin=(['`' 'yellow'] item->Skin) slot='d' 
+  name=(['an everlasting portable hole' 'everlasting portable holes'] name->ItemName) 
+  skin=(['`' 'yellow'] item->Skin) slot='d' 
   rarity=0u jumprange=4u camorange=1001u throwrange=8u 
   applies=true 
   desc='A portable hole that never runs out.'
   }] itemstock_set
 
 [ 'craft_a4' Item{
-  name='Brahmic medallion' skin=(['"' 'yellow'] item->Skin) slot='b' 
+  name=(['a Brahmic medallion' 'Brahmic medallions'] name->ItemName) 
+  skin=(['"' 'yellow'] item->Skin) slot='b' 
   rarity=0u lightradius=8u straightline=true rangeattack=7f 
   ammochance=Range{lo=0u hi=0u} camorange=4u applies_in_slot=true throwrange=8u 
   range=Range{lo=0u hi=15u} applies=true 
@@ -1005,126 +1128,144 @@ init_itemstock Void->Void :-
   }] itemstock_set
 
 [ 'craft_a5' Item{
-  name='gluebot machine' skin=(['{' 'pink'] item->Skin) slot='d' 
+  name=(['a gluebot machine' 'gluebot machines'] name->ItemName) 
+  skin=(['{' 'pink'] item->Skin) slot='d' 
   rarity=0u trapcloud=true camorange=1001u throwrange=8u 
   glueimmune=true applies=true 
   desc='A high-tech machine that can produce a neverending stream\nof glue nanobots. It also provides protection from the\nglue for the user.'
   }] itemstock_set
 
 [ 'helmet' Item{
-  name='miner\'s hardhat' skin=(['[' 'sepia'] item->Skin) slot='a' 
+  name=(['a miner\'s hardhat' 'miner\'s hardhats'] name->ItemName) 
+  skin=(['[' 'sepia'] item->Skin) slot='a' 
   rarity=8u defence=0.25 digbonus=0.05 camorange=1001u 
   throwrange=8u 
   desc='A simple plastic item of protective headgear.\nMiners claim that it helps them dig faster,\nfor some inexplicable reason.'
   }] itemstock_set
 
 [ 'redgloves' Item{
-  name='red hand gloves' skin=(['(' 'dark_red'] item->Skin) slot='d' 
-  rarity=3u attack=0.1 camorange=1001u count=0u 
+  name=(['red hand gloves' 'pairs of red hand gloves'] name->ItemName) 
+  skin=(['(' 'dark_red'] item->Skin) slot='d' 
+  rarity=3u attack=0.1 camorange=1001u 
   throwrange=8u confattack=GaussNat{mean=10u stddev=1u} 
   desc='These magical gloves have a very confusing red glow.'
   }] itemstock_set
 
 [ 'cthulhu_o3' Item{
-  name='eldritch sacrifice' skin=(['%' 'pink'] item->Skin) slot='' 
+  name=(['an eldritch sacrifice' 'eldritch sacrifices'] name->ItemName) 
+  skin=(['%' 'pink'] item->Skin) slot='' 
   rarity=0u camorange=1001u throwrange=8u craft='ctho3' 
   applies=true 
   desc='A depraved sacrifice for the evil gods of R\'lyeh.'
   }] itemstock_set
 
 [ 'cthulhu_o2' Item{
-  name='sacrifical corpse' skin=(['%' 'pink'] item->Skin) slot='' 
+  name=(['a sacrifical corpse' 'sacrifical corpses'] name->ItemName) 
+  skin=(['%' 'pink'] item->Skin) slot='' 
   rarity=0u camorange=1001u throwrange=8u craft='ctho2' 
   applies=true 
   desc='A bloody sacrifice to the evil gods of R\'lyeh.'
   }] itemstock_set
 
 [ 'cthulhu_o1' Item{
-  name='unholy offering' skin=(['%' 'pink'] item->Skin) slot='' 
+  name=(['an unholy offering' 'unholy offerings'] name->ItemName) 
+  skin=(['%' 'pink'] item->Skin) slot='' 
   rarity=0u camorange=1001u throwrange=8u craft='ctho1' 
   applies=true 
   desc='A sacrificial offering to the evil gods of R\'lyeh.'
   }] itemstock_set
 
 [ 'xbalanque' Item{
-  name='the leather breeches of Xbalanque' skin=(['[' 'celadon'] item->Skin) slot='f' 
+  name=(['the leather breeches of Xbalanque' 'pairs of leather breeches of Xbalanque'] name->ItemName) 
+  skin=(['[' 'celadon'] item->Skin) slot='f' 
   rarity=1u align='cg' defence=1f camorange=1001u 
-  count=0u throwrange=8u 
+  throwrange=8u 
   desc='A simple pair of leather breeches that is said\nto have once belonged to Xbalanque, an epic\nhero who had once defeated the Lords of Xibalba.'
   }] itemstock_set
 
 [ 'green' Item{
-  name='green potion' skin=([':' 'darkest_green'] item->Skin) slot='' 
+  name=(['a green potion' 'green potions'] name->ItemName) 
+  skin=([':' 'darkest_green'] item->Skin) slot='' 
   rarity=3u camorange=1001u resource='g' throwrange=8u 
   applies=true 
   desc='A flask containing a green liquid.'
   }] itemstock_set
 
 [ 'bombsuit' Item{
-  name='bomb suit' skin=(['[' 'lightest_yellow'] item->Skin) slot='c' 
+  name=(['a bomb suit' 'bomb suits'] name->ItemName) 
+  skin=(['[' 'lightest_yellow'] item->Skin) slot='c' 
   rarity=3u defence=0.1 explodeimmune=true selfdestruct=GaussNat{mean=300u stddev=50u} 
   camorange=1001u throwrange=8u 
   desc='The standard protective suit for bomb squads.'
   }] itemstock_set
 
 [ 'tinfoil' Item{
-  name='tin foil' skin=(['[' 'lightest_sepia'] item->Skin) slot='a' 
+  name=(['tin foil' 'tin foils'] name->ItemName) 
+  skin=(['[' 'lightest_sepia'] item->Skin) slot='a' 
   rarity=12u psyimmune=true selfdestruct=GaussNat{mean=450u stddev=100u} camorange=1001u 
-  count=0u throwrange=8u 
+  throwrange=8u 
   desc='Not as good as a real tin foil hat, but will still help in emergencies.'
   }] itemstock_set
 
 [ 'craft_an' Item{
-  name='nanite oil' skin=(['$' 'dark_yellow'] item->Skin) slot='' 
-  rarity=0u camorange=1001u count=0u throwrange=8u 
+  name=(['some nanite oil' 'vials of nanite oil'] name->ItemName) 
+  skin=(['$' 'dark_yellow'] item->Skin) slot='' 
+  rarity=0u camorange=1001u throwrange=8u 
   craft='an' applies=true 
   desc='A useless contraption. It needs to be combined with\ndragon\'s blood to become something very interesting.'
   }] itemstock_set
 
 [ 'coolpack' Item{
-  name='some cold mud' skin=(['%' 'light_blue'] item->Skin) slot='d' 
-  rarity=12u cooling=true camorange=1001u count=0u 
-  throwrange=8u applies=true 
+  name=(['some cold mud' 'clumps of cold mud'] name->ItemName) 
+  skin=(['%' 'light_blue'] item->Skin) slot='d' 
+  rarity=12u cooling=true camorange=1001u 
+  throwrange=8u applies=true stackrange=5u
   desc='A bluish lump of mud. \nUseful for tricking predators with infrared vision.'
   }] itemstock_set
 
 [ 'craft_ad' Item{
-  name='dragon\'s oil' skin=(['$' 'dark_yellow'] item->Skin) slot='' 
-  rarity=0u camorange=1001u count=0u throwrange=8u 
+  name=(['some dragon\'s oil' 'vials of dragon\'s oil'] name->ItemName) 
+  skin=(['$' 'dark_yellow'] item->Skin) slot='' 
+  rarity=0u camorange=1001u throwrange=8u 
   craft='ad' applies=true 
   desc='A useless contraption. It needs to be combined with\na flaming phial or nanite compound to become something very interesting.'
   }] itemstock_set
 
 [ 'pelorusm' Item{
-  name='pelorus' skin=(['"' 'gray'] item->Skin) slot='b' 
+  name=(['a pelorus' 'pelori'] name->ItemName) 
+  skin=(['"' 'gray'] item->Skin) slot='b' 
   rarity=3u detect_monsters=true detector=true camorange=1001u 
   throwrange=8u applies=true 
   desc='A device that looks somewhat like an old cellphone.\nIt comes with a necklace strap, a display and a large antenna.'
   }] itemstock_set
 
 [ 'medpack' Item{
-  name='magic pill$s' skin=(['%' 'white'] item->Skin) slot='d' 
+  name=(['a magic pill' 'magic pills'] name->ItemName) 
+  skin=(['%' 'white'] item->Skin) slot='d' 
   rarity=13u cursedchance=GaussChance{stddev=1f thold=-0.8} camorange=1001u healing=Gauss{mean=3f stddev=0.5} 
-  count=1u throwrange=8u stackrange=5u applies=true 
+  throwrange=8u stackrange=5u applies=true 
   desc='A big white pill with a large red cross drawn on one side.'
   }] itemstock_set
 
 [ 'pelorusi' Item{
-  name='pelorus' skin=(['"' 'gray'] item->Skin) slot='b' 
+  name=(['a pelorus' 'pelori'] name->ItemName) 
+  skin=(['"' 'gray'] item->Skin) slot='b' 
   rarity=3u detect_items=true detector=true camorange=1001u 
   throwrange=8u applies=true 
   desc='A device that looks somewhat like an old cellphone.\nIt comes with a necklace strap, a display and a large antenna.'
   }] itemstock_set
 
 [ 'craft_du' Item{
-  name='dragonshot' skin=(['$' 'dark_yellow'] item->Skin) slot='' 
-  rarity=0u camorange=1001u count=0u throwrange=8u 
+  name=(['some dragonshot' 'cartridges of dragonshot'] name->ItemName) 
+  skin=(['$' 'dark_yellow'] item->Skin) slot='' 
+  rarity=0u camorange=1001u throwrange=8u 
   craft='du' applies=true 
   desc='A useless contraption. It needs to be combined with\nbootsoles to become something very interesting.'
   }] itemstock_set
 
 [ 'dartgun' Item{
-  name='dart gun' skin=(['(' 'light_crimson'] item->Skin) slot='e' 
+  name=(['a dart gun' 'dart guns'] name->ItemName) 
+  skin=(['(' 'light_crimson'] item->Skin) slot='e' 
   rarity=5u straightline=true rangeattack=0.5 ammochance=Range{lo=10u hi=30u} 
   attack=0.5 camorange=1001u throwrange=8u range=Range{lo=0u hi=5u} 
   applies=true confattack=GaussNat{mean=30u stddev=5u} 
@@ -1132,63 +1273,72 @@ init_itemstock Void->Void :-
   }] itemstock_set
 
 [ 'craft_at' Item{
-  name='titanium oil' skin=(['$' 'dark_yellow'] item->Skin) slot='' 
-  rarity=0u camorange=1001u count=0u throwrange=8u 
+  name=(['some titanium oil' 'vials of titanium oil'] name->ItemName) 
+  skin=(['$' 'dark_yellow'] item->Skin) slot='' 
+  rarity=0u camorange=1001u throwrange=8u 
   craft='at' applies=true 
   desc='A useless contraption. It needs to be combined with\na flaming phial to become something very interesting.'
   }] itemstock_set
 
 [ 'radsuit' Item{
-  name='radiation suit' skin=(['[' 'dark_lime'] item->Skin) slot='c' 
+  name=(['a radiation suit' 'radiation suits'] name->ItemName) 
+  skin=(['[' 'dark_lime'] item->Skin) slot='c' 
   rarity=0u defence=0.1 selfdestruct=GaussNat{mean=1000u stddev=50u} camorange=1001u 
   throwrange=8u radimmune=true 
   desc='A very special piece of equipment that protects against radiation.'
   }] itemstock_set
 
 [ 'ccthulhu' Item{
-  name='the Call of Cthulhu' skin=(['~' 'red'] item->Skin) slot='' 
-  rarity=0u camorange=1001u winning=Achievement{name='wincthulhu' desc='Called upon Cthulhu'} count=0u 
+  name=(['the Call of Cthulhu' 'Calls of Cthulhu'] name->ItemName) 
+  skin=(['~' 'red'] item->Skin) slot='' 
+  rarity=0u camorange=1001u winning=Achievement{name='wincthulhu' desc='Called upon Cthulhu'} 
   throwrange=8u applies=true 
   desc='An eldritch medallion of R\'lyeh.\nAncient beyond measure and just as evil.'
   }] itemstock_set
 
 [ 'shotgun' Item{
-  name='shotgun' skin=(['(' 'turquoise'] item->Skin) slot='e' 
+  name=(['a shotgun' 'shotguns'] name->ItemName) 
+  skin=(['(' 'turquoise'] item->Skin) slot='e' 
   rarity=15u straightline=true rangeattack=14f ammochance=Range{lo=1u hi=4u} 
   camorange=1001u throwrange=8u range=Range{lo=2u hi=5u} applies=true 
   desc='A powerful, killer weapon.\nYou learned that much from playing videogames.'
   }] itemstock_set
 
 [ 'furpants' Item{
-  name='fur pants' skin=(['[' 'gray'] item->Skin) slot='f' 
+  name=(['fur pants' 'pairs of fur pants'] name->ItemName) 
+  skin=(['[' 'gray'] item->Skin) slot='f' 
   rarity=5u heatbonus=0.01 defence=0.15 camorange=1001u 
-  count=0u throwrange=8u 
+  throwrange=8u 
   desc='Shaggy pants made of fur. You would look like a true barbarian in them.'
   }] itemstock_set
 
 [ 'camo' Item{
-  name='nanoparticle camouflage' skin=(['[' 'dark_green'] item->Skin) slot='c' 
+  name=(['nanoparticle camouflage' 'nanoparticle camouflage suits'] name->ItemName) 
+  skin=(['[' 'dark_green'] item->Skin) slot='c' 
   rarity=3u defence=0.01 selfdestruct=GaussNat{mean=1000u stddev=100u} camorange=3u 
-  count=0u throwrange=8u 
+  throwrange=8u 
   desc='An ultra-hightech piece of camoflage clothing.\nIt\'s made of nanoparticles that render the wearer\npractically invisible.'
   }] itemstock_set
 
 [ 'gluegun' Item{
-  name='gluegun' skin=(['{' 'light_yellow'] item->Skin) slot='d' 
+  name=(['a gluegun' 'glueguns'] name->ItemName) 
+  skin=(['{' 'light_yellow'] item->Skin) slot='d' 
   rarity=0u camorange=1001u throwrange=8u applies=true 
   makestrap=true 
   desc='A device that holds a practically unlimited amount of glue.'
   }] itemstock_set
 
 [ 'spikeboots' Item{
-  name='spiked boots' skin=(['[' 'darkest_gray'] item->Skin) slot='g' 
+  name=(['spiked boots' 'pairs of spiked boots'] name->ItemName) 
+  skin=(['[' 'darkest_gray'] item->Skin) slot='g' 
   rarity=5u defence=0.05 attack=1f camorange=1001u 
-  count=0u throwrange=8u 
+  throwrange=8u 
   desc='These boots have giant spikes attached to them.\nVery heavy metal.'
   }] itemstock_set
 
 [ 'craft_z' Item{
-  name='magic spark' skin=(['$' 'light_blue'] item->Skin) slot='' 
+  name=(['a magic spark' 'magic sparks'] name->ItemName) 
+  skin=(['$' 'light_blue'] item->Skin) slot='' 
   rarity=4u camorange=1001u throwrange=8u craft='z' 
   applies=true 
   desc='This special item needs to be combined with another very\nspecial item to make something very interesting.'

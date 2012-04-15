@@ -7,6 +7,8 @@ def { x:UInt y:UInt dx:Int dy:Int } XyPair;
 def [a:UInt b:UInt c:Int d:Int];
 def [a:UInt b:Bool];
 def [a:UInt b:Int];
+def [a:UInt b:UInt c:UInt];
+def [xy:[UInt UInt] n:UInt];
 
 go UInt->OutState :- OutState{ticks=(<: \v + 1u :>) done=false dead=false}.
 
@@ -21,10 +23,20 @@ walkable XyPair->Bool :-
   false
 .
 
+move_action [UInt UInt]->Void :-
+
+  [\a \b ([\a \b] nitems->UInt)]->Void (
+     <: \c > 1u :> ? 'You see several items here.' msg ;
+     [[\a \b] 0u] get->ItemVal fmt->Sym->Void ( <:[fmt] 'You see ' \v '.' :> msg )
+  );
+.
+
+
 move [Int Int]->Void :-
   XyPair{ x=(px->UInt) y=(py->UInt) dx=\a dy=\b } add->XyPair->Void( 
     \\ walkable->Bool ? 
       [ \x \y (\dx to->UInt) (\dy to->UInt) ]->Void (
+          [\c \d] move_action
           get->Player {x=\c y=\d} set
           [ \a \b \c \d ] move_player))
 .
@@ -150,5 +162,5 @@ handle_input InState->OutState :-
 
 
 drawing_context Void->[UInt UInt] :-
-  get->Player->[UInt UInt]( '*** ' print \x print ' ' print \y print '\n' print [\x \y]).
+  get->Player->[UInt UInt]([\x \y]).
 

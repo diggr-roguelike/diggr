@@ -87,21 +87,18 @@ monster_level Void->UInt :-
 get MonsterKey->Sym :-
   <: \level > 0u :> ? 
     \\->Sym(
-      '...1 ' print \\ size->UInt print '\n' print
-      [ \\ (\\ size->UInt rand_n->UInt->UInt('...2 ' print \v print '\n' print \v)) ] get->Sym;
+      [ \\ (\\ size->UInt rand_n->UInt) ] get->Sym;
       \\ {level=(<: \level-1u :>)} get->Sym
     )
 .
 
 place_monster Sym->Void :- 
-  '... ' print \v print '\n' print
   [ (dg_grid_one_of_walk->[UInt UInt]) \\ ] -> Void(
     [ (\a->UInt(\a)) (\a->UInt(\b)) 2u ] dg_grid_add_nogen_expand
     [ (\a->UInt(\a)) (\a->UInt(\b)) \b ] set_monster 
   ).
 
 generate_monsters UInt->Void :-
-  'XX... ' print \v print '\n' print
   <: \v == 0u :> ? ;
   MonsterKey{branch=(branch->Sym) level=(monster_level->UInt)} 
   get->Sym ->Bool (
@@ -137,8 +134,7 @@ place_item Sym->Void :-
 
 generate_items UInt->Void :-
   <: \v == 0u :> ? ;
-  \v->UInt(<:[print] 'GENERATE_ITEMS ' \v :> \v)
-  ->Void (
+  \v->Void (
      [ ItemKey{} (ItemKey{} size->UInt rand_n->UInt) ] get->Sym place_item ;
 
      /* TODO: Handle failure to generate an item here. */
@@ -231,7 +227,7 @@ generate_map Void->Void :-
 
 
 place_player Void->Void :-
-  dg_grid_one_of_walk->[UInt UInt]->Void(<:[print] '/// ' \a ' ' \b :> get->Player {x=\a y=\b} set)
+  dg_grid_one_of_walk->[UInt UInt]->Void(get->Player {x=\a y=\b} set)
 .
 
 

@@ -47,6 +47,8 @@ modules Void->Void :-
   <:[module] items 'items.piccol'
              item [UInt UInt]->Skin
              set_item [UInt UInt Sym]->Void
+             nitems [UInt UInt]->UInt
+             fmt ItemVal->Sym
    :>
 
   <:[module] input 'input.piccol'

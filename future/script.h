@@ -274,13 +274,50 @@ inline bool dg_render_message(CALLBACK) {
     return true;
 }
 
+
+inline std::ostringstream& current_buffer() {
+    static std::ostringstream ret;
+    return ret;
+}
+
+inline bool _fmt_start(CALLBACK) {
+    current_buffer().str("");
+    return true;
+}
+
+inline bool _fmt_int(CALLBACK) {
+    current_buffer() << struc.v[0].inte;
+    return true;
+}
+
+inline bool _fmt_uint(CALLBACK) {
+    current_buffer() << struc.v[0].uint;
+    return true;
+}
+
+inline bool _fmt_real(CALLBACK) {
+    current_buffer() << struc.v[0].real;
+    return true;
+}
+
+inline bool _fmt_sym(CALLBACK) {
+    current_buffer() << metalan::symtab().get(struc.v[0].uint);
+    return true;
+}
+
+inline bool _fmt_get(CALLBACK) {
+    ret.v.push_back(metalan::symtab().get(current_buffer().str()));
+    return true;
+}
+
+
 inline bool _print1(CALLBACK) {
-    std::cout << struc.v[0].inte;
+    std::cout << struc.v[0].uint;
     return true;
 }
 
 inline bool _print2(CALLBACK) {
-    std::cout << struc.v[0].uint;
+    std::cout << struc.v[0].inte;
     return true;
 }
 
@@ -372,6 +409,13 @@ struct Vm {
         vm.register_callback("print", "Int",  "Void", _print2);
         vm.register_callback("print", "Real", "Void", _print3);
         vm.register_callback("print", "Sym",  "Void", _print4);
+
+        vm.register_callback("fmt", "Void", "Void", _fmt_start);
+        vm.register_callback("fmt", "Int",  "Void", _fmt_int);
+        vm.register_callback("fmt", "UInt", "Void", _fmt_uint);
+        vm.register_callback("fmt", "Real", "Void", _fmt_real);
+        vm.register_callback("fmt", "Sym",  "Void", _fmt_sym);
+        vm.register_callback("fmt", "Void", "Sym",  _fmt_get);
 
         ////// 
 

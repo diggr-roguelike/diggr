@@ -5,6 +5,7 @@ def [a:[UInt UInt] b:ItemVal];
 
 def [a:[UInt UInt] b:UInt];
 
+def [a:ItemVal b:Item];
 
 make [Sym Item]->ItemVal :-
   ItemVal{ item=\a 
@@ -21,11 +22,49 @@ make [Sym Item]->ItemVal :-
                                   [ (\mean to->Real) (\stddev to->Real) 1u ] pos_gauss->UInt)))
          }.
 
+def {
+  one: Sym
+  many: Sym
+  hide_count: Bool
+  count: UInt
+  ammo: Int
+  corpse: Sym
+  tag: Bool
+} NameData;
+
+fmt NameData->Sym :- 
+  fmt
+  \\->Void(
+    <: \count <= 1u :> ? \one fmt ;
+    \hide_count ? <:[fmt_raw] \one ' [' \count ']' :> ;
+                  <:[fmt_raw] \count ' ' \many :>
+  )
+  \\->Void( <: \corpse != nil :> ? <:[fmt_raw] ' of ' \corpse :> ; )
+  \\->Void( <: \ammo > 0 :>      ? <:[fmt_raw] ' [' \ammo ']':> ; )
+  \\->Void( \tag ? ' {tagged}' fmt ; )
+  fmt->Sym
+.
+
+
+fmt ItemVal->Sym :-
+  [ \\ (\\->Item(\item get->Item)) ]->Sym(
+    NameData{ one=(\b->Sym(\name->Sym(\one)))
+              many=(\b->Sym(\name->Sym(\many)))
+              hide_count=(\b->Bool(\hide_count))
+              count=(\a->UInt(\count))
+              ammo=(\a->Int(\ammo))
+              tag=(\a->Bool(\tag))
+              corpse=(\a->Sym(\corpse)) } fmt->Sym
+ ).
+
 
 /*** ***/
 
+/* HACK! This only works because only one 'stack' is registered. */
+
+nitems [UInt UInt]->UInt :- \\ size->UInt.
+
 set_item [UInt UInt Sym]->Void :-
-  <:[print] 'SET_ITEM ' \x ' ' \y ' ' \v :>
   [ [\x \y] ([\v (\v get->Item)] make->ItemVal) ] -> Void(
     \\ put
     \a set_skin

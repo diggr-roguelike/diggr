@@ -225,9 +225,15 @@ def {
 } SummonN;
 
 def {
+  one: Sym
+  many: Sym
+} ItemName;
+
+def {
   skin: Skin
   slot: Sym
   rarity: UInt
+  name: ItemName
 
   radius: UInt
   lightradius: UInt
@@ -264,14 +270,12 @@ def {
   craft: Sym
   desc: Sym
   resource: Sym
-  name: Sym
   align: Sym
   converts: Sym
   switch_moon: Sym
 
   trapcloud
   straightline
-  use_an
   wishing
   homing
   springy
@@ -336,3 +340,16 @@ def [a:Real b:Real c:UInt];
   print :- spaces literal_here @' print' print.
   print :- spaces @{ '\n' print}.
 ::>
+
+<:: fmt_raw(literals)
+
+  literal_here :- literal &''.
+  fmt_x :- spaces literal_here @' fmt ' fmt_x.
+  fmt_x :- spaces.
+  fmt_raw :- fmt_x.
+::>
+
+<:: fmt(fmt_raw)
+  fmt :- @' fmt ' fmt_raw @' fmt->Sym '.
+::>
+
