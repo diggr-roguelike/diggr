@@ -116,15 +116,15 @@ def render_set_is_walkblock(x, y, t, bit):
 def render_set_skin(x, y, z, fore, c, fore2, fore_i, is_terrain):
     if type(c) == type(1):
         c = chr(c)
-    _dg.dg_render_push_skin(c_uint(x), c_uint(y), c_uint(z),
-                            c_ubyte(fore.r), c_ubyte(fore.g), c_ubyte(fore.b), 
-                            c_char(c), 
-                            c_ubyte(fore2.r), c_ubyte(fore2.g), c_ubyte(fore2.b), 
-                            c_int(fore_i), 
-                            c_bool(is_terrain))
+    _dg.dg_render_set_skin(c_uint(x), c_uint(y), c_uint(z),
+                           c_ubyte(fore.r), c_ubyte(fore.g), c_ubyte(fore.b), 
+                           c_char(c), 
+                           c_ubyte(fore2.r), c_ubyte(fore2.g), c_ubyte(fore2.b), 
+                           c_int(fore_i), 
+                           c_bool(is_terrain))
 
 def render_unset_skin(x, y, z):
-    _dg.dg_render_pop_skin(c_uint(x), c_uint(y), c_uint(z))
+    _dg.dg_render_unset_skin(c_uint(x), c_uint(y), c_uint(z))
 
 
 _dg.dg_render_is_in_fov.restype = c_bool

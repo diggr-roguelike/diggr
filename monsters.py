@@ -1,5 +1,5 @@
 import tcod_colors as libtcod
-#import libdiggrpy as dg
+import libdiggrpy as dg
 import copy
 
 

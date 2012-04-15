@@ -1939,11 +1939,11 @@ class Game:
             self.p.achievements.use(item)
             return None
 
-        elif item.digray:
-            if item.digray[0] == 1:
+        elif item.digray_x or item.digray_y:
+            if item.digray_x:
                 for x in xrange(0, self.d.w):
                     self.convert_to_floor((x, self.d.pc[1]), False)
-            if item.digray[1] == 1:
+            if item.digray_y:
                 for y in xrange(0, self.d.h):
                     self.convert_to_floor((self.d.pc[0], y), False)
             self.p.msg.m('The wand explodes in a brilliant white flash!')
