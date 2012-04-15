@@ -107,11 +107,11 @@ def render_set_back(x, y, z, back):
 def render_set_is_lit(x, y, z, is_lit):
     _dg.dg_render_set_is_lit(c_uint(x), c_uint(y), c_uint(z), c_bool(is_lit))
 
-def render_set_is_viewblock(x, y, t, bit):
-    _dg.dg_render_set_is_viewblock(c_uint(x), c_uint(y), c_bool(t), c_uint(bit))
+def render_set_is_viewblock(x, y, z, t):
+    _dg.dg_render_set_is_viewblock(c_uint(x), c_uint(y), c_uint(z), c_bool(t))
 
-def render_set_is_walkblock(x, y, t, bit):
-    _dg.dg_render_set_is_walkblock(c_uint(x), c_uint(y), c_bool(t), c_uint(bit))
+def render_set_is_walkblock(x, y, z, t):
+    _dg.dg_render_set_is_walkblock(c_uint(x), c_uint(y), c_uint(z), c_bool(t))
 
 def render_set_skin(x, y, z, fore, c, fore2, fore_i, is_terrain):
     if type(c) == type(1):

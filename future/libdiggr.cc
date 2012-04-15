@@ -172,12 +172,12 @@ EXPORT bool dg_render_is_in_fov(unsigned int x, unsigned int y) {
     return grender::get().is_in_fov(x, y);
 }
 
-EXPORT void dg_render_set_is_viewblock(unsigned int x, unsigned int y, bool t, unsigned int bit) {
-    grender::get().set_is_viewblock(x, y, t, bit);
+EXPORT void dg_render_set_is_viewblock(unsigned int x, unsigned int y, unsigned int z, bool t) {
+    grender::get().set_is_viewblock(x, y, z, t);
 }
 
-EXPORT void dg_render_set_is_walkblock(unsigned int x, unsigned int y, bool t, unsigned int bit) {
-    grender::get().set_is_walkblock(x, y, t, bit);
+EXPORT void dg_render_set_is_walkblock(unsigned int x, unsigned int y, unsigned int z, bool t) {
+    grender::get().set_is_walkblock(x, y, z, t);
 }
 
 EXPORT void dg_render_draw(unsigned int t,
