@@ -33,6 +33,7 @@ modules Void->Void :-
 
   <:[module] monsterstock 'monsterstock.piccol'
              init_monsterstock Void->Void
+             make Monster->MonsterKey
    :>
 
   <:[module] itemstock 'itemstock.piccol'
@@ -42,11 +43,14 @@ modules Void->Void :-
   <:[module] monsters 'monsters.piccol'
              monster [UInt UInt]->Skin
              set_monster [UInt UInt Sym]->Void
+             remove_monster [ [UInt UInt] MonsterVal ]->Void
+             fmt MonsterVal->Sym
    :>
 
   <:[module] items 'items.piccol'
              item [UInt UInt]->Skin
              set_item [UInt UInt Sym]->Void
+             remove_item [ [UInt UInt] UInt ItemVal ]->Void
              nitems [UInt UInt]->UInt
              fmt ItemVal->Sym
    :>

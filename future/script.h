@@ -12,6 +12,40 @@
 #define CALLBACK const nanom::Shapes& shapes, const nanom::Shape& shape, \
         const nanom::Shape& shapeto, const nanom::Struct& struc, nanom::Struct& ret
 
+
+namespace serialize {
+
+template <>
+struct writer<nanom::Val> {
+    void write(Sink& s, const nanom::Val& v) {
+        serialize::write(s, v.uint);
+    }
+};
+
+template <>
+struct reader<nanom::Val> {
+    void read(Source& s, nanom::Val& v) {
+        serialize::read(s, v.uint);
+    }
+};
+
+template <>
+struct writer<nanom::Struct> {
+    void write(Sink& s, const nanom::Struct& v) {
+        serialize::write(s, v.v);
+    }
+};
+
+
+template <>
+struct reader<nanom::Struct> {
+    void read(Source& s, nanom::Struct& v) {
+        serialize::read(s, v.v);
+    }
+};
+
+}
+
 namespace scripting {
 
 
@@ -420,6 +454,8 @@ struct Vm {
         ////// 
 
         vm.required("init", "Void", "Void");
+        vm.required("remove_monster", "[ [ UInt UInt ] MonsterVal ]", "Void");
+        vm.required("remove_item", "[ [ UInt UInt ] UInt ItemVal ]", "Void");
         vm.required("generate", "Void", "Void");
         vm.required("set_skin", "[ UInt UInt ]", "Void");
         vm.required("drawing_context", "Void", "[ UInt UInt ]");
@@ -454,6 +490,9 @@ struct Vm {
         grid::get().clear();
         neighbors::get().clear();
         grender::get().clear();
+
+        forall_monsters("remove_monster");
+        forall_items("remove_item");
 
         piccol::structmap<FeatMap>().clear();
         piccol::structmap<MonsterMap>().clear();
@@ -494,6 +533,82 @@ struct Vm {
         done = out.v[1].uint;
         dead = out.v[2].uint;
         regen = out.v[3].uint;
+    }
+
+    void forall_monsters(const std::string& func) {
+        piccol::Struct tmp;
+
+        for (const auto& kv : piccol::structmap<MonsterMap>().map) {
+            piccol::Struct s;
+            s.v.insert(s.v.end(), kv.first.v.begin(), kv.first.v.end());
+            s.v.insert(s.v.end(), kv.second.v.begin(), kv.second.v.end());
+
+            run(func, "[ [ UInt UInt ] MonsterVal ]", "Void", s, tmp);
+        }
+    }
+
+    void forall_items(const std::string& func) {
+        piccol::Struct tmp;
+
+        for (const auto& kv : piccol::structstack<ItemMap>().map) {
+
+            size_t n = kv.second.size()-1;
+
+            for (const auto& v : kv.second) {
+                piccol::Struct s;
+                s.v.insert(s.v.end(), kv.first.v.begin(), kv.first.v.end());
+                s.v.push_back((piccol::UInt)n);
+                s.v.insert(s.v.end(), v.v.begin(), v.v.end());
+
+                run(func, "[ [ UInt UInt ] UInt ItemVal ]", "Void", s, tmp);
+                --n;
+            }
+        }
+    }
+    
+
+    template <typename SINK>
+    void save(SINK& s) {
+
+        serialize::write(s, piccol::structmap<FeatStock>().map);
+        serialize::write(s, piccol::structmap<PropStock>().map);
+        serialize::write(s, piccol::structmap<FeatMap>().map);
+        serialize::write(s, piccol::structmap<MonsterStock>().map);
+        serialize::write(s, piccol::structpool<MonsterStock>().map);
+        serialize::write(s, piccol::structmap<MonsterMap>().map);
+        serialize::write(s, piccol::structmap<ItemStock>().map);
+        serialize::write(s, piccol::structpool<ItemStock>().map);
+        serialize::write(s, piccol::structstack<ItemMap>().map);
+
+        const piccol::GlobalStruct& p = piccol::globalstruct<Player>();
+        const piccol::GlobalStruct& d = piccol::globalstruct<Dungeon>();
+
+        serialize::write(s, p.init);
+        serialize::write(s, p.obj);
+        serialize::write(s, d.init);
+        serialize::write(s, d.obj);
+    }
+
+    template <typename SOURCE>
+    void load(SOURCE& s) {
+
+        serialize::read(s, piccol::structmap<FeatStock>().map);
+        serialize::read(s, piccol::structmap<PropStock>().map);
+        serialize::read(s, piccol::structmap<FeatMap>().map);
+        serialize::read(s, piccol::structmap<MonsterStock>().map);
+        serialize::read(s, piccol::structpool<MonsterStock>().map);
+        serialize::read(s, piccol::structmap<MonsterMap>().map);
+        serialize::read(s, piccol::structmap<ItemStock>().map);
+        serialize::read(s, piccol::structpool<ItemStock>().map);
+        serialize::read(s, piccol::structstack<ItemMap>().map);
+
+        piccol::GlobalStruct& p = piccol::globalstruct<Player>();
+        piccol::GlobalStruct& d = piccol::globalstruct<Dungeon>();
+
+        serialize::read(s, p.init);
+        serialize::read(s, p.obj);
+        serialize::read(s, d.init);
+        serialize::read(s, d.obj);
     }
 
 };

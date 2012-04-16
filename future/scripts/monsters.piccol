@@ -1,18 +1,33 @@
 
 def [a:Sym b:Monster];
-
 def [a:[UInt UInt] b:MonsterVal];
+def [a:MonsterVal b:Monster];
+def [a:MonsterKey b:Sym c:UInt];
+
 
 make [Sym Monster]->MonsterVal :-
   MonsterVal {species=\a}.
 
+
 /*** ***/
+
+fmt MonsterVal->Sym :- 
+  [ \\ (\\->Monster(\species get->Monster)) ]->Sym(
+     fmt
+     \b->Sym(\name) fmt
+     \a->Void(<: \onfire > 0u :> ? ' (on fire)' fmt ; )
+     fmt->Sym
+  ).
 
 set_monster [UInt UInt Sym]->Void :-
   [ [\x \y] ([\v (\v get->Monster)] make->MonsterVal) ] -> Void(
     \\ set
     \a set_skin
   ).
+
+remove_monster [ [UInt UInt] MonsterVal ]->Void :-
+  [ (\b->MonsterKey(\species get->Monster make->MonsterKey)) (\b->Sym(\species)) 1u ] put
+.
 
 monster [UInt UInt]->Skin :-
   [\a \b] get->MonsterVal->Skin(\species get->Monster->Skin(\skin)).

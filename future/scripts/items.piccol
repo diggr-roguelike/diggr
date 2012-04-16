@@ -7,6 +7,9 @@ def [a:[UInt UInt] b:UInt];
 
 def [a:ItemVal b:Item];
 
+def [xy:[UInt UInt] n:UInt item:ItemVal];
+
+
 make [Sym Item]->ItemVal :-
   ItemVal{ item=\a 
 
@@ -45,6 +48,7 @@ fmt NameData->Sym :-
   fmt->Sym
 .
 
+/*** ***/
 
 fmt ItemVal->Sym :-
   [ \\ (\\->Item(\item get->Item)) ]->Sym(
@@ -57,9 +61,6 @@ fmt ItemVal->Sym :-
               corpse=(\a->Sym(\corpse)) } fmt->Sym
  ).
 
-
-/*** ***/
-
 /* HACK! This only works because only one 'stack' is registered. */
 
 nitems [UInt UInt]->UInt :- \\ size->UInt.
@@ -69,6 +70,10 @@ set_item [UInt UInt Sym]->Void :-
     \\ put
     \a set_skin
   ).
+
+remove_item [ [UInt UInt] UInt ItemVal ]->Void :-
+  /* Nothing needs to be done yet.*/
+.
 
 item [UInt UInt]->Skin :-
   [[\a \b] 0u] get->ItemVal->Skin(\item get->Item->Skin(\skin)).

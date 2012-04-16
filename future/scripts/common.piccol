@@ -156,7 +156,6 @@ def {
   sleepattack
   fast
   is_mold
-  no_a
   boulder
   selfdestruct
   stoneeating
@@ -183,7 +182,7 @@ def {
   visible: Bool
   visible_old: Bool
   was_seen: Bool
-  onfire: Bool
+  onfire: UInt
   bld_delta: [Int Int]
   fleetimeout: UInt
 } MonsterVal; 

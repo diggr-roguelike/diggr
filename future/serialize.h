@@ -7,6 +7,7 @@
 #include <vector>
 #include <map>
 #include <unordered_set>
+#include <unordered_map>
 
 namespace serialize {
 
@@ -43,20 +44,48 @@ struct Source {
     }
 };
 
+template <typename T>
+struct reader;
 
-template <typename T> 
-struct writer {
+template <typename T>
+struct writer;
+
+struct writer_default {
+    template <typename T>
     void write(Sink& s, const T& t) {
         s<<t;
     }
 };
 
-template <typename T> 
-struct reader {
+struct reader_default {
+    template <typename T>
     void read(Source& s, T& t) {
         s>>t;
     }
 };
+
+//////////////
+
+template <> struct reader<bool> : public reader_default {};
+template <> struct reader<int> : public reader_default {};
+template <> struct reader<unsigned int> : public reader_default {};
+template <> struct reader<long> : public reader_default {};
+template <> struct reader<unsigned long> : public reader_default {};
+template <> struct reader<long long> : public reader_default {};
+template <> struct reader<unsigned long long> : public reader_default {};
+template <> struct reader<float> : public reader_default {};
+template <> struct reader<double> : public reader_default {};
+
+template <> struct writer<bool> : public writer_default {};
+template <> struct writer<int> : public writer_default {};
+template <> struct writer<unsigned int> : public writer_default {};
+template <> struct writer<long> : public writer_default {};
+template <> struct writer<unsigned long> : public writer_default {};
+template <> struct writer<long long> : public writer_default {};
+template <> struct writer<unsigned long long> : public writer_default {};
+template <> struct writer<float> : public writer_default {};
+template <> struct writer<double> : public writer_default {};
+
 
 //////////////
 
@@ -145,20 +174,18 @@ struct reader< std::pair<T1,T2> > {
 
 
 template <typename T>
-inline void write_stl(Sink& s, const T& v) {
-    s<<v.size();
-    for (const auto& i : v) {
-        writer<typename T::value_type>().write(s, i);
-    }
-}
-
-
-template <typename T>
 struct remove_constpair { typedef T type; };
 
 template <typename T1, typename T2>
 struct remove_constpair< std::pair<const T1, T2> > { typedef std::pair<T1, T2> type; };
 
+template <typename T>
+inline void write_stl(Sink& s, const T& v) {
+    s<<v.size();
+    for (const auto& i : v) {
+        writer<typename remove_constpair<typename T::value_type>::type>().write(s, i);
+    }
+}
 
 template <typename T>
 inline void read_stl(Source& s, T& v) {
@@ -193,6 +220,13 @@ struct writer< std::unordered_set<T> > {
     }
 };
 
+template <typename K,typename V>
+struct writer< std::unordered_map<K,V> > {
+    void write(Sink& s, const std::unordered_map<K,V>& v) {
+        write_stl(s, v);
+    }
+};
+
 
 template <typename T>
 struct reader< std::vector<T> > {
@@ -211,6 +245,13 @@ struct reader< std::map<K,V> > {
 template <typename T>
 struct reader< std::unordered_set<T> > {
     void read(Source& s, std::unordered_set<T>& v) {
+        read_stl(s, v);
+    }
+};
+
+template <typename K,typename V>
+struct reader< std::unordered_map<K,V> > {
+    void read(Source& s, std::unordered_map<K,V>& v) {
         read_stl(s, v);
     }
 };

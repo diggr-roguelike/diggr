@@ -37,12 +37,12 @@ struct Game {
 
     template <typename SINK>
     void save(SINK& s) {
-        //serialize::write(s, pxy);
+        vm.save(s);
     }
 
     template <typename SOURCE>
     void load(SOURCE& s) {
-        //serialize::read(s, pxy);
+        vm.load(s);
     }
 
     void drawing_context(mainloop::drawing_context_t& ctx) {
