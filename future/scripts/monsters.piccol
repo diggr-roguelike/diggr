@@ -44,6 +44,7 @@ walk_to [ WalkData [Int Int] ]->WalkData :-
   \a { to_x=([(\a->UInt(\x)) (\b->Int(\a))] add->UInt)
        to_y=([(\a->UInt(\y)) (\b->Int(\b))] add->UInt) }.
 
+
 walk_to WalkData->Void :-
   [ \x \y \to_x \to_y ] dg_neighbors_linked->Bool ?
   [ \to_x \to_y ] dg_render_is_walkblock->Bool $not ? 
@@ -60,10 +61,11 @@ walk_rnd WalkData->[Int Int] :-
 
 walk WalkData->Void :-
   \static ? ;
-  \boulder ? [ \\ (\\->[Int Int](\bld_delta)) ] walk_to->WalkData walk_to ;
+  \boulder ? [ \\ (\bld_delta) ] walk_to->WalkData walk_to ;
   [ \\ (\\ walk_path->[UInt UInt]) ] walk_to->WalkData walk_to ;
   [ \\ (\\ walk_rnd->[Int Int]) ]  walk_to->WalkData walk_to 
 .
+
 
 /*** ***/
 
