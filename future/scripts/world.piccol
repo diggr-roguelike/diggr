@@ -1,15 +1,15 @@
 
 def [a:[UInt UInt] b:MonsterVal];
 
-ok Void->OutState :- OutState{ dead=false done=false need_input=true }.
+ok UInt->OutState :- OutState{ ticks=\\ dead=false done=false need_input=true }.
 
 
 /*** ***/
 
 process_monster [ [UInt UInt] MonsterVal ]->Void :-
-  \a walk
+#  \a walk
 .
 
 process_world UInt->OutState :-
-  ok->OutState  
+  \\ ok->OutState  
 .
