@@ -570,6 +570,13 @@ struct Vm {
     template <typename SINK>
     void save(SINK& s) {
 
+        metalan::symtab().save(
+            [&s](nanom::Sym sn, const std::string& ss) {
+                serialize::write(s, sn);
+                serialize::write(s, ss);
+            }
+            );
+
         serialize::write(s, piccol::structmap<FeatStock>().map);
         serialize::write(s, piccol::structmap<PropStock>().map);
         serialize::write(s, piccol::structmap<FeatMap>().map);
@@ -591,6 +598,16 @@ struct Vm {
 
     template <typename SOURCE>
     void load(SOURCE& s) {
+
+        while (1) {
+            nanom::Sym sn;
+            std::string ss;
+            serialize::read(s, sn);
+            serialize::read(s, ss);
+
+            if (!metalan::symtab().load(sn, ss))
+                break;
+        }
 
         serialize::read(s, piccol::structmap<FeatStock>().map);
         serialize::read(s, piccol::structmap<PropStock>().map);
