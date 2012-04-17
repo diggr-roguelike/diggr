@@ -6,6 +6,10 @@ to UInt->Real :- <: real(\v) :>.
 to Real->Int :- <: int(\v) :>.
 to Int->Real :- <: real(\v) :>.
 
+def [a:UInt b:Int];
+
+add [UInt Int]->UInt :-
+  <: int(\a) + \b :> ->UInt( <: \v >= 0 :> ? <: uint(\v) :>; 0u ).
 
 /***/
 
@@ -34,6 +38,7 @@ def {
   done: Bool
   dead: Bool
   regenerate: Bool
+  need_input: Bool
 } OutState;
 
 /***/
@@ -171,7 +176,6 @@ def {
 def {
   species: Sym
 
-  xy: [UInt UInt]
   known_p: Bool
   known_pxy: [UInt UInt]
   do_move: Bool
@@ -322,14 +326,15 @@ def {
 
 /***/
 
+# For 'msg'
 def [a:Sym b:Bool];
 
-
-def [a:UInt b:UInt c:UInt d:UInt];
+# For generate.piccol
 def [x:UInt y:UInt v:Sym];
+
+# For random.piccol
 def [a:Real b:Real c:Real];
 def [a:Real b:Real c:UInt];
-
 
 /*** ***/
 

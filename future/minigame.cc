@@ -62,7 +62,7 @@ struct Game {
         //ss << "Turn " << ticks;
         //grender::get().do_message(ss.str(), false);
 
-        need_input = true;
+        vm.process_world(ticks, done, dead, need_input);
     }
 
     void handle_input(size_t& ticks, bool& done, bool& dead, int vk, char c) {

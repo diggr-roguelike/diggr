@@ -19,6 +19,8 @@ def [x:UInt y:UInt z:UInt skin:Skin];
 def [x:UInt y:UInt z:UInt back:Sym];
 def [x:UInt y:UInt z:UInt fore:Sym char:Sym fore2:Sym fore_i:Bool is_terrain:Bool];
 def [x:UInt y:UInt z:UInt];
+def [a:UInt b:UInt c:UInt d:UInt];
+
 
 set_renderskin [UInt UInt UInt Renderskin]->Void :-
   [ \x \y \z
@@ -110,11 +112,18 @@ player [UInt UInt]->Renderskin :-
   [ \a \b (get->Player->UInt(\x)) (get->Player->UInt(\y)) ]->Renderskin (
      <: \a == \c && \b == \d :> ? player->Renderskin).
 
+
+set_monster [UInt UInt]->Void :-
+  [ \a \b 6u ([\a \b] monster->Skin) ] set_renderskin.
+
+unset_monster [UInt UInt]->Void :-
+  [ \a \b 6u ] unset_renderskin.
+
 set_player [UInt UInt]->Void :-
- [ \a \b 7u ([\a \b] player->Renderskin) ] set_renderskin.
+  [ \a \b 7u ([\a \b] player->Renderskin) ] set_renderskin.
 
 unset_player [UInt UInt]->Void :-
- [ \a \b 7u ] unset_renderskin.
+  [ \a \b 7u ] unset_renderskin.
 
 
 /*** *** ***/
@@ -128,9 +137,9 @@ set_skin [UInt UInt]->Void :-
 
   [ \a \b 5u ([\a \b] item->Skin) ] set_renderskin fail;
 
-  [ \a \b 6u ([\a \b] monster->Skin) ] set_renderskin fail;
+  [ \a \b ] set_monster fail;
 
-  [ \a \b 7u ([\a \b] player->Renderskin) ] set_renderskin fail; 
+  [ \a \b ] set_player fail; 
 .
 
 
@@ -139,3 +148,9 @@ set_skin [UInt UInt]->Void :-
 move_player [UInt UInt UInt UInt]->Void :-
   [ \a \b ] unset_player
   [ \c \d ] set_player.
+
+/* Move only a monster's layer from one spot to another. */
+
+move_monster [UInt UInt UInt UInt]->Void :-
+  [ \a \b ] unset_monster
+  [ \c \d ] set_monster.

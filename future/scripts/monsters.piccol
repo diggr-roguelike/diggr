@@ -8,8 +8,81 @@ def [a:MonsterKey b:Sym c:UInt];
 make [Sym Monster]->MonsterVal :-
   MonsterVal {species=\a}.
 
+def {
+  x: UInt
+  y: UInt
+  known_p: Bool
+  px: UInt
+  py: UInt
+  fast: Bool
+  range: UInt
+  static: Bool
+  boulder: Bool
+  bld_delta: [Int Int]
+  to_x: UInt
+  to_y: UInt
+} WalkData;
+
+def [a:WalkData b:[UInt UInt]];
+def [a:WalkData b:[Int Int]];
+def [x:UInt y:UInt x2:UInt y2:UInt n:UInt range:UInt];
+def [a:UInt b:UInt c:UInt d:UInt];
+def [a:UInt b:UInt c:MonsterVal];
+def [a:UInt b:UInt c:MonsterVal d:Monster];
+
+walk_path WalkData->[UInt UInt] :-
+  \known_p ? [ \x \y \px \py 
+               (\fast->UInt(\\ ? 2u ; 1u)) 
+               (<: \range * 2u :>) ] dg_render_path_walk->[UInt UInt]
+.
+
+walk_to [ WalkData [UInt UInt] ]->WalkData :-
+  \a { to_x=(\b->UInt(\a)) to_y=(\b->UInt(\b)) }
+.
+
+walk_to [ WalkData [Int Int] ]->WalkData :-
+  \a { to_x=([(\a->UInt(\x)) (\b->Int(\a))] add->UInt)
+       to_y=([(\a->UInt(\y)) (\b->Int(\b))] add->UInt) }.
+
+walk_to WalkData->Void :-
+  [ \x \y \to_x \to_y ] dg_neighbors_linked->Bool ?
+  [ \to_x \to_y ] dg_render_is_walkblock->Bool $not ? 
+
+    [ [\to_x \to_y] ([\x \y] del->MonsterVal) ] set
+    [ \x \y \to_x \to_y ] move_monster
+  ;
+.
+
+walk_rnd WalkData->[Int Int] :-
+  \\->[Int Int](\fast ? [-2 2] ; [-1 1])->[Int Int](
+      [ (\\ dg_random_range->Int) (\\ dg_random_range->Int) ])
+.
+
+walk WalkData->Void :-
+  \static ? ;
+  \boulder ? [ \\ (\\->[Int Int](\bld_delta)) ] walk_to->WalkData walk_to ;
+  [ \\ (\\ walk_path->[UInt UInt]) ] walk_to->WalkData walk_to ;
+  [ \\ (\\ walk_rnd->[Int Int]) ]  walk_to->WalkData walk_to 
+.
 
 /*** ***/
+
+walk [ UInt UInt ]->Void :-
+  [ \a \b ([ \a \b ] get->MonsterVal) ]->Void(
+     [ \a \b \c (\c->Monster(\species get->Monster)) ]->Void(
+
+       WalkData{ x=\a 
+                 y=\b 
+                 known_p=(\c->Bool(\known_p))
+                 px=(\c->UInt(\known_pxy->UInt(\a))) 
+                 py=(\c->UInt(\known_pxy->UInt(\b)))
+                 fast=(\d->Bool(\fast)) 
+                 range=(\d->UInt(\range))
+                 static=(\d->Bool(\static))
+                 boulder=(\d->Bool(\boulder))
+                 bld_delta=(\c->[Int Int](\bld_delta))
+               } walk
+     )).
 
 fmt MonsterVal->Sym :- 
   [ \\ (\\->Monster(\species get->Monster)) ]->Sym(

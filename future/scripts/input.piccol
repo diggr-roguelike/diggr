@@ -6,8 +6,8 @@ py Void->UInt :- get->Player->UInt(\y).
 def { x:UInt y:UInt dx:Int dy:Int } XyPair;
 def [a:UInt b:UInt c:Int d:Int];
 def [a:UInt b:Bool];
-def [a:UInt b:Int];
 def [a:UInt b:UInt c:UInt];
+def [a:UInt b:UInt c:UInt d:UInt];
 def [xy:[UInt UInt] n:UInt];
 
 go UInt->OutState :- OutState{ticks=(<: \v + 1u :>) done=false dead=false}.
@@ -18,7 +18,7 @@ regen [UInt Bool]->OutState :- \a go->OutState {regenerate=\b}.
 add XyPair->XyPair :- XyPair{ x=\x y=\y dx=(<:int(\x)+\dx:>) dy=(<:int(\y)+\dy:>) }.
 
 walkable XyPair->Bool :-
-  [ \x \y \dx \dy ] dg_neighbors_linked->Bool ? 
+  [ \x \y (\dx to->UInt) (\dy to->UInt) ] dg_neighbors_linked->Bool ? 
   [ (\dx to->UInt) (\dy to->UInt) ] dg_render_is_walkblock->Bool $not ? true;
   false
 .
@@ -41,9 +41,6 @@ move [Int Int]->Void :-
           get->Player {x=\c y=\d} set
           [ \a \b \c \d ] move_player))
 .
-
-add [UInt Int]->UInt :-
-  <: int(\a) + \b :> ->UInt( <: \v >= 0 :> ? <: uint(\v) :>; 0u ).
 
 dlevel Void->UInt :- get->Dungeon->UInt(\level).
 

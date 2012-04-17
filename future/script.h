@@ -294,7 +294,7 @@ inline bool dg_grid_one_of_walk(CALLBACK) {
 inline bool dg_neighbors_linked(CALLBACK) {
     
     ret.v.push_back((nanom::UInt)neighbors::get().linked(neighbors::pt(struc.v[0].uint, struc.v[1].uint),
-                                                         neighbors::pt(struc.v[2].inte, struc.v[3].inte)));
+                                                         neighbors::pt(struc.v[2].uint, struc.v[3].uint)));
     return true;
 }
 
@@ -306,6 +306,20 @@ inline bool dg_current_moon(CALLBACK) {
 inline bool dg_render_message(CALLBACK) {
     grender::get().do_message(metalan::symtab().get(struc.v[0].uint), struc.v[1].uint);
     return true;
+}
+
+inline bool dg_render_path_walk(CALLBACK) {
+    unsigned int xo;
+    unsigned int yo;
+    bool r = grender::get().path_walk(struc.v[0].uint, struc.v[1].uint,
+                                      struc.v[2].uint, struc.v[3].uint,
+                                      struc.v[4].uint, struc.v[5].uint,
+                                      xo, yo);
+    if (r) {
+        ret.v.push_back((nanom::UInt)xo);
+        ret.v.push_back((nanom::UInt)yo);
+    }
+    return r;
 }
 
 
@@ -433,11 +447,15 @@ struct Vm {
         vm.register_callback("dg_grid_one_of_water", "Void", "[ UInt UInt ]", dg_grid_one_of_water);
         vm.register_callback("dg_grid_one_of_walk",  "Void", "[ UInt UInt ]", dg_grid_one_of_walk);
 
-        vm.register_callback("dg_neighbors_linked", "[ UInt UInt Int Int ]", "Bool", dg_neighbors_linked);
+        vm.register_callback("dg_neighbors_linked", "[ UInt UInt UInt UInt ]", "Bool", dg_neighbors_linked);
 
         vm.register_callback("dg_current_moon", "Void", "Sym", dg_current_moon);
 
         vm.register_callback("dg_render_message", "[ Sym Bool ]", "Void", dg_render_message);
+
+        vm.register_callback("dg_render_path_walk", 
+                             "[ UInt UInt UInt UInt UInt UInt ]", "[ UInt UInt ]",
+                             dg_render_path_walk);
 
         vm.register_callback("print", "UInt", "Void", _print1);
         vm.register_callback("print", "Int",  "Void", _print2);
@@ -464,7 +482,7 @@ struct Vm {
         vm.init();
 
         vm.check_type("InState",  {nanom::UINT, nanom::INT, nanom::SYMBOL});
-        vm.check_type("OutState", {nanom::UINT, nanom::BOOL, nanom::BOOL, nanom::BOOL});
+        vm.check_type("OutState", {nanom::UINT, nanom::BOOL, nanom::BOOL, nanom::BOOL, nanom::BOOL});
     }        
 
     void run(const std::string& name, const std::string& from, const std::string& to, 
@@ -533,6 +551,22 @@ struct Vm {
         done = out.v[1].uint;
         dead = out.v[2].uint;
         regen = out.v[3].uint;
+    }
+
+    void process_world(size_t& ticks, bool& done, bool& dead, bool& need_input) {
+
+        forall_monsters("process_monster");
+
+        Obj out;
+        Obj inp;
+        inp.v.push_back((nanom::UInt)ticks);
+
+        run("process_world", "UInt", "OutState", inp, out);
+
+        ticks = out.v[0].uint;
+        done = out.v[1].uint;
+        dead = out.v[2].uint;
+        need_input = out.v[4].uint;
     }
 
     void forall_monsters(const std::string& func) {
