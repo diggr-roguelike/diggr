@@ -6,6 +6,11 @@ ok UInt->OutState :- OutState{ ticks=\\ dead=false done=false need_input=true }.
 
 /*** ***/
 
+monster_hits [UInt UInt]->Void :-
+  <:[fmt] ' HITS!! ' \a ' ' \b :> msg
+.
+
+
 process_monster [ [UInt UInt] MonsterVal ] -> [ [UInt UInt] MonsterVal ] :-
 
   \\->Void( ' BEFORE: ' print \a->UInt(\a) print ' ' print \a->UInt(\b) print '\n' print )

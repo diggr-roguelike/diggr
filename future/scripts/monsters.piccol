@@ -60,9 +60,13 @@ walk_to [ WalkData [Int Int] ]->WalkData :-
 
 
 walk_to WalkData->WalkData :-
+  [ \to_x \to_y (get->Player->UInt(\x)) (get->Player->UInt(\y)) ] ->Bool( <: \a == \c && \b == \d :> ) ? 
+     [ \x \y ] monster_hits 
+     \\ { to_x=\x to_y=\y } 
+  ;
   [ \to_x \to_y ] dg_render_is_valid->Bool ?
-  [ \to_x \to_y ] dg_render_is_walkblock->Bool $not ? 
-    \\
+    [ \to_x \to_y ] dg_render_is_walkblock->Bool $not ? 
+      \\
   ;
   \\ { to_x=\x to_y=\y }
 .

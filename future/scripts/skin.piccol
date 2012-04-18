@@ -106,7 +106,7 @@ default [UInt UInt]->Renderskin :-
                      default_wall->Renderskin
 ). 
 
-player Void->Renderskin :- Renderskin{ char='@' fore='white' is_nowalk=true }.
+player Void->Renderskin :- Renderskin{ char='@' fore='white' }.
 
 player [UInt UInt]->Renderskin :-
   [ \a \b (get->Player->UInt(\x)) (get->Player->UInt(\y)) ]->Renderskin (

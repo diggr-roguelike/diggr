@@ -67,6 +67,7 @@ modules Void->Void :-
   <:[module] world 'world.piccol'
              process_monster [ [UInt UInt] MonsterVal ]->[ [UInt UInt] MonsterVal ]
              process_world UInt->OutState
+             monster_hits [UInt UInt]->Void
    :>
 
   <:[module] stats 'stats.piccol'
