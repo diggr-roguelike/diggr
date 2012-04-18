@@ -333,9 +333,9 @@ inline bool dg_render_path_walk(CALLBACK) {
 inline bool dg_dist(CALLBACK) {
     nanom::UInt a = struc.v[0].uint, b = struc.v[1].uint, c = struc.v[2].uint, d = struc.v[3].uint;
 
-    nanom::Int ab = ((nanom::Int)a - (nanom::Int)b);
-    nanom::Int cd = ((nanom::Int)c - (nanom::Int)d);
-    nanom::Real dist = sqrt((nanom::Real)(ab * ab) + (nanom::Real)(cd * cd));
+    nanom::Int ac = ((nanom::Int)a - (nanom::Int)c);
+    nanom::Int bd = ((nanom::Int)b - (nanom::Int)d);
+    nanom::Real dist = sqrt((nanom::Real)(ac * ac) + (nanom::Real)(bd * bd));
 
     ret.v.push_back(dist);
     return true;
@@ -478,6 +478,7 @@ struct Vm {
         vm.register_callback("dg_dist", "[ UInt UInt UInt UInt ]", "Real", dg_dist);
 
         vm.register_callback("print", "UInt", "Void", _print1);
+        vm.register_callback("print", "Bool", "Void", _print1);
         vm.register_callback("print", "Int",  "Void", _print2);
         vm.register_callback("print", "Real", "Void", _print3);
         vm.register_callback("print", "Sym",  "Void", _print4);

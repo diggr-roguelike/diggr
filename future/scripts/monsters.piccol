@@ -122,6 +122,9 @@ make [ [UInt UInt] MonsterVal ]->TargetData :-
                 \\ { dist=([ \x \y \px \py ] dg_dist->Real)
                      p_is_water=([ \px \py ] dg_grid_is_water->Bool) }
               )
+
+->TargetData(<:[print] '  === ' \x ' ' \y ' ' \range ' ' \px ' ' \py ' ' \dist:> \\)
+
   ).
 
 
@@ -137,7 +140,13 @@ check_alive MonsterVal->Void :-
 
 target [ [UInt UInt] MonsterVal ]->MonsterVal :-
 
-  [ \b (\\ make->TargetData) ] target->MonsterVal
+  [ \b (\\ make->TargetData) ] 
+
+->[MonsterVal TargetData]( \a->Void(<:[print] '  MM: ' \species ' ' \known_p :>)
+                           \a->[UInt UInt](\known_pxy)->Void(<:[print] '    ' \a ' ' \b :>)
+                           \b->Void(<:[print] '  TT: ' \dist ' ' \range ' ' \px ' ' \py:>) \\)
+
+   target->MonsterVal
 .
 
 fmt MonsterVal->Sym :- 
