@@ -162,6 +162,14 @@ inline bool dg_render_is_walkblock(CALLBACK) {
     return true;
 }
 
+inline bool dg_render_is_valid(CALLBACK) {
+
+    nanom::UInt x = struc.v[0].uint;
+    nanom::UInt y = struc.v[1].uint;
+    ret.v.push_back((nanom::UInt)grender::get().is_valid(x, y));
+    return true;
+}
+
 inline bool dg_grid_set_walk(CALLBACK) {
 
     nanom::UInt x = struc.v[0].uint;
@@ -322,6 +330,17 @@ inline bool dg_render_path_walk(CALLBACK) {
     return r;
 }
 
+inline bool dg_dist(CALLBACK) {
+    nanom::UInt a = struc.v[0].uint, b = struc.v[1].uint, c = struc.v[2].uint, d = struc.v[3].uint;
+
+    nanom::Int ab = ((nanom::Int)a - (nanom::Int)b);
+    nanom::Int cd = ((nanom::Int)c - (nanom::Int)d);
+    nanom::Real dist = sqrt((nanom::Real)(ab * ab) + (nanom::Real)(cd * cd));
+
+    ret.v.push_back(dist);
+    return true;
+}
+
 
 inline std::ostringstream& current_buffer() {
     static std::ostringstream ret;
@@ -384,8 +403,6 @@ struct Vm {
 
     piccol::Modules vm;
 
-    typedef nanom::Struct Obj;
-
     Vm(const std::string& sysdir, 
        const std::string& appdir, bool verbose = false) : vm(sysdir, appdir, "game.modules", verbose) {
 
@@ -424,6 +441,7 @@ struct Vm {
 
         vm.register_callback("dg_render_is_viewblock", "[ UInt UInt ]", "Bool", dg_render_is_viewblock);
         vm.register_callback("dg_render_is_walkblock", "[ UInt UInt ]", "Bool", dg_render_is_walkblock);
+        vm.register_callback("dg_render_is_valid",     "[ UInt UInt ]", "Bool", dg_render_is_valid);
 
         vm.register_callback("dg_render_set_skin", 
                              "[ UInt UInt UInt Sym Sym Sym Bool Bool ]", "Void", dg_render_set_skin);
@@ -457,6 +475,8 @@ struct Vm {
                              "[ UInt UInt UInt UInt UInt UInt ]", "[ UInt UInt ]",
                              dg_render_path_walk);
 
+        vm.register_callback("dg_dist", "[ UInt UInt UInt UInt ]", "Real", dg_dist);
+
         vm.register_callback("print", "UInt", "Void", _print1);
         vm.register_callback("print", "Int",  "Void", _print2);
         vm.register_callback("print", "Real", "Void", _print3);
@@ -486,7 +506,7 @@ struct Vm {
     }        
 
     void run(const std::string& name, const std::string& from, const std::string& to, 
-             nanom::Struct& inp, nanom::Struct& out) {
+             const nanom::Struct& inp, nanom::Struct& out) {
 
         bool ret = vm.run(name, from, to, inp, out);
         if (!ret) {
@@ -495,14 +515,14 @@ struct Vm {
     }
 
     void init() {
-        Obj out;
-        Obj inp;
+        nanom::Struct out;
+        nanom::Struct inp;
         run("init", "Void", "Void", inp, out);
     }
 
     void generate() {
-        Obj out;
-        Obj inp;
+        nanom::Struct out;
+        nanom::Struct inp;
 
         celauto::get().clear();
         grid::get().clear();
@@ -520,16 +540,16 @@ struct Vm {
     }
 
     void set_skin(unsigned int x, unsigned int y) {
-        Obj out;
-        Obj inp;
+        nanom::Struct out;
+        nanom::Struct inp;
         inp.v.push_back((nanom::UInt)x);
         inp.v.push_back((nanom::UInt)y);
         run("set_skin", "[ UInt UInt ]", "Void", inp, out);
     }
 
     void drawing_context(unsigned int& px, unsigned int& py) {
-        Obj out;
-        Obj inp;
+        nanom::Struct out;
+        nanom::Struct inp;
 
         run("drawing_context", "Void", "[ UInt UInt ]", inp, out);
 
@@ -538,8 +558,8 @@ struct Vm {
     }
 
     void handle_input(size_t& ticks, int vk, char c, bool& done, bool& dead, bool& regen) {
-        Obj out;
-        Obj inp;
+        nanom::Struct out;
+        nanom::Struct inp;
         inp.v.push_back((nanom::UInt)ticks);
         inp.v.push_back((nanom::Int)vk);
         char cc[2] = { c, 0 };
@@ -555,10 +575,53 @@ struct Vm {
 
     void process_world(size_t& ticks, bool& done, bool& dead, bool& need_input) {
 
-        forall_monsters("process_monster");
+        piccol::StructMap::map_t tmpmap;
 
-        Obj out;
-        Obj inp;
+        std::vector<nanom::Struct> changed_coords;
+
+
+        for (const auto& kv : piccol::structmap<MonsterMap>().map) {
+            piccol::Struct s;
+            piccol::Struct out;
+
+            s.v.insert(s.v.end(), kv.first.v.begin(), kv.first.v.end());
+            s.v.insert(s.v.end(), kv.second.v.begin(), kv.second.v.end());
+
+            bool ok = vm.run("process_monster",
+                             "[ [ UInt UInt ] MonsterVal ]",
+                             "[ [ UInt UInt ] MonsterVal ]",
+                             s, out);
+
+            if (!ok) {
+                std::cout << " DELETE! " << std::endl;
+                changed_coords.push_back(kv.first);
+
+            } else {
+                nanom::Struct newk = out.substruct(0, 2);
+                nanom::Struct newv = out.substruct(2, out.v.size());
+
+                if (tmpmap.count(newk) != 0) {
+                    newk = kv.first;
+                }
+
+                tmpmap[newk] = newv;
+
+                if (!std::equal_to<nanom::Struct>()(newk, kv.first)) {
+                    changed_coords.push_back(newk);
+                    changed_coords.push_back(kv.first);
+                }
+            }
+        }
+
+        piccol::structmap<MonsterMap>().map.swap(tmpmap);
+
+        for (const nanom::Struct& o : changed_coords) {
+            nanom::Struct tmp;
+            run("set_skin", "[ UInt UInt ]", "Void", o, tmp);
+        }
+
+        nanom::Struct out;
+        nanom::Struct inp;
         inp.v.push_back((nanom::UInt)ticks);
 
         run("process_world", "UInt", "OutState", inp, out);

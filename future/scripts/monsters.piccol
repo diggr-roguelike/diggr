@@ -23,12 +23,26 @@ def {
   to_y: UInt
 } WalkData;
 
+def {
+  x: UInt
+  y: UInt
+  heatseeking: Bool
+  px: UInt
+  py: UInt
+  dist: Real
+  range: UInt
+  p_is_water: Bool
+} TargetData;
+
 def [a:WalkData b:[UInt UInt]];
 def [a:WalkData b:[Int Int]];
 def [x:UInt y:UInt x2:UInt y2:UInt n:UInt range:UInt];
 def [a:UInt b:UInt c:UInt d:UInt];
 def [a:UInt b:UInt c:MonsterVal];
-def [a:UInt b:UInt c:MonsterVal d:Monster];
+def [a:[UInt UInt] b:MonsterVal c:Monster];
+def [a:MonsterVal b:TargetData];
+
+
 
 walk_path WalkData->[UInt UInt] :-
   \known_p ? [ \x \y \px \py 
@@ -45,13 +59,12 @@ walk_to [ WalkData [Int Int] ]->WalkData :-
        to_y=([(\a->UInt(\y)) (\b->Int(\b))] add->UInt) }.
 
 
-walk_to WalkData->Void :-
-  [ \x \y \to_x \to_y ] dg_neighbors_linked->Bool ?
+walk_to WalkData->WalkData :-
+  [ \to_x \to_y ] dg_render_is_valid->Bool ?
   [ \to_x \to_y ] dg_render_is_walkblock->Bool $not ? 
-
-    [ [\to_x \to_y] ([\x \y] del->MonsterVal) ] set
-    [ \x \y \to_x \to_y ] move_monster
+    \\
   ;
+  \\ { to_x=\x to_y=\y }
 .
 
 walk_rnd WalkData->[Int Int] :-
@@ -59,32 +72,73 @@ walk_rnd WalkData->[Int Int] :-
       [ (\\ dg_random_range->Int) (\\ dg_random_range->Int) ])
 .
 
-walk WalkData->Void :-
-  \static ? ;
-  \boulder ? [ \\ (\bld_delta) ] walk_to->WalkData walk_to ;
-  [ \\ (\\ walk_path->[UInt UInt]) ] walk_to->WalkData walk_to ;
-  [ \\ (\\ walk_rnd->[Int Int]) ]  walk_to->WalkData walk_to 
+walk WalkData->WalkData :-
+  \static ? \\ { to_x=\x to_y=\y } ;
+  \\ ->WalkData(
+     \boulder ? [ \\ (\bld_delta)     ] walk_to->WalkData ;
+     [ \\ (\\ walk_path->[UInt UInt]) ] walk_to->WalkData ;
+     [ \\ (\\ walk_rnd->[Int Int])    ] walk_to->WalkData
+  ) walk_to->WalkData
 .
+
+target [MonsterVal TargetData]->MonsterVal :-
+
+  \b->Bool(<: \dist <= real(\range) && (!\heatseeking || !\p_is_water) :>) ? 
+     \a { known_p=true known_pxy=[(\b->UInt(\px)) (\b->UInt(\py))] }
+  ;
+     \a { known_p=false }
+.
+
+
+make [ [UInt UInt] MonsterVal ]->WalkData :-
+
+  [ \a \b (\b->Monster(\species get->Monster)) ]->WalkData(
+
+    WalkData{ x=(\a->UInt(\a))
+              y=(\a->UInt(\b))
+              known_p=(\b->Bool(\known_p))
+              px=(\b->UInt(\known_pxy->UInt(\a))) 
+              py=(\b->UInt(\known_pxy->UInt(\b)))
+              fast=(\c->Bool(\fast)) 
+              range=(\c->UInt(\range))
+              static=(\c->Bool(\static))
+              boulder=(\c->Bool(\boulder))
+              bld_delta=(\b->[Int Int](\bld_delta))
+            }
+   ).
+
+make [ [UInt UInt] MonsterVal ]->TargetData :-
+
+  [ \a \b (\b->Monster(\species get->Monster))]->TargetData(
+
+    TargetData{ x=(\a->UInt(\a))
+                y=(\a->UInt(\b))
+                heatseeking=(\c->Bool(\heatseeking))
+                range=(\c->UInt(\range))
+                px=(get->Player->UInt(\x))
+                py=(get->Player->UInt(\y))
+
+              } ->TargetData(
+                \\ { dist=([ \x \y \px \py ] dg_dist->Real)
+                     p_is_water=([ \px \py ] dg_grid_is_water->Bool) }
+              )
+  ).
 
 
 /*** ***/
 
-walk [ UInt UInt ]->Void :-
-  [ \a \b ([ \a \b ] get->MonsterVal) ]->Void(
-     [ \a \b \c (\c->Monster(\species get->Monster)) ]->Void(
+walk [ [UInt UInt] MonsterVal ]->[UInt UInt] :-
 
-       WalkData{ x=\a 
-                 y=\b 
-                 known_p=(\c->Bool(\known_p))
-                 px=(\c->UInt(\known_pxy->UInt(\a))) 
-                 py=(\c->UInt(\known_pxy->UInt(\b)))
-                 fast=(\d->Bool(\fast)) 
-                 range=(\d->UInt(\range))
-                 static=(\d->Bool(\static))
-                 boulder=(\d->Bool(\boulder))
-                 bld_delta=(\c->[Int Int](\bld_delta))
-               } walk
-     )).
+  \\ make->WalkData walk->WalkData ->[UInt UInt]([ \to_x \to_y ])
+.
+
+check_alive MonsterVal->Void :-
+  <: \hp > -3.0 :> ? .
+
+target [ [UInt UInt] MonsterVal ]->MonsterVal :-
+
+  [ \b (\\ make->TargetData) ] target->MonsterVal
+.
 
 fmt MonsterVal->Sym :- 
   [ \\ (\\->Monster(\species get->Monster)) ]->Sym(

@@ -106,7 +106,7 @@ default [UInt UInt]->Renderskin :-
                      default_wall->Renderskin
 ). 
 
-player Void->Renderskin :- Renderskin{ char='@' fore='white' }.
+player Void->Renderskin :- Renderskin{ char='@' fore='white' is_nowalk=true }.
 
 player [UInt UInt]->Renderskin :-
   [ \a \b (get->Player->UInt(\x)) (get->Player->UInt(\y)) ]->Renderskin (
@@ -131,6 +131,12 @@ unset_player [UInt UInt]->Void :-
 /* Completely redraw all layers properly. */
 
 set_skin [UInt UInt]->Void :-
+  [ \a \b 0u ] unset_renderskin 
+  [ \a \b 1u ] unset_renderskin 
+  [ \a \b 5u ] unset_renderskin 
+  [ \a \b 6u ] unset_renderskin 
+  [ \a \b 7u ] unset_renderskin 
+
   [ \a \b 0u ([\a \b] default->Renderskin) ] set_renderskin fail;
 
   [ \a \b 1u ([\a \b] feature->Skin) ] set_renderskin fail;
@@ -143,14 +149,4 @@ set_skin [UInt UInt]->Void :-
 .
 
 
-/* Move only the player's layer from one spot to another. */
 
-move_player [UInt UInt UInt UInt]->Void :-
-  [ \a \b ] unset_player
-  [ \c \d ] set_player.
-
-/* Move only a monster's layer from one spot to another. */
-
-move_monster [UInt UInt UInt UInt]->Void :-
-  [ \a \b ] unset_monster
-  [ \c \d ] set_monster.

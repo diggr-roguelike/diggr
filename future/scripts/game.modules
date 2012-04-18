@@ -21,8 +21,6 @@ modules Void->Void :-
 
   <:[module] skin 'skin.piccol'
              set_skin [UInt UInt]->Void
-             move_player [UInt UInt UInt UInt]->Void
-             move_monster [UInt UInt UInt UInt]->Void
    :>
 
   <:[module] feats 'feats.piccol'
@@ -45,7 +43,11 @@ modules Void->Void :-
              monster [UInt UInt]->Skin
              set_monster [UInt UInt Sym]->Void
              remove_monster [ [UInt UInt] MonsterVal ]->Void
-             walk [UInt UInt]->Void
+
+             walk [ [UInt UInt] MonsterVal ]->[UInt UInt]
+             target [ [UInt UInt] MonsterVal ]->MonsterVal
+             check_alive MonsterVal->Void
+
              fmt MonsterVal->Sym
    :>
 
@@ -63,7 +65,7 @@ modules Void->Void :-
    :>
 
   <:[module] world 'world.piccol'
-             process_monster [ [UInt UInt] MonsterVal ]->Void
+             process_monster [ [UInt UInt] MonsterVal ]->[ [UInt UInt] MonsterVal ]
              process_world UInt->OutState
    :>
 

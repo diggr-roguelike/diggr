@@ -39,7 +39,8 @@ move [Int Int]->Void :-
       [ \x \y (\dx to->UInt) (\dy to->UInt) ]->Void (
           [\c \d] move_action
           get->Player {x=\c y=\d} set
-          [ \a \b \c \d ] move_player))
+          [ \a \b ] set_skin
+          [ \c \d ] set_skin))
 .
 
 dlevel Void->UInt :- get->Dungeon->UInt(\level).

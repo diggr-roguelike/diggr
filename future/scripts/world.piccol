@@ -6,8 +6,19 @@ ok UInt->OutState :- OutState{ ticks=\\ dead=false done=false need_input=true }.
 
 /*** ***/
 
-process_monster [ [UInt UInt] MonsterVal ]->Void :-
-#  \a walk
+process_monster [ [UInt UInt] MonsterVal ] -> [ [UInt UInt] MonsterVal ] :-
+
+  \\->Void( ' BEFORE: ' print \a->UInt(\a) print ' ' print \a->UInt(\b) print '\n' print )
+
+
+  /* Fails if the monster is already dead */
+  \b check_alive
+
+  /* Note! _First_ we try to walk, only then we try to give the monster a target. 
+   * (The player gets a free turn.) */ 
+  [ (\\ walk->[UInt UInt]) (\\ target->MonsterVal) ]
+
+  ->[ [UInt UInt] MonsterVal ]( ' AFTER: ' print \a->UInt(\a) print ' ' print \a->UInt(\b) print '\n' print \\)
 .
 
 process_world UInt->OutState :-

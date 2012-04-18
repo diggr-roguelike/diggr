@@ -373,6 +373,10 @@ public:
         TCOD_map_clear(tcodmap, false, false);
     }
 
+    bool is_valid(unsigned int x, unsigned int y) {
+        if (x < w && y < h) return true;
+        return false;
+    }
 
     gridpoint& _get(unsigned int x, unsigned int y) {
 	return grid[y*w+x];
