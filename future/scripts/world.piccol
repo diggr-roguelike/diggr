@@ -19,9 +19,7 @@ process_monster [ [UInt UInt] MonsterVal ] -> [ [UInt UInt] MonsterVal ] :-
   /* Fails if the monster is already dead */
   \b check_alive
 
-  /* Note! _First_ we try to walk, only then we try to give the monster a target. 
-   * (The player gets a free turn.) */ 
-  [ (\\ walk->[UInt UInt]) (\\ target->MonsterVal) ]
+  [ \a (\\ target->MonsterVal) ] -> [ [UInt UInt] MonsterVal ] ( [ (\\ walk->[UInt UInt]) \b ] )
 
   ->[ [UInt UInt] MonsterVal ]( ' AFTER: ' print \a->a print ' ' print \a->b print '\n' print \\)
 .
