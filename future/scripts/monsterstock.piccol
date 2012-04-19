@@ -52,14 +52,14 @@ def [a:UInt b:Real];
 moon_weight [Sym MoonDistrib]->UInt :-
   <:[case] \moon :
 
-     'new'             ? \md->UInt(\new) ;
-     'waxing crescent' ? \md->UInt(\wax_c) ;
-     'first quarter'   ? \md->UInt(\q1) ;
-     'waxing gibbous'  ? \md->UInt(\wax_g) ;
-     'full'            ? \md->UInt(\full) ;
-     'waning gibbous'  ? \md->UInt(\wan_g) ;
-     'last quarter'    ? \md->UInt(\q2) ;
-     'waning crescent' ? \md->UInt(\wan_c)
+     'new'             ? \md->new ;
+     'waxing crescent' ? \md->wax_c ;
+     'first quarter'   ? \md->q1 ;
+     'waxing gibbous'  ? \md->wax_g ;
+     'full'            ? \md->full ;
+     'waning gibbous'  ? \md->wan_g ;
+     'last quarter'    ? \md->q2 ;
+     'waning crescent' ? \md->wan_c
   :>
 .
     

@@ -51,16 +51,16 @@ walk_path WalkData->[UInt UInt] :-
 .
 
 walk_to [ WalkData [UInt UInt] ]->WalkData :-
-  \a { to_x=(\b->UInt(\a)) to_y=(\b->UInt(\b)) }
+  \a { to_x=(\b->a) to_y=(\b->b) }
 .
 
 walk_to [ WalkData [Int Int] ]->WalkData :-
-  \a { to_x=([(\a->UInt(\x)) (\b->Int(\a))] add->UInt)
-       to_y=([(\a->UInt(\y)) (\b->Int(\b))] add->UInt) }.
+  \a { to_x=([(\a->x) (\b->a)] add->UInt)
+       to_y=([(\a->y) (\b->b)] add->UInt) }.
 
 
 walk_to WalkData->WalkData :-
-  [ \to_x \to_y (get->Player->UInt(\x)) (get->Player->UInt(\y)) ] ->Bool( <: \a == \c && \b == \d :> ) ? 
+  [ \to_x \to_y (get->Player->x) (get->Player->y) ] ->Bool( <: \a == \c && \b == \d :> ) ? 
      [ \x \y ] monster_hits 
      \\ { to_x=\x to_y=\y } 
   ;
@@ -88,7 +88,7 @@ walk WalkData->WalkData :-
 target [MonsterVal TargetData]->MonsterVal :-
 
   \b->Bool(<: \dist <= real(\range) && (!\heatseeking || !\p_is_water) :>) ? 
-     \a { known_p=true known_pxy=[(\b->UInt(\px)) (\b->UInt(\py))] }
+     \a { known_p=true known_pxy=[(\b->px) (\b->py)] }
   ;
      \a { known_p=false }
 .
@@ -98,16 +98,16 @@ make [ [UInt UInt] MonsterVal ]->WalkData :-
 
   [ \a \b (\b->Monster(\species get->Monster)) ]->WalkData(
 
-    WalkData{ x=(\a->UInt(\a))
-              y=(\a->UInt(\b))
-              known_p=(\b->Bool(\known_p))
-              px=(\b->UInt(\known_pxy->UInt(\a))) 
-              py=(\b->UInt(\known_pxy->UInt(\b)))
-              fast=(\c->Bool(\fast)) 
-              range=(\c->UInt(\range))
-              static=(\c->Bool(\static))
-              boulder=(\c->Bool(\boulder))
-              bld_delta=(\b->[Int Int](\bld_delta))
+    WalkData{ x=(\a->a)
+              y=(\a->b)
+              known_p=(\b->known_p)
+              px=(\b->known_pxy->a) 
+              py=(\b->known_pxy->b)
+              fast=(\c->fast) 
+              range=(\c->range)
+              static=(\c->static)
+              boulder=(\c->boulder)
+              bld_delta=(\b->bld_delta)
             }
    ).
 
@@ -115,12 +115,12 @@ make [ [UInt UInt] MonsterVal ]->TargetData :-
 
   [ \a \b (\b->Monster(\species get->Monster))]->TargetData(
 
-    TargetData{ x=(\a->UInt(\a))
-                y=(\a->UInt(\b))
-                heatseeking=(\c->Bool(\heatseeking))
-                range=(\c->UInt(\range))
-                px=(get->Player->UInt(\x))
-                py=(get->Player->UInt(\y))
+    TargetData{ x=(\a->a)
+                y=(\a->b)
+                heatseeking=(\c->heatseeking)
+                range=(\c->range)
+                px=(get->Player->x)
+                py=(get->Player->y)
 
               } ->TargetData(
                 \\ { dist=([ \x \y \px \py ] dg_dist->Real)
@@ -156,7 +156,7 @@ target [ [UInt UInt] MonsterVal ]->MonsterVal :-
 fmt MonsterVal->Sym :- 
   [ \\ (\\->Monster(\species get->Monster)) ]->Sym(
      fmt
-     \b->Sym(\name) fmt
+     \b->name fmt
      \a->Void(<: \onfire > 0u :> ? ' (on fire)' fmt ; )
      fmt->Sym
   ).
@@ -168,10 +168,10 @@ set_monster [UInt UInt Sym]->Void :-
   ).
 
 remove_monster [ [UInt UInt] MonsterVal ]->Void :-
-  [ (\b->MonsterKey(\species get->Monster make->MonsterKey)) (\b->Sym(\species)) 1u ] put
+  [ (\b->MonsterKey(\species get->Monster make->MonsterKey)) (\b->species) 1u ] put
 .
 
 monster [UInt UInt]->Skin :-
-  [\a \b] get->MonsterVal->Skin(\species get->Monster->Skin(\skin)).
+  [\a \b] get->MonsterVal->Skin(\species get->Monster->skin).
 
 

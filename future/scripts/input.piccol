@@ -1,7 +1,7 @@
 
 
-px Void->UInt :- get->Player->UInt(\x).
-py Void->UInt :- get->Player->UInt(\y).  
+px Void->UInt :- get->Player->x.
+py Void->UInt :- get->Player->y.  
 
 def { x:UInt y:UInt dx:Int dy:Int } XyPair;
 def [a:UInt b:UInt c:Int d:Int];
@@ -43,7 +43,7 @@ move [Int Int]->Void :-
           [ \c \d ] set_skin))
 .
 
-dlevel Void->UInt :- get->Dungeon->UInt(\level).
+dlevel Void->UInt :- get->Dungeon->level.
 
 get Void->FeatFlags :- [ (px->UInt) (py->UInt) ] get->FeatFlags.
 

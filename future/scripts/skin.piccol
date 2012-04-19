@@ -24,15 +24,15 @@ def [a:UInt b:UInt c:UInt d:UInt];
 
 set_renderskin [UInt UInt UInt Renderskin]->Void :-
   [ \x \y \z
-    (\skin->Sym(\fore))
-    (\skin->Sym(\char))
-    (\skin->Sym(\fore2))
-    (\skin->Bool(\fore_i))
-    (\skin->Bool(\is_terrain)) ] dg_render_set_skin
-  [ \x \y \z (\skin->Bool(\is_nowalk)) ] dg_render_set_is_walkblock
-  [ \x \y \z (\skin->Bool(\is_noview)) ] dg_render_set_is_viewblock
-  [ \x \y \z (\skin->Bool(\is_lit)) ] dg_render_set_is_lit
-  [ \x \y \z (\skin->Sym(\back)) ] dg_render_set_back
+    (\skin->fore)
+    (\skin->char)
+    (\skin->fore2)
+    (\skin->fore_i)
+    (\skin->is_terrain) ] dg_render_set_skin
+  [ \x \y \z (\skin->is_nowalk) ] dg_render_set_is_walkblock
+  [ \x \y \z (\skin->is_noview) ] dg_render_set_is_viewblock
+  [ \x \y \z (\skin->is_lit) ] dg_render_set_is_lit
+  [ \x \y \z (\skin->back) ] dg_render_set_back
 .
 
 unset Void->Renderskin :-
@@ -109,7 +109,7 @@ default [UInt UInt]->Renderskin :-
 player Void->Renderskin :- Renderskin{ char='@' fore='white' }.
 
 player [UInt UInt]->Renderskin :-
-  [ \a \b (get->Player->UInt(\x)) (get->Player->UInt(\y)) ]->Renderskin (
+  [ \a \b (get->Player->x) (get->Player->y) ]->Renderskin (
      <: \a == \c && \b == \d :> ? player->Renderskin).
 
 

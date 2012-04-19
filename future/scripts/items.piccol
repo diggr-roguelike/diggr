@@ -15,14 +15,14 @@ make [Sym Item]->ItemVal :-
 
            count=(\b->UInt(<: \count == 0u :> ? 1u ; \count))
 
-           ammo=(\b->Int(\ammochance->Int(<: \lo == 0u && \hi == 0u :> ? -1 ;
-                                          [ (\lo to->Int) (\hi to->Int) ] dg_random_range->Int)))
+           ammo=(\b->ammochance->Int(<: \lo == 0u && \hi == 0u :> ? -1 ;
+                                     [ (\lo to->Int) (\hi to->Int) ] dg_random_range->Int))
 
-           cursed=(\b->Bool(\cursedchance->Bool(
-                            [ \thold ([ 0f \stddev ] pos_gauss->Real)]->Bool(<: \b < \a :> ? true ; false))))
+           cursed=(\b->cursedchance->Bool(
+                            [ \thold ([ 0f \stddev ] pos_gauss->Real)]->Bool(<: \b < \a :> ? true ; false)))
 
-           selfdestruct=(\b->UInt(\selfdestruct->UInt(
-                                  [ (\mean to->Real) (\stddev to->Real) 1u ] pos_gauss->UInt)))
+           selfdestruct=(\b->selfdestruct->UInt(
+                                  [ (\mean to->Real) (\stddev to->Real) 1u ] pos_gauss->UInt))
          }.
 
 def {
@@ -51,14 +51,14 @@ fmt NameData->Sym :-
 /*** ***/
 
 fmt ItemVal->Sym :-
-  [ \\ (\\->Item(\item get->Item)) ]->Sym(
-    NameData{ one=(\b->Sym(\name->Sym(\one)))
-              many=(\b->Sym(\name->Sym(\many)))
-              hide_count=(\b->Bool(\hide_count))
-              count=(\a->UInt(\count))
-              ammo=(\a->Int(\ammo))
-              tag=(\a->Bool(\tag))
-              corpse=(\a->Sym(\corpse)) } fmt->Sym
+  [ \\ (\\->item get->Item) ]->Sym(
+    NameData{ one=(\b->name->one)
+              many=(\b->name->many)
+              hide_count=(\b->hide_count)
+              count=(\a->count)
+              ammo=(\a->ammo)
+              tag=(\a->tag)
+              corpse=(\a->corpse) } fmt->Sym
  ).
 
 /* HACK! This only works because only one 'stack' is registered. */
@@ -76,5 +76,5 @@ remove_item [ [UInt UInt] UInt ItemVal ]->Void :-
 .
 
 item [UInt UInt]->Skin :-
-  [[\a \b] 0u] get->ItemVal->Skin(\item get->Item->Skin(\skin)).
+  [[\a \b] 0u] get->ItemVal->item get->Item->skin.
 

@@ -7,7 +7,7 @@ def [a:ItemKey b:Sym c:UInt];
 
 itemstock_set [Sym Item]->Void :-
   \\ set
-  [ ItemKey{} \idtag (\item->UInt(\rarity)) ] put
+  [ ItemKey{} \idtag (\item->rarity) ] put
 .
 
 

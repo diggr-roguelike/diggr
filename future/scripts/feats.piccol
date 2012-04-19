@@ -83,14 +83,14 @@ skin [Sym Sym]->Skin :-
 /**/
 
 set_props [UInt UInt Props]->Void :-
-  [\x \y (\props->Bool(\walk get->Bool))] dg_grid_set_walk fail;
-  [\x \y (\props->Bool(\water get->Bool))] dg_grid_set_water fail;
-  [\x \y (\props->Real(\height get->Real))] dg_grid_set_height;
+  [\x \y (\props->walk get->Bool)] dg_grid_set_walk fail;
+  [\x \y (\props->water get->Bool)] dg_grid_set_water fail;
+  [\x \y (\props->height get->Real)] dg_grid_set_height;
 .
 
 featstock_set [Sym Feat_]->Void :-
-  [\a (\b->Props(\props))] set
-  [\a (\b->Feat(Feat{skin=\skin flags=\flags}))] set
+  [\a (\b->props)] set
+  [\a Feat{ skin=(\b->skin) flags=(\b->flags) }] set
 .
 
 featstock_set [Sym Props]->Void :- \\ set.
@@ -111,11 +111,11 @@ set_feature [UInt UInt Sym]->Void :-
 .
 
 feature [UInt UInt]->Skin :-
-  [\a \b] get->Feat->Skin(\skin).
+  [\a \b] get->Feat->skin.
 
 
 get [UInt UInt]->FeatFlags :-
-  \\ get->Feat->FeatFlags(\flags).
+  \\ get->Feat->flags.
 
 
 /*** ***/

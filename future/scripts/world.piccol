@@ -13,7 +13,7 @@ monster_hits [UInt UInt]->Void :-
 
 process_monster [ [UInt UInt] MonsterVal ] -> [ [UInt UInt] MonsterVal ] :-
 
-  \\->Void( ' BEFORE: ' print \a->UInt(\a) print ' ' print \a->UInt(\b) print '\n' print )
+  \\->Void( ' BEFORE: ' print \a->a print ' ' print \a->b print '\n' print )
 
 
   /* Fails if the monster is already dead */
@@ -23,7 +23,7 @@ process_monster [ [UInt UInt] MonsterVal ] -> [ [UInt UInt] MonsterVal ] :-
    * (The player gets a free turn.) */ 
   [ (\\ walk->[UInt UInt]) (\\ target->MonsterVal) ]
 
-  ->[ [UInt UInt] MonsterVal ]( ' AFTER: ' print \a->UInt(\a) print ' ' print \a->UInt(\b) print '\n' print \\)
+  ->[ [UInt UInt] MonsterVal ]( ' AFTER: ' print \a->a print ' ' print \a->b print '\n' print \\)
 .
 
 process_world UInt->OutState :-

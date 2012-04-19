@@ -21,9 +21,9 @@ choose_branch Void->Void :-
 .
 
 
-branch Void->Sym :- get->Dungeon->Sym(\branch).
+branch Void->Sym :- get->Dungeon->branch.
 
-level Void->UInt :- get->Dungeon->UInt(\level).
+level Void->UInt :- get->Dungeon->level.
 
 /* TODO. */
 
@@ -94,8 +94,8 @@ get MonsterKey->Sym :-
 
 place_monster Sym->Void :- 
   [ (dg_grid_one_of_walk->[UInt UInt]) \\ ] -> Void(
-    [ (\a->UInt(\a)) (\a->UInt(\b)) 2u ] dg_grid_add_nogen_expand
-    [ (\a->UInt(\a)) (\a->UInt(\b)) \b ] set_monster 
+    [ (\a->a) (\a->b) 2u ] dg_grid_add_nogen_expand
+    [ (\a->a) (\a->b) \b ] set_monster 
   ).
 
 generate_monsters UInt->Void :-
@@ -103,7 +103,7 @@ generate_monsters UInt->Void :-
   MonsterKey{branch=(branch->Sym) level=(monster_level->UInt)} 
   get->Sym ->Bool (
        \\ place_monster
-       \\ get->Monster->Bool(\inanimate)
+       \\ get->Monster->inanimate
    ) ? \v generate_monsters ; 
    <: \v - 1u :> generate_monsters
 .
@@ -128,7 +128,7 @@ generate_mold Void->Void :-
 
 place_item Sym->Void :-
   [ (dg_grid_one_of_walk->[UInt UInt]) \v ]->Void(
-    [ (\a->UInt(\a)) (\a->UInt(\b)) \b ] set_item
+    [ (\a->a) (\a->b) \b ] set_item
   )
 .
 
@@ -170,12 +170,12 @@ def {xy:[UInt UInt] sym:Sym} XySym;
 
 random_floor_feature Sym->Void :-
   XySym{ xy=(dg_grid_one_of_floor->[UInt UInt]) sym=\v}->Void(
-    [ (\xy->UInt(\a)) (\xy->UInt(\b)) \sym ] set_feature)
+    [ (\xy->a) (\xy->b) \sym ] set_feature)
 .
 
 random_water_feature Sym->Void :-
   XySym{ xy=(dg_grid_one_of_water->[UInt UInt]) sym=\v}->Void(
-    [ (\xy->UInt(\a)) (\xy->UInt(\b)) \sym ] set_feature)
+    [ (\xy->a) (\xy->b) \sym ] set_feature)
 .
 
 generate_founts UInt->Void :-
