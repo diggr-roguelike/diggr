@@ -715,6 +715,7 @@ struct Vm {
         serialize::write(s, piccol::structmap<ItemStock>().map);
         serialize::write(s, piccol::structpool<ItemStock>().map);
         serialize::write(s, piccol::structstack<ItemMap>().map);
+        serialize::write(s, piccol::structmap<Inventory>().map);
 
         const piccol::GlobalStruct& p = piccol::globalstruct<Player>();
         const piccol::GlobalStruct& d = piccol::globalstruct<Dungeon>();
@@ -747,6 +748,7 @@ struct Vm {
         serialize::read(s, piccol::structmap<ItemStock>().map);
         serialize::read(s, piccol::structpool<ItemStock>().map);
         serialize::read(s, piccol::structstack<ItemMap>().map);
+        serialize::read(s, piccol::structmap<Inventory>().map);
 
         piccol::GlobalStruct& p = piccol::globalstruct<Player>();
         piccol::GlobalStruct& d = piccol::globalstruct<Dungeon>();

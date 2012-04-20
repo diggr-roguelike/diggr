@@ -24,6 +24,7 @@ slotname [Sym Bool]->Sym :-
    :>
 .
 
+/*
 fmt_slot Sym->Sym :-
   fmt
   gray->Sym fmt
@@ -36,20 +37,24 @@ fmt_slot Sym->Sym :-
         ' -') fmt
   fmt->Sym
 .
+*/
+
+fmt_slot Sym->Sym :-
+ <:[seq] fmt => 
+         gray->Sym, \\, ') ', [\\ true] slotname->Sym, ': ', white->Sym, \\->Sym(\\ get->ItemVal fmt->Sym; ' -')
+         => Sym
+  :>
+.
 
 /*** ***/
 
+fmt_slot_window Void->Void      :- . #dg_render_draw_window.
+fmt_slot_window Sym->Void       :- \\ fmt_slot->Sym dg_render_draw_window.
+fmt_slot_window Void->[Int Sym] :- dg_render_draw_window->[Int Sym].
+
 inv_draw Void->Sym :-
-  'a' fmt_slot->Sym dg_render_draw_window
-  'b' fmt_slot->Sym dg_render_draw_window
-  'c' fmt_slot->Sym dg_render_draw_window
-  'd' fmt_slot->Sym dg_render_draw_window
-  'e' fmt_slot->Sym dg_render_draw_window
-  'f' fmt_slot->Sym dg_render_draw_window
-  'g' fmt_slot->Sym dg_render_draw_window
-  'h' fmt_slot->Sym dg_render_draw_window
-  'i' fmt_slot->Sym dg_render_draw_window
-   dg_render_draw_window->[Int Sym]->Sym(\a remap->Sym ; \b)
+  <:[seq] fmt_slot_window => 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i' => [Int Sym] :>
+   ->Sym(\a remap->Sym ; \b)
 .
 
 inv_draw Void->Void :- inv_draw->Sym->Void().
