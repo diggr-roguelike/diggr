@@ -48,7 +48,7 @@ fmt_slot Sym->Sym :-
 
 /*** ***/
 
-fmt_slot_window Void->Void      :- . #dg_render_draw_window.
+fmt_slot_window Void->Void      :- dg_render_draw_window.
 fmt_slot_window Sym->Void       :- \\ fmt_slot->Sym dg_render_draw_window.
 fmt_slot_window Void->[Int Sym] :- dg_render_draw_window->[Int Sym].
 

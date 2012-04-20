@@ -502,6 +502,8 @@ struct Vm {
 
         vm.register_callback("dg_dist", "[ UInt UInt UInt UInt ]", "Real", dg_dist);
 
+        vm.register_callback("dg_render_draw_window", "Void", "Void", qq);
+
         vm.register_callback("dg_render_draw_window", "Sym", "Void", 
                              std::bind(dg_render_draw_window, true, _1, _2, _3, _4, _5));
 
