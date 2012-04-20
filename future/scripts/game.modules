@@ -59,9 +59,15 @@ modules Void->Void :-
              fmt ItemVal->Sym
    :>
 
+  <:[module] inventory 'inventory.piccol'
+             inv_draw Void->Sym
+             inv_draw Void->Void
+   :>
+
   <:[module] input 'input.piccol'
              handle_input InState->OutState
              drawing_context Void->[UInt UInt]
+             remap Int->Sym
    :>
 
   <:[module] world 'world.piccol'

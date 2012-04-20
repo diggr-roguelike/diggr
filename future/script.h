@@ -13,6 +13,8 @@
         const nanom::Shape& shapeto, const nanom::Struct& struc, nanom::Struct& ret
 
 
+using namespace std::placeholders;
+
 namespace serialize {
 
 template <>
@@ -62,6 +64,8 @@ struct ItemStock;
 struct FeatMap;
 struct MonsterMap;
 struct ItemMap;
+
+struct Inventory;
 
 /****/
 
@@ -342,6 +346,25 @@ inline bool dg_dist(CALLBACK) {
 }
 
 
+inline bool dg_render_draw_window(bool stage, CALLBACK) {
+    static std::vector<std::string> buffer;
+
+    if (stage) { 
+        buffer.push_back(metalan::symtab().get(struc.v[0].uint));
+
+    } else {
+        grender::Grid::keypress k = grender::get().draw_window(buffer);
+        buffer.clear();
+
+        ret.v.push_back((nanom::UInt)k.vk);
+        char cc[2] = { k.c, 0 };
+        ret.v.push_back((nanom::Sym)metalan::symtab().get(cc));
+    }
+
+    return true;
+}
+
+
 inline std::ostringstream& current_buffer() {
     static std::ostringstream ret;
     return ret;
@@ -419,6 +442,8 @@ struct Vm {
         piccol::register_pool<ItemStock>(vm, "ItemKey", "Sym");
 
         piccol::register_stack<ItemMap>(vm,    "[ UInt UInt ]", "ItemVal");
+
+        piccol::register_map<Inventory>(vm, "Sym", "ItemVal");
             
         piccol::register_global<Player>(vm,  "Player");
         piccol::register_global<Dungeon>(vm, "Dungeon");
@@ -476,6 +501,12 @@ struct Vm {
                              dg_render_path_walk);
 
         vm.register_callback("dg_dist", "[ UInt UInt UInt UInt ]", "Real", dg_dist);
+
+        vm.register_callback("dg_render_draw_window", "Sym", "Void", 
+                             std::bind(dg_render_draw_window, true, _1, _2, _3, _4, _5));
+
+        vm.register_callback("dg_render_draw_window", "Void", "[ Int Sym ]", 
+                             std::bind(dg_render_draw_window, false, _1, _2, _3, _4, _5));
 
         vm.register_callback("print", "UInt", "Void", _print1);
         vm.register_callback("print", "Bool", "Void", _print1);

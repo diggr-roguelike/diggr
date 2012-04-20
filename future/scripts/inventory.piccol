@@ -1,0 +1,56 @@
+
+def [a:Int b:Sym];
+
+white Void->Sym :- 1 char->Sym.
+gray Void->Sym :-  5 char->Sym.
+
+<:: choose(literals,types)
+   type_here :- spaces type &''.
+   literal_here :- spaces literal &''.
+   choose :- @'->' type_here @'(\\\\ ? ' literal_here @' ; ' literal_here @' )' spaces.
+::>
+
+slotname [Sym Bool]->Sym :-
+  <:[case] \a :
+    'a' ? \b <:[choose] Sym '      Head' 'head' :> ; 
+    'b' ? \b <:[choose] Sym '      Neck' 'neck' :> ;
+    'c' ? \b <:[choose] Sym '     Trunk' 'trunk' :> ;
+    'd' ? \b <:[choose] Sym ' Left hand' 'left hand' :> ;
+    'e' ? \b <:[choose] Sym 'Right hand' 'right hand' :> ;
+    'f' ? \b <:[choose] Sym '      Legs' 'legs' :> ;
+    'g' ? \b <:[choose] Sym '      Feet' 'feet' :> ;
+    'h' ? \b <:[choose] Sym 'Backpack 1' 'backpack 1' :> ;
+    'i' ? \b <:[choose] Sym 'Backpack 2' 'backpack 2' :> 
+   :>
+.
+
+fmt_slot Sym->Sym :-
+  fmt
+  gray->Sym fmt
+  \\ fmt
+  ') ' fmt
+  [\\ true] slotname->Sym fmt
+  ': ' fmt
+  white->Sym fmt
+  \\->Sym(\\ get->ItemVal fmt->Sym; 
+        ' -') fmt
+  fmt->Sym
+.
+
+/*** ***/
+
+inv_draw Void->Sym :-
+  'a' fmt_slot->Sym dg_render_draw_window
+  'b' fmt_slot->Sym dg_render_draw_window
+  'c' fmt_slot->Sym dg_render_draw_window
+  'd' fmt_slot->Sym dg_render_draw_window
+  'e' fmt_slot->Sym dg_render_draw_window
+  'f' fmt_slot->Sym dg_render_draw_window
+  'g' fmt_slot->Sym dg_render_draw_window
+  'h' fmt_slot->Sym dg_render_draw_window
+  'i' fmt_slot->Sym dg_render_draw_window
+   dg_render_draw_window->[Int Sym]->Sym(\a remap->Sym ; \b)
+.
+
+inv_draw Void->Void :- inv_draw->Sym->Void().
+

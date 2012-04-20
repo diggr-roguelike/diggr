@@ -107,9 +107,8 @@ descend Void->Bool :-
 
 :>
 
-remap InState->InState :- 
-  \\ { c=(\vk
-  <:[switch]
+remap Int->Sym :-
+  \\ <:[switch]
     key_left     'h'
     key_down     'j'
     key_up       'k'
@@ -127,8 +126,11 @@ remap InState->InState :-
     key_kp1      'b'
     key_kp3      'n'
    :>
-   )}
-  ; \\ .
+.
+
+remap InState->InState :- 
+  \\ { c=(\vk remap->Sym) } ;
+  \\ .
 
 
 /***** *** *****/
@@ -153,7 +155,9 @@ handle_input InState->OutState :-
        'b' ? [-1  1] move \ticks go->OutState ;
        'n' ? [ 1  1] move \ticks go->OutState ;
 
-       '>' ? [\ticks (descend->Bool)] regen->OutState;
+       'i' ? inv_draw \ticks go->OutState ;
+
+       '>' ? [\ticks (descend->Bool)] regen->OutState ;
     :>
     OutState{ticks=\ticks done=false dead=false} 
   )
