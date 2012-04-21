@@ -36,16 +36,18 @@ def {
 } NameData;
 
 fmt NameData->Sym :- 
-  fmt
-  \\->Void(
-    <: \count <= 1u :> ? \one fmt ;
-    \hide_count ? <:[fmt_raw] \one ' [' \count ']' :> ;
-                  <:[fmt_raw] \count ' ' \many :>
-  )
-  \\->Void( <: \corpse != nil :> ? <:[fmt_raw] ' of ' \corpse :> ; )
-  \\->Void( <: \ammo > 0 :>      ? <:[fmt_raw] ' [' \ammo ']':> ; )
-  \\->Void( \tag ? ' {tagged}' fmt ; )
-  fmt->Sym
+  <:[seq] fmt =>
+
+      \\->Sym(
+        <: \count <= 1u :> ? \one ;
+        \hide_count ? <:[seq] fmt => \one,   ' [', \count, ']' => Sym :> ;
+                      <:[seq] fmt => \count, ' ',  \many       => Sym :>
+      ),
+      \\->Sym( <: \corpse != nil :> ? <:[seq] fmt => ' of ', \corpse  => Sym :> ; ''),
+      \\->Sym( <: \ammo > 0 :>      ? <:[seq] fmt => ' [', \ammo, ']' => Sym :> ; ''),
+      \\->Sym( \tag ? ' {tagged}' ; '')
+
+    => Sym :>
 .
 
 /*** ***/

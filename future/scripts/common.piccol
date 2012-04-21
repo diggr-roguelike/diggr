@@ -343,15 +343,3 @@ def [a:Real b:Real c:UInt];
   print :- spaces @{ '\n' print}.
 ::>
 
-<:: fmt_raw(literals)
-
-  literal_here :- literal &''.
-  fmt_x :- spaces literal_here @' fmt ' fmt_x.
-  fmt_x :- spaces.
-  fmt_raw :- fmt_x.
-::>
-
-<:: fmt(fmt_raw)
-  fmt :- @' fmt ' fmt_raw @' fmt->Sym '.
-::>
-

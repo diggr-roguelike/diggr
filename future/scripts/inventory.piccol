@@ -48,9 +48,9 @@ fmt_slot Sym->Sym :-
 
 /*** ***/
 
-fmt_slot_window Void->Void      :- dg_render_draw_window.
-fmt_slot_window Sym->Void       :- \\ fmt_slot->Sym dg_render_draw_window.
-fmt_slot_window Void->[Int Sym] :- dg_render_draw_window->[Int Sym].
+fmt_slot_window_start Void->Void    :- dg_render_draw_window_start.
+fmt_slot_window Sym->Void           :- \\ fmt_slot->Sym dg_render_draw_window.
+fmt_slot_window_end Void->[Int Sym] :- dg_render_draw_window_end->[Int Sym].
 
 inv_draw Void->Sym :-
   <:[seq] fmt_slot_window => 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i' => [Int Sym] :>

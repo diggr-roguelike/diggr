@@ -155,10 +155,10 @@ target [ [UInt UInt] MonsterVal ]->MonsterVal :-
 
 fmt MonsterVal->Sym :- 
   [ \\ (\\->Monster(\species get->Monster)) ]->Sym(
-     fmt
-     \b->name fmt
-     \a->Void(<: \onfire > 0u :> ? ' (on fire)' fmt ; )
-     fmt->Sym
+     <:[seq] fmt =>
+         \b->name,
+         \a->Sym(<: \onfire > 0u :> ? ' (on fire)' ; '')
+       => Sym :>
   ).
 
 set_monster [UInt UInt Sym]->Void :-

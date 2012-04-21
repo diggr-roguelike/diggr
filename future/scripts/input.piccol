@@ -28,7 +28,7 @@ move_action [UInt UInt]->Void :-
   [\a \b ([\a \b] nitems->UInt)]->Void (
      <:[print] '/// ' \a ' ' \b ' ' \c :>
      <: \c > 1u :> ? 'You see several items here.' msg ;
-     [[\a \b] 0u] get->ItemVal fmt->Sym->Void ( <:[fmt] 'You see ' \v '.' :> msg )
+     [[\a \b] 0u] get->ItemVal fmt->Sym->Void ( <:[seq] fmt => 'You see ', \v, '.' => Sym :> msg )
   );
 .
 

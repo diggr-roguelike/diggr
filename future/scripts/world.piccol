@@ -7,7 +7,7 @@ ok UInt->OutState :- OutState{ ticks=\\ dead=false done=false need_input=true }.
 /*** ***/
 
 monster_hits [UInt UInt]->Void :-
-  <:[fmt] ' HITS!! ' \a ' ' \b :> msg
+  <:[seq] fmt => ' HITS!! ', \a, ' ', \b => Sym :> msg
 .
 
 

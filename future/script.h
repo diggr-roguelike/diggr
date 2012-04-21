@@ -5,6 +5,7 @@
 
 #include "../piccol/piccol_modulum.h"
 #include "../piccol/structures.h"
+#include "../piccol/sequencers.h"
 
 #include "tcod_colors.h"
 
@@ -346,57 +347,59 @@ inline bool dg_dist(CALLBACK) {
 }
 
 
-inline bool dg_render_draw_window(bool stage, CALLBACK) {
-    static std::vector<std::string> buffer;
+/*** ***/
 
-    if (stage) { 
-        buffer.push_back(metalan::symtab().get(struc.v[0].uint));
+struct window_buff {
+    std::vector<std::string> data;
+};
 
-    } else {
-        grender::Grid::keypress k = grender::get().draw_window(buffer);
-        buffer.clear();
+inline void dg_render_draw_window_feed(window_buff& w, const nanom::Shapes& shapes, const nanom::Shape& shape, 
+                                       const nanom::Struct& struc) {
 
-        ret.v.push_back((nanom::UInt)k.vk);
-        char cc[2] = { k.c, 0 };
-        ret.v.push_back((nanom::Sym)metalan::symtab().get(cc));
-    }
+    w.data.push_back(metalan::symtab().get(struc.v[0].uint));
+}
+
+inline bool dg_render_draw_window(window_buff& w, const nanom::Shapes& shapes, const nanom::Shape& shapeto, 
+                                  nanom::Struct& ret) {
+
+    grender::Grid::keypress k = grender::get().draw_window(w.data);
+
+    ret.v.push_back((nanom::UInt)k.vk);
+    char cc[2] = { k.c, 0 };
+    ret.v.push_back((nanom::Sym)metalan::symtab().get(cc));
 
     return true;
 }
 
 
-inline std::ostringstream& current_buffer() {
-    static std::ostringstream ret;
-    return ret;
+struct formatter {
+    std::string buff;
+};
+
+
+inline void _fmt_int(formatter& os, const nanom::Shapes& shapes, const nanom::Shape& shape, 
+                     const nanom::Struct& struc) {
+    os.buff += piccol::int_to_string(struc.v[0].inte);
 }
 
-inline bool _fmt_start(CALLBACK) {
-    current_buffer().str("");
-    return true;
+inline void _fmt_uint(formatter& os, const nanom::Shapes& shapes, const nanom::Shape& shape, 
+                      const nanom::Struct& struc) {
+    os.buff += piccol::uint_to_string(struc.v[0].uint);
 }
 
-inline bool _fmt_int(CALLBACK) {
-    current_buffer() << struc.v[0].inte;
-    return true;
+inline void _fmt_real(formatter& os, const nanom::Shapes& shapes, const nanom::Shape& shape, 
+                      const nanom::Struct& struc) {
+    os.buff += piccol::real_to_string(struc.v[0].real);
 }
 
-inline bool _fmt_uint(CALLBACK) {
-    current_buffer() << struc.v[0].uint;
-    return true;
+inline void _fmt_sym(formatter& os, const nanom::Shapes& shapes, const nanom::Shape& shape, 
+                     const nanom::Struct& struc) {
+    os.buff += metalan::symtab().get(struc.v[0].uint);
 }
 
-inline bool _fmt_real(CALLBACK) {
-    current_buffer() << struc.v[0].real;
-    return true;
-}
-
-inline bool _fmt_sym(CALLBACK) {
-    current_buffer() << metalan::symtab().get(struc.v[0].uint);
-    return true;
-}
-
-inline bool _fmt_get(CALLBACK) {
-    ret.v.push_back(metalan::symtab().get(current_buffer().str()));
+inline bool _fmt_get(formatter& os, const nanom::Shapes& shapes, const nanom::Shape& shapeto,
+                     nanom::Struct& ret) {
+    ret.v.push_back(metalan::symtab().get(os.buff));
     return true;
 }
 
@@ -502,13 +505,6 @@ struct Vm {
 
         vm.register_callback("dg_dist", "[ UInt UInt UInt UInt ]", "Real", dg_dist);
 
-        vm.register_callback("dg_render_draw_window", "Void", "Void", qq);
-
-        vm.register_callback("dg_render_draw_window", "Sym", "Void", 
-                             std::bind(dg_render_draw_window, true, _1, _2, _3, _4, _5));
-
-        vm.register_callback("dg_render_draw_window", "Void", "[ Int Sym ]", 
-                             std::bind(dg_render_draw_window, false, _1, _2, _3, _4, _5));
 
         vm.register_callback("print", "UInt", "Void", _print1);
         vm.register_callback("print", "Bool", "Void", _print1);
@@ -516,12 +512,25 @@ struct Vm {
         vm.register_callback("print", "Real", "Void", _print3);
         vm.register_callback("print", "Sym",  "Void", _print4);
 
+        piccol::register_sequencer<formatter>(vm, "fmt")
+            .feed("Int", _fmt_int)
+            .feed("UInt", _fmt_uint)
+            .feed("Real", _fmt_real)
+            .feed("Sym", _fmt_sym)
+            .end("Sym", _fmt_get);
+
+        piccol::register_sequencer<window_buff>(vm, "dg_render_draw_window")
+            .feed("Sym", dg_render_draw_window_feed)
+            .end("[ Int Sym ]", dg_render_draw_window);
+
+        /*
         vm.register_callback("fmt", "Void", "Void", _fmt_start);
         vm.register_callback("fmt", "Int",  "Void", _fmt_int);
         vm.register_callback("fmt", "UInt", "Void", _fmt_uint);
         vm.register_callback("fmt", "Real", "Void", _fmt_real);
         vm.register_callback("fmt", "Sym",  "Void", _fmt_sym);
         vm.register_callback("fmt", "Void", "Sym",  _fmt_get);
+        */
 
         ////// 
 
@@ -769,3 +778,4 @@ struct Vm {
 #undef CALLBACK
 
 #endif
+
