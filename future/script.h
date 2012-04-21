@@ -372,37 +372,6 @@ inline bool dg_render_draw_window(window_buff& w, const nanom::Shapes& shapes, c
 }
 
 
-struct formatter {
-    std::string buff;
-};
-
-
-inline void _fmt_int(formatter& os, const nanom::Shapes& shapes, const nanom::Shape& shape, 
-                     const nanom::Struct& struc) {
-    os.buff += piccol::int_to_string(struc.v[0].inte);
-}
-
-inline void _fmt_uint(formatter& os, const nanom::Shapes& shapes, const nanom::Shape& shape, 
-                      const nanom::Struct& struc) {
-    os.buff += piccol::uint_to_string(struc.v[0].uint);
-}
-
-inline void _fmt_real(formatter& os, const nanom::Shapes& shapes, const nanom::Shape& shape, 
-                      const nanom::Struct& struc) {
-    os.buff += piccol::real_to_string(struc.v[0].real);
-}
-
-inline void _fmt_sym(formatter& os, const nanom::Shapes& shapes, const nanom::Shape& shape, 
-                     const nanom::Struct& struc) {
-    os.buff += metalan::symtab().get(struc.v[0].uint);
-}
-
-inline bool _fmt_get(formatter& os, const nanom::Shapes& shapes, const nanom::Shape& shapeto,
-                     nanom::Struct& ret) {
-    ret.v.push_back(metalan::symtab().get(os.buff));
-    return true;
-}
-
 
 inline bool _print1(CALLBACK) {
     std::cout << struc.v[0].uint;
@@ -511,13 +480,6 @@ struct Vm {
         vm.register_callback("print", "Int",  "Void", _print2);
         vm.register_callback("print", "Real", "Void", _print3);
         vm.register_callback("print", "Sym",  "Void", _print4);
-
-        piccol::register_sequencer<formatter>(vm, "fmt")
-            .feed("Int", _fmt_int)
-            .feed("UInt", _fmt_uint)
-            .feed("Real", _fmt_real)
-            .feed("Sym", _fmt_sym)
-            .end("Sym", _fmt_get);
 
         piccol::register_sequencer<window_buff>(vm, "dg_render_draw_window")
             .feed("Sym", dg_render_draw_window_feed)
