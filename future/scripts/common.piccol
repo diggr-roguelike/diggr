@@ -17,6 +17,7 @@ add [UInt Int]->UInt :-
 def { 
   x: UInt
   y: UInt 
+  level: UInt
 } Player;
 
 def {
@@ -54,10 +55,8 @@ def {
   visible: Bool
 } Skin;
 
-unset Void->Skin :- Skin{char=nil color=nil}.
-
 char Int->Sym :- \v $to_sym.
-
+char UInt->Sym :- \v $to_sym.
 
 /***/
 

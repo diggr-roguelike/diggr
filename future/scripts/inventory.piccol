@@ -1,6 +1,9 @@
 
 def [a:Int b:Sym];
 
+def [a:[UInt UInt] b:UInt];
+
+
 white Void->Sym :- 1 char->Sym.
 gray Void->Sym :-  5 char->Sym.
 
@@ -48,12 +51,48 @@ fmt_slot Sym->Sym :-
 
 /*** ***/
 
-fmt_slot_window_start Void->Void    :- dg_render_draw_window_start.
-fmt_slot_window Sym->Void           :- \\ fmt_slot->Sym dg_render_draw_window.
-fmt_slot_window_end Void->[Int Sym] :- dg_render_draw_window_end->[Int Sym].
+inv_draw_floor [UInt UInt]->Void :-
+  <: \a == \b :> ? ;
+  <: \a > 5u :>   ? '(There are other items here; clear away the pile to see more)' dg_render_draw_window ;
+
+  <:[seq] fmt => 
+            gray->Sym, 
+            <: \a + 106u :> char->Sym, ') ', 
+            '            ',
+            white->Sym, 
+            [ [ (get->Player->x) (get->Player->y) ] \a ] get->ItemVal fmt->Sym
+          => Sym :> dg_render_draw_window
+
+  [ (<: \a + 1u :>) \b ] inv_draw_floor
+.
+
+inv_draw_floor Void->Void :-
+  [ (get->Player->x) (get->Player->y) ] size->UInt->Void (
+     <: \\ == 0u :> ? ;
+     '' dg_render_draw_window
+     'Items on the floor:' dg_render_draw_window
+     '' dg_render_draw_window
+     [0u \\] inv_draw_floor
+  )
+  ; 
+.
+
 
 inv_draw Void->Sym :-
-  <:[seq] fmt_slot_window => 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i' => [Int Sym] :>
+  <:[seq] dg_render_draw_window =>      
+      'a' fmt_slot->Sym, 
+      'b' fmt_slot->Sym, 
+      'c' fmt_slot->Sym, 
+      'd' fmt_slot->Sym, 
+      'e' fmt_slot->Sym, 
+      'f' fmt_slot->Sym, 
+      'g' fmt_slot->Sym, 
+      'h' fmt_slot->Sym, 
+      'i' fmt_slot->Sym,
+      \\->Void( inv_draw_floor ) '',
+      <:[seq] fmt => 'Character level: ', get->Player->level => Sym :>,
+      <:[seq] fmt => '  Dungeon level: ', get->Dungeon->level => Sym :>
+    => [Int Sym] :>
    ->Sym(\a remap->Sym ; \b)
 .
 
