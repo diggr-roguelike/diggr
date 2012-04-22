@@ -373,27 +373,6 @@ inline bool dg_render_draw_window(window_buff& w, const nanom::Shapes& shapes, c
 
 
 
-inline bool _print1(CALLBACK) {
-    std::cout << struc.v[0].uint;
-    return true;
-}
-
-inline bool _print2(CALLBACK) {
-    std::cout << struc.v[0].inte;
-    return true;
-}
-
-inline bool _print3(CALLBACK) {
-    std::cout << struc.v[0].real;
-    return true;
-}
-
-inline bool _print4(CALLBACK) {
-    std::cout << metalan::symtab().get(struc.v[0].uint);
-    return true;
-}
-
-
 struct Vm {
 
     piccol::Modules vm;
@@ -474,25 +453,12 @@ struct Vm {
 
         vm.register_callback("dg_dist", "[ UInt UInt UInt UInt ]", "Real", dg_dist);
 
-
-        vm.register_callback("print", "UInt", "Void", _print1);
-        vm.register_callback("print", "Bool", "Void", _print1);
-        vm.register_callback("print", "Int",  "Void", _print2);
-        vm.register_callback("print", "Real", "Void", _print3);
-        vm.register_callback("print", "Sym",  "Void", _print4);
-
         piccol::register_sequencer<window_buff>(vm, "dg_render_draw_window")
             .feed("Sym", dg_render_draw_window_feed)
             .end("[ Int Sym ]", dg_render_draw_window);
 
-        /*
-        vm.register_callback("fmt", "Void", "Void", _fmt_start);
-        vm.register_callback("fmt", "Int",  "Void", _fmt_int);
-        vm.register_callback("fmt", "UInt", "Void", _fmt_uint);
-        vm.register_callback("fmt", "Real", "Void", _fmt_real);
-        vm.register_callback("fmt", "Sym",  "Void", _fmt_sym);
-        vm.register_callback("fmt", "Void", "Sym",  _fmt_get);
-        */
+        piccol::register_fmt_sequencer(vm);
+        piccol::register_print_sequencer(vm);
 
         ////// 
 

@@ -13,15 +13,10 @@ monster_hits [UInt UInt]->Void :-
 
 process_monster [ [UInt UInt] MonsterVal ] -> [ [UInt UInt] MonsterVal ] :-
 
-  \\->Void( ' BEFORE: ' print \a->a print ' ' print \a->b print '\n' print )
-
-
   /* Fails if the monster is already dead */
   \b check_alive
 
   [ \a (\\ target->MonsterVal) ] -> [ [UInt UInt] MonsterVal ] ( [ (\\ walk->[UInt UInt]) \b ] )
-
-  ->[ [UInt UInt] MonsterVal ]( ' AFTER: ' print \a->a print ' ' print \a->b print '\n' print \\)
 .
 
 process_world UInt->OutState :-

@@ -336,10 +336,3 @@ def [a:Real b:Real c:UInt];
 
 /*** ***/
 
-<:: print(literals)
-
-  literal_here :- literal &''.
-  print :- spaces literal_here @' print' print.
-  print :- spaces @{ '\n' print}.
-::>
-
