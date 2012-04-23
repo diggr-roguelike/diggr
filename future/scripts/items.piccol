@@ -3,6 +3,8 @@ def [a:Sym b:Item];
 
 def [a:[UInt UInt] b:ItemVal];
 
+def [a:[UInt UInt] b:ItemVal c:UInt];
+
 def [a:[UInt UInt] b:UInt];
 
 def [a:ItemVal b:Item];
@@ -69,7 +71,7 @@ nitems [UInt UInt]->UInt :- \\ size->UInt.
 
 set_item [UInt UInt Sym]->Void :-
   [ [\x \y] ([\v (\v get->Item)] make->ItemVal) ] -> Void(
-    \\ put
+    [ \a \b 0u ] put
     \a set_skin
   ).
 

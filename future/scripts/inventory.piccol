@@ -1,8 +1,43 @@
 
 def [a:Int b:Sym];
 
+def [a:UInt b:Sym];
+
 def [a:[UInt UInt] b:UInt];
 
+def [a:[UInt UInt] b:ItemVal c:UInt];
+
+def [a:Sym b:ItemVal];
+
+def [a:UInt b:ItemVal];
+
+
+pxy Void->[UInt UInt] :- [ (get->Player->x) (get->Player->y) ].
+
+/*** ***/
+
+take [UInt ItemVal]->Void :-
+  [ (\b->item get->Item->slot) \b ] set ;
+  [ 'h' \b ] set ;
+  [ 'i' \b ] set.
+
+take UInt->Void :- 
+  <:[seq] print => '... take ', \\ :>
+  [ \\ ([ (pxy->[UInt UInt]) \\ ] del->ItemVal) ] ->Void (
+       <:[seq] print => '... take1' :>
+       \\ take 
+       <:[seq] print => '... take2' :>
+     ;
+       [ (pxy->[UInt UInt]) \b \a ] put
+  ).
+
+can_take UInt->Bool :-
+  [ (pxy->[UInt UInt]) \\ ] get->ItemVal->item get->Item->slot get->ItemVal ->Bool(false) ;
+  'h' get->ItemVal ->Bool(false) ;
+  'i' get->ItemVal ->Bool(false) ;
+  true.
+
+/*** ***/
 
 white Void->Sym :- 1 char->Sym.
 gray Void->Sym :-  5 char->Sym.
@@ -27,21 +62,6 @@ slotname [Sym Bool]->Sym :-
    :>
 .
 
-/*
-fmt_slot Sym->Sym :-
-  fmt
-  gray->Sym fmt
-  \\ fmt
-  ') ' fmt
-  [\\ true] slotname->Sym fmt
-  ': ' fmt
-  white->Sym fmt
-  \\->Sym(\\ get->ItemVal fmt->Sym; 
-        ' -') fmt
-  fmt->Sym
-.
-*/
-
 fmt_slot Sym->Sym :-
  <:[seq] fmt => 
          gray->Sym, \\, ') ', [\\ true] slotname->Sym, ': ', white->Sym, \\->Sym(\\ get->ItemVal fmt->Sym; ' -')
@@ -51,23 +71,25 @@ fmt_slot Sym->Sym :-
 
 /*** ***/
 
+floor_item_label UInt->Sym :-
+  <:[seq] fmt => 
+            gray->Sym, 
+            <: \\ + 106u :> char->Sym, ') ', 
+            '            ',
+            white->Sym, 
+            [ (pxy->[UInt UInt]) \\ ] get->ItemVal fmt->Sym
+          => Sym :>
+.
+
 inv_draw_floor [UInt UInt]->Void :-
   <: \a == \b :> ? ;
   <: \a > 5u :>   ? '(There are other items here; clear away the pile to see more)' dg_render_draw_window ;
-
-  <:[seq] fmt => 
-            gray->Sym, 
-            <: \a + 106u :> char->Sym, ') ', 
-            '            ',
-            white->Sym, 
-            [ [ (get->Player->x) (get->Player->y) ] \a ] get->ItemVal fmt->Sym
-          => Sym :> dg_render_draw_window
-
+  \a floor_item_label->Sym dg_render_draw_window
   [ (<: \a + 1u :>) \b ] inv_draw_floor
 .
 
 inv_draw_floor Void->Void :-
-  [ (get->Player->x) (get->Player->y) ] size->UInt->Void (
+  pxy->[UInt UInt] size->UInt->Void (
      <: \\ == 0u :> ? ;
      '' dg_render_draw_window
      'Items on the floor:' dg_render_draw_window
@@ -93,8 +115,52 @@ inv_draw Void->Sym :-
       <:[seq] fmt => 'Character level: ', get->Player->level => Sym :>,
       <:[seq] fmt => '  Dungeon level: ', get->Dungeon->level => Sym :>
     => [Int Sym] :>
-   ->Sym(\a remap->Sym ; \b)
+    ->Sym(\b)    
+#   ->Sym(\a remap->Sym ; \b)
 .
 
-inv_draw Void->Void :- inv_draw->Sym->Void().
+
+draw_floor_item_menu UInt->Sym :-
+  \\ can_take->Bool ? 
+      <:[seq] dg_render_draw_window => 
+           '',
+           \\ floor_item_label->Sym, 
+           '',
+           't) take this item'
+         => [Int Sym] :>
+    ->Sym(\b)
+.
+              
+draw_floor_item_menu UInt->Void :-
+  [ \\ (\\ draw_floor_item_menu->Sym) ]->Void(
+     <:[case] \b :
+         't' ? \a take
+      :>
+  )
+  ; .
+
+draw_item_menu Sym->Void :-
+  <:[case] \\ :
+    'a' ? ;
+    'b' ? ;
+    'c' ? ;
+    'd' ? ;
+    'e' ? ;
+    'f' ? ;
+    'g' ? ;
+    'h' ? ;
+    'i' ? ;
+
+    'j' ? 0u draw_floor_item_menu ;
+    'k' ? 1u draw_floor_item_menu ;
+    'l' ? 2u draw_floor_item_menu ;
+    'm' ? 3u draw_floor_item_menu ;
+    'n' ? 4u draw_floor_item_menu
+   :>
+.
+
+inv_draw Void->Void :- 
+  inv_draw->Sym draw_item_menu ;
+  .
+
 
