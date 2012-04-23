@@ -156,6 +156,7 @@ handle_input InState->OutState :-
        'n' ? [ 1  1] move \ticks go->OutState ;
 
        'i' ? inv_draw \ticks go->OutState ;
+       ',' ? inv_act_top \ticks go->OutState ;
 
        '>' ? [\ticks (descend->Bool)] regen->OutState ;
     :>

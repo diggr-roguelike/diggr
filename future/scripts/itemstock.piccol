@@ -167,7 +167,7 @@ init_itemstock Void->Void :-
 
 [ 'craft_n4' Item{
   name=(['a lifeless Brahmic medallion' 'lifeless Brahmic medallions'] name->ItemName) 
-  skin=(['$' 'yellow'] item->Skin) slot='' 
+  skin=(['$' 'yellow'] item->Skin) slot='h' 
   rarity=0u camorange=1001u throwrange=8u craft='n4' 
   applies=true 
   desc='This item won\'t work until you apply a magic spark.'
@@ -183,7 +183,7 @@ init_itemstock Void->Void :-
 
 [ 'yellow' Item{
   name=(['a yellow potion' 'yellow potions'] name->ItemName) 
-  skin=([':' 'dark_yellow'] item->Skin) slot='' 
+  skin=([':' 'dark_yellow'] item->Skin) slot='h' 
   rarity=3u camorange=1001u resource='y' throwrange=8u 
   applies=true 
   desc='A flask containing a yellow liquid.'
@@ -199,7 +199,7 @@ init_itemstock Void->Void :-
 
 [ 'craft_nu' Item{
   name=(['some nanite buckshot' 'piles of nanite buckshot'] name->ItemName)
-  skin=(['$' 'dark_yellow'] item->Skin) slot='' 
+  skin=(['$' 'dark_yellow'] item->Skin) slot='h' 
   rarity=0u camorange=1001u throwrange=8u 
   craft='nu' applies=true 
   desc='A useless contraption. It needs to be combined with\nbootsoles to become something very interesting.'
@@ -207,7 +207,7 @@ init_itemstock Void->Void :-
 
 [ 'rootpwd' Item{
   name=(['the root password' 'root passwords'] name->ItemName)
-  skin=(['!' 'white'] item->Skin) slot='' 
+  skin=(['!' 'white'] item->Skin) slot='h' 
   rarity=0u camorange=1001u winning=Achievement{name='winroot' desc='Hacked for the root password'} explodes=true 
   throwrange=8u applies=true radius=5u 
   desc='Must be something extremely important.'
@@ -238,7 +238,7 @@ init_itemstock Void->Void :-
 
 [ 'craft_ft' Item{
   name=(['a titanium phial' 'titanium phials'] name->ItemName) 
-  skin=(['$' 'dark_yellow'] item->Skin) slot='' 
+  skin=(['$' 'dark_yellow'] item->Skin) slot='h' 
   rarity=0u camorange=1001u throwrange=8u craft='ft' 
   applies=true 
   desc='A useless contraption. It needs to be combined with\nanointing oil or gunpowder to become something very interesting.'
@@ -254,7 +254,7 @@ init_itemstock Void->Void :-
 
 [ 'craft_fg' Item{
   name=(['a powderphial' 'powderphials'] name->ItemName) 
-  skin=(['$' 'dark_yellow'] item->Skin) slot='' 
+  skin=(['$' 'dark_yellow'] item->Skin) slot='h' 
   rarity=0u camorange=1001u throwrange=8u craft='fg' 
   applies=true 
   desc='A useless contraption. It needs to be combined with\na titanium rod to become something very interesting.'
@@ -262,7 +262,7 @@ init_itemstock Void->Void :-
 
 [ 'full_moon' Item{
   name=(['a prism of the Full Moon' 'prisms of the Full Moon'] name->ItemName)
-  skin=(['~' 'blue'] item->Skin) slot='' 
+  skin=(['~' 'blue'] item->Skin) slot='h' 
   rarity=2u camorange=1001u throwrange=8u applies=true 
   switch_moon='full' 
   desc='An ancient and very powerful artifact.\nRumor has it that it affects the very fabric of space\nand time.'
@@ -278,7 +278,7 @@ init_itemstock Void->Void :-
 
 [ 'craft_df' Item{
   name=(['a dragon\'s phial' 'dragon phials'] name->ItemName) 
-  skin=(['$' 'dark_yellow'] item->Skin) slot='' 
+  skin=(['$' 'dark_yellow'] item->Skin) slot='h' 
   rarity=0u camorange=1001u throwrange=8u craft='df' 
   applies=true 
   desc='A useless contraption. It needs to be combined with\nanointing oil to become something very interesting.'
@@ -286,7 +286,7 @@ init_itemstock Void->Void :-
 
 [ 'eyeofkali' Item{
   name=(['the Eye of Kali' 'Eyes of Kali'] name->ItemName) 
-  skin=(['*' 'red'] item->Skin) slot='' 
+  skin=(['*' 'red'] item->Skin) slot='h' 
   rarity=0u special='kali' camorange=1001u 
   throwrange=8u 
   desc='A gigantic ruby.\nIt is said that this magical jewel is \nbathed in the blood of virgins.'
@@ -302,7 +302,7 @@ init_itemstock Void->Void :-
 
 [ 'craft_n3' Item{
   name=(['a lifeless flaming sword' 'lifeless flaming swords'] name->ItemName)
-  skin=(['$' 'yellow'] item->Skin) slot='' 
+  skin=(['$' 'yellow'] item->Skin) slot='h' 
   rarity=0u camorange=1001u throwrange=8u craft='n3' 
   applies=true 
   desc='This item won\'t work until you apply a magic spark.'
@@ -310,7 +310,7 @@ init_itemstock Void->Void :-
 
 [ 'craft_n2' Item{
   name=(['broken camouflage nanoboots' 'pairs of broken camouflage nanoboots'] name->ItemName)
-  skin=(['$' 'yellow'] item->Skin) slot='' 
+  skin=(['$' 'yellow'] item->Skin) slot='h' 
   rarity=0u camorange=1001u throwrange=8u 
   craft='n2' applies=true 
   desc='This item won\'t work until you apply a magic spark.'
@@ -318,7 +318,7 @@ init_itemstock Void->Void :-
 
 [ 'craft_n1' Item{
   name=(['a broken everlasting shotgun' 'broken everlasting shotguns'] name->ItemName) 
-  skin=(['$' 'yellow'] item->Skin) slot='' 
+  skin=(['$' 'yellow'] item->Skin) slot='h' 
   rarity=0u camorange=1001u throwrange=8u craft='n1' 
   applies=true 
   desc='This item won\'t work until you apply a magic spark.'
@@ -326,7 +326,7 @@ init_itemstock Void->Void :-
 
 [ 'craft_n7' Item{
   name=(['a broken everlasting portable hole' 'broken everlasting portable holes'] name->ItemName) 
-  skin=(['$' 'yellow'] item->Skin) slot='' 
+  skin=(['$' 'yellow'] item->Skin) slot='h' 
   rarity=0u camorange=1001u throwrange=8u craft='n7' 
   applies=true 
   desc='This item won\'t work until you apply a magic spark.'
@@ -334,7 +334,7 @@ init_itemstock Void->Void :-
 
 [ 'craft_n6' Item{
   name=(['some lifeless medi-nanites' 'packs of lifeless medi-nanites'] name->ItemName) 
-  skin=(['$' 'yellow'] item->Skin) slot='' 
+  skin=(['$' 'yellow'] item->Skin) slot='h' 
   rarity=0u camorange=1001u throwrange=8u 
   craft='n6' applies=true 
   desc='This item won\'t work until you apply a magic spark.'
@@ -342,7 +342,7 @@ init_itemstock Void->Void :-
 
 [ 'craft_n5' Item{
   name=(['a broken gluebot machine' 'broken gluebot machines'] name->ItemName) 
-  skin=(['$' 'yellow'] item->Skin) slot='' 
+  skin=(['$' 'yellow'] item->Skin) slot='h' 
   rarity=0u camorange=1001u throwrange=8u craft='n5' 
   applies=true 
   desc='This item won\'t work until you apply a magic spark.'
@@ -358,7 +358,7 @@ init_itemstock Void->Void :-
 
 [ 'craft_n8' Item{
   name=(['a broken everlasting rocket launcher' 'broken everlasting rocket launchers'] name->ItemName) 
-  skin=(['$' 'yellow'] item->Skin) slot='' 
+  skin=(['$' 'yellow'] item->Skin) slot='h' 
   rarity=0u camorange=1001u throwrange=8u craft='n8' 
   applies=true 
   desc='This item won\'t work until you apply a magic spark.'
@@ -366,7 +366,7 @@ init_itemstock Void->Void :-
 
 [ 'gbomb' Item{
   name=(['a gamma bomb' 'gamma bombs'] name->ItemName) 
-  skin=(['!' 'azure'] item->Skin) slot='' 
+  skin=(['!' 'azure'] item->Skin) slot='h' 
   rarity=5u converts='litgbomb' camorange=1001u count=5u 
   throwrange=8u stackrange=5u applies=true 
   desc='An object that looks something like a grenade, \nbut with a \'radiation sickness\' sign painted on it.'
@@ -389,7 +389,7 @@ init_itemstock Void->Void :-
 
 [ 'craft_gt' Item{
   name=(['some gunpowder titanium' 'piles of gunpowder titanium'] name->ItemName)
-  skin=(['$' 'dark_yellow'] item->Skin) slot='' 
+  skin=(['$' 'dark_yellow'] item->Skin) slot='h' 
   rarity=0u camorange=1001u throwrange=8u 
   craft='gt' applies=true 
   desc='A useless contraption. It needs to be combined with\nbuckshot or a flaming phial to become something very interesting.'
@@ -397,7 +397,7 @@ init_itemstock Void->Void :-
 
 [ 'craft_gu' Item{
   name=(['some gunpowder buckshot' 'piles of gunpowder buckshot'] name->ItemName) 
-  skin=(['$' 'dark_yellow'] item->Skin) slot='' 
+  skin=(['$' 'dark_yellow'] item->Skin) slot='h' 
   rarity=0u camorange=1001u throwrange=8u 
   craft='gu' applies=true 
   desc='A useless contraption. It needs to be combined with\na titanium rod to become something very interesting.'
@@ -413,7 +413,7 @@ init_itemstock Void->Void :-
 
 [ 'red' Item{
   name=(['a red potion' 'red potions'] name->ItemName) 
-  skin=([':' 'dark_red'] item->Skin) slot='' 
+  skin=([':' 'dark_red'] item->Skin) slot='h' 
   rarity=3u camorange=1001u resource='r' throwrange=8u 
   applies=true 
   desc='A flask containing a red liquid.'
@@ -421,7 +421,7 @@ init_itemstock Void->Void :-
 
 [ 'doppel' Item{
   name=(['a doppelganger' 'doppelgangers'] name->ItemName) 
-  skin=(['{' 'dark_blue'] item->Skin) slot='' 
+  skin=(['{' 'dark_blue'] item->Skin) slot='h' 
   rarity=6u doppel=16u camorange=1001u throwrange=8u 
   applies=true 
   desc='A holographic depiction of a player character.\nUseful for tricking monsters.'
@@ -453,7 +453,7 @@ init_itemstock Void->Void :-
 
 [ 'cclarva' Item{
   name=(['a carrion crawler larva' 'carrion crawler larvae'] name->ItemName) 
-  skin=([',' 'white'] item->Skin) slot='' 
+  skin=([',' 'white'] item->Skin) slot='h' 
   rarity=0u throwable=true summon=SummonN{mon='carrion crawler' count=2u} liveexplode=4u 
   camorange=1001u throwrange=8u 
   desc='A tiny larva of the carrion crawler species.'
@@ -525,7 +525,7 @@ init_itemstock Void->Void :-
 
 [ 'smokemachine' Item{
   name=(['a smoke machine' 'smoke machines'] name->ItemName) 
-  skin=(['{' 'silver'] item->Skin) slot='' 
+  skin=(['{' 'silver'] item->Skin) slot='h' 
   rarity=3u camorange=1001u smoke=true throwrange=8u 
   applies=true 
   desc='A machine that produces very confusing\nshape-shifting clouds of smoke.'
@@ -540,7 +540,7 @@ init_itemstock Void->Void :-
 
 [ 'blue' Item{
   name=(['a blue potion' 'blue potions'] name->ItemName) 
-  skin=([':' 'dark_blue'] item->Skin) slot='' 
+  skin=([':' 'dark_blue'] item->Skin) slot='h' 
   rarity=3u camorange=1001u resource='b' throwrange=8u 
   applies=true 
   desc='A flask containing a blue liquid.'
@@ -556,7 +556,7 @@ init_itemstock Void->Void :-
 
 [ 'craft_t' Item{
   name=(['a titanium rod' 'titanium rods'] name->ItemName) 
-  skin=(['$' 'green'] item->Skin) slot='' 
+  skin=(['$' 'green'] item->Skin) slot='h' 
   rarity=4u camorange=1001u throwrange=8u craft='t' 
   applies=true 
   desc='This special item needs to be combined with\nanointing oil, buckshot, a flaming phial or gunpowder\nspecial item to make something very interesting.'
@@ -564,7 +564,7 @@ init_itemstock Void->Void :-
 
 [ 'craft_u' Item{
   name=(['some buckshot' 'piles of buckshot'] name->ItemName) 
-  skin=(['$' 'green'] item->Skin) slot='' 
+  skin=(['$' 'green'] item->Skin) slot='h' 
   rarity=4u camorange=1001u throwrange=8u 
   craft='u' applies=true 
   desc='This special item needs to be combined with\nbootsoles, dragon\'s blood, gunpowder, nanite compound or a titanium rod\nto make something very interesting.'
@@ -572,7 +572,7 @@ init_itemstock Void->Void :-
 
 [ 'purple' Item{
   name=(['a purple potion' 'purple potions'] name->ItemName) 
-  skin=([':' 'dark_purple'] item->Skin) slot='' 
+  skin=([':' 'dark_purple'] item->Skin) slot='h' 
   rarity=3u camorange=1001u resource='p' throwrange=8u 
   applies=true 
   desc='A flask containing a purple liquid.'
@@ -580,7 +580,7 @@ init_itemstock Void->Void :-
 
 [ 'corpse' Item{
   name=(['a corpse' 'corpses'] name->ItemName)
-  skin=([(21 char->Sym) 'yellow'] item->Skin) slot='' 
+  skin=([(21 char->Sym) 'yellow'] item->Skin) slot='h' 
   rarity=0u camorange=1001u throwrange=8u 
   desc=''
   }] itemstock_set
@@ -611,7 +611,7 @@ init_itemstock Void->Void :-
 
 [ 'craft_a' Item{
   name=(['some anointing oil' 'packets of anointing oil'] name->ItemName) 
-  skin=(['$' 'green'] item->Skin) slot='' 
+  skin=(['$' 'green'] item->Skin) slot='h' 
   rarity=4u camorange=1001u throwrange=8u 
   craft='a' applies=true 
   desc='This special item needs to be combined with\ndragon\'s blood, a flaming phial, nanite compound or a titanium rod\nto make something very interesting.'
@@ -619,7 +619,7 @@ init_itemstock Void->Void :-
 
 [ 'craft_b' Item{
   name=(['bootsoles' 'pairs of bootsoles'] name->ItemName)
-  skin=(['$' 'green'] item->Skin) slot='' 
+  skin=(['$' 'green'] item->Skin) slot='h' 
   rarity=4u camorange=1001u throwrange=8u 
   craft='b' applies=true 
   desc='This special item needs to be combined with\nbuckshot, dragon\'s blood, gunpowder or nanite compound\nto make something very interesting.'
@@ -635,7 +635,7 @@ init_itemstock Void->Void :-
 
 [ 'craft_d' Item{
   name=(['dragon\'s blood' 'bloods of dragon'] name->ItemName) 
-  skin=(['$' 'green'] item->Skin) slot='' 
+  skin=(['$' 'green'] item->Skin) slot='h' 
   rarity=4u camorange=1001u throwrange=8u 
   craft='d' applies=true 
   desc='This special item needs to be combined with\nanointing oil, bootsoles, buckshot, a flaming phial or nanite compound\nto make something very interesting.'
@@ -643,7 +643,7 @@ init_itemstock Void->Void :-
 
 [ 'craft_f' Item{
   name=(['a flaming phial' 'flaming phials'] name->ItemName) 
-  skin=(['$' 'green'] item->Skin) slot='' 
+  skin=(['$' 'green'] item->Skin) slot='h' 
   rarity=4u camorange=1001u throwrange=8u craft='f' 
   applies=true 
   desc='This special item needs to be combined with\nanointing oil, dragon\'s blood, gunpowder or a titanium rod\nto make something very interesting.'
@@ -651,7 +651,7 @@ init_itemstock Void->Void :-
 
 [ 'craft_g' Item{
   name=(['gunpowder' 'gunpowder flasks'] name->ItemName) 
-  skin=(['$' 'green'] item->Skin) slot='' 
+  skin=(['$' 'green'] item->Skin) slot='h' 
   rarity=4u camorange=1001u throwrange=8u 
   craft='g' applies=true explodes=true radius=1u
   desc='This special item needs to be combined with\nbootsoles, buckshot, a flaming phial, nanite compound or a titanium rod\nto make something very interesting.'
@@ -667,7 +667,7 @@ init_itemstock Void->Void :-
 
 [ 'craft_n' Item{
   name=(['nanite compound' 'nanite compound packets'] name->ItemName) 
-  skin=(['$' 'green'] item->Skin) slot='' 
+  skin=(['$' 'green'] item->Skin) slot='h' 
   rarity=4u camorange=1001u throwrange=8u craft='n' 
   applies=true 
   desc='This special item needs to be combined with\nanointing oil, bootsoles, buckshot, dragon\'s blood or gunpowder\nto make something very interesting.'
@@ -675,7 +675,7 @@ init_itemstock Void->Void :-
 
 [ 'craft_dn' Item{
   name=(['dragon nanites' 'dragon nanite packets'] name->ItemName) 
-  skin=(['$' 'dark_yellow'] item->Skin) slot='' 
+  skin=(['$' 'dark_yellow'] item->Skin) slot='h' 
   rarity=0u camorange=1001u throwrange=8u 
   craft='dn' applies=true 
   desc='A useless contraption. It needs to be combined with\nanointing oil to become something very interesting.'
@@ -716,7 +716,7 @@ init_itemstock Void->Void :-
 
 [ 'craft_tu' Item{
   name=(['some titanium shot' 'titanium shot cartridges'] name->ItemName)
-  skin=(['$' 'dark_yellow'] item->Skin) slot='' 
+  skin=(['$' 'dark_yellow'] item->Skin) slot='h' 
   rarity=0u camorange=1001u throwrange=8u 
   craft='tu' applies=true 
   desc='A useless contraption. It needs to be combined with\ngunpowder to become something very interesting.'
@@ -724,7 +724,7 @@ init_itemstock Void->Void :-
 
 [ 'new_moon' Item{
   name=(['a prism of the New Moon' 'prisms of the New Moon'] name->ItemName) 
-  skin=(['~' 'dark_crimson'] item->Skin) slot='' 
+  skin=(['~' 'dark_crimson'] item->Skin) slot='h' 
   rarity=2u camorange=1001u throwrange=8u applies=true 
   switch_moon='new' 
   desc='An ancient and very powerful artifact.\nRumor has it that it affects the very fabric of space\nand time.'
@@ -740,7 +740,7 @@ init_itemstock Void->Void :-
 
 [ 'alzabobrain' Item{
   name=(['some alzabo brain matter' 'alzabo brain matter nuggets'] name->ItemName) 
-  skin=([',' 'darkest_red'] item->Skin) slot='' 
+  skin=([',' 'darkest_red'] item->Skin) slot='h' 
   rarity=0u throwable=true summon=SummonN{mon='alzabo' count=1u} liveexplode=4u 
   camorange=1001u throwrange=8u 
   desc='Bits and pieces of the alzabo\'s brain.'
@@ -748,7 +748,7 @@ init_itemstock Void->Void :-
 
 [ 'craft_gn' Item{
   name=(['nanite powder' 'nanite powder packets'] name->ItemName) 
-  skin=(['$' 'dark_yellow'] item->Skin) slot='' 
+  skin=(['$' 'dark_yellow'] item->Skin) slot='h' 
   rarity=0u camorange=1001u throwrange=8u 
   craft='gn' applies=true 
   desc='A useless contraption. It needs to be combined with\nbootsoles to become something very interesting.'
@@ -780,7 +780,7 @@ init_itemstock Void->Void :-
 
 [ 'triffidlarva' Item{
   name=(['a triffid seed' 'triffid seeds'] name->ItemName) 
-  skin=([',' 'peach'] item->Skin) slot='' 
+  skin=([',' 'peach'] item->Skin) slot='h' 
   rarity=0u throwable=true summon=SummonN{mon='triffid' count=1u} liveexplode=4u 
   camorange=1001u throwrange=8u 
   desc='A tiny larva of the carrion crawler species.'
@@ -788,7 +788,7 @@ init_itemstock Void->Void :-
 
 [ 'gasspore' Item{
   name=(['a swamp gas spore' 'swamp gas spores'] name->ItemName) 
-  skin=([',' 'dark_blue'] item->Skin) slot='' 
+  skin=([',' 'dark_blue'] item->Skin) slot='h' 
   rarity=5u throwable=true liveexplode=3u swampgas=true 
   camorange=1001u throwrange=8u 
   desc='A concentrated globe of pent-up swamp gas.'
@@ -796,7 +796,7 @@ init_itemstock Void->Void :-
 
 [ 'deusex' Item{
   name=('Deus ex machina' name->ItemName)
-  skin=([(236 char->Sym) 'yellow'] item->Skin) slot='' 
+  skin=([(236 char->Sym) 'yellow'] item->Skin) slot='h' 
   rarity=0u wishing=true hide_count=true camorange=1001u 
   count=7u throwrange=8u applies=true 
   desc='Translated from the Latin, literally:\n"the god from the machine".'
@@ -836,7 +836,7 @@ init_itemstock Void->Void :-
 
 [ 'tlaloc' Item{
   name=(['the water stone of Tlaloc' 'water stones of Tlaloc'] name->ItemName) 
-  skin=(['*' 'gray'] item->Skin) slot='' 
+  skin=(['*' 'gray'] item->Skin) slot='h' 
   rarity=1u align='cn' camorange=1001u 
   throwrange=8u 
   desc='A stone washed up from the stygian depths\nof the world\'s oceans, it has been imbued\nwith the spiritual energy of Tlaloc, the\nfearsome cthonic god of water and lightning.'
@@ -844,7 +844,7 @@ init_itemstock Void->Void :-
 
 [ 'minibomb' Item{
   name=(['a minibomb' 'minibombs'] name->ItemName) 
-  skin=(['(' 'pink'] item->Skin) slot='' 
+  skin=(['(' 'pink'] item->Skin) slot='h' 
   rarity=8u converts='litminibomb' camorange=1001u explodes=true 
   count=3u throwrange=8u stackrange=3u applies=true 
   radius=1u 
@@ -862,7 +862,7 @@ init_itemstock Void->Void :-
 
 [ 'craft_bu' Item{
   name=(['buckshot bootsoles' 'pairs of buckshot bootsoles'] name->ItemName)
-  skin=(['$' 'dark_yellow'] item->Skin) slot='' 
+  skin=(['$' 'dark_yellow'] item->Skin) slot='h' 
   rarity=0u camorange=1001u throwrange=8u 
   craft='bu' applies=true 
   desc='A useless contraption. It needs to be combined with\ndragon\'s blood or nanite compound to become something very interesting.'
@@ -886,7 +886,7 @@ init_itemstock Void->Void :-
 
 [ 'craft_bg' Item{
   name=(['powderboots' 'pairs of powderboots'] name->ItemName) 
-  skin=(['$' 'dark_yellow'] item->Skin) slot='' 
+  skin=(['$' 'dark_yellow'] item->Skin) slot='h' 
   rarity=0u camorange=1001u throwrange=8u 
   craft='bg' applies=true 
   desc='A useless contraption. It needs to be combined with\nnanite compound to become something very interesting.'
@@ -902,7 +902,7 @@ init_itemstock Void->Void :-
 
 [ 'craft_bd' Item{
   name=(['dragon boots' 'pairs of dragon boots'] name->ItemName) 
-  skin=(['$' 'dark_yellow'] item->Skin) slot='' 
+  skin=(['$' 'dark_yellow'] item->Skin) slot='h' 
   rarity=0u camorange=1001u throwrange=8u 
   craft='bd' applies=true 
   desc='A useless contraption. It needs to be combined with\nbuckshot to become something very interesting.'
@@ -918,7 +918,7 @@ init_itemstock Void->Void :-
 
 [ 'cthulhu_m1' Item{
   name=(['an unholy amulet' 'unholy amulets'] name->ItemName) 
-  skin=(['"' 'pink'] item->Skin) slot='' 
+  skin=(['"' 'pink'] item->Skin) slot='h' 
   rarity=0u camorange=1001u throwrange=8u craft='cthm1' 
   applies=true 
   desc='A depraved amulet to mark one as an unholy acolyte of R\'lyeh.'
@@ -926,7 +926,7 @@ init_itemstock Void->Void :-
 
 [ 'dynamite' Item{
   name=(['a stick of dynamite' 'sticks of dynamite'] name->ItemName) 
-  skin=(['!' 'red'] item->Skin) slot='' 
+  skin=(['!' 'red'] item->Skin) slot='h' 
   rarity=8u converts='litdynamite' camorange=1001u explodes=true 
   count=3u throwrange=8u stackrange=3u applies=true 
   radius=4u 
@@ -935,7 +935,7 @@ init_itemstock Void->Void :-
 
 [ 'cthulhu_m3' Item{
   name=(['an eldritch crystal' 'eldritch crystals'] name->ItemName) 
-  skin=(['"' 'pink'] item->Skin) slot='' 
+  skin=(['"' 'pink'] item->Skin) slot='h' 
   rarity=0u camorange=1001u throwrange=8u craft='cthm3' 
   applies=true 
   desc='An evil artifact. It pulsates with the unholy\npsychic energies of ancient, eldritch horror.'
@@ -943,7 +943,7 @@ init_itemstock Void->Void :-
 
 [ 'cthulhu_m2' Item{
   name=(['an eldritch skull' 'eldritch skulls'] name->ItemName) 
-  skin=(['"' 'pink'] item->Skin) slot='' 
+  skin=(['"' 'pink'] item->Skin) slot='h' 
   rarity=0u camorange=1001u throwrange=8u craft='cthm2' 
   applies=true 
   desc='A remnant of a tormented spirit, sacrificed\nto appease the unholy gods of R\'lyeh.'
@@ -1000,7 +1000,7 @@ init_itemstock Void->Void :-
 
 [ 'craft_bn' Item{
   name=(['nanite boots' 'pairs of nanite boots'] name->ItemName) 
-  skin=(['$' 'dark_yellow'] item->Skin) slot='' 
+  skin=(['$' 'dark_yellow'] item->Skin) slot='h' 
   rarity=0u camorange=1001u throwrange=8u 
   craft='bn' applies=true 
   desc='A useless contraption. It needs to be combined with\nbuckshot or gunpowder to become something very interesting.'
@@ -1008,7 +1008,7 @@ init_itemstock Void->Void :-
 
 [ 'craft_af' Item{
   name=(['a torch phial' 'torch phials'] name->ItemName) 
-  skin=(['$' 'dark_yellow'] item->Skin) slot='' 
+  skin=(['$' 'dark_yellow'] item->Skin) slot='h' 
   rarity=0u camorange=1001u throwrange=8u craft='af' 
   applies=true 
   desc='A useless contraption. It needs to be combined with\ndragon\'s blood or a titanium rod to become something very interesting.'
@@ -1048,7 +1048,7 @@ init_itemstock Void->Void :-
 
 [ 'wendigo' Item{
   name=(['a cannibal corpse of Wendigo' 'cannibal corpses of Wendigo'] name->ItemName) 
-  skin=(['%' 'dark_gray'] item->Skin) slot='' 
+  skin=(['%' 'dark_gray'] item->Skin) slot='h' 
   rarity=1u align='ce' camorange=1001u 
   throwrange=8u 
   desc='An atrocious shrunken head of some fang-toothed midget.\nThis horrible token is a secret mark worn by the\nWendigo cannibals.'
@@ -1153,7 +1153,7 @@ init_itemstock Void->Void :-
 
 [ 'cthulhu_o3' Item{
   name=(['an eldritch sacrifice' 'eldritch sacrifices'] name->ItemName) 
-  skin=(['%' 'pink'] item->Skin) slot='' 
+  skin=(['%' 'pink'] item->Skin) slot='h' 
   rarity=0u camorange=1001u throwrange=8u craft='ctho3' 
   applies=true 
   desc='A depraved sacrifice for the evil gods of R\'lyeh.'
@@ -1161,7 +1161,7 @@ init_itemstock Void->Void :-
 
 [ 'cthulhu_o2' Item{
   name=(['a sacrifical corpse' 'sacrifical corpses'] name->ItemName) 
-  skin=(['%' 'pink'] item->Skin) slot='' 
+  skin=(['%' 'pink'] item->Skin) slot='h' 
   rarity=0u camorange=1001u throwrange=8u craft='ctho2' 
   applies=true 
   desc='A bloody sacrifice to the evil gods of R\'lyeh.'
@@ -1169,7 +1169,7 @@ init_itemstock Void->Void :-
 
 [ 'cthulhu_o1' Item{
   name=(['an unholy offering' 'unholy offerings'] name->ItemName) 
-  skin=(['%' 'pink'] item->Skin) slot='' 
+  skin=(['%' 'pink'] item->Skin) slot='h' 
   rarity=0u camorange=1001u throwrange=8u craft='ctho1' 
   applies=true 
   desc='A sacrificial offering to the evil gods of R\'lyeh.'
@@ -1185,7 +1185,7 @@ init_itemstock Void->Void :-
 
 [ 'green' Item{
   name=(['a green potion' 'green potions'] name->ItemName) 
-  skin=([':' 'darkest_green'] item->Skin) slot='' 
+  skin=([':' 'darkest_green'] item->Skin) slot='h' 
   rarity=3u camorange=1001u resource='g' throwrange=8u 
   applies=true 
   desc='A flask containing a green liquid.'
@@ -1209,7 +1209,7 @@ init_itemstock Void->Void :-
 
 [ 'craft_an' Item{
   name=(['some nanite oil' 'vials of nanite oil'] name->ItemName) 
-  skin=(['$' 'dark_yellow'] item->Skin) slot='' 
+  skin=(['$' 'dark_yellow'] item->Skin) slot='h' 
   rarity=0u camorange=1001u throwrange=8u 
   craft='an' applies=true 
   desc='A useless contraption. It needs to be combined with\ndragon\'s blood to become something very interesting.'
@@ -1225,7 +1225,7 @@ init_itemstock Void->Void :-
 
 [ 'craft_ad' Item{
   name=(['some dragon\'s oil' 'vials of dragon\'s oil'] name->ItemName) 
-  skin=(['$' 'dark_yellow'] item->Skin) slot='' 
+  skin=(['$' 'dark_yellow'] item->Skin) slot='h' 
   rarity=0u camorange=1001u throwrange=8u 
   craft='ad' applies=true 
   desc='A useless contraption. It needs to be combined with\na flaming phial or nanite compound to become something very interesting.'
@@ -1257,7 +1257,7 @@ init_itemstock Void->Void :-
 
 [ 'craft_du' Item{
   name=(['some dragonshot' 'cartridges of dragonshot'] name->ItemName) 
-  skin=(['$' 'dark_yellow'] item->Skin) slot='' 
+  skin=(['$' 'dark_yellow'] item->Skin) slot='h' 
   rarity=0u camorange=1001u throwrange=8u 
   craft='du' applies=true 
   desc='A useless contraption. It needs to be combined with\nbootsoles to become something very interesting.'
@@ -1274,7 +1274,7 @@ init_itemstock Void->Void :-
 
 [ 'craft_at' Item{
   name=(['some titanium oil' 'vials of titanium oil'] name->ItemName) 
-  skin=(['$' 'dark_yellow'] item->Skin) slot='' 
+  skin=(['$' 'dark_yellow'] item->Skin) slot='h' 
   rarity=0u camorange=1001u throwrange=8u 
   craft='at' applies=true 
   desc='A useless contraption. It needs to be combined with\na flaming phial to become something very interesting.'
@@ -1290,7 +1290,7 @@ init_itemstock Void->Void :-
 
 [ 'ccthulhu' Item{
   name=(['the Call of Cthulhu' 'Calls of Cthulhu'] name->ItemName) 
-  skin=(['~' 'red'] item->Skin) slot='' 
+  skin=(['~' 'red'] item->Skin) slot='h' 
   rarity=0u camorange=1001u winning=Achievement{name='wincthulhu' desc='Called upon Cthulhu'} 
   throwrange=8u applies=true 
   desc='An eldritch medallion of R\'lyeh.\nAncient beyond measure and just as evil.'
@@ -1338,7 +1338,7 @@ init_itemstock Void->Void :-
 
 [ 'craft_z' Item{
   name=(['a magic spark' 'magic sparks'] name->ItemName) 
-  skin=(['$' 'light_blue'] item->Skin) slot='' 
+  skin=(['$' 'light_blue'] item->Skin) slot='h' 
   rarity=4u camorange=1001u throwrange=8u craft='z' 
   applies=true 
   desc='This special item needs to be combined with another very\nspecial item to make something very interesting.'

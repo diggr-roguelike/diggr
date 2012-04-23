@@ -17,24 +17,29 @@ pxy Void->[UInt UInt] :- [ (get->Player->x) (get->Player->y) ].
 /*** ***/
 
 take [UInt ItemVal]->Void :-
+  <:[seq] print => ' take imp1\n' :>
   [ (\b->item get->Item->slot) \b ] set ;
+  <:[seq] print => ' take imp1\n' :>
   [ 'h' \b ] set ;
+  <:[seq] print => ' take imp1\n' :>
   [ 'i' \b ] set.
 
 take UInt->Void :- 
-  <:[seq] print => '... take ', \\ :>
+  <:[seq] print => '... take ', \\, '\n' :>
   [ \\ ([ (pxy->[UInt UInt]) \\ ] del->ItemVal) ] ->Void (
-       <:[seq] print => '... take1' :>
+       <:[seq] print => '... take1\n' :>
        \\ take 
-       <:[seq] print => '... take2' :>
+       <:[seq] print => '... take2\n' :>
      ;
+       <:[seq] print => '... take oops\n' :>
        [ (pxy->[UInt UInt]) \b \a ] put
   ).
 
 can_take UInt->Bool :-
-  [ (pxy->[UInt UInt]) \\ ] get->ItemVal->item get->Item->slot get->ItemVal ->Bool(false) ;
-  'h' get->ItemVal ->Bool(false) ;
-  'i' get->ItemVal ->Bool(false) ;
+  [ (pxy->[UInt UInt]) \\ ] get->ItemVal->item get->Item->slot get->ItemVal ->Void()
+  'h' get->ItemVal ->Void()
+  'i' get->ItemVal ->Void()
+  false ;
   true.
 
 /*** ***/
@@ -124,9 +129,9 @@ draw_floor_item_menu UInt->Sym :-
   \\ can_take->Bool ? 
       <:[seq] dg_render_draw_window => 
            '',
-           \\ floor_item_label->Sym, 
+           \\ floor_item_label->Sym,
            '',
-           't) take this item'
+           't)             Take this item.'
          => [Int Sym] :>
     ->Sym(\b)
 .
@@ -136,8 +141,7 @@ draw_floor_item_menu UInt->Void :-
      <:[case] \b :
          't' ? \a take
       :>
-  )
-  ; .
+  ).
 
 draw_item_menu Sym->Void :-
   <:[case] \\ :
@@ -160,7 +164,8 @@ draw_item_menu Sym->Void :-
 .
 
 inv_draw Void->Void :- 
-  inv_draw->Sym draw_item_menu ;
-  .
+  inv_draw->Sym draw_item_menu.
 
+inv_act_top Void->Void :-
+  0u draw_floor_item_menu.
 

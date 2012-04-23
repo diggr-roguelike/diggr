@@ -62,6 +62,7 @@ modules Void->Void :-
   <:[module] inventory 'inventory.piccol'
              inv_draw Void->Sym
              inv_draw Void->Void
+             inv_act_top Void->Void
    :>
 
   <:[module] input 'input.piccol'
