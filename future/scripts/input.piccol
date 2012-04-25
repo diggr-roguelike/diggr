@@ -4,44 +4,56 @@ px Void->UInt :- get->Player->x.
 py Void->UInt :- get->Player->y.  
 
 def { x:UInt y:UInt dx:Int dy:Int } XyPair;
+def { x:UInt y:UInt tx:UInt ty:UInt } XyTo;
+
 def [a:UInt b:UInt c:Int d:Int];
 def [a:UInt b:Bool];
 def [a:UInt b:UInt c:UInt];
 def [a:UInt b:UInt c:UInt d:UInt];
 def [xy:[UInt UInt] n:UInt];
 
+to XyPair->XyTo :- XyTo{ x=\x y=\y tx=(\dx to->UInt) ty=(\dy to->UInt) }.
+
+add XyPair->XyPair :- XyPair{ x=\x y=\y dx=(<:int(\x)+\dx:>) dy=(<:int(\y)+\dy:>) }.
+
+add XyPair->XyTo :- \\ add->XyPair to->XyTo.
+
+/*** ***/
+
 go UInt->OutState :- OutState{ticks=(<: \v + 1u :>) done=false dead=false}.
 
 regen [UInt Bool]->OutState :- \a go->OutState {regenerate=\b}.
 
+/*** ***/
 
-add XyPair->XyPair :- XyPair{ x=\x y=\y dx=(<:int(\x)+\dx:>) dy=(<:int(\y)+\dy:>) }.
-
-walkable XyPair->Bool :-
-  [ \x \y (\dx to->UInt) (\dy to->UInt) ] dg_neighbors_linked->Bool ? 
-  [ (\dx to->UInt) (\dy to->UInt) ] dg_render_is_walkblock->Bool $not ? true;
+walkable XyTo->Bool :-
+  [ \x \y \tx \ty ] dg_neighbors_linked->Bool ? 
+  [ \tx \ty ] dg_render_is_walkblock->Bool $not ? true;
   false
 .
 
-move_action [UInt UInt]->Void :-
+move_action XyTo->Void :-
 
-  [\a \b ([\a \b] nitems->UInt)]->Void (
+  [\tx \ty ([\tx \ty] nitems->UInt)]->Void (
      <:[seq] print => '/// ', \a, ' ', \b, ' ', \c, '\n' :>
      <: \c > 1u :> ? 'You see several items here.' msg ;
      [[\a \b] 0u] get->ItemVal fmt->Sym->Void ( <:[seq] fmt => 'You see ', \v, '.' => Sym :> msg )
-  );
+  ) ;
 .
 
+move XyTo->Void :- 
+  \\ walkable->Bool ? 
+      \\ move_action
+      get->Player {x=\tx y=\ty} set
+      [ \x \y ] set_skin
+      [ \tx \ty ] set_skin
+  ;
+  [ \tx \ty ] player_hits 
+.
 
 move [Int Int]->Void :-
-  XyPair{ x=(px->UInt) y=(py->UInt) dx=\a dy=\b } add->XyPair->Void( 
-    \\ walkable->Bool ? 
-      [ \x \y (\dx to->UInt) (\dy to->UInt) ]->Void (
-          [\c \d] move_action
-          get->Player {x=\c y=\d} set
-          [ \a \b ] set_skin
-          [ \c \d ] set_skin))
-.
+  XyPair{ x=(px->UInt) y=(py->UInt) dx=\a dy=\b } add->XyTo move.
+
 
 dlevel Void->UInt :- get->Dungeon->level.
 

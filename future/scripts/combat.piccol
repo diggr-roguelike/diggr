@@ -1,0 +1,16 @@
+
+
+monster_hits MonsterVal->Void :-
+  <:[seq] fmt => \species, ' hits!' => Sym :> msg.
+
+player_hits MonsterVal->Void :-
+  <:[seq] fmt => 'You hit ', \species => Sym :> msg.
+
+/*** ***/
+
+monster_hits [UInt UInt]->Void :- 
+  \\ get->MonsterVal monster_hits.
+
+player_hits [UInt UInt]->Void :-
+  \\ get->MonsterVal player_hits.
+

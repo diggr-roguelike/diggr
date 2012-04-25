@@ -6,11 +6,6 @@ ok UInt->OutState :- OutState{ ticks=\\ dead=false done=false need_input=true }.
 
 /*** ***/
 
-monster_hits [UInt UInt]->Void :-
-  <:[seq] fmt => ' HITS!! ', \a, ' ', \b => Sym :> msg
-.
-
-
 process_monster [ [UInt UInt] MonsterVal ] -> [ [UInt UInt] MonsterVal ] :-
 
   /* Fails if the monster is already dead */

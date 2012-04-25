@@ -74,8 +74,12 @@ modules Void->Void :-
   <:[module] world 'world.piccol'
              process_monster [ [UInt UInt] MonsterVal ]->[ [UInt UInt] MonsterVal ]
              process_world UInt->OutState
-             monster_hits [UInt UInt]->Void
    :>
+
+  <:[module] combat 'combat.piccol'
+             monster_hits [UInt UInt]->Void
+             player_hits [UInt UInt]->Void
+   :>             
 
   <:[module] stats 'stats.piccol'
              luck Void->Real
