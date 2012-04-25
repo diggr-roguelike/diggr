@@ -353,6 +353,10 @@ struct window_buff {
     std::vector<std::string> data;
 };
 
+inline void __feed_void(window_buff& w, const nanom::Shapes& shapes, const nanom::Shape& shape, 
+                        const nanom::Struct& struc) {
+}
+
 inline void dg_render_draw_window_feed(window_buff& w, const nanom::Shapes& shapes, const nanom::Shape& shape, 
                                        const nanom::Struct& struc) {
 
@@ -368,6 +372,27 @@ inline bool dg_render_draw_window(window_buff& w, const nanom::Shapes& shapes, c
     char cc[2] = { k.c, 0 };
     ret.v.push_back((nanom::Sym)metalan::symtab().get(cc));
 
+    return true;
+}
+
+inline bool dg_render_draw_window_paste(CALLBACK) {
+
+    window_buff& w = piccol::seqholder<window_buff>().top();
+    const std::string& str = metalan::symtab().get(struc.v[0].uint);
+
+    size_t oldi = 0;
+
+    while (1) {
+        size_t i = str.find('\n', oldi);
+
+        if (i == std::string::npos) {
+            w.data.push_back(str.substr(oldi));
+            break;
+        } else {
+            w.data.push_back(str.substr(oldi, i-oldi));
+            oldi = i + 1;
+        }
+    }
     return true;
 }
 
@@ -453,8 +478,12 @@ struct Vm {
 
         vm.register_callback("dg_dist", "[ UInt UInt UInt UInt ]", "Real", dg_dist);
 
+        vm.register_callback("dg_render_draw_window_paste",
+                             "Sym", "Void", dg_render_draw_window_paste);
+
         piccol::register_sequencer<window_buff>(vm, "dg_render_draw_window")
             .feed("Sym", dg_render_draw_window_feed)
+            .feed("Void", __feed_void)
             .end("[ Int Sym ]", dg_render_draw_window);
 
         piccol::register_fmt_sequencer(vm);

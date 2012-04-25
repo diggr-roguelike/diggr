@@ -149,10 +149,10 @@ draw_item_menu [Sym ItemVal]->Sym :-
        'Selected item:',
        '',
        \\ label->Sym,
+       <:[seq] fmt => gray->Sym, ' ' => Sym :>,
+       \b->item get->Item->desc dg_render_draw_window_paste,
        '',
-       gray->Sym,
-       'Your action:',
-       white->Sym,
+       <:[seq] fmt => gray->Sym, 'Your action:', white->Sym => Sym:>,
        '', 
        \\ allowed->Actions
          => [Int Sym] :> ->b.
