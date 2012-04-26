@@ -188,6 +188,11 @@ def {
   fleetimeout: UInt
 } MonsterVal; 
 
+def {
+  x: UInt
+  y: UInt
+  mon: MonsterVal
+} MonsterValXY;
 
 /***/
 

@@ -11,9 +11,13 @@ move_monster [ [UInt UInt] MonsterVal ] -> Void :-
   /* Fails if the monster is already dead */
   \b is_dead->Bool ? ;
 
-  [ \a (\\ target->MonsterVal) ] -> Void( 
-      [ (\\ walk->[UInt UInt]) \b ] set_scratch
-  ); 
+  [ \a (\\ target->MonsterVal) ] walk->[ [UInt UInt] MonsterVal ] ->Void(
+
+    /* Check for death again. */
+    \b is_dead->Bool ? ; 
+    \\ set_scratch
+  )
+  ; 
   \\ set_scratch
 .
 

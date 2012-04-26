@@ -1,16 +1,82 @@
 
+def [ a:UInt b:UInt c:MonsterVal ];
 
-monster_hits MonsterVal->Void :-
-  <:[seq] fmt => \species, ' hits!' => Sym :> msg.
+def [ a:UInt b:UInt c:UInt d:UInt ];
 
-player_hits MonsterVal->Void :-
-  <:[seq] fmt => 'You hit ', \species => Sym :> msg.
+def [ a:Int b:Int c:Int d:Int ];
+
+def [ a:[Int Int] b:MonsterVal ];
+
+def [ a:[UInt UInt] b:MonsterVal ];
+
+def {
+  monval: MonsterVal
+  monster: Monster
+  x: UInt
+  y: UInt
+} MvPt;
+
+def [ px:UInt py:UInt v:MvPt ];
+
+def [ a:MvPt b:[Int Int] ];
+
+xy_diff [UInt UInt]->Int :-
+  <: \a < \b :> ?  1 ;
+  <: \a > \b :> ? -1 ;
+  0.
+
+xy_diff [ UInt UInt UInt UInt ]->[Int Int] :-
+  [ ([\a \c] xy_diff->Int)
+    ([\b \d] xy_diff->Int) ].
+
+xy_clip Int->Int :-
+  <: \\ < -1 :> ? -1 ;
+  <: \\ >  1 :> ?  1 ;
+  \\.
+
+xy_add [ Int Int Int Int ]->[Int Int] :-
+  [ (<: \a + \c :> xy_clip->Int)
+    (<: \b + \d :> xy_clip->Int) ].
+
+monster_hits MvPt->MvPt :-
+  <:[seq] fmt => \monster->name, ' hits!' => Sym :> msg
+  \\.
+
+move_boulder [ [Int Int] MonsterVal]->MonsterVal :-
+  \b { bld_delta=([ (\b->bld_delta->a)
+                    (\b->bld_delta->b)
+                    (\a->a)
+                    (\a->b) ] xy_add->[Int Int]) }.
+
+move_boulder [ UInt UInt MvPt ]->MvPt :-
+  [ \v
+    ([ \px \py (\v->x) (\v->y) ] xy_diff->[Int Int])
+  ]->MvPt(
+    \a { monval=([ \b (\a->monval) ] move_boulder->MonsterVal) }
+  ).
+
+
+player_hits MvPt->MvPt :-
+
+  \monster->boulder ? [ (get->Player->x) (get->Player->y) \\ ] move_boulder->MvPt ->MvPt(
+    <:[seq] fmt => 'You push ', \monster->name => Sym :> msg
+    <:[seq] print => 'BBB ', \x, ' ', \y, ':', \monval->bld_delta->a, ' ', \monval->bld_delta->b, '\n' :>
+    \\
+  );
+
+  \\
+.
+
+get MonsterValXY->MvPt :-
+  MvPt{ x=\x y=\y monval=\mon monster=(\mon->species get->Monster) }.
 
 /*** ***/
 
-monster_hits [UInt UInt]->Void :- 
-  \\ get->MonsterVal monster_hits.
+monster_hits MonsterValXY->MonsterVal :- 
+  \\ get->MvPt monster_hits->MvPt->monval.
 
-player_hits [UInt UInt]->Void :-
-  \\ get->MonsterVal player_hits.
+player_hits MonsterValXY->MonsterVal :-
+  \\ get->MvPt player_hits->MvPt->monval.
+
+
 

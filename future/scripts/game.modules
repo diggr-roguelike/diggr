@@ -44,7 +44,7 @@ modules Void->Void :-
              set_monster [UInt UInt Sym]->Void
              remove_monster [ [UInt UInt] MonsterVal ]->Void
 
-             walk [ [UInt UInt] MonsterVal ]->[UInt UInt]
+             walk [ [UInt UInt] MonsterVal ]->[ [UInt UInt] MonsterVal ]
              target [ [UInt UInt] MonsterVal ]->MonsterVal
              is_dead MonsterVal->Bool
 
@@ -77,8 +77,8 @@ modules Void->Void :-
    :>
 
   <:[module] combat 'combat.piccol'
-             monster_hits [UInt UInt]->Void
-             player_hits [UInt UInt]->Void
+             monster_hits MonsterValXY->MonsterVal
+             player_hits MonsterValXY->MonsterVal
    :>             
 
   <:[module] stats 'stats.piccol'

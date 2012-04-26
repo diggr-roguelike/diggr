@@ -621,6 +621,8 @@ struct Vm {
     void forall_monsters(const std::string& func) {
         piccol::Struct tmp;
 
+        piccol::structmap<MonsterMap>().set_readonly(true);
+
         for (const auto& kv : piccol::structmap<MonsterMap>().map) {
             piccol::Struct s;
             s.v.insert(s.v.end(), kv.first.v.begin(), kv.first.v.end());
@@ -628,6 +630,8 @@ struct Vm {
 
             run(func, "[ [ UInt UInt ] MonsterVal ]", "Void", s, tmp);
         }
+
+        piccol::structmap<MonsterMap>().set_readonly(false);
     }
 
     void forall_items(const std::string& func) {

@@ -11,6 +11,7 @@ def [a:UInt b:Bool];
 def [a:UInt b:UInt c:UInt];
 def [a:UInt b:UInt c:UInt d:UInt];
 def [xy:[UInt UInt] n:UInt];
+def [a:[UInt UInt] b:MonsterVal];
 
 to XyPair->XyTo :- XyTo{ x=\x y=\y tx=(\dx to->UInt) ty=(\dy to->UInt) }.
 
@@ -41,6 +42,16 @@ move_action XyTo->Void :-
   ) ;
 .
 
+get [UInt UInt]->MonsterValXY :-
+  MonsterValXY{ x=\a y=\b mon=(\\ get->MonsterVal) }.
+
+update_monster [ [UInt UInt] MonsterVal ]->Void :-
+  \a del->MonsterVal->Void()
+  \\ set.
+
+try_fight [UInt UInt]->Void :-
+   [ \\ (\\ get->MonsterValXY player_hits->MonsterVal) ] update_monster.
+
 move XyTo->Void :- 
   \\ walkable->Bool ? 
       \\ move_action
@@ -48,7 +59,7 @@ move XyTo->Void :-
       [ \x \y ] set_skin
       [ \tx \ty ] set_skin
   ;
-  [ \tx \ty ] player_hits 
+  [ \tx \ty ] try_fight
 .
 
 move [Int Int]->Void :-
