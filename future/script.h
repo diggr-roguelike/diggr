@@ -64,6 +64,7 @@ struct ItemStock;
 
 struct FeatMap;
 struct MonsterMap;
+struct MonsterMapScratch;
 struct ItemMap;
 
 struct Inventory;
@@ -414,6 +415,8 @@ struct Vm {
 
         piccol::register_map<MonsterMap>(vm,    "[ UInt UInt ]", "MonsterVal");
 
+        piccol::register_map<MonsterMapScratch>(vm, "[ UInt UInt ]", "MonsterVal", "_scratch");
+
         piccol::register_map<ItemStock>(vm,  "Sym", "Item");
         piccol::register_pool<ItemStock>(vm, "ItemKey", "Sym");
 
@@ -492,7 +495,10 @@ struct Vm {
         ////// 
 
         vm.required("init", "Void", "Void");
-        vm.required("remove_monster", "[ [ UInt UInt ] MonsterVal ]", "Void");
+
+        vm.required("remove_monster",     "[ [ UInt UInt ] MonsterVal ]", "Void");
+        vm.required("move_monster",       "[ [ UInt UInt ] MonsterVal ]", "Void");
+
         vm.required("remove_item", "[ [ UInt UInt ] UInt ItemVal ]", "Void");
         vm.required("generate", "Void", "Void");
         vm.required("set_skin", "[ UInt UInt ]", "Void");
@@ -577,50 +583,30 @@ struct Vm {
 
         piccol::StructMap::map_t tmpmap;
 
-        std::vector<nanom::Struct> changed_coords;
+        std::unordered_set<nanom::Struct> changed_coords;
 
+        forall_monsters("move_monster");
+        
+        auto& mapm2 = piccol::structmap<MonsterMapScratch>().map;
+        auto& mapm1 = piccol::structmap<MonsterMap>().map;
 
-        for (const auto& kv : piccol::structmap<MonsterMap>().map) {
-            piccol::Struct s;
-            piccol::Struct out;
-
-            s.v.insert(s.v.end(), kv.first.v.begin(), kv.first.v.end());
-            s.v.insert(s.v.end(), kv.second.v.begin(), kv.second.v.end());
-
-            bool ok = vm.run("process_monster",
-                             "[ [ UInt UInt ] MonsterVal ]",
-                             "[ [ UInt UInt ] MonsterVal ]",
-                             s, out);
-
-            if (!ok) {
-                std::cout << " DELETE! " << std::endl;
-                changed_coords.push_back(kv.first);
-
-            } else {
-                nanom::Struct newk = out.substruct(0, 2);
-                nanom::Struct newv = out.substruct(2, out.v.size());
-
-                if (tmpmap.count(newk) != 0) {
-                    newk = kv.first;
-                }
-
-                tmpmap[newk] = newv;
-
-                if (!std::equal_to<nanom::Struct>()(newk, kv.first)) {
-                    changed_coords.push_back(newk);
-                    changed_coords.push_back(kv.first);
-                }
-            }
+        for (const auto& kv : mapm1) {
+            changed_coords.insert(kv.first);
         }
 
-        piccol::structmap<MonsterMap>().map.swap(tmpmap);
-
-        for (const nanom::Struct& o : changed_coords) {
-            nanom::Struct tmp;
-            run("set_skin", "[ UInt UInt ]", "Void", o, tmp);
+        for (const auto& kv : mapm2) {
+            changed_coords.insert(kv.first);
         }
+
+        mapm1.swap(mapm2);
+        mapm2.clear();
 
         nanom::Struct out;
+
+        for (const auto& k : changed_coords) {
+            run("set_skin", "[ UInt UInt ]", "Void", k, out);
+        }
+
         nanom::Struct inp;
         inp.v.push_back((nanom::UInt)ticks);
 

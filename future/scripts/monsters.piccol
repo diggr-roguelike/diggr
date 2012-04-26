@@ -136,8 +136,8 @@ walk [ [UInt UInt] MonsterVal ]->[UInt UInt] :-
   \\ make->WalkData walk->WalkData ->[UInt UInt]([ \to_x \to_y ])
 .
 
-check_alive MonsterVal->Void :-
-  <: \hp > -3.0 :> ? .
+is_dead MonsterVal->Bool :-
+  <: \hp <= -3.0 :>.
 
 target [ [UInt UInt] MonsterVal ]->MonsterVal :-
 

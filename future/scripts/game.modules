@@ -46,7 +46,7 @@ modules Void->Void :-
 
              walk [ [UInt UInt] MonsterVal ]->[UInt UInt]
              target [ [UInt UInt] MonsterVal ]->MonsterVal
-             check_alive MonsterVal->Void
+             is_dead MonsterVal->Bool
 
              fmt MonsterVal->Sym
    :>
@@ -72,7 +72,7 @@ modules Void->Void :-
    :>
 
   <:[module] world 'world.piccol'
-             process_monster [ [UInt UInt] MonsterVal ]->[ [UInt UInt] MonsterVal ]
+             move_monster [ [UInt UInt] MonsterVal ]->Void
              process_world UInt->OutState
    :>
 

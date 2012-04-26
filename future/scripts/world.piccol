@@ -6,12 +6,15 @@ ok UInt->OutState :- OutState{ ticks=\\ dead=false done=false need_input=true }.
 
 /*** ***/
 
-process_monster [ [UInt UInt] MonsterVal ] -> [ [UInt UInt] MonsterVal ] :-
+move_monster [ [UInt UInt] MonsterVal ] -> Void :-
 
   /* Fails if the monster is already dead */
-  \b check_alive
+  \b is_dead->Bool ? ;
 
-  [ \a (\\ target->MonsterVal) ] -> [ [UInt UInt] MonsterVal ] ( [ (\\ walk->[UInt UInt]) \b ] )
+  [ \a (\\ target->MonsterVal) ] -> Void( 
+      [ (\\ walk->[UInt UInt]) \b ] set_scratch
+  ); 
+  \\ set_scratch
 .
 
 process_world UInt->OutState :-
