@@ -117,6 +117,17 @@ inline bool dg_random_nat_pos_gauss(CALLBACK) {
     return random_nat_gauss(struc, ret, 1.0);
 }
 
+inline bool dg_random_uniform(CALLBACK) {
+    nanom::Real v = rnd::get().uniform(struc.v[0].real, struc.v[1].real);
+    ret.v.push_back(v);
+    return true;
+}
+
+inline bool dg_random_geometric(CALLBACK) {
+    nanom::UInt v = rnd::get().geometric(struc.v[0].real);
+    ret.v.push_back(v);
+    return true;
+}
 
 inline bool dg_render_set_is_lit(CALLBACK) {
 
@@ -432,8 +443,13 @@ struct Vm {
         vm.register_callback("dg_random_range", "[ Int Int ]", "Int", dg_random_range);
         vm.register_callback("dg_random_pos_gauss", "[ Real Real Real ]", "Real", dg_random_pos_gauss);
         vm.register_callback("dg_random_neg_gauss", "[ Real Real Real ]", "Real", dg_random_neg_gauss);
-        vm.register_callback("dg_random_nat_pos_gauss", "[ Real Real Real UInt ]", "UInt", dg_random_nat_pos_gauss);
-        vm.register_callback("dg_random_nat_neg_gauss", "[ Real Real Real UInt ]", "UInt", dg_random_nat_neg_gauss);
+        vm.register_callback("dg_random_nat_pos_gauss", "[ Real Real Real UInt ]", "UInt", 
+                             dg_random_nat_pos_gauss);
+        vm.register_callback("dg_random_nat_neg_gauss", "[ Real Real Real UInt ]", "UInt", 
+                             dg_random_nat_neg_gauss);
+
+        vm.register_callback("dg_random_uniform",   "[ Real Real ]", "Real", dg_random_uniform);
+        vm.register_callback("dg_random_geometric", "Real",          "UInt", dg_random_geometric);
         
         vm.register_callback("dg_render_set_is_lit",    "[ UInt UInt UInt Bool ]",  "Void", dg_render_set_is_lit);
         vm.register_callback("dg_render_set_back",      "[ UInt UInt UInt Sym ]",  "Void", dg_render_set_back);

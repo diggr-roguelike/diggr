@@ -18,6 +18,7 @@ def {
   x: UInt
   y: UInt 
   level: UInt
+  hp: Real
 } Player;
 
 def {

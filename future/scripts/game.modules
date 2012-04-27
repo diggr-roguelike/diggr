@@ -13,6 +13,7 @@ modules Void->Void :-
              pos_gauss [Real Real UInt]->UInt
              neg_gauss [Real Real UInt]->UInt
              rand_n UInt->UInt
+             int_bias Void->Int
    :>
 
   <:[module] generate 'generate.piccol'
@@ -63,6 +64,7 @@ modules Void->Void :-
              inv_draw Void->Sym
              inv_draw Void->Void
              inv_act_top Void->Void
+             get_attack Void->Real
    :>
 
   <:[module] input 'input.piccol'

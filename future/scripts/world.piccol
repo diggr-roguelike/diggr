@@ -22,5 +22,10 @@ move_monster [ [UInt UInt] MonsterVal ] -> Void :-
 .
 
 process_world UInt->OutState :-
-  \\ ok->OutState  
+  get->Player->hp->Bool(<: \\ <= -3.0 :>) ? 
+    ['You die.' true] msg
+    ['*** Press any key ***' true] msg
+    OutState{ ticks=\\ dead=true done=false need_input=false }
+  ;
+    \\ ok->OutState  
 .

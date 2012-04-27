@@ -174,3 +174,17 @@ inv_draw Void->Void :-
 inv_act_top Void->Void :-
   'j' draw_item_menu.
 
+
+/*** ***/
+
+get_attack Sym->Real :-
+  \v get->ItemVal->item get->Item->attack ;
+  0f.
+
+get_attack Void->Real :-
+  [ ('e' get_attack->Real)
+    ('d' get_attack->Real)
+    ('g' get_attack->Real) ]->Real(
+
+   <: \a + \b + \c :> ->Real( <: \v <= 0f :> ? 0.1 ; \v )
+ ).
