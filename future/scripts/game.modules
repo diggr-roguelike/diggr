@@ -53,6 +53,7 @@ modules Void->Void :-
    :>
 
   <:[module] items 'items.piccol'
+             make Sym->ItemVal
              item [UInt UInt]->Skin
              set_item [UInt UInt Sym]->Void
              remove_item [ [UInt UInt] UInt ItemVal ]->Void
@@ -64,12 +65,15 @@ modules Void->Void :-
              inv_draw Void->Sym
              inv_draw Void->Void
              inv_act_top Void->Void
+             init_inventory Void->Void
+
              get_attack Void->Real
+             get_lightradius Void->UInt
    :>
 
   <:[module] input 'input.piccol'
              handle_input InState->OutState
-             drawing_context Void->[UInt UInt]
+             drawing_context Void->DrawingContext
              remap Int->Sym
    :>
 

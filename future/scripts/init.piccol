@@ -7,5 +7,7 @@ init Void->Void :-
 
   Player {level=1u} set
   Dungeon {level=1u} set
+
+  init_inventory
 .
 

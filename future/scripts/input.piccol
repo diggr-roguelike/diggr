@@ -25,6 +25,10 @@ go UInt->OutState :- OutState{ticks=(<: \v + 1u :>) done=false dead=false}.
 
 regen [UInt Bool]->OutState :- \a go->OutState {regenerate=\b}.
 
+default Void->DrawingContext :-
+  DrawingContext{ lightradius=1u hlx=1000u hly=1000u rangemin=0u rangemax=1000u do_hud=true }.
+
+
 /*** ***/
 
 walkable XyTo->Bool :-
@@ -188,6 +192,9 @@ handle_input InState->OutState :-
 .
 
 
-drawing_context Void->[UInt UInt] :-
-  get->Player->[UInt UInt]([\x \y]).
+drawing_context Void->DrawingContext :-
+  default->DrawingContext { px=(get->Player->x)
+                            py=(get->Player->y)
+                            lightradius=(get_lightradius->UInt) }.
+
 

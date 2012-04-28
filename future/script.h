@@ -518,13 +518,16 @@ struct Vm {
         vm.required("remove_item", "[ [ UInt UInt ] UInt ItemVal ]", "Void");
         vm.required("generate", "Void", "Void");
         vm.required("set_skin", "[ UInt UInt ]", "Void");
-        vm.required("drawing_context", "Void", "[ UInt UInt ]");
+        vm.required("drawing_context", "Void", "DrawingContext");
         vm.required("handle_input", "InState", "OutState");
 
         vm.init();
 
-        vm.check_type("InState",  {nanom::UINT, nanom::INT, nanom::SYMBOL});
-        vm.check_type("OutState", {nanom::UINT, nanom::BOOL, nanom::BOOL, nanom::BOOL, nanom::BOOL});
+        vm.check_type("InState",        {nanom::UINT, nanom::INT, nanom::SYMBOL});
+        vm.check_type("OutState",       {nanom::UINT, nanom::BOOL, nanom::BOOL, nanom::BOOL, nanom::BOOL});
+        vm.check_type("DrawingContext", 
+                      { nanom::UINT, nanom::UINT, nanom::UINT, nanom::UINT, nanom::UINT, nanom::UINT, nanom::UINT, 
+                        nanom::BOOL });
     }        
 
     void run(const std::string& name, const std::string& from, const std::string& to, 
@@ -569,14 +572,20 @@ struct Vm {
         run("set_skin", "[ UInt UInt ]", "Void", inp, out);
     }
 
-    void drawing_context(unsigned int& px, unsigned int& py) {
+    void drawing_context(mainloop::drawing_context_t& ctx) {
         nanom::Struct out;
         nanom::Struct inp;
 
-        run("drawing_context", "Void", "[ UInt UInt ]", inp, out);
+        run("drawing_context", "Void", "DrawingContext", inp, out);
 
-        px = out.v[0].uint;
-        py = out.v[1].uint;
+        ctx.px = out.v[0].uint;
+        ctx.py = out.v[1].uint;
+        ctx.lightradius = out.v[2].uint;
+        ctx.hlx = out.v[3].uint;
+        ctx.hly = out.v[4].uint;
+        ctx.rangemin = out.v[5].uint;
+        ctx.rangemax = out.v[6].uint;
+        ctx.do_hud = out.v[7].uint;
     }
 
     void handle_input(size_t& ticks, int vk, char c, bool& done, bool& dead, bool& regen) {

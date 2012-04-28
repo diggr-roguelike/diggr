@@ -46,8 +46,7 @@ struct Game {
     }
 
     void drawing_context(mainloop::drawing_context_t& ctx) {
-        vm.drawing_context(ctx.px, ctx.py);
-        ctx.lightradius = 8;
+        vm.drawing_context(ctx);
     }
 
     void draw_hud() {

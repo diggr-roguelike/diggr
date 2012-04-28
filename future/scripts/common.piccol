@@ -43,6 +43,17 @@ def {
   need_input: Bool
 } OutState;
 
+def {
+  px: UInt
+  py: UInt
+  lightradius: UInt
+  hlx: UInt
+  hly: UInt
+  rangemin: UInt
+  rangemax: UInt
+  do_hud: Bool
+} DrawingContext;
+
 /***/
 
 

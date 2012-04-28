@@ -27,6 +27,9 @@ make [Sym Item]->ItemVal :-
                                   [ (\mean to->Real) (\stddev to->Real) 1u ] pos_gauss->UInt))
          }.
 
+make Sym->ItemVal :-
+  [ \\ (\\ get->Item) ] make->ItemVal.
+
 def {
   one: Sym
   many: Sym
@@ -81,4 +84,5 @@ remove_item [ [UInt UInt] UInt ItemVal ]->Void :-
 
 item [UInt UInt]->Skin :-
   [[\a \b] 0u] get->ItemVal->item get->Item->skin.
+
 

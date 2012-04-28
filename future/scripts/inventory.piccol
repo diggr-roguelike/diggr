@@ -13,19 +13,21 @@ def [a:Sym b:ItemVal];
 
 def [a:UInt b:ItemVal];
 
+def [a:UInt b:UInt c:UInt d:UInt e:UInt];
+
 
 pxy Void->[UInt UInt] :- [ (get->Player->x) (get->Player->y) ].
 
 /*** ***/
 
-take [UInt ItemVal]->Void :-
-  [ (\b->item get->Item->slot) \b ] set ;
-  [ 'h' \b ] set ;
-  [ 'i' \b ] set.
+take ItemVal->Void :-
+  [ (\\->item get->Item->slot) \\ ] set ;
+  [ 'h' \\ ] set ;
+  [ 'i' \\ ] set.
 
 take UInt->Void :- 
   [ \\ ([ (pxy->[UInt UInt]) \\ ] del->ItemVal) ] ->Void (
-       \\ take 
+       \b take 
      ;
        [ (pxy->[UInt UInt]) \b \a ] put
   ).
@@ -188,3 +190,38 @@ get_attack Void->Real :-
 
    <: \a + \b + \c :> ->Real( <: \v <= 0f :> ? 0.1 ; \v )
  ).
+
+get_lightradius Sym->UInt :-
+  \v get->ItemVal->item get->Item->lightradius ;
+  0u.
+
+get_moon_lightbonus Void->Int :-
+  dg_current_moon->Sym->Int(
+    <:[case] \v :
+       'full' ? -2 ;
+       'new'  ?  1 ;
+     :>
+    0).
+
+get_lightradius Void->UInt :-
+  <:[do] UInt->UInt
+
+    v =      'a' get_lightradius->UInt =>
+    v = [\v ('b' get_lightradius->UInt)] $add =>
+    v = [\v ('f' get_lightradius->UInt)] $add =>
+    v = [\v ('e' get_lightradius->UInt)] $add =>
+    v = [\v ('c' get_lightradius->UInt)] $add =>
+    v = [\v (get_moon_lightbonus->Int) ] add->UInt =>
+   
+    <: \v <= 1u :> ? 2u ; \v
+  :>.
+
+/*** ***/
+
+init_inventory Void->Void :-
+  'necklamp' make->ItemVal take
+  'pickaxe' make->ItemVal take
+.
+
+
+
