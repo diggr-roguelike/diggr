@@ -347,6 +347,13 @@ inline bool dg_render_path_walk(CALLBACK) {
     return r;
 }
 
+inline bool dg_render_push_hud_line_int(CALLBACK) {
+}
+
+inline bool dg_render_push_hud_line_uint(CALLBACK) {
+}
+
+
 inline bool dg_dist(CALLBACK) {
     nanom::UInt a = struc.v[0].uint, b = struc.v[1].uint, c = struc.v[2].uint, d = struc.v[3].uint;
 
@@ -355,6 +362,24 @@ inline bool dg_dist(CALLBACK) {
     nanom::Real dist = sqrt((nanom::Real)(ac * ac) + (nanom::Real)(bd * bd));
 
     ret.v.push_back(dist);
+    return true;
+}
+
+inline bool dg_upcase(CALLBACK) {
+    const std::string& s = metalan::symtab().get(struc.v[0].uint);
+
+    if (s.size() > 0) {
+        std::string s2 = s;
+        s2[0] = ::toupper(s2[0]);
+        ret.v.push_back((nanom::UInt)metalan::symtab().get(s2));
+    } else {
+        ret.v.push_back(struc.v[0].uint);
+    }
+    return true;
+}
+
+inline bool dg_uint_to_char(CALLBACK) {
+    ret.v.push_back(metalan::symtab().get(std::string(1, (unsigned char)struc.v[0].uint)));
     return true;
 }
 
@@ -495,7 +520,12 @@ struct Vm {
                              "[ UInt UInt UInt UInt UInt UInt ]", "[ UInt UInt ]",
                              dg_render_path_walk);
 
+        vm.register_callback("dg_render_push_hud_line", "IntHudLine",  "Void", dg_render_push_hud_line_int);
+        vm.register_callback("dg_render_push_hud_line", "UIntHudLine", "Void", dg_render_push_hud_line_uint);
+
         vm.register_callback("dg_dist", "[ UInt UInt UInt UInt ]", "Real", dg_dist);
+        vm.register_callback("dg_upcase", "Sym", "Sym", dg_upcase);
+        vm.register_callback("dg_uint_to_char", "UInt", "Sym", dg_uint_to_char);
 
         vm.register_callback("dg_render_draw_window_paste",
                              "Sym", "Void", dg_render_draw_window_paste);
@@ -520,6 +550,7 @@ struct Vm {
         vm.required("set_skin", "[ UInt UInt ]", "Void");
         vm.required("drawing_context", "Void", "DrawingContext");
         vm.required("handle_input", "InState", "OutState");
+        vm.required("draw_hud", "Void", "Void");
 
         vm.init();
 
@@ -528,6 +559,15 @@ struct Vm {
         vm.check_type("DrawingContext", 
                       { nanom::UINT, nanom::UINT, nanom::UINT, nanom::UINT, nanom::UINT, nanom::UINT, nanom::UINT, 
                         nanom::BOOL });
+
+        vm.check_type("IntHudLine", 
+                      { nanom::SYMBOL, nanom::SYMBOL, nanom::INT,
+                        nanom::SYMBOL, nanom::SYMBOL, nanom::SYMBOL, nanom::SYMBOL });
+
+        vm.check_type("UIntHudLine", 
+                      { nanom::SYMBOL, nanom::SYMBOL, nanom::UINT,
+                        nanom::SYMBOL, nanom::SYMBOL });
+
     }        
 
     void run(const std::string& name, const std::string& from, const std::string& to, 
@@ -543,6 +583,12 @@ struct Vm {
         nanom::Struct out;
         nanom::Struct inp;
         run("init", "Void", "Void", inp, out);
+    }
+
+    void draw_hud() {
+        nanom::Struct out;
+        nanom::Struct inp;
+        run("draw_hud", "Void", "Void", inp, out);
     }
 
     void generate() {

@@ -50,9 +50,7 @@ struct Game {
     }
 
     void draw_hud() {
-        char style[2] = { '-', '+' };
-        TCOD_color_t color[2] = { TCOD_red, TCOD_green };
-        grender::get().push_hud_line("Test", TCOD_yellow, true, 2, style, color);
+        vm.draw_hud();
     }
 
     void process_world(size_t& ticks, bool& done, bool& dead, bool& need_input) {

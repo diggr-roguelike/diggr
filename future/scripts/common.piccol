@@ -54,6 +54,23 @@ def {
   do_hud: Bool
 } DrawingContext;
 
+def {
+  label: Sym
+  color: Sym
+  npips: Int
+  pstyle: [Sym Sym]
+  pcolor: [Sym Sym]
+} IntHudLine;
+
+def {
+  label: Sym
+  color: Sym
+  npips: UInt
+  pstyle: Sym
+  pcolor: Sym
+} UIntHudLine;
+  
+
 /***/
 
 
@@ -67,8 +84,8 @@ def {
   visible: Bool
 } Skin;
 
-char Int->Sym :- \v $to_sym.
-char UInt->Sym :- \v $to_sym.
+char UInt->Sym :- \v dg_uint_to_char->Sym.
+char Int->Sym :- <: uint(\v) :> char->Sym.
 
 /***/
 

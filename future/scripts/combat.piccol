@@ -5,6 +5,7 @@ def [a:Int b:Int c:Int d:Int];
 def [a:[Int Int] b:MonsterVal];
 def [a:[UInt UInt] b:MonsterVal];
 def [a:Real b:UInt c:Real d:UInt];
+def [a:Sym b:Real];
 
 
 def {
@@ -36,10 +37,6 @@ xy_clip Int->Int :-
 xy_add [ Int Int Int Int ]->[Int Int] :-
   [ (<: \a + \c :> xy_clip->Int)
     (<: \b + \d :> xy_clip->Int) ].
-
-monster_hits MvPt->MvPt :-
-  <:[seq] fmt => \monster->name, ' hits!' => Sym :> msg
-  \\.
 
 move_boulder [ [Int Int] MonsterVal]->MonsterVal :-
   \b { bld_delta=([ (\b->bld_delta->a)
@@ -73,8 +70,11 @@ combat_roll [Real UInt Real UInt]->Real :-
 get_plev Void->UInt :-
   [ (get->Player->level) (int_bias->Int) ] add->UInt.
 
-combat_roll Monster->Real :-
+p_m_combat_roll Monster->Real :-
   [ (get_attack->Real) (get_plev->UInt) \attack \level ] combat_roll->Real.
+
+m_p_combat_roll Monster->Real :-
+  [ \attack \level (get_defence->Real) (get_plev->UInt) ] combat_roll->Real.
 
 
 damage [MvPt Real]->MonsterVal :-
@@ -105,8 +105,16 @@ player_hits MvPt->MvPt :-
     \\
   );
 
-  \\ { monval=([ \\ (\monster combat_roll->Real) ] damage->MonsterVal) }
+  \\ { monval=([ \\ (\monster p_m_combat_roll->Real) ] damage->MonsterVal) }
 .
+
+monster_hits MvPt->MvPt :-
+  [ (\monster->name) (\monster m_p_combat_roll->Real) ]->Void(
+    <: \b <= 0f :> ? <:[seq] fmt => \a dg_upcase->Sym, ' misses.' => Sym :> msg ;
+                     <:[seq] fmt => \a dg_upcase->Sym, ' hits!' => Sym :> msg
+                     \b player_damage
+  )
+  \\.
 
 get MonsterValXY->MvPt :-
   MvPt{ x=\x y=\y monval=\mon monster=(\mon->species get->Monster) }.

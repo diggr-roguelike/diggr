@@ -1,3 +1,11 @@
 
+/*** ***/
+
 luck Void->Real :- 0f.
+
+player_damage Real->Void :-
+  [ (get->Player->hp) \v ]->Void(
+     get->Player { hp=(<: \a - \b :>) } set
+  ).
+
 

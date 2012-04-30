@@ -184,12 +184,30 @@ get_attack Sym->Real :-
   0f.
 
 get_attack Void->Real :-
-  [ ('e' get_attack->Real)
-    ('d' get_attack->Real)
-    ('g' get_attack->Real) ]->Real(
+  <:[do] Real->Real
 
-   <: \a + \b + \c :> ->Real( <: \v <= 0f :> ? 0.1 ; \v )
- ).
+    v = 'e' get_attack->Real =>
+    v = [\v ('d' get_attack->Real)] $add =>
+    v = [\v ('g' get_attack->Real)] $add =>
+
+   <: \v < 0.1 :> ? 0.1 ; \v
+  :>.
+
+get_defence Sym->Real :-
+  \v get->ItemVal->item get->Item->defence ;
+  0f.
+
+get_defence Void->Real :-
+  <:[do] Real->Real
+
+    v = 'a' get_defence->Real =>
+    v = [\v ('d' get_defence->Real)] $add =>
+    v = [\v ('c' get_defence->Real)] $add =>
+    v = [\v ('f' get_defence->Real)] $add =>
+    v = [\v ('g' get_defence->Real)] $add =>
+
+    <: \v < 0f :> ? 0f ; \v
+  :>.
 
 get_lightradius Sym->UInt :-
   \v get->ItemVal->item get->Item->lightradius ;
@@ -216,7 +234,9 @@ get_lightradius Void->UInt :-
     <: \v <= 1u :> ? 2u ; \v
   :>.
 
+
 /*** ***/
+
 
 init_inventory Void->Void :-
   'necklamp' make->ItemVal take

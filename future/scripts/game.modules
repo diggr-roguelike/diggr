@@ -68,6 +68,7 @@ modules Void->Void :-
              init_inventory Void->Void
 
              get_attack Void->Real
+             get_defence Void->Real
              get_lightradius Void->UInt
    :>
 
@@ -89,6 +90,7 @@ modules Void->Void :-
 
   <:[module] stats 'stats.piccol'
              luck Void->Real
+             player_damage Real->Void
    :>
 
   <:[module] output 'output.piccol'
