@@ -1,4 +1,26 @@
 
+stat [Sym Real]->IntHudLine :- 
+  IntHudLine{
+    color  = 'white'
+    label  = \a
+    pstyle = ['-' '+']
+    npips  = (\b->Int(
+                <: \\ >=  2f :> ?  3 ;
+                <: \\ >=  1f :> ?  2 ;
+                <: \\ >=  0f :> ?  1 ;
+                <: \\ >= -1f :> ? -1 ;
+                <: \\ >= -2f :> ? -2 ;
+                -3 ))
+    pcolor = (\b->Sym(
+                <: \\ >= 1.5  :> ? 'darker_green' ;
+                <: \\ >= -0.5 :> ? 'yellow' ;
+                'red')->[Sym Sym]( [ \\ \\ ] )
+             )
+  }
+
+draw_health Void->Void :-
+  [ 'Health' (get->Player->hp stat->IntHudLine) ] stat->IntHudLine dg_render_push_hud_line.
+
 /*** ***/
 
 luck Void->Real :- 0f.
@@ -8,4 +30,5 @@ player_damage Real->Void :-
      get->Player { hp=(<: \a - \b :>) } set
   ).
 
-
+draw_hud Void->Void :-
+  draw_health.

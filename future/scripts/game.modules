@@ -91,6 +91,7 @@ modules Void->Void :-
   <:[module] stats 'stats.piccol'
              luck Void->Real
              player_damage Real->Void
+             draw_hud Void->Void
    :>
 
   <:[module] output 'output.piccol'

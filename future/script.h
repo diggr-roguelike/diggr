@@ -347,10 +347,26 @@ inline bool dg_render_path_walk(CALLBACK) {
     return r;
 }
 
-inline bool dg_render_push_hud_line_int(CALLBACK) {
+inline bool dg_render_push_hud_line_uint(CALLBACK) {
+    const std::string& label = metalan::symtab().get(struc.v[0].uint);
+    TCOD_color_t labelcolor = colorsyms::color(struc.v[1].uint);
+    nanom::UInt npips = struc.v[2].uint;
+    char style[2] = { metalan::symtab().get(struc.v[3].uint)[0], '\0'};
+    TCOD_color_t cols[2]  = { colorsyms::color(struc.v[4].uint), TCOD_black };
+       
+    grender::get().push_hud_line(label, labelcolor, false, npips, style, cols);
+    return true;
 }
 
-inline bool dg_render_push_hud_line_uint(CALLBACK) {
+inline bool dg_render_push_hud_line_int(CALLBACK) {
+    const std::string& label = metalan::symtab().get(struc.v[0].uint);
+    TCOD_color_t labelcolor = colorsyms::color(struc.v[1].uint);
+    nanom::Int npips = struc.v[2].inte;
+    char style[2] = { metalan::symtab().get(struc.v[3].uint)[0], metalan::symtab().get(struc.v[4].uint)[0] };
+    TCOD_color_t cols[2]  = { colorsyms::color(struc.v[5].uint), colorsyms::color(struc.v[6].uint) };
+       
+    grender::get().push_hud_line(label, labelcolor, true, npips, style, cols);
+    return true;
 }
 
 

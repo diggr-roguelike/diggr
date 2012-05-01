@@ -84,7 +84,7 @@ def {
   visible: Bool
 } Skin;
 
-char UInt->Sym :- \v dg_uint_to_char->Sym.
+char UInt->Sym :- \\ dg_uint_to_char->Sym.
 char Int->Sym :- <: uint(\v) :> char->Sym.
 
 /***/
