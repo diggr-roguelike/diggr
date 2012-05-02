@@ -1,0 +1,13 @@
+
+
+
+handle_input [OutState Sym]->OutState :-
+  <:[case] \b :
+     'S' ? <:[seq] print => 'SAVE\n' :> \a { done=true dead=false } ;
+     'Q' ? \a { done=true dead=true } ;
+     '>' ? descend \a { redraw=true } ; 
+     '<' ? ascend  \a { redraw=true } ;
+     '.' ? \a 
+   :>.
+
+

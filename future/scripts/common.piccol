@@ -1,33 +1,13 @@
 
-to Int->UInt :- <: uint(\v) :>.
-to UInt->Int :- <: int(\v) :>.
-to Real->UInt :- <: uint(\v) :>.
-to UInt->Real :- <: real(\v) :>.
-to Real->Int :- <: int(\v) :>.
-to Int->Real :- <: real(\v) :>.
-
-def [a:UInt b:Int];
-
-add [UInt Int]->UInt :-
-  <: int(\a) + \b :> ->UInt( <: \v >= 0 :> ? <: uint(\v) :>; 0u ).
-
-/***/
-
-
-def { 
-  x: UInt
-  y: UInt 
-  level: UInt
-  hp: Real
-} Player;
+/*** ***/
 
 def {
-  level: UInt
-  branch: Sym
-  is_quest: Bool
-  exit: [UInt UInt]
-} Dungeon;
-
+  fore: Sym
+  char: Sym
+  fore2: Sym
+  fore_i: Bool
+  is_terrain: Bool
+} Skin;
 
 def {
   ticks: UInt
@@ -40,6 +20,7 @@ def {
   done: Bool
   dead: Bool
   regenerate: Bool
+  redraw: Bool
   need_input: Bool
 } OutState;
 
@@ -69,303 +50,59 @@ def {
   pstyle: Sym
   pcolor: Sym
 } UIntHudLine;
-  
-
-/***/
 
 
-def {
-  char: Sym
-  color: Sym
-
-  back: Sym
-  is_lit: Bool
-  walkable: Bool
-  visible: Bool
-} Skin;
-
-char UInt->Sym :- \\ dg_uint_to_char->Sym.
-char Int->Sym :- <: uint(\v) :> char->Sym.
-
-/***/
-
-
-def {
-  confuse
-  sticky
-  pois2
-  shootable
-  v_shrine
-  s_shrine
-  healingfountain
-  bb_shrine
-  permanent
-  warm
-  b_shrine
-
-  lightbonus: UInt
-  explode: UInt
-  stairs: Int
-
-  poison: Real
-  queasy: Real
-  fire: Real
-
-  name: Sym
-  special: Sym
-  branch: Sym
-  sign: Sym
-  resource: Sym
-} FeatFlags;
-
-def {
-  flags: FeatFlags
-  skin: Skin
-} Feat;
-
-
-/***/
-
-
-def { mon:Sym timeout:UInt } Summon;
-def { damage:Real timeout:UInt } TimedEffect;
-def { moldid:UInt chance:UInt timeout:UInt } MoldEffect;
-def { num:UInt timeout:UInt } NumEffect;
-
-def { new: UInt 
-      wax_c: UInt
-      q1: UInt
-      wax_g: UInt
-      full: UInt
-      wan_g: UInt
-      q2: UInt
-      wan_c: UInt
-    } MoonDistrib;
-
-def {
-  branch: Sym
-  level: UInt
-
-} MonsterKey;
-
-def {
-  skin: Skin
-
-  name: Sym
-  branch: Sym
-  level: UInt
-  desc: Sym
-  count: UInt
-
-  flavor: Sym
-
-  psyrange: UInt
-  pointscontrib: UInt
-  range: UInt
-  blink_away: UInt
-  attack: Real
-  defence: Real
-  psyattack: Real
-  itemdrop: Sym
-  align: Sym
-  pointsfac: Real
-  fleerange: UInt
-
-  summon: Summon
-  bloodsucker: TimedEffect
-  moldspew: MoldEffect
-  summononce: NumEffect
-  raise_dead: NumEffect
-  moon: MoonDistrib
-
-  straightline
-  fireimmune
-  static
-  confimmune
-  no_exting
-  inanimate
-  explodeimmune
-  flying
-  sleepattack
-  fast
-  is_mold
-  boulder
-  selfdestruct
-  stoneeating
-  slow
-  hungerattack
-  large
-  radimmune
-  poisimmune
-  heatseeking
-
-} Monster;
-
-def {
-  species: Sym
-
-  known_p: Bool
-  known_pxy: [UInt UInt]
-  hp: Real
-  confused: UInt
-  glued: UInt
-  visible: Bool
-  visible_old: Bool
-  was_seen: Bool
-  onfire: UInt
-  bld_delta: [Int Int]
-  fleetimeout: UInt
-} MonsterVal; 
+/*** ***/
 
 def {
   x: UInt
   y: UInt
-  mon: MonsterVal
-} MonsterValXY;
+} Player;
+
+def {
+  depth: UInt
+} Dungeon;
+
+/*** ***/
+ 
+def {
+} Feat;
+
+def {
+} MonsterKey;
+
+def {
+} Monster;
+
+def {
+} MonsterVal; 
 
 /***/
 
 def { } ItemKey;
 
-
 def {
-  stddev: Real
-  thold: Real
-} GaussChance;
-
-def {
-  name: Sym
-  desc: Sym
-} Achievement;
-
-def {
-  mean: UInt
-  stddev: UInt
-} GaussNat;
-
-def {
-  mean: Real
-  stddev: Real
-} Gauss;
-
-def {
-  lo: UInt
-  hi: UInt
-} Range;
-
-def {
- mon: Sym
- count: UInt
-} SummonN;
-
-def {
-  one: Sym
-  many: Sym
-} ItemName;
-
-def {
-  skin: Skin
-  slot: Sym
-  rarity: UInt
-  name: ItemName
-
-  radius: UInt
-  lightradius: UInt
-  camorange: UInt
-  throwrange: UInt
-  telepathyrange: UInt
-  liveexplode: UInt
-  airfreshener: UInt
-  count: UInt
-  mapper: UInt
-  stackrange: UInt
-  jumprange: UInt
-  doppel: UInt
-  repelrange: UInt
-
-  heatbonus: Real
-  rangeattack: Real
-  digbonus: Real
-  defence: Real
-  attack: Real
-
-  healing: Gauss
-  food: Gauss
-  healingsleep: GaussNat
-  selfdestruct: GaussNat
-  confattack: GaussNat
-  cursedchance: GaussChance
-  ammochance: Range
-  range: Range
-  summon: SummonN
-  winning: Achievement
-
-  special: Sym
-  craft: Sym
-  desc: Sym
-  resource: Sym
-  align: Sym
-  converts: Sym
-  switch_moon: Sym
-
-  trapcloud
-  straightline
-  wishing
-  homing
-  springy
-  nodoz
-  throwable
-  sounding
-  jinni
-  explodeimmune
-  detect_monsters
-  psyimmune
-  detect_items
-  cooling
-  digging
-  ebola
-  detector
-  booze
-  radexplode
-  swampgas
-  hide_count
-  makestrap
-  applies_in_slot
-  explodes
-  smoke
-  glueimmune
-  radimmune
-  fires
-  rangeexplode
-  applies
-  digray_x
-  digray_y
-
 } Item;
 
 def {
-  item: Sym
-  
-  count: UInt
-  corpse: Sym
-  ammo: Int
-  tag: Bool
-  cursed: Bool
-  selfdestruct: UInt
-  
 } ItemVal;
 
-/***/
-
-# For 'msg'
-def [a:Sym b:Bool];
-
-# For generate.piccol
-def [x:UInt y:UInt v:Sym];
-
-# For random.piccol
-def [a:Real b:Real c:Real];
-def [a:Real b:Real c:UInt];
 
 /*** ***/
 
+def [a:UInt b:UInt c:UInt];
+def [a:OutState b:Sym];
+def [a:Sym b:Bool];
+def [a:Sym b:Real];
+def [a:Real b:UInt];
+def [a:UInt b:UInt c:UInt d:Skin];
+def [a:UInt b:UInt c:UInt d:Bool];
+
+/*** ***/
+
+msg      Sym->Void :- [ \\ false ] dg_render_message.
+msg_bold Sym->Void :- [ \\ true ] dg_render_message.
+
+/*** ***/
+
+max [Real Real]->Real :- <: \a > \b :> ? \b ; \a.

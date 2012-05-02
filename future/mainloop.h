@@ -156,7 +156,27 @@ struct Main {
             grender::get().skip_input();
         }
     }
-    
+
+    bool check_done(bool done, bool dead, const std::string& savefile) {
+
+        if (done) {
+                
+            if (dead) {
+
+                game.endgame();
+
+                clobber_savefile(savefile);
+
+            } else {
+                save(savefile);
+            }
+
+            grender::get().wait_for_anykey();
+            return true;
+        }
+
+        return false;
+    }
 
     bool mainloop(const std::string& savefile,
                   long seed,
@@ -184,23 +204,16 @@ struct Main {
 
             draw();
 
-            if (done) {
-                
-                if (dead) {
-
-                    game.endgame();
-
-                    clobber_savefile(savefile);
-
-                } else {
-                    save(savefile);
-                }
-
-                grender::get().wait_for_anykey();
+            if (check_done(done, dead, savefile)) 
                 return dead;
-            }
 
             pump_event(need_input, done, dead);
+
+            if (check_done(done, dead, savefile)) {
+
+                draw();
+                return dead;
+            }
         }
     }
     

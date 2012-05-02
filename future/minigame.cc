@@ -20,7 +20,10 @@ struct Game {
     void generate() {
 
         vm.generate();
+        redraw_skin();
+    }
 
+    void redraw_skin() {
         unsigned int gw = grender::get().w;
         unsigned int gh = grender::get().h;
 
@@ -67,11 +70,15 @@ struct Game {
         std::cout << "!" << ticks << " " << vk << " [" << c << "]" << std::endl;
 
         bool regen = false;
-        
-        vm.handle_input(ticks, vk, c, done, dead, regen);
+        bool redraw = false;
+
+        vm.handle_input(ticks, vk, c, done, dead, regen, redraw);
 
         if (regen) {
             generate();
+
+        } else if (redraw) {
+            redraw_skin();
         }
     }
 };

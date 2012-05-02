@@ -1,0 +1,113 @@
+
+depth_color UInt->[Sym Real]:-
+  <:[case] \\ :
+    1u ? [ 'white'            0.9 ];
+    2u ? [ 'lightest_blue'    0.8 ]; 
+    3u ? [ 'lighter_blue'     0.7 ];
+    4u ? [ 'light_blue'       0.6 ];
+    5u ? [ 'blue'             0.5 ];
+    6u ? [ 'dark_blue'        0.4 ];
+    7u ? [ 'darker_blue'      0.3 ];
+    8u ? [ 'darkest_blue'     0.2 ];
+  :>
+  [ 'darkest_gray' 0.1 ].
+
+set_env_color UInt->Void :-
+  \\ depth_color->[Sym Real] dg_render_set_env.
+
+generate UInt->[UInt UInt] :-
+  0 dg_grid_generate
+  \\ set_env_color
+  dg_grid_one_of_walk->[UInt UInt].
+
+water_color Real->[Sym Sym] :-
+  <: \\ <= -8f :> ? [ 'darkest_green'     'darker_green' ];
+  <: \\ <= -6f :> ? [ 'darker_green'      'dark_green' ];
+  <: \\ <= -4f :> ? [ 'dark_green'        'green' ];
+  <: \\ <= -2f :> ? [ 'green'             'light_green' ];
+  <: \\ <=  0f :> ? [ 'light_green'       'lighter_green' ];
+  <: \\ <=  2f :> ? [ 'lighter_green'     'lightest_green' ];
+  <: \\ <=  4f :> ? [ 'lightest_green'    'desaturated_green' ];
+  <: \\ <=  6f :> ? [ 'desaturated_green' 'yellow' ];
+  [ 'yellow' 'white' ].
+
+water Real->Skin :-
+  \\ water_color->[Sym Sym]->Skin(
+     Skin{ fore   = \a
+           fore2  = \b
+           fore_i = true
+           is_terrain = false
+           char   = (251u dg_uint_to_char->Sym) }
+  ).
+
+rock Real->Skin :-
+  \\ water_color->[Sym Sym]->Skin(
+     Skin{ fore = \b
+           fore_i = false
+           is_terrain = true
+           char = (176u dg_uint_to_char->Sym) }
+  ).
+
+
+def {
+  x: UInt
+  y: UInt
+  depth: UInt
+  height: Real
+  maxheight: Real
+  drawheight: Real
+  not_ok: Bool
+} HeightP;
+
+max_height UInt->Real :-
+  <: real(12 - int(\\) * 2) :>.
+
+make [UInt UInt UInt]->HeightP :-
+  <:[do] HeightP->HeightP
+     x = \a,
+     y = \b,
+     depth = \c,
+     height = [ \a \b ] dg_grid_get_height->Real,
+     maxheight = \c max_height->Real
+    =>
+     drawheight = [ \height \maxheight ] max->Real,
+     not_ok = [ \height \maxheight ]->Bool(<: \a > \b :>)
+    =>
+     \\
+  :>.
+
+make HeightP->Skin :-
+  \not_ok ? \drawheight rock->Skin ;
+  \drawheight water->Skin.
+
+set_skin [UInt UInt UInt]->Void :-
+  \\ make->HeightP->Void (
+     [ \x \y 0u (\\ make->Skin) ] dg_render_set_skin
+     [ \x \y 0u \not_ok ] dg_render_set_is_walkblock
+     [ \x \y 0u \not_ok ] dg_render_set_is_viewblock
+  ).
+
+drawing_context DrawingContext->DrawingContext :-
+  \\ { lightradius = (get->Dungeon->depth->UInt( <: \\ == 1u :> ? 16u ; 8u )) 
+       px = (get->Player->x)
+       py = (get->Player->y) }.
+
+
+descend Void->Void :-
+  get->Dungeon->Void(
+    <: \depth < 10u :> ? \\ { depth=(<: \depth + 1u :>) } ->Void(
+      \depth set_env_color
+      \\ set
+    ) ;
+   'Maximum depth reached; you cannot dive any further.' msg fail
+  ).
+
+ascend Void->Void :-
+  get->Dungeon->Void(
+    <: \depth > 1u :> ? \\ { depth=(<: \depth - 1u :>) } ->Void(
+      \depth set_env_color
+      \\ set
+    ) ;
+   'You are already at the surface; you cannot fly!' msg fail
+  ).
+

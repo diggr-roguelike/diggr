@@ -504,8 +504,7 @@ struct Vm {
         vm.register_callback("dg_render_is_walkblock", "[ UInt UInt ]", "Bool", dg_render_is_walkblock);
         vm.register_callback("dg_render_is_valid",     "[ UInt UInt ]", "Bool", dg_render_is_valid);
 
-        vm.register_callback("dg_render_set_skin", 
-                             "[ UInt UInt UInt Sym Sym Sym Bool Bool ]", "Void", dg_render_set_skin);
+        vm.register_callback("dg_render_set_skin", "[ UInt UInt UInt Skin ]", "Void", dg_render_set_skin);
 
         vm.register_callback("dg_render_set_env", "[ Sym Real ]", "Void", dg_render_set_env);
 
@@ -567,11 +566,19 @@ struct Vm {
         vm.required("drawing_context", "Void", "DrawingContext");
         vm.required("handle_input", "InState", "OutState");
         vm.required("draw_hud", "Void", "Void");
+        vm.required("process_world", "UInt", "OutState");
 
         vm.init();
 
-        vm.check_type("InState",        {nanom::UINT, nanom::INT, nanom::SYMBOL});
-        vm.check_type("OutState",       {nanom::UINT, nanom::BOOL, nanom::BOOL, nanom::BOOL, nanom::BOOL});
+        vm.check_type("Skin", 
+                      {nanom::SYMBOL, nanom::SYMBOL, nanom::SYMBOL, nanom::BOOL, nanom::BOOL});
+
+        vm.check_type("InState",
+                      {nanom::UINT, nanom::INT, nanom::SYMBOL});
+
+        vm.check_type("OutState",
+                      {nanom::UINT, nanom::BOOL, nanom::BOOL, nanom::BOOL, nanom::BOOL, nanom::BOOL});
+
         vm.check_type("DrawingContext", 
                       { nanom::UINT, nanom::UINT, nanom::UINT, nanom::UINT, nanom::UINT, nanom::UINT, nanom::UINT, 
                         nanom::BOOL });
@@ -650,7 +657,7 @@ struct Vm {
         ctx.do_hud = out.v[7].uint;
     }
 
-    void handle_input(size_t& ticks, int vk, char c, bool& done, bool& dead, bool& regen) {
+    void handle_input(size_t& ticks, int vk, char c, bool& done, bool& dead, bool& regen, bool& redraw) {
         nanom::Struct out;
         nanom::Struct inp;
         inp.v.push_back((nanom::UInt)ticks);
@@ -664,6 +671,7 @@ struct Vm {
         done = out.v[1].uint;
         dead = out.v[2].uint;
         regen = out.v[3].uint;
+        redraw = out.v[4].uint;
     }
 
     void process_world(size_t& ticks, bool& done, bool& dead, bool& need_input) {
@@ -702,7 +710,7 @@ struct Vm {
         ticks = out.v[0].uint;
         done = out.v[1].uint;
         dead = out.v[2].uint;
-        need_input = out.v[4].uint;
+        need_input = out.v[5].uint;
     }
 
     void forall_monsters(const std::string& func) {

@@ -1,0 +1,49 @@
+
+
+default Void->DrawingContext :-
+  DrawingContext{ lightradius=1u hlx=1000u hly=1000u rangemin=0u rangemax=1000u do_hud=true }.
+
+null Void->OutState :-
+  OutState{ done=false dead=false regenerate=false redraw=false need_input=true }.
+
+default InState->OutState :-
+  null->OutState{ ticks=(<: \ticks + 1u :>) }.
+
+null InState->OutState :-
+  null->OutState { ticks=\ticks }.
+
+default Void->Dungeon :-
+  Dungeon{ depth=1u }.
+
+default Void->Player :-
+  Player{ }.
+
+/*** ***/
+
+init Void->Void :- 
+  default->Dungeon set
+  default->Player set
+  .
+
+remove_monster [ [ UInt UInt ] MonsterVal ]->Void :- .
+move_monster   [ [ UInt UInt ] MonsterVal ]->Void :- .
+
+remove_item    [ [ UInt UInt ] UInt ItemVal ]->Void :- .
+
+generate Void->Void :- 
+  get->Dungeon->depth generate->[UInt UInt]->Void( get->Player { x=\a y=\b } set ).
+
+set_skin [ UInt UInt ]->Void :- 
+  [ \a \b (get->Dungeon->depth) ] set_skin.
+
+draw_hud Void->Void :-.
+
+drawing_context Void->DrawingContext :-
+  default->DrawingContext drawing_context->DrawingContext.
+
+handle_input InState->OutState :-
+  [ (\\ default->OutState) \c ] handle_input->OutState ;
+  \\ null->OutState.
+
+process_world UInt->OutState :- 
+  null->OutState { ticks=\\ }.
