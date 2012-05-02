@@ -34,6 +34,18 @@ struct drawing_context_t {
         {}
 };
 
+struct screen_params_t {
+    unsigned int w; 
+    unsigned int h; 
+    unsigned int w2; 
+    unsigned int h2;
+    std::string font;
+    std::string title;
+    bool fullscreen;
+
+    screen_params_t() : w(0), h(0), w2(0), h2(0), fullscreen(false) {}
+};
+
 
 template <typename GAME>
 struct Main {
@@ -90,11 +102,7 @@ struct Main {
 
     bool start(const std::string& savefile,
                long seed,
-               unsigned int _w, unsigned int _h, 
-               unsigned int _w2, unsigned int _h2,
-               const std::string& _font, 
-               const std::string& _title, 
-               bool _fullscreen) {
+               const screen_params_t& sp) {
 
         if (load(savefile)) {
             return false;
@@ -102,9 +110,9 @@ struct Main {
 
 
         rnd::get().init(seed);
-        neighbors::get().init(_w, _h);
-        grid::get().init(_w, _h);
-        grender::get().init(_w2, _h2, _font, _title, _fullscreen);
+        neighbors::get().init(sp.w, sp.h);
+        grid::get().init(sp.w, sp.h);
+        grender::get().init(sp.w2, sp.h2, sp.font, sp.title, sp.fullscreen);
         grender::get().keylog.clear();
         celauto::get().init();
         moon::get().init();
@@ -179,15 +187,13 @@ struct Main {
     }
 
     bool mainloop(const std::string& savefile,
-                  long seed,
-                  unsigned int _w, unsigned int _h, 
-                  unsigned int _w2, unsigned int _h2,
-                  const std::string& _font, 
-                  const std::string& _title, 
-                  bool _fullscreen) {
+                  long seed) {
 
+        screen_params_t sp;
 
-        start(savefile, seed, _w, _h, _w2, _h2, _font, _title, _fullscreen);
+        game.make_screen(sp);
+
+        start(savefile, seed, sp);
 
         size_t oldticks = 0;
 

@@ -87,9 +87,7 @@ int main(int argc, char** argv) {
 
     mainloop::Main<Game> main;
 
-    main.mainloop("_minisave.tmp", ::time(NULL),
-                  80, 25, 80, 25, 
-                  "font.png", "Minigame", false);
+    main.mainloop("_minisave.tmp", ::time(NULL));
 
     return 0;
 }

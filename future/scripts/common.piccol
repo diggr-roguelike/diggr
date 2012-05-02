@@ -2,6 +2,10 @@
 /*** ***/
 
 def {
+  
+} ScreenParams;
+
+def {
   fore: Sym
   char: Sym
   fore2: Sym

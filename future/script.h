@@ -555,6 +555,7 @@ struct Vm {
 
         ////// 
 
+        vm.required("make_screen", "Void", "ScreenParams");
         vm.required("init", "Void", "Void");
 
         vm.required("remove_monster",     "[ [ UInt UInt ] MonsterVal ]", "Void");
@@ -570,6 +571,10 @@ struct Vm {
 
         vm.init();
 
+        vm.check_type("ScreenParams",
+                      {nanom::UINT, nanom::UINT, nanom::UINT, nanom::UINT,
+                       nanom::SYMBOL, nanom::SYMBOL, nanom::BOOL});
+
         vm.check_type("Skin", 
                       {nanom::SYMBOL, nanom::SYMBOL, nanom::SYMBOL, nanom::BOOL, nanom::BOOL});
 
@@ -580,16 +585,16 @@ struct Vm {
                       {nanom::UINT, nanom::BOOL, nanom::BOOL, nanom::BOOL, nanom::BOOL, nanom::BOOL});
 
         vm.check_type("DrawingContext", 
-                      { nanom::UINT, nanom::UINT, nanom::UINT, nanom::UINT, nanom::UINT, nanom::UINT, nanom::UINT, 
-                        nanom::BOOL });
+                      {nanom::UINT, nanom::UINT, nanom::UINT, nanom::UINT, nanom::UINT, nanom::UINT, nanom::UINT, 
+                       nanom::BOOL });
 
         vm.check_type("IntHudLine", 
-                      { nanom::SYMBOL, nanom::SYMBOL, nanom::INT,
-                        nanom::SYMBOL, nanom::SYMBOL, nanom::SYMBOL, nanom::SYMBOL });
+                      {nanom::SYMBOL, nanom::SYMBOL, nanom::INT,
+                       nanom::SYMBOL, nanom::SYMBOL, nanom::SYMBOL, nanom::SYMBOL });
 
         vm.check_type("UIntHudLine", 
-                      { nanom::SYMBOL, nanom::SYMBOL, nanom::UINT,
-                        nanom::SYMBOL, nanom::SYMBOL });
+                      {nanom::SYMBOL, nanom::SYMBOL, nanom::UINT,
+                       nanom::SYMBOL, nanom::SYMBOL });
 
     }        
 
@@ -601,6 +606,26 @@ struct Vm {
             throw std::runtime_error("Calling " + name + " " + from + "->" + to + " failed");
         }
     }
+
+    void make_screen(mainloop::screen_params_t& sp) {
+        nanom::Struct out;
+        nanom::Struct inp;
+
+        run("make_screen", "Void", "ScreenParams", inp, out);
+
+        sp.w = out.v[0].uint;
+        sp.h = out.v[1].uint;
+        sp.w2 = out.v[2].uint;
+        sp.h2 = out.v[3].uint;
+        sp.font = metalan::symtab().get(out.v[4].uint);
+        sp.title = metalan::symtab().get(out.v[5].uint);
+        sp.fullscreen = out.v[6].uint;
+    }
+
+    /*
+    80, 25, 80, 25, 
+        "font.png", "Minigame", false);
+    */
 
     void init() {
         nanom::Struct out;
