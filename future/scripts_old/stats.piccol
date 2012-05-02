@@ -1,0 +1,80 @@
+
+def [a:Sym b:Real];
+
+stat [Sym Real]->IntHudLine :- 
+  IntHudLine{
+    color  = 'white'
+    label  = \a
+    pstyle = ['-' '+']
+    npips  = (\b->Int(
+                <: \\ >=  2f :> ?  3 ;
+                <: \\ >=  1f :> ?  2 ;
+                <: \\ >=  0f :> ?  1 ;
+                <: \\ >= -1f :> ? -1 ;
+                <: \\ >= -2f :> ? -2 ;
+                -3 ))
+    pcolor = (\b->Sym(
+                <: \\ >= 1.5  :> ? 'darker_green' ;
+                <: \\ >= -0.5 :> ? 'yellow' ;
+                'red')->[Sym Sym]( [ \\ \\ ] )
+             )
+  }.
+
+draw_stat [Sym Real]->Void :- \\ stat->IntHudLine dg_render_push_hud_line.
+
+draw_health Void->Void :- [ 'Health' (get->Player->hp) ] draw_stat.
+draw_sleep Void->Void  :- [ 'Sleep' (get->Player->sleep) ] draw_stat.
+draw_tired Void->Void  :- [ 'Tired' (get->Player->tired) ] draw_stat.
+draw_hunger Void->Void :- [ 'Hunger' (get->Player->hunger) ] draw_stat.
+draw_thirst Void->Void :- [ 'Thirst' (get->Player->thirst) ] draw_stat.
+draw_warmth Void->Void :- [ 'Warmth' (get->Player->warmth) ] draw_stat.
+
+/*** ***/
+
+luck Void->Real :- 0f.
+
+get_stat Sym->Real :- 
+  <:[case] \\ :
+    'health' ? get->Player->hp ;
+    'sleep'  ? get->Player->sleep ;
+    'tired'  ? get->Player->tired ;
+    'hunger' ? get->Player->hunger ;
+    'thirst' ? get->Player->thirst ;
+    'warmth' ? get->Player->warmth ;
+    'luck'   ? get->Player->luck 
+   :>.
+
+set_stat [Sym Real]->Void :-
+  [ \a (\b->Real( <: \\ < -3f :> ? -3f ;
+                  <: \\ >  3f :> ?  3f ;
+                  \\ ))
+  ]->Void(
+  <:[case] \a :
+    'health' ? get->Player { hp=\b } set ;
+    'sleep'  ? get->Player { sleep=\b } set ;
+    'tired'  ? get->Player { tired=\b } set ;
+    'hunger' ? get->Player { hunger=\b } set ;
+    'thirst' ? get->Player { thirst=\b } set ;
+    'warmth' ? get->Player { warmth=\b } set ;
+    'luck'   ? get->Player { luck=\b } set ;
+   :>
+  ).
+
+dec_stat [Sym Real]->Void :-
+  [ \a ([ (\a get_stat->Real) \b ] $sub) ] set_stat.
+
+inc_stat [Sym Real]->Void :-
+  [ \a ([ (\a get_stat->Real) \b ] $add) ] set_stat.
+
+
+player_damage Real->Void :-
+  [ 'health' \\ ] dec_stat.
+
+
+draw_hud Void->Void :-
+  draw_health
+  draw_warmth
+  draw_tired
+  draw_sleep
+  draw_thirst
+  draw_hunger.

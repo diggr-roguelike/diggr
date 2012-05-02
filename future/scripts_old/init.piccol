@@ -1,0 +1,13 @@
+
+
+init Void->Void :-
+  init_featstock
+  init_monsterstock
+  init_itemstock
+
+  Player { level=1u hp=3f sleep=3f tired=3f hunger=3f thirst=3f warmth=3f luck=0f } set
+  Dungeon { level=1u } set
+
+  init_inventory
+.
+

@@ -1,0 +1,152 @@
+
+def {
+  fore:       Sym
+  char:       Sym
+  fore2:      Sym
+  fore_i:     Bool
+  is_terrain: Bool
+  is_nowalk:  Bool
+  is_noview:  Bool
+  back:       Sym
+  is_lit:     Bool
+} Renderskin;
+
+def [a:Sym  b:Real];
+def [a:UInt b:UInt v:Bool];
+def [x:UInt y:UInt z:UInt a:Bool];
+def [x:UInt y:UInt z:UInt skin:Renderskin];
+def [x:UInt y:UInt z:UInt skin:Skin];
+def [x:UInt y:UInt z:UInt back:Sym];
+def [x:UInt y:UInt z:UInt fore:Sym char:Sym fore2:Sym fore_i:Bool is_terrain:Bool];
+def [x:UInt y:UInt z:UInt];
+def [a:UInt b:UInt c:UInt d:UInt];
+
+
+set_renderskin [UInt UInt UInt Renderskin]->Void :-
+  [ \x \y \z
+    (\skin->fore)
+    (\skin->char)
+    (\skin->fore2)
+    (\skin->fore_i)
+    (\skin->is_terrain) ] dg_render_set_skin
+  [ \x \y \z (\skin->is_nowalk) ] dg_render_set_is_walkblock
+  [ \x \y \z (\skin->is_noview) ] dg_render_set_is_viewblock
+  [ \x \y \z (\skin->is_lit) ] dg_render_set_is_lit
+  [ \x \y \z (\skin->back) ] dg_render_set_back
+.
+
+unset Void->Renderskin :-
+  Renderskin{ fore=nil char=(0 char->Sym) fore2=nil fore_i=false 
+              is_terrain=false is_nowalk=false is_noview=false 
+              back=nil is_lit=false }.
+
+unset_renderskin [UInt UInt UInt]->Void :-
+  [\x \y \z (unset->Renderskin)] set_renderskin.
+
+to Skin->Renderskin :-
+  Renderskin{ fore=\color 
+              char=\char 
+              is_nowalk=(\walkable $not)
+              is_noview=(\visible $not)
+              is_lit=(\is_lit)
+              back=(\back) }.
+
+set_renderskin [UInt UInt UInt Skin]->Void :-
+  [ \x \y \z (\skin to->Renderskin) ] set_renderskin.
+
+
+
+dungeontheme Void->Sym :- 
+  get->Dungeon->Sym(
+    <:[case] \branch :
+
+      'a'  ? 'lime';
+      'b'  ? 'red';
+      'c'  ? 'sky';
+      'd'  ? 'darkest_gray';
+      'e'  ? 'lightest_yellow';
+      's'  ? 'darkest_blue';
+      'q'  ? 'white';
+      'qk' ? 'grey'
+   :>)
+.
+
+default Void->Renderskin :- 
+  Renderskin{ char=' '
+            fore=(dungeontheme->Sym) 
+            fore2=nil 
+            fore_i=false 
+            is_terrain=false
+            is_nowalk=true
+            is_noview=true }.
+
+default_floor Void->Renderskin :-
+  default->Renderskin { char=(250 char->Sym) is_terrain=true is_nowalk=false is_noview=false }.
+
+default_wall Void->Renderskin :-
+  default->Renderskin { char=(176 char->Sym) is_terrain=true }.
+
+default_floor_water Void->Renderskin :- 
+  default->Renderskin { char  =(251 char->Sym) 
+                      fore  ='light_azure'
+                      fore2 ='dark_azure'
+                      fore_i=true
+                      is_nowalk=false is_noview=false }.
+
+default_wall_water Void->Renderskin :-
+  default_wall->Renderskin { fore='desaturated_blue' }.
+
+default [UInt UInt]->Renderskin :-
+  [ ([\a \b] dg_grid_is_walk->Bool) 
+    ([\a \b] dg_grid_is_water->Bool) ] -> Renderskin (
+
+    <: \a && \b :> ? default_floor_water->Renderskin ;
+                \a ? default_floor->Renderskin ;
+                \b ? default_wall_water->Renderskin ;
+                     default_wall->Renderskin
+). 
+
+player Void->Renderskin :- Renderskin{ char='@' fore='white' }.
+
+player [UInt UInt]->Renderskin :-
+  [ \a \b (get->Player->x) (get->Player->y) ]->Renderskin (
+     <: \a == \c && \b == \d :> ? player->Renderskin).
+
+
+set_monster [UInt UInt]->Void :-
+  [ \a \b 6u ([\a \b] monster->Skin) ] set_renderskin.
+
+unset_monster [UInt UInt]->Void :-
+  [ \a \b 6u ] unset_renderskin.
+
+set_player [UInt UInt]->Void :-
+  [ \a \b 7u ([\a \b] player->Renderskin) ] set_renderskin.
+
+unset_player [UInt UInt]->Void :-
+  [ \a \b 7u ] unset_renderskin.
+
+
+/*** *** ***/
+
+/* Completely redraw all layers properly. */
+
+set_skin [UInt UInt]->Void :-
+  [ \a \b 0u ] unset_renderskin 
+  [ \a \b 1u ] unset_renderskin 
+  [ \a \b 5u ] unset_renderskin 
+  [ \a \b 6u ] unset_renderskin 
+  [ \a \b 7u ] unset_renderskin 
+
+  [ \a \b 0u ([\a \b] default->Renderskin) ] set_renderskin fail;
+
+  [ \a \b 1u ([\a \b] feature->Skin) ] set_renderskin fail;
+
+  [ \a \b 5u ([\a \b] item->Skin) ] set_renderskin fail;
+
+  [ \a \b ] set_monster fail;
+
+  [ \a \b ] set_player fail; 
+.
+
+
+

@@ -1,0 +1,102 @@
+
+modules Void->Void :-
+
+  'common.piccol' common  
+
+  <:[module] init 'init.piccol'
+             init Void->Void
+   :>
+
+  <:[module] random 'random.piccol'
+             pos_gauss [Real Real]->Real
+             neg_gauss [Real Real]->Real
+             pos_gauss [Real Real UInt]->UInt
+             neg_gauss [Real Real UInt]->UInt
+             rand_n UInt->UInt
+             int_bias Void->Int
+   :>
+
+  <:[module] generate 'generate.piccol'
+             generate Void->Void
+   :>
+
+  <:[module] skin 'skin.piccol'
+             set_skin [UInt UInt]->Void
+   :>
+
+  <:[module] feats 'feats.piccol'
+             init_featstock Void->Void
+             set_feature [UInt UInt Sym]->Void
+             feature [UInt UInt]->Skin
+             get [UInt UInt]->FeatFlags
+   :>
+
+  <:[module] monsterstock 'monsterstock.piccol'
+             init_monsterstock Void->Void
+             make Monster->MonsterKey
+   :>
+
+  <:[module] itemstock 'itemstock.piccol'
+             init_itemstock Void->Void
+   :>
+
+  <:[module] monsters 'monsters.piccol'
+             monster [UInt UInt]->Skin
+             set_monster [UInt UInt Sym]->Void
+             remove_monster [ [UInt UInt] MonsterVal ]->Void
+
+             walk [ [UInt UInt] MonsterVal ]->[ [UInt UInt] MonsterVal ]
+             target [ [UInt UInt] MonsterVal ]->MonsterVal
+             is_dead MonsterVal->Bool
+
+             fmt MonsterVal->Sym
+   :>
+
+  <:[module] items 'items.piccol'
+             make Sym->ItemVal
+             item [UInt UInt]->Skin
+             set_item [UInt UInt Sym]->Void
+             remove_item [ [UInt UInt] UInt ItemVal ]->Void
+             nitems [UInt UInt]->UInt
+             fmt ItemVal->Sym
+   :>
+
+  <:[module] inventory 'inventory.piccol'
+             inv_draw Void->Sym
+             inv_draw Void->Void
+             inv_act_top Void->Void
+             init_inventory Void->Void
+
+             get_attack Void->Real
+             get_defence Void->Real
+             get_lightradius Void->UInt
+   :>
+
+  <:[module] input 'input.piccol'
+             handle_input InState->OutState
+             drawing_context Void->DrawingContext
+             remap Int->Sym
+   :>
+
+  <:[module] world 'world.piccol'
+             move_monster [ [UInt UInt] MonsterVal ]->Void
+             process_world UInt->OutState
+             player_tick Void->Void
+   :>
+
+  <:[module] combat 'combat.piccol'
+             monster_hits MonsterValXY->MonsterVal
+             player_hits MonsterValXY->MonsterVal
+   :>             
+
+  <:[module] stats 'stats.piccol'
+             luck Void->Real
+             player_damage Real->Void
+             draw_hud Void->Void
+   :>
+
+  <:[module] output 'output.piccol'
+             msg Sym->Void
+             msg [Sym Bool]->Void
+   :>
+.

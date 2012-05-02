@@ -1,0 +1,88 @@
+
+def [a:Sym b:Item];
+
+def [a:[UInt UInt] b:ItemVal];
+
+def [a:[UInt UInt] b:ItemVal c:UInt];
+
+def [a:[UInt UInt] b:UInt];
+
+def [a:ItemVal b:Item];
+
+def [xy:[UInt UInt] n:UInt item:ItemVal];
+
+
+make [Sym Item]->ItemVal :-
+  ItemVal{ item=\a 
+
+           count=(\b->UInt(<: \count == 0u :> ? 1u ; \count))
+
+           ammo=(\b->ammochance->Int(<: \lo == 0u && \hi == 0u :> ? -1 ;
+                                     [ (\lo to->Int) (\hi to->Int) ] dg_random_range->Int))
+
+           cursed=(\b->cursedchance->Bool(
+                            [ \thold ([ 0f \stddev ] pos_gauss->Real)]->Bool(<: \b < \a :> ? true ; false)))
+
+           selfdestruct=(\b->selfdestruct->UInt(
+                                  [ (\mean to->Real) (\stddev to->Real) 1u ] pos_gauss->UInt))
+         }.
+
+make Sym->ItemVal :-
+  [ \\ (\\ get->Item) ] make->ItemVal.
+
+def {
+  one: Sym
+  many: Sym
+  hide_count: Bool
+  count: UInt
+  ammo: Int
+  corpse: Sym
+  tag: Bool
+} NameData;
+
+fmt NameData->Sym :- 
+  <:[seq] fmt =>
+
+      \\->Sym(
+        <: \count <= 1u :> ? \one ;
+        \hide_count ? <:[seq] fmt => \one,   ' [', \count, ']' => Sym :> ;
+                      <:[seq] fmt => \count, ' ',  \many       => Sym :>
+      ),
+      \\->Sym( <: \corpse != nil :> ? <:[seq] fmt => ' of ', \corpse  => Sym :> ; ''),
+      \\->Sym( <: \ammo > 0 :>      ? <:[seq] fmt => ' [', \ammo, ']' => Sym :> ; ''),
+      \\->Sym( \tag ? ' {tagged}' ; '')
+
+    => Sym :>
+.
+
+/*** ***/
+
+fmt ItemVal->Sym :-
+  [ \\ (\\->item get->Item) ]->Sym(
+    NameData{ one=(\b->name->one)
+              many=(\b->name->many)
+              hide_count=(\b->hide_count)
+              count=(\a->count)
+              ammo=(\a->ammo)
+              tag=(\a->tag)
+              corpse=(\a->corpse) } fmt->Sym
+ ).
+
+/* HACK! This only works because only one 'stack' is registered. */
+
+nitems [UInt UInt]->UInt :- \\ size->UInt.
+
+set_item [UInt UInt Sym]->Void :-
+  [ [\x \y] ([\v (\v get->Item)] make->ItemVal) ] -> Void(
+    [ \a \b 0u ] put
+    \a set_skin
+  ).
+
+remove_item [ [UInt UInt] UInt ItemVal ]->Void :-
+  /* Nothing needs to be done yet.*/
+.
+
+item [UInt UInt]->Skin :-
+  [[\a \b] 0u] get->ItemVal->item get->Item->skin.
+
+
