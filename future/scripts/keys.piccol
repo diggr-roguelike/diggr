@@ -7,7 +7,17 @@ handle_input [OutState Sym]->OutState :-
      'Q' ? \a { done=true dead=true } ;
      '>' ? descend \a { redraw=true } ; 
      '<' ? ascend  \a { redraw=true } ;
-     '.' ? \a 
+     '.' ? \a ;
+
+     'h' ? [-1  0] move \a { redraw=true } ;
+     'j' ? [ 0  1] move \a { redraw=true } ;
+     'k' ? [ 0 -1] move \a { redraw=true } ;
+     'l' ? [ 1  0] move \a { redraw=true } ;
+     'y' ? [-1 -1] move \a { redraw=true } ;
+     'u' ? [ 1 -1] move \a { redraw=true } ;
+     'b' ? [-1  1] move \a { redraw=true } ;
+     'n' ? [ 1  1] move \a { redraw=true } 
+
    :>.
 
 

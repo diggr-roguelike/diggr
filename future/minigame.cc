@@ -13,6 +13,10 @@ struct Game {
     Game(bool verbose = false) : vm("piccol/", "future/scripts/", verbose) {}
 
 
+    void make_screen(mainloop::screen_params_t& sp) {
+        vm.make_screen(sp);
+    }
+
     void init() {
         vm.init();
     }

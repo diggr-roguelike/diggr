@@ -48,6 +48,15 @@ rock Real->Skin :-
            char = (176u dg_uint_to_char->Sym) }
   ).
 
+surface Real->Skin :-
+  \\ water->Skin { is_terrain = true
+                   char = (250u dg_uint_to_char->Sym) }.
+
+player Void->Skin :-
+  Skin { char='W' fore='white' }.
+
+null Void->Skin :-
+  Skin { char=(0u dg_uint_to_char->Sym) }.
 
 def {
   x: UInt
@@ -77,20 +86,97 @@ make [UInt UInt UInt]->HeightP :-
   :>.
 
 make HeightP->Skin :-
+  <: \depth == 1u :> ? \drawheight surface->Skin ;
   \not_ok ? \drawheight rock->Skin ;
   \drawheight water->Skin.
 
-set_skin [UInt UInt UInt]->Void :-
-  \\ make->HeightP->Void (
-     [ \x \y 0u (\\ make->Skin) ] dg_render_set_skin
-     [ \x \y 0u \not_ok ] dg_render_set_is_walkblock
-     [ \x \y 0u \not_ok ] dg_render_set_is_viewblock
+def {
+  skin: Skin
+  walkable: Bool
+  visible: Bool
+  is_lit: Bool
+  back: Sym
+
+  x: UInt
+  y: UInt
+  z: UInt
+
+  gx: UInt
+  gy: UInt
+  depth: UInt
+
+  heightp: HeightP
+
+} ExtSkin;
+
+set ExtSkin->Void :-
+  [ \x \y \z \skin ] dg_render_set_skin
+  [ \x \y \z (\walkable $not) ] dg_render_set_is_walkblock
+  [ \x \y \z (\visible $not) ] dg_render_set_is_viewblock
+  [ \x \y \z \back ] dg_render_set_back
+  [ \x \y \z \is_lit ] dg_render_set_is_lit.
+
+/*
+*/
+
+remap_x UInt->UInt :-
+  [ (get->Player->x) \\ ] ->UInt(
+    <: (int(\a) + int(\b)) - 40 :> ->UInt( <: \\ >= 0 && \\ < 80 :> ? <: uint(\\) :> )
   ).
+
+remap_y UInt->UInt :-
+  [ (get->Player->y) \\ ] ->UInt(
+    <: (int(\a) + int(\b)) - 12 :> ->UInt( <: \\ >= 0 && \\ < 25 :> ? <: uint(\\) :> )
+  ).
+
+remap_gx UInt->UInt :-
+  [ (get->Player->x) \\ ] ->UInt(
+    <: (int(\b) - int(\a)) + 40 :> ->UInt( <: \\ >= 0 && \\ < 80 :> ? <: uint(\\) :> )
+  ).
+
+remap_gy UInt->UInt :-
+  [ (get->Player->y) \\ ] ->UInt(
+    <: (int(\b) - int(\a)) + 12 :> ->UInt( <: \\ >= 0 && \\ < 25 :> ? <: uint(\\) :> )
+  ).
+
+
+make [UInt UInt UInt]->ExtSkin :-
+  ExtSkin{ x=\a 
+           y=\b 
+           depth=\c
+           gx=(\a remap_x->UInt) 
+           gy=(\b remap_y->UInt) } 
+  ->ExtSkin( \\ { heightp=([\gx \gy \depth] make->HeightP) } ).
+
+null [UInt UInt]->ExtSkin :-
+  ExtSkin{ skin=(null->Skin {char='x'}) walkable=false visible=false back='black' x=\a y=\b z=0u }.
+
+player ExtSkin->ExtSkin :-
+  [ (get->Player->x) (get->Player->y) \gx \gy ]->Bool(<: \a == \c && \b == \d :>) ?
+     \\ { skin=(player->Skin) visible=true walkable=true is_lit=true  z=1u } ;
+     \\ { skin=(null->Skin)   visible=true walkable=true is_lit=false z=1u }.
+
+grid ExtSkin->ExtSkin :-
+  \\ { skin = (\heightp make->Skin)
+       walkable = (\heightp->not_ok $not)
+       visible = (\heightp->not_ok $not)
+       back = (\depth->Sym(<: \\ == 1u :> ? 'dark_azure' ; 'darkest_azure'))
+       z = 0u }.
+
+
+set_skin [UInt UInt UInt]->Void :-
+  \\ make->ExtSkin ->Void(
+    <:[seq] print => ' --- ', \x, ' ', \y, ' : ', \gx, ' ', \gy, ' / ', get->Player->x, ' ', get->Player->y, '\n' :>
+    \\ player->ExtSkin set
+    \\ grid->ExtSkin set
+  ) ;
+  [ \a \b ] null->ExtSkin set.  
+
 
 drawing_context DrawingContext->DrawingContext :-
   \\ { lightradius = (get->Dungeon->depth->UInt( <: \\ == 1u :> ? 16u ; 8u )) 
-       px = (get->Player->x)
-       py = (get->Player->y) }.
+       px = (get->Player->x remap_gx->UInt)
+       py = (get->Player->y remap_gy->UInt) }.
 
 
 descend Void->Void :-
@@ -111,3 +197,40 @@ ascend Void->Void :-
    'You are already at the surface; you cannot fly!' msg fail
   ).
 
+
+def {
+  x: UInt
+  y: UInt
+  to_x: UInt
+  to_y: UInt
+  dx: Int
+  dy: Int
+} XyMove;
+
+add [UInt Int]->UInt :- 
+  <: int(\a) + \b :> -> UInt( <: \\ < 0 :> ? 0u ; <: uint(\\) :> ).
+
+walkable XyMove->Bool :- 
+  [ \x \y \to_x \to_y ] dg_neighbors_linked->Bool ?
+  [ (\to_x remap_gx->UInt) (\to_y remap_gy->UInt) ] dg_render_is_walkblock->Bool $not ? 
+    true ;
+  false.
+
+move XyMove->Void :-
+  \\ walkable->Bool ? 
+     get->Player { x=\to_x y=\to_y } set.
+
+move [Int Int]->Void :-
+  <:[do] XyMove->XyMove
+     x = get->Player->x,
+     y = get->Player->y,
+     dx = \a,
+     dy = \b
+    =>
+     to_x = [\x \dx] add->UInt,
+     to_y = [\y \dy] add->UInt
+    =>
+     \\
+   :> move.
+
+  

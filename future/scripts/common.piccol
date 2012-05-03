@@ -2,7 +2,11 @@
 /*** ***/
 
 def {
-  
+  gridsize: [UInt UInt]
+  viewsize: [UInt UInt]
+  font: Sym
+  title: Sym
+  fullscreen: Bool  
 } ScreenParams;
 
 def {
@@ -99,8 +103,11 @@ def [a:OutState b:Sym];
 def [a:Sym b:Bool];
 def [a:Sym b:Real];
 def [a:Real b:UInt];
+def [a:UInt b:Int];
+def [a:UInt b:UInt c:UInt d:UInt];
 def [a:UInt b:UInt c:UInt d:Skin];
 def [a:UInt b:UInt c:UInt d:Bool];
+def [a:UInt b:UInt c:UInt d:Sym];
 
 /*** ***/
 

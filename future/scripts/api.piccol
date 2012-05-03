@@ -20,6 +20,13 @@ default Void->Player :-
 
 /*** ***/
 
+make_screen Void->ScreenParams :-
+  ScreenParams{ gridsize=[80u 25u]
+                viewsize=[80u 25u]
+                font='font.png'
+                title='Mini'
+                fullscreen=false }.
+
 init Void->Void :- 
   default->Dungeon set
   default->Player set

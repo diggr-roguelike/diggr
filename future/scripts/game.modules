@@ -9,6 +9,7 @@ modules Void->Void :-
         drawing_context DrawingContext->DrawingContext
         descend Void->Void
         ascend Void->Void
+        move [Int Int]->Void
    :>
 
   <:[module] keys 'keys.piccol'
@@ -16,6 +17,8 @@ modules Void->Void :-
    :>
 
   <:[module] api 'api.piccol'
+
+        make_screen Void->ScreenParams
         init Void->Void
 
         remove_monster [ [ UInt UInt ] MonsterVal ]->Void
