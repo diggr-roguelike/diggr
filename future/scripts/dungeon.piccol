@@ -160,7 +160,7 @@ grid ExtSkin->ExtSkin :-
   \\ { skin = (\heightp make->Skin)
        walkable = (\heightp->not_ok $not)
        visible = (\heightp->not_ok $not)
-       back = (\depth->Sym(<: \\ == 1u :> ? 'darkest_gray' ; 'darkest_azure'))
+       back = (\depth->Sym(<: \\ == 1u :> ? 'darkest_blue' ; 'darkest_azure'))
        z = 0u }.
 
 
