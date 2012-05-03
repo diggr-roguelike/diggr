@@ -28,6 +28,11 @@ struct Game {
     }
 
     void redraw_skin() {
+        bm _b("redraw_skin");
+
+        vm.set_skins();
+        return;
+
         unsigned int gw = grender::get().w;
         unsigned int gh = grender::get().h;
 

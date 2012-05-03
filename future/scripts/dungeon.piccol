@@ -21,15 +21,15 @@ generate UInt->[UInt UInt] :-
   dg_grid_one_of_walk->[UInt UInt].
 
 water_color Real->[Sym Sym] :-
-  <: \\ <= -8f :> ? [ 'darkest_green'     'darker_green' ];
-  <: \\ <= -6f :> ? [ 'darker_green'      'dark_green' ];
-  <: \\ <= -4f :> ? [ 'dark_green'        'green' ];
-  <: \\ <= -2f :> ? [ 'green'             'light_green' ];
-  <: \\ <=  0f :> ? [ 'light_green'       'lighter_green' ];
-  <: \\ <=  2f :> ? [ 'lighter_green'     'lightest_green' ];
-  <: \\ <=  4f :> ? [ 'lightest_green'    'desaturated_green' ];
-  <: \\ <=  6f :> ? [ 'desaturated_green' 'yellow' ];
-  [ 'yellow' 'white' ].
+  <: \\ <= -8f :> ? [ 'darkest_sea'       'sea' ];
+  <: \\ <= -6f :> ? [ 'turquoise'         'lightest_turquoise' ];
+  <: \\ <= -4f :> ? [ 'darkest_cyan'      'cyan' ];
+  <: \\ <= -2f :> ? [ 'sky'               'lightest_sky' ];
+  <: \\ <=  0f :> ? [ 'darkest_azure'     'azure' ];
+  <: \\ <=  2f :> ? [ 'blue'              'lightest_blue' ];
+  <: \\ <=  4f :> ? [ 'darkest_han'       'han' ];
+  <: \\ <=  6f :> ? [ 'violet'            'lightest_violet' ];
+  [ 'darkest_purple' 'purple' ].
 
 water Real->Skin :-
   \\ water_color->[Sym Sym]->Skin(
@@ -50,7 +50,7 @@ rock Real->Skin :-
 
 surface Real->Skin :-
   \\ water->Skin { is_terrain = true
-                   char = (250u dg_uint_to_char->Sym) }.
+                   char = (251u dg_uint_to_char->Sym) }.
 
 player Void->Skin :-
   Skin { char='W' fore='white' }.
@@ -121,12 +121,12 @@ set ExtSkin->Void :-
 
 remap_x UInt->UInt :-
   [ (get->Player->x) \\ ] ->UInt(
-    <: (int(\a) + int(\b)) - 40 :> ->UInt( <: \\ >= 0 && \\ < 80 :> ? <: uint(\\) :> )
+    <: (int(\a) + int(\b)) - 40 :> ->UInt( <: \\ >= 0 && \\ < 500 :> ? <: uint(\\) :> )
   ).
 
 remap_y UInt->UInt :-
   [ (get->Player->y) \\ ] ->UInt(
-    <: (int(\a) + int(\b)) - 12 :> ->UInt( <: \\ >= 0 && \\ < 25 :> ? <: uint(\\) :> )
+    <: (int(\a) + int(\b)) - 12 :> ->UInt( <: \\ >= 0 && \\ < 500 :> ? <: uint(\\) :> )
   ).
 
 remap_gx UInt->UInt :-
@@ -160,18 +160,23 @@ grid ExtSkin->ExtSkin :-
   \\ { skin = (\heightp make->Skin)
        walkable = (\heightp->not_ok $not)
        visible = (\heightp->not_ok $not)
-       back = (\depth->Sym(<: \\ == 1u :> ? 'dark_azure' ; 'darkest_azure'))
+       back = (\depth->Sym(<: \\ == 1u :> ? 'darkest_gray' ; 'darkest_azure'))
        z = 0u }.
 
 
-set_skin [UInt UInt UInt]->Void :-
+set_skin [UInt UInt UInt]->Void :- 
   \\ make->ExtSkin ->Void(
-    <:[seq] print => ' --- ', \x, ' ', \y, ' : ', \gx, ' ', \gy, ' / ', get->Player->x, ' ', get->Player->y, '\n' :>
     \\ player->ExtSkin set
     \\ grid->ExtSkin set
   ) ;
   [ \a \b ] null->ExtSkin set.  
 
+set_skins [UInt UInt UInt]->Void :-
+  <: \b == 25u :> ? ;
+   \\ set_skin 
+   <: \a == 79u :> ? 
+      [ 0u (<: \b + 1u :>) \c ] set_skins ;
+      [ (<: \a + 1u :>) \b \c ] set_skins.
 
 drawing_context DrawingContext->DrawingContext :-
   \\ { lightradius = (get->Dungeon->depth->UInt( <: \\ == 1u :> ? 16u ; 8u )) 

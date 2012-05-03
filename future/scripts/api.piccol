@@ -21,7 +21,7 @@ default Void->Player :-
 /*** ***/
 
 make_screen Void->ScreenParams :-
-  ScreenParams{ gridsize=[80u 25u]
+  ScreenParams{ gridsize=[500u 500u]
                 viewsize=[80u 25u]
                 font='font.png'
                 title='Mini'
@@ -42,6 +42,9 @@ generate Void->Void :-
 
 set_skin [ UInt UInt ]->Void :- 
   [ \a \b (get->Dungeon->depth) ] set_skin.
+
+set_skins Void->Void :- 
+  [ 0u 0u (get->Dungeon->depth) ] set_skins.
 
 draw_hud Void->Void :-.
 

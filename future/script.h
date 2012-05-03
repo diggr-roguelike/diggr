@@ -622,11 +622,6 @@ struct Vm {
         sp.fullscreen = out.v[6].uint;
     }
 
-    /*
-    80, 25, 80, 25, 
-        "font.png", "Minigame", false);
-    */
-
     void init() {
         nanom::Struct out;
         nanom::Struct inp;
@@ -664,6 +659,12 @@ struct Vm {
         inp.v.push_back((nanom::UInt)x);
         inp.v.push_back((nanom::UInt)y);
         run("set_skin", "[ UInt UInt ]", "Void", inp, out);
+    }
+
+    void set_skins() {
+        nanom::Struct out;
+        nanom::Struct inp;
+        run("set_skins", "Void", "Void", inp, out);
     }
 
     void drawing_context(mainloop::drawing_context_t& ctx) {

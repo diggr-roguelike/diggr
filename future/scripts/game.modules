@@ -5,11 +5,13 @@ modules Void->Void :-
 
   <:[module] dungeon 'dungeon.piccol'
         generate UInt->[UInt UInt]
-        set_skin [ UInt UInt UInt ]->Void
+        set_skin [UInt UInt UInt]->Void
         drawing_context DrawingContext->DrawingContext
         descend Void->Void
         ascend Void->Void
         move [Int Int]->Void
+
+        set_skins [UInt UInt UInt]->Void
    :>
 
   <:[module] keys 'keys.piccol'
@@ -28,6 +30,7 @@ modules Void->Void :-
 
         generate Void->Void
         set_skin [ UInt UInt ]->Void
+        set_skins Void->Void
         drawing_context Void->DrawingContext
         handle_input InState->OutState
         process_world UInt->OutState
