@@ -572,7 +572,7 @@ struct Vm {
         vm.init();
 
         vm.check_type("ScreenParams",
-                      {nanom::UINT, nanom::UINT, nanom::UINT, nanom::UINT,
+                      {nanom::UINT, nanom::UINT, nanom::UINT, nanom::UINT, nanom::UINT, nanom::UINT,
                        nanom::SYMBOL, nanom::SYMBOL, nanom::BOOL});
 
         vm.check_type("Skin", 
@@ -585,7 +585,8 @@ struct Vm {
                       {nanom::UINT, nanom::BOOL, nanom::BOOL, nanom::BOOL, nanom::BOOL, nanom::BOOL});
 
         vm.check_type("DrawingContext", 
-                      {nanom::UINT, nanom::UINT, nanom::UINT, nanom::UINT, nanom::UINT, nanom::UINT, nanom::UINT, 
+                      {nanom::INT, nanom::INT,
+                       nanom::UINT, nanom::UINT, nanom::UINT, nanom::UINT, nanom::UINT, nanom::UINT, nanom::UINT, 
                        nanom::BOOL });
 
         vm.check_type("IntHudLine", 
@@ -617,9 +618,11 @@ struct Vm {
         sp.h = out.v[1].uint;
         sp.w2 = out.v[2].uint;
         sp.h2 = out.v[3].uint;
-        sp.font = metalan::symtab().get(out.v[4].uint);
-        sp.title = metalan::symtab().get(out.v[5].uint);
-        sp.fullscreen = out.v[6].uint;
+        sp.view_w = out.v[4].uint;
+        sp.view_h = out.v[5].uint;
+        sp.font = metalan::symtab().get(out.v[6].uint);
+        sp.title = metalan::symtab().get(out.v[7].uint);
+        sp.fullscreen = out.v[8].uint;
     }
 
     void init() {
@@ -673,14 +676,16 @@ struct Vm {
 
         run("drawing_context", "Void", "DrawingContext", inp, out);
 
-        ctx.px = out.v[0].uint;
-        ctx.py = out.v[1].uint;
-        ctx.lightradius = out.v[2].uint;
-        ctx.hlx = out.v[3].uint;
-        ctx.hly = out.v[4].uint;
-        ctx.rangemin = out.v[5].uint;
-        ctx.rangemax = out.v[6].uint;
-        ctx.do_hud = out.v[7].uint;
+        ctx.voff_x = out.v[0].inte;
+        ctx.voff_y = out.v[1].inte;
+        ctx.px = out.v[2].uint;
+        ctx.py = out.v[3].uint;
+        ctx.lightradius = out.v[4].uint;
+        ctx.hlx = out.v[5].uint;
+        ctx.hly = out.v[6].uint;
+        ctx.rangemin = out.v[7].uint;
+        ctx.rangemax = out.v[8].uint;
+        ctx.do_hud = out.v[9].uint;
     }
 
     void handle_input(size_t& ticks, int vk, char c, bool& done, bool& dead, bool& regen, bool& redraw) {

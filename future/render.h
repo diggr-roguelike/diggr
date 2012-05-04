@@ -41,6 +41,8 @@ struct writer<TCOD_color_t> {
 namespace grender {
 
 
+typedef std::pair<unsigned int, unsigned int> pt;
+
 
 struct Grid {
 
@@ -135,6 +137,9 @@ struct Grid {
     unsigned int w;
     unsigned int h;
 
+    unsigned int view_w;
+    unsigned int view_h;
+
     std::vector<gridpoint> grid;
 
     TCOD_color_t env_color;
@@ -164,27 +169,64 @@ struct Grid {
 
 private:
 
+    double _dist(const pt& a, const pt& b) {
+
+        unsigned int dx = abs(a.first - b.first);
+        unsigned int dy = abs(a.second - b.second);
+        return sqrt(dx*dx + dy*dy);
+    }
+
+    bool _translate_v2g(int voff_x, int voff_y, const pt& vxy, pt& gxy) {
+
+        int rx = (int)vxy.first + voff_x;
+        int ry = (int)vxy.second + voff_y;
+
+        if (rx < 0 || (unsigned int)rx >= w || ry < 0 || (unsigned int)ry >= h)
+            return false;
+
+        gxy.first = (unsigned int)rx;
+        gxy.second = (unsigned int)ry;
+        return true;
+    }
+
+    bool _translate_g2v(int voff_x, int voff_y, const pt& gxy, pt& vxy) {
+
+        int rx = (int)gxy.first - voff_x;
+        int ry = (int)gxy.second - voff_y;
+        
+        if (rx < 0 || (unsigned int)rx >= view_w || ry < 0 || (unsigned int)ry >= view_h)
+            return false;
+        
+        vxy.first = (unsigned int)rx;
+        vxy.second = (unsigned int)ry;
+        return true;
+    }
+
+
+
     template <typename FUNC1, typename FUNC2>
-    void _draw_circle(unsigned int x, unsigned int y, unsigned int r, 
+    void _draw_circle(int voff_x, int voff_y,
+                      unsigned int x, unsigned int y, unsigned int r, 
                       bool do_draw, TCOD_color_t fore, TCOD_color_t back, 
                       FUNC1 f_chk, FUNC2 f_do) {
 
         unsigned int x0 = (x < r ? 0 : x - r);
         unsigned int y0 = (y < r ? 0 : y - r);
+
         unsigned int x1 = std::min(x + r + 1, w);
         unsigned int y1 = std::min(y + r + 1, h);
 
-        std::vector< std::pair<unsigned int, unsigned int> > pts;
+        std::vector<pt> pts;
 
         for (unsigned int _x = x0; _x < x1; ++_x) {
             for (unsigned int _y = y0; _y < y1; ++_y) {
 
-                unsigned int tmpx = abs(x - _x);
-                unsigned int tmpy = abs(y - _y);
-                double d = sqrt(tmpx*tmpx + tmpy*tmpy);
+                pt _xy(_x, _y);
+
+                double d = _dist(pt(x,y), _xy);
 
                 if (d <= r && f_chk(_x, _y)) {
-                    pts.push_back(std::make_pair(_x, _y));
+                    pts.push_back(_xy);
                 }
             }
         }
@@ -199,7 +241,12 @@ private:
 
             for (const auto& col : cols) {
                 for (const auto& xy : pts) {
-                    TCOD_console_put_char_ex(NULL, xy.first, xy.second, '*', col, back);
+
+                    pt vxy;
+                    if (!_translate_g2v(voff_x, voff_y, xy, vxy))
+                        continue;
+
+                    TCOD_console_put_char_ex(NULL, vxy.first, vxy.second, '*', col, back);
                 }
                 TCOD_console_flush();
                 TCOD_sys_sleep_milli(100);
@@ -292,7 +339,8 @@ private:
 
 public:
 
-    Grid() : w(0), h(0), env_intensity(0), 
+    Grid() : w(0), h(0), view_w(w), view_h(h),
+             env_intensity(0), 
              tcodmap(TCOD_map_new(0, 0)), 
              tcodpath(TCOD_path_new_using_map(tcodmap, 1.41)),
              fullscreen(false), has_console(false), 
@@ -305,6 +353,7 @@ public:
     }
 
     void init(unsigned int _w, unsigned int _h, 
+              unsigned int _view_w, unsigned int _view_h,
               const std::string& _font, const std::string& _title, bool _fullscreen) {
 
         bool do_console = false;
@@ -327,6 +376,13 @@ public:
             do_console = true;
         }
 
+        if (_view_w != view_w || _view_h != view_h) {
+            view_w = _view_w;
+            view_h = _view_h;
+
+            do_console = true;
+        }
+
         if (font != _font || !has_console || do_console) {
 
             font = _font;
@@ -342,7 +398,7 @@ public:
             TCOD_console_set_custom_font(font.c_str(), 
                                          TCOD_FONT_TYPE_GREYSCALE | TCOD_FONT_LAYOUT_ASCII_INROW, 
                                          16, 16);
-            TCOD_console_init_root(w, h, title.c_str(), fullscreen, TCOD_RENDERER_SDL);
+            TCOD_console_init_root(view_w, view_h, title.c_str(), fullscreen, TCOD_RENDERER_SDL);
             TCOD_sys_set_fps(30);
             
             TCOD_console_set_color_control(TCOD_COLCTRL_1, TCOD_white, TCOD_black);
@@ -380,6 +436,10 @@ public:
 
     gridpoint& _get(unsigned int x, unsigned int y) {
 	return grid[y*w+x];
+    }
+
+    gridpoint& _get(const pt& xy) {
+	return grid[xy.second*w+xy.first];
     }
 
     void set_env(const TCOD_color_t& color, double intensity) {
@@ -464,6 +524,7 @@ public:
 
 
     void draw(unsigned int t,
+              int voff_x, int voff_y,
 	      unsigned int px, unsigned int py,
 	      unsigned int hlx, unsigned int hly,
 	      unsigned int rangemin, unsigned int rangemax,
@@ -483,16 +544,25 @@ public:
 
 	TCOD_map_compute_fov(tcodmap, px, py, lightradius, true, FOV_SHADOW);
 
-	for (size_t y = 0; y < h; ++y) {
-	    for (size_t x = 0; x < w; ++x) {
+	for (size_t _vy = 0; _vy < view_h; ++_vy) {
+	    for (size_t _vx = 0; _vx < view_w; ++_vx) {
+
+                pt xy;
+                bool is_ok = _translate_v2g(voff_x, voff_y, pt(_vx, _vy), xy);
+
+                if (!is_ok) {
+                    TCOD_console_put_char_ex(NULL, _vx, _vy, ' ', TCOD_black, TCOD_black);
+                    continue;
+                }
+
+                unsigned int x = xy.first;
+                unsigned int y = xy.second;
 
 		bool in_fov = TCOD_map_is_in_fov(tcodmap, x, y);
 
-		unsigned int tmpx = abs(x - px);
-		unsigned int tmpy = abs(y - py);
-		double d = sqrt(tmpx*tmpx + tmpy*tmpy);
+                double d = _dist(xy, pt(px, py));
 
-		gridpoint& gp = _get(x,y);
+		gridpoint& gp = _get(xy);
 		const std::vector<skin>& skins = gp.skins;
 
 		gp.in_fov = in_fov;
@@ -538,7 +608,7 @@ public:
 
 		size_t caid;
 		unsigned int caage;
-		celauto::get().get_state(celauto::pt(x,y), caid, caage);
+		celauto::get().get_state(xy, caid, caage);
 
 		if (caid) {
 		    unsigned int maxage = celauto::get().rules[caid]->age;
@@ -581,13 +651,13 @@ public:
 		    back = TCOD_white;
 		}
 
-		TCOD_console_put_char_ex(NULL, x, y, c, fore, back);
+		TCOD_console_put_char_ex(NULL, _vx, _vy, c, fore, back);
 	    }
 	}
 
         if (do_hud) {
             unsigned int hl = 0;
-            unsigned int hpx = (px > w / 2 ? 0 : w - 14);
+            unsigned int hpx = (px > view_w / 2 ? 0 : view_w - 14);
 
             for (const auto& hudline : hud_pips) {
                 _draw_pipline(hpx, hl, hudline);
@@ -597,7 +667,7 @@ public:
             if (py > h / 2) {
                 _draw_messages(15, 0, t);
             } else {
-                _draw_messages(15, h - 3, t);
+                _draw_messages(15, view_h - 3, t);
             }
         }
 
@@ -694,8 +764,8 @@ public:
 
 
     keypress draw_window(const std::vector<std::string>& msg) {
-        unsigned int _w = TCOD_console_get_width(NULL);
-        unsigned int _h = TCOD_console_get_height(NULL);
+        unsigned int _w = view_w;
+        unsigned int _h = view_h;
 
         size_t maxl = 0;
         std::string s;
@@ -723,13 +793,13 @@ public:
 
         TCOD_console_set_default_background(NULL, TCOD_darkest_blue);
         TCOD_console_rect(NULL, x0, 0, _w - x0, y0, true, TCOD_BKGND_SET);
-        TCOD_console_print_rect(NULL, x0 + 2, 1, w - x0 - 2, y0 - 1, s.c_str());
+        TCOD_console_print_rect(NULL, x0 + 2, 1, _w - x0 - 2, y0 - 1, s.c_str());
         TCOD_console_set_default_background(NULL, TCOD_black);
 
         TCOD_console_flush();
         keypress ret = wait_for_key();
 
-        TCOD_console_rect(NULL, x0, 0, w - x0, y0, true, TCOD_BKGND_DEFAULT);
+        TCOD_console_rect(NULL, x0, 0, _w - x0, y0, true, TCOD_BKGND_DEFAULT);
         TCOD_console_flush();
 
         return ret;
@@ -761,20 +831,19 @@ public:
 
 
     template <typename FUNC>
-    void draw_floodfill(unsigned int x, unsigned int y, 
+    void draw_floodfill(int voff_x, int voff_y,
+                        unsigned int x, unsigned int y, 
                         bool do_draw, TCOD_color_t fore, TCOD_color_t back,
                         FUNC func) {
 
-        typedef std::pair<unsigned int, unsigned int> pt_t;
+        std::set<pt> procd;
+        std::set<pt> toproc;
 
-        std::set<pt_t> procd;
-        std::set<pt_t> toproc;
-
-        toproc.insert(std::make_pair(x,y));
+        toproc.insert(pt(x,y));
 
         while (1) {
 
-            pt_t xy = *(toproc.begin());
+            pt xy = *(toproc.begin());
             toproc.erase(toproc.begin());
 
             for (const auto& xyi : neighbors::get()(xy)) {
@@ -804,7 +873,12 @@ public:
 
             for (const auto& col : cols) {
                 for (const auto& xy : procd) {
-                    TCOD_console_put_char_ex(NULL, xy.first, xy.second, '*', col, back);
+
+                    pt vxy;
+                    if (!_translate_g2v(voff_x, voff_y, xy, vxy))
+                        continue;
+
+                    TCOD_console_put_char_ex(NULL, vxy.first, vxy.second, '*', col, back);
                 }
                 TCOD_console_flush();
                 TCOD_sys_sleep_milli(100);
@@ -813,13 +887,14 @@ public:
     }
 
     template <typename FUNC>
-    void draw_line(unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1, 
+    void draw_line(int voff_x, int voff_y,
+                   unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1, 
                    bool do_draw, TCOD_color_t fore, TCOD_color_t back,
                    FUNC func) {
         
         TCOD_line_init(x0, y0, x1, y1);
 
-        std::vector< std::pair<unsigned int, unsigned int> > pts;
+        std::vector<pt> pts;
 
         unsigned int x = x0;
         unsigned int y = y0;
@@ -827,7 +902,7 @@ public:
             if (!func(x, y))
                 break;
 
-            pts.push_back(std::make_pair(x, y));
+            pts.push_back(pt(x, y));
 
             bool ret = TCOD_line_step((int*)&x, (int*)&y);
             if (ret)
@@ -836,6 +911,11 @@ public:
 
         if (do_draw) {
             for (const auto& xy : pts) {
+
+                pt vxy;
+                if (!_translate_g2v(voff_x, voff_y, xy, vxy))
+                    continue;
+
                 TCOD_console_put_char_ex(NULL, xy.first, xy.second, '*', fore, back);
                 TCOD_console_flush();
                 TCOD_sys_sleep_milli(50);
@@ -906,6 +986,9 @@ public:
 	serialize::write(s, w);
 	serialize::write(s, h);
 
+        serialize::write(s, view_w);
+        serialize::write(s, view_h);
+
         serialize::write(s, font);
         serialize::write(s, title);
         serialize::write(s, fullscreen);
@@ -948,9 +1031,14 @@ public:
     inline void read(serialize::Source& s) {
         unsigned int _w;
         unsigned int _h;
+        unsigned int _view_w;
+        unsigned int _view_h;
 
         serialize::read(s, _w);
         serialize::read(s, _h);
+
+        serialize::read(s, _view_w);
+        serialize::read(s, _view_h);
 
         serialize::read(s, font);
         serialize::read(s, title);
@@ -959,7 +1047,7 @@ public:
 	serialize::read(s, env_color);
 	serialize::read(s, env_intensity);
 
-        init(_w, _h, font, title, fullscreen);
+        init(_w, _h, _view_w, _view_h, font, title, fullscreen);
 
 	for (size_t i = 0; i < grid.size(); ++i) {
 	    size_t sks;

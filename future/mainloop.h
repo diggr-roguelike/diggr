@@ -15,6 +15,8 @@ namespace mainloop {
 
 
 struct drawing_context_t {
+    int voff_x;
+    int voff_y;
     unsigned int px;
     unsigned int py;
     unsigned int lightradius;
@@ -25,7 +27,7 @@ struct drawing_context_t {
     bool do_hud;
 
     drawing_context_t() :
-        px(0), py(0), lightradius(1000), 
+        voff_x(0), voff_y(0), px(0), py(0), lightradius(1000), 
         hlx(std::numeric_limits<unsigned int>::max()), 
         hly(hlx),
         rangemin(0),
@@ -39,11 +41,15 @@ struct screen_params_t {
     unsigned int h; 
     unsigned int w2; 
     unsigned int h2;
+
+    unsigned int view_w;
+    unsigned int view_h;
+
     std::string font;
     std::string title;
     bool fullscreen;
 
-    screen_params_t() : w(0), h(0), w2(0), h2(0), fullscreen(false) {}
+    screen_params_t() : w(0), h(0), w2(0), h2(0), view_w(0), view_h(0), fullscreen(false) {}
 };
 
 
@@ -112,7 +118,7 @@ struct Main {
         rnd::get().init(seed);
         neighbors::get().init(sp.w, sp.h);
         grid::get().init(sp.w, sp.h);
-        grender::get().init(sp.w2, sp.h2, sp.font, sp.title, sp.fullscreen);
+        grender::get().init(sp.w2, sp.h2, sp.view_w, sp.view_h, sp.font, sp.title, sp.fullscreen);
         grender::get().keylog.clear();
         celauto::get().init();
         moon::get().init();
@@ -134,7 +140,8 @@ struct Main {
             game.draw_hud();
         }
         
-        grender::get().draw(ticks, ctx.px, ctx.py, ctx.hlx, ctx.hly,
+        grender::get().draw(ticks, ctx.voff_x, ctx.voff_y,
+                            ctx.px, ctx.py, ctx.hlx, ctx.hly,
                             ctx.rangemin, ctx.rangemax, ctx.lightradius, 
                             ctx.do_hud);
 

@@ -101,8 +101,6 @@ def {
   y: UInt
   z: UInt
 
-  gx: UInt
-  gy: UInt
   depth: UInt
 
   heightp: HeightP
@@ -119,40 +117,17 @@ set ExtSkin->Void :-
 /*
 */
 
-remap_x UInt->UInt :-
-  [ (get->Player->x) \\ ] ->UInt(
-    <: (int(\a) + int(\b)) - 40 :> ->UInt( <: \\ >= 0 && \\ < 500 :> ? <: uint(\\) :> )
-  ).
-
-remap_y UInt->UInt :-
-  [ (get->Player->y) \\ ] ->UInt(
-    <: (int(\a) + int(\b)) - 12 :> ->UInt( <: \\ >= 0 && \\ < 500 :> ? <: uint(\\) :> )
-  ).
-
-remap_gx UInt->UInt :-
-  [ (get->Player->x) \\ ] ->UInt(
-    <: (int(\b) - int(\a)) + 40 :> ->UInt( <: \\ >= 0 && \\ < 80 :> ? <: uint(\\) :> )
-  ).
-
-remap_gy UInt->UInt :-
-  [ (get->Player->y) \\ ] ->UInt(
-    <: (int(\b) - int(\a)) + 12 :> ->UInt( <: \\ >= 0 && \\ < 25 :> ? <: uint(\\) :> )
-  ).
-
-
 make [UInt UInt UInt]->ExtSkin :-
   ExtSkin{ x=\a 
            y=\b 
-           depth=\c
-           gx=(\a remap_x->UInt) 
-           gy=(\b remap_y->UInt) } 
-  ->ExtSkin( \\ { heightp=([\gx \gy \depth] make->HeightP) } ).
+           depth=\c }
+  ->ExtSkin( \\ { heightp=([\x \y \depth] make->HeightP) } ).
 
 null [UInt UInt]->ExtSkin :-
   ExtSkin{ skin=(null->Skin {char='x'}) walkable=false visible=false back='black' x=\a y=\b z=0u }.
 
 player ExtSkin->ExtSkin :-
-  [ (get->Player->x) (get->Player->y) \gx \gy ]->Bool(<: \a == \c && \b == \d :>) ?
+  [ (get->Player->x) (get->Player->y) \x \y ]->Bool(<: \a == \c && \b == \d :>) ?
      \\ { skin=(player->Skin) visible=true walkable=true is_lit=true  z=1u } ;
      \\ { skin=(null->Skin)   visible=true walkable=true is_lit=false z=1u }.
 
@@ -172,16 +147,23 @@ set_skin [UInt UInt UInt]->Void :-
   [ \a \b ] null->ExtSkin set.  
 
 set_skins [UInt UInt UInt]->Void :-
-  <: \b == 25u :> ? ;
-   \\ set_skin 
-   <: \a == 79u :> ? 
-      [ 0u (<: \b + 1u :>) \c ] set_skins ;
-      [ (<: \a + 1u :>) \b \c ] set_skins.
+  <: \b == 250u :> ? ;
+  \\ set_skin 
+
+  \\ ->[UInt UInt UInt]( <: \a == 799u :> ? 
+        [ 0u (<: \b + 1u :>) \c ] ;
+        [ (<: \a + 1u :>) \b \c ]
+  ) set_skins.
 
 drawing_context DrawingContext->DrawingContext :-
   \\ { lightradius = (get->Dungeon->depth->UInt( <: \\ == 1u :> ? 16u ; 8u )) 
-       px = (get->Player->x remap_gx->UInt)
-       py = (get->Player->y remap_gy->UInt) }.
+       px = (get->Player->x)
+       py = (get->Player->y) } ->DrawingContext(
+
+     \\ { voff_x = (<: int(\px) - 40 :>)
+          voff_y = (<: int(\py) - 12 :>) }
+  ).
+
 
 
 descend Void->Void :-
@@ -217,13 +199,15 @@ add [UInt Int]->UInt :-
 
 walkable XyMove->Bool :- 
   [ \x \y \to_x \to_y ] dg_neighbors_linked->Bool ?
-  [ (\to_x remap_gx->UInt) (\to_y remap_gy->UInt) ] dg_render_is_walkblock->Bool $not ? 
+  [ (\to_x) (\to_y) ] dg_render_is_walkblock->Bool $not ? 
     true ;
   false.
 
 move XyMove->Void :-
   \\ walkable->Bool ? 
-     get->Player { x=\to_x y=\to_y } set.
+     get->Player { x=\to_x y=\to_y } set
+     [ \x \y (get->Dungeon->depth) ] set_skin
+     [ \to_x \to_y (get->Dungeon->depth) ] set_skin.
 
 move [Int Int]->Void :-
   <:[do] XyMove->XyMove

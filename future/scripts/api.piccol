@@ -22,6 +22,7 @@ default Void->Player :-
 
 make_screen Void->ScreenParams :-
   ScreenParams{ gridsize=[800u 250u]
+                rendsize=[800u 250u]
                 viewsize=[80u 25u]
                 font='font.png'
                 title='Mini'

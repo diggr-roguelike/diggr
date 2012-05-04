@@ -3,6 +3,7 @@
 
 def {
   gridsize: [UInt UInt]
+  rendsize: [UInt UInt]
   viewsize: [UInt UInt]
   font: Sym
   title: Sym
@@ -33,6 +34,8 @@ def {
 } OutState;
 
 def {
+  voff_x: Int
+  voff_y: Int
   px: UInt
   py: UInt
   lightradius: UInt
