@@ -66,8 +66,8 @@ EXPORT void dg_state_load(const char* filename) {
 
 
 EXPORT void dg_render_init(unsigned int w, unsigned int h, 
-                               const char* fontfile, const char* title, bool fullscreen) {
-    grender::get().init(w, h, fontfile, title, fullscreen);
+                           const char* fontfile, const char* title, bool fullscreen) {
+    grender::get().init(w, h, w, h, fontfile, title, fullscreen);
 }
 
 EXPORT void dg_render_clear() {
@@ -185,7 +185,7 @@ EXPORT void dg_render_draw(unsigned int t,
                            unsigned int hlx, unsigned int hly,
                            unsigned int rmin, unsigned int rmax,
                            unsigned int lr, bool do_hud) {
-    grender::get().draw(t, px, py, hlx, hly, rmin, rmax, lr, do_hud);
+    grender::get().draw(t, 0, 0, px, py, hlx, hly, rmin, rmax, lr, do_hud);
 }
 
 EXPORT void dg_render_push_hud_line(char* label, uint8 lr, uint8 lg, uint8 lb,
@@ -202,6 +202,18 @@ typedef void (*dg_draw_do_callback)(unsigned int, unsigned int);
 typedef bool (*dg_draw_check_callback)(unsigned int, unsigned int);
 
 EXPORT void dg_render_draw_circle(unsigned int x, unsigned int y, unsigned int r, 
+                                  bool do_draw, 
+                                  uint8 rf, uint8 gf, uint8 bf,
+                                  uint8 rb, uint8 gb, uint8 bb,
+                                  dg_draw_do_callback func) {
+
+    TCOD_color_t fore = TCOD_color_RGB(rf, gf, bf);
+    TCOD_color_t back = TCOD_color_RGB(rb, gb, bb);
+
+    grender::get().draw_circle(0, 0, x, y, r, do_draw, fore, back, func);
+}
+
+EXPORT void dg_render_draw_fov_circle(unsigned int x, unsigned int y, unsigned int rad, 
                                       bool do_draw, 
                                       uint8 rf, uint8 gf, uint8 bf,
                                       uint8 rb, uint8 gb, uint8 bb,
@@ -210,19 +222,7 @@ EXPORT void dg_render_draw_circle(unsigned int x, unsigned int y, unsigned int r
     TCOD_color_t fore = TCOD_color_RGB(rf, gf, bf);
     TCOD_color_t back = TCOD_color_RGB(rb, gb, bb);
 
-    grender::get().draw_circle(x, y, r, do_draw, fore, back, func);
-}
-
-EXPORT void dg_render_draw_fov_circle(unsigned int x, unsigned int y, unsigned int rad, 
-                                          bool do_draw, 
-                                          uint8 rf, uint8 gf, uint8 bf,
-                                          uint8 rb, uint8 gb, uint8 bb,
-                                          dg_draw_do_callback func) {
-
-    TCOD_color_t fore = TCOD_color_RGB(rf, gf, bf);
-    TCOD_color_t back = TCOD_color_RGB(rb, gb, bb);
-
-    grender::get().draw_fov_circle(x, y, rad, do_draw, fore, back, func);
+    grender::get().draw_fov_circle(0, 0, x, y, rad, do_draw, fore, back, func);
 }
 
 EXPORT void dg_render_draw_floodfill(unsigned int x, unsigned int y, 
@@ -235,20 +235,20 @@ EXPORT void dg_render_draw_floodfill(unsigned int x, unsigned int y,
     TCOD_color_t fore = TCOD_color_RGB(rf, gf, bf);
     TCOD_color_t back = TCOD_color_RGB(rb, gb, bb);
 
-    grender::get().draw_floodfill(x, y, do_draw, fore, back, func);
+    grender::get().draw_floodfill(0, 0, x, y, do_draw, fore, back, func);
 }
 
 EXPORT void dg_render_draw_line(unsigned int x0, unsigned int y0, 
-                                    unsigned int x1, unsigned int y1, 
-                                    bool do_draw, 
-                                    uint8 rf, uint8 gf, uint8 bf,
-                                    uint8 rb, uint8 gb, uint8 bb,
-                                    dg_draw_check_callback func) {
+                                unsigned int x1, unsigned int y1, 
+                                bool do_draw, 
+                                uint8 rf, uint8 gf, uint8 bf,
+                                uint8 rb, uint8 gb, uint8 bb,
+                                dg_draw_check_callback func) {
 
     TCOD_color_t fore = TCOD_color_RGB(rf, gf, bf);
     TCOD_color_t back = TCOD_color_RGB(rb, gb, bb);
 
-    grender::get().draw_line(x0, y0, x1, y1, do_draw, fore, back, func);
+    grender::get().draw_line(0, 0, x0, y0, x1, y1, do_draw, fore, back, func);
 }
 
 EXPORT void dg_render_message(char* msg, bool important) {

@@ -806,11 +806,12 @@ public:
     }
 
     template <typename FUNC>
-    void draw_circle(unsigned int x, unsigned int y, unsigned int r, 
+    void draw_circle(int voff_x, int voff_y, 
+                     unsigned int x, unsigned int y, unsigned int r, 
                      bool do_draw, TCOD_color_t fore, TCOD_color_t back, 
                      FUNC func) {
 
-        _draw_circle(x, y, r, 
+        _draw_circle(voff_x, voff_y, x, y, r, 
                      /*true, TCOD_yellow, TCOD_darkest_red, */
                      do_draw, fore, back,
                      [](unsigned int, unsigned int) { return true; },
@@ -818,13 +819,14 @@ public:
     }
 
     template <typename FUNC>
-    void draw_fov_circle(unsigned int x, unsigned int y, unsigned int r, 
+    void draw_fov_circle(int voff_x, int voff_y,
+                         unsigned int x, unsigned int y, unsigned int r, 
                          bool do_draw, TCOD_color_t fore, TCOD_color_t back,
                          FUNC func) {
 
 	TCOD_map_compute_fov(tcodmap, x, y, r, false, FOV_SHADOW);
 
-        _draw_circle(x, y, r, do_draw, fore, back, //TCOD_darkest_blue,
+        _draw_circle(voff_x, voff_y, x, y, r, do_draw, fore, back, //TCOD_darkest_blue,
                      [this](unsigned int x, unsigned int y) { return TCOD_map_is_in_fov(tcodmap, x, y); },
                      func);
     }
