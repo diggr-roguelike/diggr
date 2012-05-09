@@ -107,7 +107,7 @@ def {
 
 } ExtSkin;
 
-set ExtSkin->Void :-
+set ExtSkin->Void :- 
   [ \x \y \z \skin ] dg_render_set_skin
   [ \x \y \z (\walkable $not) ] dg_render_set_is_walkblock
   [ \x \y \z (\visible $not) ] dg_render_set_is_viewblock
@@ -144,7 +144,7 @@ set_skin [UInt UInt UInt]->Void :-
     \\ player->ExtSkin set
     \\ grid->ExtSkin set
   ) ;
-  [ \a \b ] null->ExtSkin set.  
+  [ \a \b ] null->ExtSkin set.
 
 set_skins [UInt UInt UInt]->Void :-
   <: \b == 250u :> ? ;
