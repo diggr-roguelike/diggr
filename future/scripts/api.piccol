@@ -44,9 +44,6 @@ generate Void->Void :-
 set_skin [ UInt UInt ]->Void :- 
   [ \a \b (get->Dungeon->depth) ] set_skin.
 
-set_skins Void->Void :- 
-  [ 0u 0u (get->Dungeon->depth) ] set_skins.
-
 draw_hud Void->Void :-.
 
 drawing_context Void->DrawingContext :-

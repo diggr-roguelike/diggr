@@ -146,15 +146,6 @@ set_skin [UInt UInt UInt]->Void :-
   ) ;
   [ \a \b ] null->ExtSkin set.
 
-set_skins [UInt UInt UInt]->Void :-
-  <: \b == 250u :> ? ;
-  \\ set_skin 
-
-  \\ ->[UInt UInt UInt]( <: \a == 799u :> ? 
-        [ 0u (<: \b + 1u :>) \c ] ;
-        [ (<: \a + 1u :>) \b \c ]
-  ) set_skins.
-
 drawing_context DrawingContext->DrawingContext :-
   \\ { lightradius = (get->Dungeon->depth->UInt( <: \\ == 1u :> ? 16u ; 8u )) 
        px = (get->Player->x)

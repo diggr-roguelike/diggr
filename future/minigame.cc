@@ -24,9 +24,10 @@ struct Game {
     void generate() {
 
         vm.generate();
-        redraw_skin();
+        //redraw_skin();
     }
 
+    /*
     void redraw_skin() {
         bm _b("redraw_skin");
 
@@ -41,6 +42,12 @@ struct Game {
                 vm.set_skin(x, y);
             }
         }
+    }
+    */
+
+    void set_skin(unsigned int x, unsigned int y) {
+        std::cout << "SET_SKIN " << x << " " << y << std::endl;
+        vm.set_skin(x, y);
     }
 
     void endgame() {
@@ -87,7 +94,11 @@ struct Game {
             generate();
 
         } else if (redraw) {
-            redraw_skin();
+
+            std::cout << "REDRAW!" << std::endl;
+            grender::get().clear();
+
+            //redraw_skin();
         }
     }
 };

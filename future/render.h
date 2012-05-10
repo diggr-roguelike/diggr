@@ -78,8 +78,11 @@ struct Grid {
         unsigned int is_viewblock;
         unsigned int is_walkblock;
 
+        bool valid;
+
 	gridpoint() : is_lit(0), in_fov(false), 
-                      is_viewblock(0), is_walkblock(0) 
+                      is_viewblock(0), is_walkblock(0),
+                      valid(false)
             {
                 skins.resize(skincount);
             }
@@ -500,7 +503,8 @@ public:
                   const TCOD_color_t& fore2, int fore_interp,
                   bool is_terrain) {
 
-	std::vector<skin>& skins = _get(x,y).skins; 
+        gridpoint& g = _get(x,y);
+	std::vector<skin>& skins = g.skins; 
         skin& s = skins[z];
 
         s.fore = fore;
@@ -508,12 +512,18 @@ public:
         s.fore2 = fore2;
         s.fore_interp = fore_interp;
         s.is_terrain = is_terrain;
+
+        g.valid = true;
     }
 
     void unset_skin(unsigned int x, unsigned int y, unsigned int z) {
-	std::vector<skin>& skins = _get(x,y).skins;
+
+        gridpoint& g = _get(x,y);
+	std::vector<skin>& skins = g.skins;
 
         skins[z].c = 0;
+
+        g.valid = true;
     }
 
 
@@ -523,12 +533,14 @@ public:
     }
 
 
+    template <typename FUNC>
     void draw(unsigned int t,
               int voff_x, int voff_y,
 	      unsigned int px, unsigned int py,
 	      unsigned int hlx, unsigned int hly,
 	      unsigned int rangemin, unsigned int rangemax,
-	      unsigned int lightradius, bool do_hud) {
+	      unsigned int lightradius, bool do_hud,
+              FUNC make_valid) {
 
 	static double _sparkleinterp[10];
 	static bool did_init = false;
@@ -555,6 +567,12 @@ public:
                     continue;
                 }
 
+		gridpoint& gp = _get(xy);
+
+                if (!gp.valid) {
+                    make_valid(xy.first, xy.second);
+                }
+
                 unsigned int x = xy.first;
                 unsigned int y = xy.second;
 
@@ -562,7 +580,6 @@ public:
 
                 double d = _dist(xy, pt(px, py));
 
-		gridpoint& gp = _get(xy);
 		const std::vector<skin>& skins = gp.skins;
 
 		gp.in_fov = in_fov;

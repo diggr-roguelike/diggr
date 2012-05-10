@@ -140,10 +140,13 @@ struct Main {
             game.draw_hud();
         }
         
+        std::cout << "DRAW!" << std::endl;
+
         grender::get().draw(ticks, ctx.voff_x, ctx.voff_y,
                             ctx.px, ctx.py, ctx.hlx, ctx.hly,
                             ctx.rangemin, ctx.rangemax, ctx.lightradius, 
-                            ctx.do_hud);
+                            ctx.do_hud,
+                            std::bind(&GAME::set_skin, &game, std::placeholders::_1, std::placeholders::_2));
 
     }
 

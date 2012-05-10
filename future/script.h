@@ -664,12 +664,6 @@ struct Vm {
         run("set_skin", "[ UInt UInt ]", "Void", inp, out);
     }
 
-    void set_skins() {
-        nanom::Struct out;
-        nanom::Struct inp;
-        run("set_skins", "Void", "Void", inp, out);
-    }
-
     void drawing_context(mainloop::drawing_context_t& ctx) {
         nanom::Struct out;
         nanom::Struct inp;
