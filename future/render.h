@@ -554,6 +554,26 @@ public:
 	}
 
 
+	for (size_t _vy = 0; _vy < view_h; ++_vy) {
+	    for (size_t _vx = 0; _vx < view_w; ++_vx) {
+
+                pt xy;
+                bool is_ok = _translate_v2g(voff_x, voff_y, pt(_vx, _vy), xy);
+
+                if (!is_ok) {
+                    continue;
+                }
+
+		gridpoint& gp = _get(xy);
+
+                if (gp.valid) {
+                    continue;
+                }
+
+                make_valid(xy.first, xy.second);
+            }
+        }
+
 	TCOD_map_compute_fov(tcodmap, px, py, lightradius, true, FOV_SHADOW);
 
 	for (size_t _vy = 0; _vy < view_h; ++_vy) {
@@ -568,10 +588,6 @@ public:
                 }
 
 		gridpoint& gp = _get(xy);
-
-                if (!gp.valid) {
-                    make_valid(xy.first, xy.second);
-                }
 
                 unsigned int x = xy.first;
                 unsigned int y = xy.second;
