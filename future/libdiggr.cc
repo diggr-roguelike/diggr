@@ -185,7 +185,8 @@ EXPORT void dg_render_draw(unsigned int t,
                            unsigned int hlx, unsigned int hly,
                            unsigned int rmin, unsigned int rmax,
                            unsigned int lr, bool do_hud) {
-    grender::get().draw(t, 0, 0, px, py, hlx, hly, rmin, rmax, lr, do_hud);
+    grender::get().draw(t, 0, 0, px, py, hlx, hly, rmin, rmax, lr, do_hud, 
+                        [](unsigned int, unsigned int){});
 }
 
 EXPORT void dg_render_push_hud_line(char* label, uint8 lr, uint8 lg, uint8 lb,
