@@ -13,6 +13,7 @@ modules Void->Void :-
    :>
 
   <:[module] keys 'keys.piccol'
+        remap Int->Sym
         handle_input [ OutState Sym ]->OutState
    :>
 

@@ -49,8 +49,12 @@ draw_hud Void->Void :-.
 drawing_context Void->DrawingContext :-
   default->DrawingContext drawing_context->DrawingContext.
 
+get_key InState->Sym :-
+  \vk remap->Sym ;
+  \c.
+
 handle_input InState->OutState :-
-  [ (\\ default->OutState) \c ] handle_input->OutState ;
+  [ (\\ default->OutState) (\\ get_key->Sym) ] handle_input->OutState ;
   \\ null->OutState.
 
 process_world UInt->OutState :- 
