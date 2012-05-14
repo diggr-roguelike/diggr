@@ -150,13 +150,24 @@ set_skin [UInt UInt UInt]->Void :-
   ) ;
   [ \a \b ] null->ExtSkin set.
 
-drawing_context DrawingContext->DrawingContext :-
-  \\ { lightradius = (get->Dungeon->depth->UInt( <: \\ == 1u :> ? 16u ; 8u )) 
-       px = (get->Player->x)
-       py = (get->Player->y) } ->DrawingContext(
 
-     \\ { voff_x = (<: int(\px) - 40 :>)
-          voff_y = (<: int(\py) - 12 :>) }
+recenter_player Player->Void :-
+  \\->Player(
+      <: int(\x) - \voff_x < 20 || int(\x) - \voff_x > 60 :> ?  
+        \\ { voff_x = (<: int(\x) - 40 :>) } ; \\ )
+    ->Player(
+      <: int(\y) - \voff_y < 6  || int(\y) - \voff_y > 18 :> ?
+        \\ { voff_y = (<: int(\y) - 12 :>) } ; \\ ) 
+  set.
+
+drawing_context DrawingContext->DrawingContext :-
+  [ (get->Player) \\ ] ->DrawingContext(
+    \a recenter_player
+    \b { lightradius = (get->Dungeon->depth->UInt( <: \\ == 1u :> ? 16u ; 8u )) 
+         px = (\a->x)
+         py = (\a->y)
+         voff_x = (\a->voff_x)
+         voff_y = (\a->voff_y) }
   ).
 
 

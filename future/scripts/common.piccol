@@ -66,6 +66,8 @@ def {
 /*** ***/
 
 def {
+  voff_x: Int
+  voff_y: Int
   x: UInt
   y: UInt
 } Player;
@@ -112,6 +114,7 @@ def [a:UInt b:UInt c:UInt d:Skin];
 def [a:UInt b:UInt c:UInt d:Bool];
 def [a:UInt b:UInt c:UInt d:Sym];
 def [a:UInt b:UInt c:Sym];
+def [a:Player b:DrawingContext];
 
 /*** ***/
 
