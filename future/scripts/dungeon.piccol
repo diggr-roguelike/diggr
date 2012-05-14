@@ -15,7 +15,11 @@ depth_color UInt->[Sym Real]:-
 set_env_color UInt->Void :-
   \\ depth_color->[Sym Real] dg_render_set_env.
 
+generation_splashscreen Void->Void :-
+  [ 18u 11u 'Please wait: your world is being generated.' ] dg_render_draw_splashscreen.
+
 generate UInt->[UInt UInt] :-
+  generation_splashscreen
   0 dg_grid_generate
   \\ set_env_color
   dg_grid_one_of_walk->[UInt UInt].

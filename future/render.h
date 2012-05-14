@@ -795,6 +795,26 @@ public:
 
     /////
 
+    void draw_splashscreen(unsigned int x, unsigned int y, const std::vector<std::string>& msg) {
+
+        size_t maxl = 0;
+        std::string s;
+
+        for (const auto& l : msg) {
+            maxl = std::max(l.size(), maxl);
+
+            if (s.empty()) {
+                s += (char)TCOD_COLCTRL_1;
+            } else {
+                s += '\n';
+            }
+
+            s += l;
+        }
+
+        TCOD_console_print_rect(NULL, x, y, maxl, msg.size(), s.c_str());
+        TCOD_console_flush();
+    }
 
     keypress draw_window(const std::vector<std::string>& msg) {
         unsigned int _w = view_w;

@@ -449,6 +449,29 @@ inline bool dg_render_draw_window_paste(CALLBACK) {
     return true;
 }
 
+inline bool dg_render_draw_splashscreen(CALLBACK) {
+
+    const std::string& str = metalan::symtab().get(struc.v[2].uint);
+    std::vector<std::string> lines;
+
+    size_t oldi = 0;
+
+    while (1) {
+        size_t i = str.find('\n', oldi);
+
+        if (i == std::string::npos) {
+            lines.push_back(str.substr(oldi));
+            break;
+        } else {
+            lines.push_back(str.substr(oldi, i-oldi));
+            oldi = i + 1;
+        }
+    }
+    
+    grender::get().draw_splashscreen(struc.v[0].uint, struc.v[1].uint, lines);    
+
+    return true;
+}
 
 
 struct Vm {
@@ -544,6 +567,9 @@ struct Vm {
 
         vm.register_callback("dg_render_draw_window_paste",
                              "Sym", "Void", dg_render_draw_window_paste);
+
+        vm.register_callback("dg_render_draw_splashscreen",
+                             "[ UInt UInt Sym ]", "Void", dg_render_draw_splashscreen);
 
         piccol::register_sequencer<window_buff>(vm, "dg_render_draw_window")
             .feed("Sym", dg_render_draw_window_feed)

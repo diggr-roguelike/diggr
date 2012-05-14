@@ -111,6 +111,7 @@ def [a:UInt b:UInt c:UInt d:UInt];
 def [a:UInt b:UInt c:UInt d:Skin];
 def [a:UInt b:UInt c:UInt d:Bool];
 def [a:UInt b:UInt c:UInt d:Sym];
+def [a:UInt b:UInt c:Sym];
 
 /*** ***/
 
