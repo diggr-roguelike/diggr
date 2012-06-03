@@ -40,6 +40,26 @@ struct glyph {
     glyph(const std::string& c, color f, color b) : text(c),  fore(f), back(b) {}
 };
 
+
+enum class keycode : uint32_t {
+    none = 0,
+
+        left,
+        right,
+        up,
+        down,
+        esc
+};
+
+
+struct keypress {
+    unsigned char letter;
+    keycode key;
+
+    keypress() : letter(0), key(keycode::none) {}
+};
+
+
 #define CSI "\033["
 
 template <typename IO>
@@ -66,7 +86,7 @@ struct screen {
         // Request terminal size.
         io.write("\xFF\xFD\x1F");
 
-        int nothing;
+        keypress nothing;
         wait_key(nothing, true);
 
         _w = w;
@@ -92,7 +112,7 @@ struct screen {
     }
 
     template <typename FUNC>
-    bool refresh(FUNC& f) {
+    bool refresh(FUNC f) {
 
         size_t w;
         size_t h;
@@ -196,7 +216,7 @@ struct screen {
     }
 
 
-    bool wait_key(int& out, bool system_event=false) {
+    bool wait_key(keypress& out, bool system_event=false) {
 
       again:
 
@@ -214,8 +234,8 @@ struct screen {
 
             switch (c) {
 
-            case 0XFF:
-                out = 0xFF;
+            case 0xFF:
+                out.letter = 0xFF;
                 return true;
 
             case 0xFB:
@@ -261,17 +281,33 @@ struct screen {
             }
         }
 
+        // Handle ANSI/vt100 terminal escapes.
 
-        //std::string tmp;
-        //tmp += "\n!![";
-        //tmp += c;
-        //tmp += "]\n";
-        
-        //system("strace -f -eall -s10000 -T -o /home/itkachev/diggr-roguelike-test/libmaudit/qqpp tput cols");
+        if (c == '\033') {
 
-        //io.write(tmp);
+            ok = io.read(c);
+            if (!ok) return false;
 
-        out = c;
+            if (c == '[') {
+
+                ok = io.read(c);
+                if (!ok) return false;
+
+                switch (c) {
+                case 'D':  out.key = keycode::left;  break;
+                case 'A':  out.key = keycode::up;    break;
+                case 'C':  out.key = keycode::right; break;
+                case 'B':  out.key = keycode::down;  break;
+                }
+
+            } else {
+                out.key = keycode::esc;
+            }
+
+            return true;
+        }
+
+        out.letter = c;
         return true;
     }
 
