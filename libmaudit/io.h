@@ -28,9 +28,9 @@ struct stdin_stdout {
             return false;
         }
 
-        FILE* f = fopen("/home/itkachev/diggr-roguelike-test/libmaudit/qqpp", "a");
-        fprintf(f, "[%c %d]\n", c, (int)c);
-        fclose(f);
+        //FILE* f = fopen("/home/itkachev/diggr-roguelike-test/libmaudit/qqpp", "a");
+        //fprintf(f, "[%c %d]\n", c, (int)c);
+        //fclose(f);
 
         return true;
     }

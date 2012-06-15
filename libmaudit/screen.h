@@ -94,7 +94,7 @@ struct screen {
 
         return;
 
-
+        /*
         char* tmp = ::getenv("LINES");
         //std::cout << "{{" << tmp << std::endl;
         if (tmp != NULL) {
@@ -109,6 +109,7 @@ struct screen {
             if (t > 0)
                 w = t;
         }
+        */
     }
 
     template <typename FUNC>
@@ -117,9 +118,9 @@ struct screen {
         size_t w;
         size_t h;
 
-        FILE* ff = fopen("/home/itkachev/diggr-roguelike-test/libmaudit/qqpp", "a");
-        fprintf(ff, "---------------------------\n");
-        fclose(ff);
+        //FILE* ff = fopen("/home/itkachev/diggr-roguelike-test/libmaudit/qqpp", "a");
+        //fprintf(ff, "---------------------------\n");
+        //fclose(ff);
         
         get_size(w, h);
 
@@ -235,6 +236,7 @@ struct screen {
             switch (c) {
 
             case 0xFF:
+                // Escape 0xFF
                 out.letter = 0xFF;
                 return true;
 
@@ -242,6 +244,7 @@ struct screen {
             case 0xFC:
             case 0xFD:
             case 0xFE:
+                // Will/won't/do/don't silliness, ignore it.
                 ok = io.read(c);
                 if (!ok) return false;
                 goto again;
@@ -252,6 +255,8 @@ struct screen {
 
                 if (c != 0x1F)
                     goto again;
+
+                // 0xFA 0x1F: response to screen size request.
 
                 ok = io.read(c);
                 if (!ok) return false;
@@ -289,6 +294,7 @@ struct screen {
             if (!ok) return false;
 
             if (c == '[') {
+                // Try for some special characters.
 
                 ok = io.read(c);
                 if (!ok) return false;
