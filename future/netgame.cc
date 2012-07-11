@@ -1,6 +1,7 @@
 
 #include <sstream>
 
+#include "maudit.h"
 #include "mainloop_net.h"
 
 
@@ -46,11 +47,37 @@ struct Game {
     }
 };
 
+
+void client_mainloop(int client_fd) {
+
+    try {
+
+        maudit::client_socket client(client_fd);
+
+        typedef maudit::screen<maudit::client_socket> screen_t;
+
+        screen_t screen(client);
+
+        mainloop::Main<Game, screen_t> main(screen);
+
+        main.mainloop("_minisave.tmp", ::time(NULL));
+
+    } catch (...) {
+    }
+}
+
+
 int main(int argc, char** argv) {
 
-    mainloop::Main<Game> main;
+    maudit::server_socket server("0.0.0.0", 20020);
 
-    main.mainloop("_minisave.tmp", ::time(NULL));
+    while (1) {
+
+        int client = server.accept();
+
+        std::thread thr(client_mainloop, client);
+        thr.detach();
+    }
 
     return 0;
 }

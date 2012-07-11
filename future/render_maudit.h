@@ -145,7 +145,7 @@ struct Grid {
     std::list<message> messages;
 
     // transient, not saved in dump.
-    std::vector<glyph> overlay;
+    std::vector<skin> overlay;
 
     // transient, not saved in dump.
     TCOD_map_t tcodmap;
@@ -180,24 +180,13 @@ private:
         return true;
     }
 
-    bool _translate_g2v(int voff_x, int voff_y, const pt& gxy, pt& vxy) {
 
-        int rx = (int)gxy.first - voff_x;
-        int ry = (int)gxy.second - voff_y;
-        
-        if (rx < 0 || (unsigned int)rx >= view_w || ry < 0 || (unsigned int)ry >= view_h)
-            return false;
-        
-        vxy.first = (unsigned int)rx;
-        vxy.second = (unsigned int)ry;
-        return true;
+    skin& _overlay(const pt& xy) {
+        return overlay[xy.second*w+xy.first];
     }
 
-
-
     template <typename FUNC1, typename FUNC2>
-    void _draw_circle(int voff_x, int voff_y,
-                      unsigned int x, unsigned int y, unsigned int r, 
+    void _draw_circle(unsigned int x, unsigned int y, unsigned int r, 
                       bool do_draw, color_t fore, color_t back, 
                       FUNC1 f_chk, FUNC2 f_do) {
 
@@ -224,23 +213,9 @@ private:
 
         if (do_draw) {
         
-            std::vector<color_t> cols;
+            for (const auto& xy : pts) {
 
-            cols.push_back(fore);
-            cols.push_back(TCOD_color_lerp(cols.back(), back, 0.5));
-            cols.push_back(TCOD_color_lerp(cols.back(), back, 0.5));
-
-            for (const auto& col : cols) {
-                for (const auto& xy : pts) {
-
-                    pt vxy;
-                    if (!_translate_g2v(voff_x, voff_y, xy, vxy))
-                        continue;
-
-                    TCOD_console_put_char_ex(NULL, vxy.first, vxy.second, '*', col, back);
-                }
-                TCOD_console_flush();
-                TCOD_sys_sleep_milli(100);
+                _overlay(xy) = skin("*", fore, back);
             }
         }
 
@@ -250,42 +225,69 @@ private:
     }
 
 
-    void _draw_messages(unsigned int x, unsigned int y, unsigned int t) {
+    void _draw_messages(std::vector<skin>& hud,
+                        unsigned int x, unsigned int y, unsigned int view_w, unsigned int box_w,
+                        unsigned int t) {
+
+        std::vector< std::pair<color_t, std::string> > lines;
 
         int i = 0;
-        std::string m;
         auto li = messages.begin();
 
         while (i < 3 && li != messages.end()) {
 
-            if (li != messages.begin())
-                m += '\n';
+            color_t fore = maudit::color::dim_white;
 
             if (li->timestamp == 0 || li->timestamp >= t) {
-                m += (char)(li->important ? TCOD_COLCTRL_3 : TCOD_COLCTRL_1);
-                li->timestamp = t;
 
-            } else {
-                m += (char)TCOD_COLCTRL_5;
+                if (li->important) {
+                    fore = maudit::color::bright_yellow;
+                } else {
+                    fore = maudit::color::bright_white;
+                }
+
+                li->timestamp = t;
             }
 
-            m += li->text;
-            ++i;
-            ++li;
+            size_t si = 0;
+            while (si < li->text.size()) {
+                lines.push_back(std::make_pair(fore, li->text.substr(si, box_w)));
+                si += box_w;
+            }
         }
 
-        TCOD_console_print_rect(NULL, x, y, TCOD_console_get_width(NULL) - 30, 3, m.c_str());
+        lines.resize(3);
+
+        for (size_t j = 0; j < lines.size(); ++j) {
+
+            auto hudi = hud.begin() + ((y+j) * view_w) + x;
+
+            color_t fore = lines[j].first;
+            const std::string& text = lines[j].second;
+
+            for (size_t si = 0; si < box_w; ++si) {
+
+                if (si < text.size()) {
+                    hudi->text = text[si];
+                    hudi->fore = fore;
+
+                } else {
+                    hudi->fore = black;
+                }
+
+                ++hudi;
+            }
+        }
     } 
 
 
-    void _draw_pipline(unsigned int x, unsigned int y, const hud_line& line) {
+    void _draw_pipline(std::vector<skin>& hud,
+                       unsigned int x, unsigned int y, unsigned int view_w,
+                       const hud_line& line) {
+
+        auto hudi = hud.begin() + (y * view_w) + x;
 
         std::string l;
-
-        l += (char)TCOD_COLCTRL_FORE_RGB;
-        l += (char)line.labelcolor.r;
-        l += (char)line.labelcolor.g;
-        l += (char)line.labelcolor.b;
         
         if (line.label.size() < 6)
             l += std::string(6 - line.label.size(), ' ');
@@ -293,38 +295,52 @@ private:
         l += line.label;
         l += ": ";
 
-        if (line.numtype == hud_line::UNSIGNED) {
-            l += (char)TCOD_COLCTRL_FORE_RGB;
-            l += (char)line.pipcolor[0].r;
-            l += (char)line.pipcolor[0].g;
-            l += (char)line.pipcolor[0].b;
-            l += std::string(line.npips, line.pipstyle[0]);
-
-        } else {
-            if (line.npips < 0) {
-
-                l += (char)TCOD_COLCTRL_FORE_RGB;
-                l += (char)line.pipcolor[0].r;
-                l += (char)line.pipcolor[0].g;
-                l += (char)line.pipcolor[0].b;
-
-                if (line.npips > -3) {
-                    l += std::string(line.npips + 3, ' ');
-                }
-                l += std::string(-line.npips, line.pipstyle[0]);
-
-            } else {
-                l += (char)TCOD_COLCTRL_FORE_RGB;
-                l += (char)line.pipcolor[1].r;
-                l += (char)line.pipcolor[1].g;
-                l += (char)line.pipcolor[1].b;
-
-                l += "   ";
-                l += std::string(line.npips, line.pipstyle[1]);
-            }
+        for (unsigned char c : l) {
+            hudi->text = c;
+            hudi->fore = line.labelcolor;
+            ++hudi;
         }
 
-        TCOD_console_print(NULL, x, y, l.c_str());
+        if (line.numtype == hud_line::UNSIGNED) {
+
+            for (int i = 0; i < 6; ++i) {
+
+                if (i < line.npips) {
+                    hudi->text = line.pipstyle[0];
+                    hudi->fore = line.pipcolor[0];
+                } else {
+                    hudi->fore = black;
+                }
+
+                ++hudi;
+            }
+
+        } else {
+
+            for (int i = -3; i < 0; ++i) {
+
+                if (i >= line.npips) {
+                    hudi->text = line.pipstyle[0];
+                    hudi->fore = line.pipcolor[0];
+                } else {
+                    hudi->fore = black;
+                }
+
+                ++hudi;
+            }
+
+            for (int i = 0; i < 3; ++i) {
+
+                if (i < line.npips) {
+                    hudi->text = line.pipstyle[1];
+                    hudi->fore = line.pipcolor[1];
+                } else {
+                    hudi->fore = black;
+                }
+
+                ++hudi;
+            }
+        }
     }
 
 
@@ -472,6 +488,9 @@ public:
         bool ok = screen.refresh(
             [&](size_t x, size_t y, size_t view_w, size_t view_h) {
 
+                std::vector<skin> hud;
+                hud.resize(view_w * view_h);
+
                 if (x == 0 && y == 0) {
 
                     // Do some initialization.
@@ -498,9 +517,39 @@ public:
                    
                     TCOD_map_compute_fov(tcodmap, px, py, lightradius, true, FOV_SHADOW);
 
-                    first_call = true;
+
+                    if (do_hud) {
+                        unsigned int hl = 0;
+                        unsigned int hpx = (px > view_w / 2 ? 0 : view_w - 14);
+
+                        for (const auto& hudline : hud_pips) {
+                            _draw_pipline(hud, hpx, hl, view_w, hudline);
+                            ++hl;
+                        }
+
+                        if (py > h / 2) {
+                            _draw_messages(hud, 15, 0, 
+                                           view_w, view_w - 30, 
+                                           t);
+                        } else {
+                            _draw_messages(hud, 15, view_h - 3, 
+                                           view_w, view_w - 30,
+                                           t);
+                        }
+                    }
+
+                    hud_pips.clear();
                 }
 
+                // HUD
+
+                skin& hud_char = hud[y*view_w+x];
+
+                if (hud_char.fore != maudit::color::none) {
+                    return hud_char;
+                }
+
+                // OVERLAY
 
                 pt xy;
                 bool is_ok = _translate_v2g(voff_x, voff_y, pt(_vx, _vy), xy);
@@ -508,6 +557,14 @@ public:
                 if (!is_ok) {
                     return skin(" ", black, black);
                 }
+
+                skin& overlay_char = _overlay(xy);
+
+                if (overlay_char != maudit::color::none) {
+                    return overlay_char;
+                }
+
+                // GRID POINT
 
 		gridpoint& gp = _get(xy);
 
@@ -560,8 +617,6 @@ public:
 		unsigned int caage;
 		celauto::get().get_state(xy, caid, caage);
 
-                // TODO OVERLAY!!
-
 		if (caid) {
 		    unsigned int maxage = celauto::get().rules[caid]->age;
 		    double intrp = (double)caage / (maxage*2.0);
@@ -600,23 +655,7 @@ public:
         if (!ok)
             throw std::runtime_error("broken pipe");
 
-        if (do_hud) {
-            unsigned int hl = 0;
-            unsigned int hpx = (px > view_w / 2 ? 0 : view_w - 14);
-
-            for (const auto& hudline : hud_pips) {
-                _draw_pipline(hpx, hl, hudline);
-                ++hl;
-            }
-
-            if (py > h / 2) {
-                _draw_messages(15, 0, t);
-            } else {
-                _draw_messages(15, view_h - 3, t);
-            }
-        }
-
-        hud_pips.clear();
+        overlay.clear();
     }
 
     void push_hud_line(const std::string& label, color_t labelcolor,
@@ -632,60 +671,27 @@ public:
     //////
 
 
-    void wait_for_anykey() {
-        TCOD_console_flush();
+    template <typename SCREEN>
+    void wait_for_anykey(SCREEN& screen) {
 
-        if (keylog_do_replay) {
-            TCOD_sys_sleep_milli(replay_delay);
-            return;
+        keypress tmp;
+        
+        if (!screen.wait_key(tmp)) {
+
+            throw std::runtime_error("end of input");
         }
-
-        TCOD_sys_wait_for_event(TCOD_EVENT_KEY_PRESS, NULL, NULL, true);
     }
 
-    void skip_input(unsigned int delay=0) {
-        TCOD_console_flush();
+    template <typename SCREEN>
+    keypress wait_for_key(SCREEN& screen) {
 
-        if (delay != 0) {
-            TCOD_sys_sleep_milli(delay);
+        keypress ret;
+        
+        if (!screen.wait_key(tmp)) {
+
+            throw std::runtime_error("end of input");
         }
 
-        TCOD_sys_check_for_event(TCOD_EVENT_KEY_PRESS, NULL, NULL);
-    }
-
-    keypress wait_for_key() {
-        TCOD_console_flush();
-
-        if (keylog_do_replay) {
-
-            if (keylog_index >= keylog.size())
-                throw std::runtime_error("Malformed replay file: premature end-of-keylog.");
-
-            TCOD_sys_check_for_event(TCOD_EVENT_KEY_PRESS, NULL, NULL);
-            TCOD_sys_sleep_milli(replay_delay);
-            return keylog[keylog_index++];
-        }
-
-        if (TCOD_console_is_window_closed()) {
-            keypress ret(0, 1);
-            keylog.push_back(ret);
-            return ret;
-        }
-
-
-        TCOD_key_t ktmp;
-
-        while (1) {
-            TCOD_sys_wait_for_event(TCOD_EVENT_KEY_PRESS, &ktmp, NULL, false);
-            if (ktmp.vk == TCODK_SHIFT ||
-                ktmp.vk == TCODK_ALT ||
-                ktmp.vk == TCODK_CONTROL)
-                continue;
-            break;
-        }
-
-        keypress ret(ktmp.vk, ktmp.c);
-        keylog.push_back(ret);
         return ret;
     }
 
@@ -707,99 +713,85 @@ public:
 
     /////
 
-    void draw_splashscreen(unsigned int x, unsigned int y, const std::vector<std::string>& msg) {
+    template <typename SCREEN>
+    keypress draw_window(SCREEN& screen, const std::vector<std::string>& msg) {
 
-        size_t maxl = 0;
-        std::string s;
+        std::vector< std::vector<skin> > glyphs;
 
-        for (const auto& l : msg) {
-            maxl = std::max(l.size(), maxl);
+        for (const std::string& line : msg) {
 
-            if (s.empty()) {
-                s += (char)TCOD_COLCTRL_1;
-            } else {
-                s += '\n';
+            glyphs.push_back(std::vector<skin>());
+
+            color_t fore = maudit::color::dim_white;
+
+            for (unsigned char c : line) {
+
+                if (c == 3) {
+                    fore = maudit::color::bright_yellow;
+                } else if (c == 2) {
+                    fore = maudit::color::bright_white;
+                } else {
+                    fore = maudit::color::dim_white;
+                } else {
+                    glyphs.back().push_back(skin(c, fore, black));
+                }
             }
-
-            s += l;
         }
 
-        TCOD_console_print_rect(NULL, x, y, maxl, msg.size(), s.c_str());
-        TCOD_console_flush();
-    }
+        bool ok = screen.refresh(
+            [&](size_t x, size_t y, size_t view_w, size_t view_h) {
 
-    keypress draw_window(const std::vector<std::string>& msg) {
-        unsigned int _w = view_w;
-        unsigned int _h = view_h;
+                if (y <= 1 || y >= view_h-2 ||
+                    x <= 1 || x >= view_w-2) {
 
-        size_t maxl = 0;
-        std::string s;
+                    return skin();
+                }
 
-        for (const auto& l : msg) {
-            maxl = std::max(l.size(), maxl);
+                if (y-2 >= glyphs.size()) {
+                    return skin(" ", black, black);
+                }
 
-            if (s.empty()) {
-                s += (char)TCOD_COLCTRL_1;
-            } else {
-                s += '\n';
-            }
+                const auto& line = glyphs[y-2];
 
-            s += l;
-        }
+                if (x-2 >= line.size()) {
+                    return skin(" ", black, black);
+                }
 
-        unsigned int l = msg.size();
+                return line[x-2];
+            });
 
-        unsigned int x0 = _w - maxl - 4;
+        if (!ok)
+            throw std::runtime_error("broken pipe");
 
-        if (maxl > _w || _w - maxl < 4)
-            x0 = 0;
-
-        unsigned int y0 = std::min(l + 2, _h);
-
-        TCOD_console_set_default_background(NULL, TCOD_darkest_blue);
-        TCOD_console_rect(NULL, x0, 0, _w - x0, y0, true, TCOD_BKGND_SET);
-        TCOD_console_print_rect(NULL, x0 + 2, 1, _w - x0 - 2, y0 - 1, s.c_str());
-        TCOD_console_set_default_background(NULL, TCOD_black);
-
-        TCOD_console_flush();
-        keypress ret = wait_for_key();
-
-        TCOD_console_rect(NULL, x0, 0, _w - x0, y0, true, TCOD_BKGND_DEFAULT);
-        TCOD_console_flush();
-
-        return ret;
+        return wait_for_key(screen);
     }
 
     template <typename FUNC>
-    void draw_circle(int voff_x, int voff_y, 
-                     unsigned int x, unsigned int y, unsigned int r, 
+    void draw_circle(unsigned int x, unsigned int y, unsigned int r, 
                      bool do_draw, color_t fore, color_t back, 
                      FUNC func) {
 
-        _draw_circle(voff_x, voff_y, x, y, r, 
-                     /*true, TCOD_yellow, TCOD_darkest_red, */
+        _draw_circle(x, y, r, 
                      do_draw, fore, back,
                      [](unsigned int, unsigned int) { return true; },
                      func);
     }
 
     template <typename FUNC>
-    void draw_fov_circle(int voff_x, int voff_y,
-                         unsigned int x, unsigned int y, unsigned int r, 
+    void draw_fov_circle(unsigned int x, unsigned int y, unsigned int r, 
                          bool do_draw, color_t fore, color_t back,
                          FUNC func) {
 
 	TCOD_map_compute_fov(tcodmap, x, y, r, false, FOV_SHADOW);
 
-        _draw_circle(voff_x, voff_y, x, y, r, do_draw, fore, back, //TCOD_darkest_blue,
+        _draw_circle(x, y, r, do_draw, fore, back, 
                      [this](unsigned int x, unsigned int y) { return TCOD_map_is_in_fov(tcodmap, x, y); },
                      func);
     }
 
 
     template <typename FUNC>
-    void draw_floodfill(int voff_x, int voff_y,
-                        unsigned int x, unsigned int y, 
+    void draw_floodfill(unsigned int x, unsigned int y, 
                         bool do_draw, color_t fore, color_t back,
                         FUNC func) {
 
@@ -831,31 +823,16 @@ public:
         }
 
         if (do_draw) {
-            std::vector<color_t> cols;
-            //color_t back = TCOD_darkest_red;
 
-            cols.push_back(fore); //TCOD_yellow);
-            cols.push_back(TCOD_color_lerp(cols.back(), back, 0.5));
-            cols.push_back(TCOD_color_lerp(cols.back(), back, 0.5));
+            for (const auto& xy : procd) {
 
-            for (const auto& col : cols) {
-                for (const auto& xy : procd) {
-
-                    pt vxy;
-                    if (!_translate_g2v(voff_x, voff_y, xy, vxy))
-                        continue;
-
-                    TCOD_console_put_char_ex(NULL, vxy.first, vxy.second, '*', col, back);
-                }
-                TCOD_console_flush();
-                TCOD_sys_sleep_milli(100);
+                _overlay(xy) = skin("*", fore, back);
             }
         }
     }
 
     template <typename FUNC>
-    void draw_line(int voff_x, int voff_y,
-                   unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1, 
+    void draw_line(unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1, 
                    bool do_draw, color_t fore, color_t back,
                    FUNC func) {
         
@@ -879,13 +856,7 @@ public:
         if (do_draw) {
             for (const auto& xy : pts) {
 
-                pt vxy;
-                if (!_translate_g2v(voff_x, voff_y, xy, vxy))
-                    continue;
-
-                TCOD_console_put_char_ex(NULL, xy.first, xy.second, '*', fore, back);
-                TCOD_console_flush();
-                TCOD_sys_sleep_milli(50);
+                _overlay(xy) = skin("*", fore, back);
             }
         }
     }
@@ -915,11 +886,11 @@ public:
             std::string& m = lines.back();
 
             if (li->important) {
-                m += (char)TCOD_COLCTRL_3;
+                m += (char)3;
             } else if (li == messages.begin()) {
-                m += (char)TCOD_COLCTRL_1;
+                m += (char)2;
             } else {
-                m += (char)TCOD_COLCTRL_5;
+                m += (char)1;
             }
 
             m += li->text;
@@ -952,9 +923,6 @@ public:
     inline void write(serialize::Sink& s) {
 	serialize::write(s, w);
 	serialize::write(s, h);
-
-        serialize::write(s, view_w);
-        serialize::write(s, view_h);
 
         serialize::write(s, font);
         serialize::write(s, title);
@@ -998,14 +966,9 @@ public:
     inline void read(serialize::Source& s) {
         unsigned int _w;
         unsigned int _h;
-        unsigned int _view_w;
-        unsigned int _view_h;
 
         serialize::read(s, _w);
         serialize::read(s, _h);
-
-        serialize::read(s, _view_w);
-        serialize::read(s, _view_h);
 
         serialize::read(s, font);
         serialize::read(s, title);
@@ -1014,7 +977,7 @@ public:
 	serialize::read(s, env_color);
 	serialize::read(s, env_intensity);
 
-        init(_w, _h, _view_w, _view_h, font, title, fullscreen);
+        init(_w, _h);
 
 	for (size_t i = 0; i < grid.size(); ++i) {
 	    size_t sks;

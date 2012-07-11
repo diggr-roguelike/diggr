@@ -53,14 +53,15 @@ struct screen_params_t {
 };
 
 
-template <typename GAME>
+template <typename GAME, typename SCREEN>
 struct Main {
 
     GAME game;
+    SCREEN& screen;
 
     size_t ticks;
 
-    Main() : ticks(1) {}
+    Main(SCREEN& s) : screen(s), ticks(1) {}
 
 
 
@@ -142,11 +143,13 @@ struct Main {
         
         std::cout << "DRAW!" << std::endl;
 
-        grender::get().draw(ticks, ctx.voff_x, ctx.voff_y,
+        grender::get().draw(screen, 
+                            ticks, ctx.voff_x, ctx.voff_y,
                             ctx.px, ctx.py, ctx.hlx, ctx.hly,
                             ctx.rangemin, ctx.rangemax, ctx.lightradius, 
                             ctx.do_hud,
-                            std::bind(&GAME::set_skin, &game, std::placeholders::_1, std::placeholders::_2));
+                            std::bind(&GAME::set_skin, &game, 
+                                      std::placeholders::_1, std::placeholders::_2));
 
     }
 
@@ -167,11 +170,8 @@ struct Main {
 
         if (need_input) {
 
-            grender::Grid::keypress k = grender::get().wait_for_key();
+            grender::Grid::keypress k = grender::get().wait_for_key(screen);
             game.handle_input(ticks, done, dead, k.vk, k.c);
-
-        } else {
-            grender::get().skip_input();
         }
     }
 
@@ -189,7 +189,7 @@ struct Main {
                 save(savefile);
             }
 
-            grender::get().wait_for_anykey();
+            grender::get().wait_for_anykey(screen);
             return true;
         }
 
