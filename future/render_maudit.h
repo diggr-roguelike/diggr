@@ -21,7 +21,7 @@ namespace serialize {
 template <>
 struct reader<maudit::color> {
     void read(Source& s, maudit::color& v) {
-	reader<uint32_t>().read(s, (uint32_t&)tmp);
+	reader<uint32_t>().read(s, (uint32_t&)v);
     }
 };
 
@@ -43,10 +43,24 @@ struct reader<maudit::glyph> {
 
 template <>
 struct writer<maudit::glyph> {
-    void write(Source& s, const maudit::glyph& v) {
+    void write(Sink& s, const maudit::glyph& v) {
         serialize::write(s, v.text);
         serialize::write(s, v.fore);
         serialize::write(s, v.back);
+    }
+};
+
+template <>
+struct reader<maudit::keycode> {
+    void read(Source& s, maudit::keycode& v) {
+	reader<uint32_t>().read(s, (uint32_t&)v);
+    }
+};
+
+template <>
+struct writer<maudit::keycode> {
+    void write(Sink& s, const maudit::keycode& v) {
+	writer<uint32_t>().write(s, (uint32_t)v);
     }
 };
 
@@ -60,7 +74,7 @@ struct reader<maudit::keypress> {
 
 template <>
 struct writer<maudit::keypress> {
-    void write(Source& s, const maudit::keypress& v) {
+    void write(Sink& s, const maudit::keypress& v) {
         serialize::write(s, v.letter);
         serialize::write(s, v.key);
     }
@@ -80,7 +94,11 @@ struct Grid {
 
     static const size_t skincount = 8;
 
-    static const color_t black = maudit::color::bright_black;
+    static const color_t black_color  = color_t::bright_black;
+    static const color_t yellow_color = color_t::bright_yellow;
+    static const color_t gray_color   = color_t::dim_white;
+    static const color_t white_color  = color_t::bright_white;
+    static const color_t no_color     = color_t::none;
 
     typedef maudit::glyph skin;
 
@@ -160,6 +178,33 @@ struct Grid {
 
 private:
 
+    color_t color_fade(color_t c, double v) {
+
+        if (v <= 0.3) {
+            return c;
+
+        } else if (v <= 0.6) {
+
+            switch (c) {
+            case color_t::bright_black:   return color_t::dim_black;
+            case color_t::bright_red:     return color_t::dim_red;
+            case color_t::bright_green:   return color_t::dim_green;
+            case color_t::bright_yellow:  return color_t::dim_yellow;
+            case color_t::bright_blue:    return color_t::dim_blue;
+            case color_t::bright_magenta: return color_t::dim_magenta;
+            case color_t::bright_cyan:    return color_t::dim_cyan;
+            case color_t::bright_white:   return color_t::dim_white;
+            default: return c;
+            }
+
+        } else if (v <= 0.85) {
+            return color_t::bright_black;
+
+        } else {
+            return color_t::dim_black;
+        }
+    }
+
     double _dist(const pt& a, const pt& b) {
 
         unsigned int dx = abs(a.first - b.first);
@@ -236,14 +281,14 @@ private:
 
         while (i < 3 && li != messages.end()) {
 
-            color_t fore = maudit::color::dim_white;
+            color_t fore = gray_color;
 
             if (li->timestamp == 0 || li->timestamp >= t) {
 
                 if (li->important) {
-                    fore = maudit::color::bright_yellow;
+                    fore = yellow_color;
                 } else {
-                    fore = maudit::color::bright_white;
+                    fore = white_color;
                 }
 
                 li->timestamp = t;
@@ -272,7 +317,7 @@ private:
                     hudi->fore = fore;
 
                 } else {
-                    hudi->fore = black;
+                    hudi->fore = black_color;
                 }
 
                 ++hudi;
@@ -309,7 +354,7 @@ private:
                     hudi->text = line.pipstyle[0];
                     hudi->fore = line.pipcolor[0];
                 } else {
-                    hudi->fore = black;
+                    hudi->fore = black_color;
                 }
 
                 ++hudi;
@@ -323,7 +368,7 @@ private:
                     hudi->text = line.pipstyle[0];
                     hudi->fore = line.pipcolor[0];
                 } else {
-                    hudi->fore = black;
+                    hudi->fore = black_color;
                 }
 
                 ++hudi;
@@ -335,7 +380,7 @@ private:
                     hudi->text = line.pipstyle[1];
                     hudi->fore = line.pipcolor[1];
                 } else {
-                    hudi->fore = black;
+                    hudi->fore = black_color;
                 }
 
                 ++hudi;
@@ -462,7 +507,7 @@ public:
         gridpoint& g = _get(x,y);
 	std::vector<skin>& skins = g.skins;
 
-        skins[z].text = skin();
+        skins[z] = skin();
 
         g.valid = true;
     }
@@ -486,20 +531,20 @@ public:
 
 
         bool ok = screen.refresh(
-            [&](size_t x, size_t y, size_t view_w, size_t view_h) {
+            [&](size_t _vx, size_t _vy, size_t view_w, size_t view_h) {
 
                 std::vector<skin> hud;
                 hud.resize(view_w * view_h);
 
-                if (x == 0 && y == 0) {
+                if (_vx == 0 && _vy == 0) {
 
                     // Do some initialization.
 
-                    for (size_t _vy = 0; _vy < view_h; ++_vy) {
-                        for (size_t _vx = 0; _vx < view_w; ++_vx) {
+                    for (size_t vy = 0; _vy < view_h; ++_vy) {
+                        for (size_t vx = 0; _vx < view_w; ++_vx) {
 
                             pt xy;
-                            bool is_ok = _translate_v2g(voff_x, voff_y, pt(_vx, _vy), xy);
+                            bool is_ok = _translate_v2g(voff_x, voff_y, pt(vx, vy), xy);
 
                             if (!is_ok) {
                                 continue;
@@ -537,15 +582,13 @@ public:
                                            t);
                         }
                     }
-
-                    hud_pips.clear();
                 }
 
                 // HUD
 
-                skin& hud_char = hud[y*view_w+x];
+                skin& hud_char = hud[_vy*view_w+_vx];
 
-                if (hud_char.fore != maudit::color::none) {
+                if (hud_char.fore != no_color) {
                     return hud_char;
                 }
 
@@ -555,12 +598,12 @@ public:
                 bool is_ok = _translate_v2g(voff_x, voff_y, pt(_vx, _vy), xy);
 
                 if (!is_ok) {
-                    return skin(" ", black, black);
+                    return skin(" ", black_color, black_color);
                 }
 
                 skin& overlay_char = _overlay(xy);
 
-                if (overlay_char != maudit::color::none) {
+                if (overlay_char.fore != no_color) {
                     return overlay_char;
                 }
 
@@ -579,7 +622,7 @@ public:
 
 		gp.in_fov = in_fov;
 
-		color_t back = black;
+		color_t back = black_color;
 
                 auto skin_i = skins.rbegin();
                 auto skin_c = skin_i;
@@ -588,12 +631,12 @@ public:
 
                 while (skin_c != skins.rend()) {
 
-                    if (!found_s && skin_c->c != 0) {
+                    if (!found_s && skin_c->fore != no_color) {
                         found_s = true;
                         skin_i = skin_c;
                     }
 
-                    if (!found_b && skin_c->back != black) {
+                    if (!found_b && skin_c->back != black_color) {
                         found_b = true;
                         back = skin_c->back;
                     }
@@ -605,13 +648,13 @@ public:
 
 
                 if (!found_s) {
-		    return skin(" ", black, black);
+		    return skin(" ", black_color, black_color);
 		}
 
 		const skin& sk = *skin_i;
 
 		color_t fore = sk.fore;
-		std:string text = sk.text;
+                std::string text = sk.text;
 
 		size_t caid;
 		unsigned int caage;
@@ -626,8 +669,8 @@ public:
 		if (gp.is_lit == 0) {
 
 		    if (!in_fov) {
-			back = black;
-			fore = black;
+			back = black_color;
+			fore = black_color;
 			text = " ";
 
 		    } else {
@@ -635,8 +678,8 @@ public:
 			double d1 = d/lightradius;
 
 			if (d < rangemin || d > rangemax) {
-			    fore = color_t::bright_black;
-			    back = black;
+			    fore = gray_color;
+			    back = black_color;
 
 			} else {
 
@@ -646,7 +689,7 @@ public:
 		}
 
 		if (x == hlx && y == hly) {
-		    back = color_t::bright_white;
+		    back = white_color;
 		}
 
                 return skin(text, fore, back);
@@ -655,7 +698,9 @@ public:
         if (!ok)
             throw std::runtime_error("broken pipe");
 
+        hud_pips.clear();
         overlay.clear();
+        overlay.resize(w*h);
     }
 
     void push_hud_line(const std::string& label, color_t labelcolor,
@@ -687,7 +732,7 @@ public:
 
         keypress ret;
         
-        if (!screen.wait_key(tmp)) {
+        if (!screen.wait_key(ret)) {
 
             throw std::runtime_error("end of input");
         }
@@ -722,18 +767,18 @@ public:
 
             glyphs.push_back(std::vector<skin>());
 
-            color_t fore = maudit::color::dim_white;
+            color_t fore = gray_color;
 
             for (unsigned char c : line) {
 
                 if (c == 3) {
-                    fore = maudit::color::bright_yellow;
+                    fore = yellow_color;
                 } else if (c == 2) {
-                    fore = maudit::color::bright_white;
+                    fore = white_color;
+                } else if (c == 1) {
+                    fore = gray_color;
                 } else {
-                    fore = maudit::color::dim_white;
-                } else {
-                    glyphs.back().push_back(skin(c, fore, black));
+                    glyphs.back().push_back(skin(c, fore, black_color));
                 }
             }
         }
@@ -748,13 +793,13 @@ public:
                 }
 
                 if (y-2 >= glyphs.size()) {
-                    return skin(" ", black, black);
+                    return skin(" ", black_color, black_color);
                 }
 
                 const auto& line = glyphs[y-2];
 
                 if (x-2 >= line.size()) {
-                    return skin(" ", black, black);
+                    return skin(" ", black_color, black_color);
                 }
 
                 return line[x-2];
@@ -876,7 +921,8 @@ public:
         messages.emplace_front(msg, important, 0);
     }
 
-    void draw_messages_window() {
+    template <typename SCREEN>
+    void draw_messages_window(SCREEN& screen) {
         unsigned int i = 0;
         std::list<message>::const_iterator li = messages.begin();
         std::vector<std::string> lines;
@@ -898,7 +944,7 @@ public:
             ++li;
         }
 
-        draw_window(lines);
+        draw_window(screen, lines);
     }
 
     bool path_walk(unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1,
@@ -924,36 +970,16 @@ public:
 	serialize::write(s, w);
 	serialize::write(s, h);
 
-        serialize::write(s, font);
-        serialize::write(s, title);
-        serialize::write(s, fullscreen);
-
-	serialize::write(s, env_color);
-	serialize::write(s, env_intensity);
-
         for (const auto& t : grid) {
 
-            serialize::write(s, t.skins.size());
-	    for (const auto& u : t.skins) {
-		serialize::write(s, u.fore);
-                serialize::write(s, u.back);
-		serialize::write(s, u.c);
-		serialize::write(s, u.fore2);
-		serialize::write(s, u.fore_interp);
-		serialize::write(s, u.is_terrain);
-	    }
-
+            serialize::write(s, t.skins);
             serialize::write(s, t.is_lit);
             serialize::write(s, t.in_fov);
             serialize::write(s, t.is_viewblock);
             serialize::write(s, t.is_walkblock);
         }
 
-	serialize::write(s, keylog.size());
-        for (const auto& k : keylog) {
-            serialize::write(s, k.vk);
-            serialize::write(s, k.c);
-        }
+	serialize::write(s, keylog);
 
         serialize::write(s, messages.size());
         for (const auto& m : messages) {
@@ -970,33 +996,13 @@ public:
         serialize::read(s, _w);
         serialize::read(s, _h);
 
-        serialize::read(s, font);
-        serialize::read(s, title);
-        serialize::read(s, fullscreen);
-
-	serialize::read(s, env_color);
-	serialize::read(s, env_intensity);
-
         init(_w, _h);
 
 	for (size_t i = 0; i < grid.size(); ++i) {
-	    size_t sks;
-            serialize::read(s, sks);
 
 	    gridpoint& p = grid[i];
 
-	    p.skins.resize(sks);
-
-	    for (size_t j = 0; j < sks; ++j) {
-		skin& tmp = p.skins[j];
-		serialize::read(s, tmp.fore);
-                serialize::read(s, tmp.back);
-		serialize::read(s, tmp.c);
-		serialize::read(s, tmp.fore2);
-		serialize::read(s, tmp.fore_interp);
-		serialize::read(s, tmp.is_terrain);
-	    }
-
+            serialize::read(s, p.skins);
             serialize::read(s, p.is_lit);
             serialize::read(s, p.in_fov);
             serialize::read(s, p.is_viewblock);
@@ -1006,16 +1012,7 @@ public:
                                     (p.is_viewblock == 0), (p.is_walkblock == 0));
         }
 
-        size_t keylog_size;
-	serialize::read(s, keylog_size);
-
-        keylog.resize(keylog_size);
-
-        for (size_t i = 0; i < keylog_size; ++i) {
-            keypress& k = keylog[i];
-            serialize::read(s, k.vk);
-            serialize::read(s, k.c);
-        }
+	serialize::read(s, keylog);
 
         size_t messages_size;
         serialize::read(s, messages_size);

@@ -171,7 +171,7 @@ struct Main {
         if (need_input) {
 
             grender::Grid::keypress k = grender::get().wait_for_key(screen);
-            game.handle_input(ticks, done, dead, k.vk, k.c);
+            game.handle_input(ticks, done, dead, k);
         }
     }
 

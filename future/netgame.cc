@@ -1,4 +1,6 @@
 
+#include <thread>
+
 #include <sstream>
 
 #include "maudit.h"
@@ -33,7 +35,7 @@ struct Game {
 
     void process_world(size_t& ticks, bool& done, bool& dead, bool& need_input) {}
 
-    void handle_input(size_t& ticks, bool& done, bool& dead, int vk, char c) {
+    void handle_input(size_t& ticks, bool& done, bool& dead, maudit::keypress k) {
 
         bool regen = false;
         bool redraw = false;
