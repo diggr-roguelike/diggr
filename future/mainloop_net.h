@@ -42,14 +42,7 @@ struct screen_params_t {
     unsigned int w2; 
     unsigned int h2;
 
-    unsigned int view_w;
-    unsigned int view_h;
-
-    std::string font;
-    std::string title;
-    bool fullscreen;
-
-    screen_params_t() : w(0), h(0), w2(0), h2(0), view_w(0), view_h(0), fullscreen(false) {}
+    screen_params_t() : w(0), h(0), w2(0), h2(0) {}
 };
 
 
@@ -111,10 +104,13 @@ struct Main {
                long seed,
                const screen_params_t& sp) {
 
+        std::cout << "++ load savefile" << std::endl;
         if (load(savefile)) {
             return false;
         }
 
+        std::cout << "++ init" << std::endl;
+        screen.io.write("\r\nInitializing game...\r\n");
 
         rnd::get().init(seed);
         neighbors::get().init(sp.w, sp.h);
@@ -125,6 +121,9 @@ struct Main {
         moon::get().init();
 
         ticks = 1;
+
+        std::cout << "++ init2" << std::endl;
+        screen.io.write("Generating world...\r\n");
 
         game.init();
         game.generate();
@@ -189,6 +188,8 @@ struct Main {
                 save(savefile);
             }
 
+            screen.io.write("\r\nPress any key.\r\n");
+
             grender::get().wait_for_anykey(screen);
             return true;
         }
@@ -201,12 +202,15 @@ struct Main {
 
         screen_params_t sp;
 
+        std::cout << "+ make_screen" << std::endl;
         game.make_screen(sp);
 
+        std::cout << "+ start" << std::endl;
         start(savefile, seed, sp);
 
         size_t oldticks = 0;
 
+        std::cout << "+ draw" << std::endl;
         draw();
 
         bool done = false;
@@ -216,8 +220,10 @@ struct Main {
 
             bool need_input = false;
 
+            std::cout << "+ process" << std::endl;
             process(oldticks, done, dead, need_input);
 
+            std::cout << "+ draw" << std::endl;
             draw();
 
             if (check_done(done, dead, savefile)) 

@@ -522,26 +522,34 @@ public:
     template <typename SCREEN, typename FUNC>
     void draw(SCREEN& screen,
               unsigned int t,
-              int voff_x, int voff_y,
+              int voff_off_x, int voff_off_y,
 	      unsigned int px, unsigned int py,
 	      unsigned int hlx, unsigned int hly,
 	      unsigned int rangemin, unsigned int rangemax,
 	      unsigned int lightradius, bool do_hud,
               FUNC make_valid) {
 
+        std::vector<skin> hud;
+        int voff_x;
+        int voff_y;
 
         bool ok = screen.refresh(
             [&](size_t _vx, size_t _vy, size_t view_w, size_t view_h) {
 
-                std::vector<skin> hud;
-                hud.resize(view_w * view_h);
 
                 if (_vx == 0 && _vy == 0) {
 
                     // Do some initialization.
 
-                    for (size_t vy = 0; _vy < view_h; ++_vy) {
-                        for (size_t vx = 0; _vx < view_w; ++_vx) {
+                    hud.resize(view_w * view_h);
+
+                    voff_x = px - (view_w / 2) + voff_off_x;
+                    voff_y = py - (view_h / 2) + voff_off_y;
+
+                    //
+
+                    for (size_t vy = 0; vy < view_h; ++vy) {
+                        for (size_t vx = 0; vx < view_w; ++vx) {
 
                             pt xy;
                             bool is_ok = _translate_v2g(voff_x, voff_y, pt(vx, vy), xy);
@@ -703,13 +711,26 @@ public:
         overlay.resize(w*h);
     }
 
-    void push_hud_line(const std::string& label, color_t labelcolor,
-                       bool signd, int npips,
-                       char style[2], color_t color[2]) {
 
-        hud_pips.emplace_back(label, labelcolor, 
-                              (signd ? hud_line::SIGNED : hud_line::UNSIGNED), npips,
-                              style, color);
+    void push_hud_line(const std::string& label, color_t labelcolor,
+                       unsigned int npips, char style_, color_t color_) {
+
+
+        char style[2] = { style_, style_ };
+        color_t color[2] = { color_, color_ };
+
+        hud_pips.emplace_back(label, labelcolor, hud_line::UNSIGNED, npips, style, color);
+    }
+
+
+    void push_hud_line(const std::string& label, color_t labelcolor,
+                       int npips, char nstyle, char pstyle,
+                       color_t ncolor, color_t pcolor) {
+
+        char style[2] = { nstyle, pstyle };
+        color_t color[2] = { ncolor, pcolor };
+
+        hud_pips.emplace_back(label, labelcolor, hud_line::SIGNED, npips, style, color);
     }
 
 
