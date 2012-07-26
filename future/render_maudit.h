@@ -163,7 +163,8 @@ struct Grid {
     std::list<message> messages;
 
     // transient, not saved in dump.
-    std::vector<skin> overlay;
+    size_t current_draw_n;
+    std::vector< std::pair<size_t, skin> > overlay;
 
     // transient, not saved in dump.
     TCOD_map_t tcodmap;
@@ -226,7 +227,13 @@ private:
     }
 
 
-    skin& _overlay(const pt& xy) {
+    skin& _overlay_set(const pt& xy) {
+        auto& tmp = overlay[xy.second*w+xy.first];
+        tmp.first = current_draw_n;
+        return tmp.second;
+    }
+
+    const std::pair<size_t, skin>& _overlay_get(const pt& xy) {
         return overlay[xy.second*w+xy.first];
     }
 
@@ -260,7 +267,7 @@ private:
         
             for (const auto& xy : pts) {
 
-                _overlay(xy) = skin("*", fore, back);
+                _overlay_set(xy) = skin("*", fore, back);
             }
         }
 
@@ -392,6 +399,7 @@ private:
 public:
 
     Grid() : w(0), h(0), 
+             current_draw_n(0),
              tcodmap(TCOD_map_new(0, 0)), 
              tcodpath(TCOD_path_new_using_map(tcodmap, 1.41)),
              keylog_do_replay(false), keylog_index(0)
@@ -529,186 +537,190 @@ public:
 	      unsigned int lightradius, bool do_hud,
               FUNC make_valid) {
 
-        std::vector<skin> hud;
+        bm __1("::: redraw-refresh");
+
         int voff_x;
         int voff_y;
 
         bool ok = screen.refresh(
-            [&](size_t _vx, size_t _vy, size_t view_w, size_t view_h) {
+            [&](std::vector<maudit::glyph>& ret_glyphs, size_t view_w, size_t view_h) {
 
+                // Do some initialization.
 
-                if (_vx == 0 && _vy == 0) {
+                voff_x = px - (view_w / 2) + voff_off_x;
+                voff_y = py - (view_h / 2) + voff_off_y;
 
-                    // Do some initialization.
+                //
 
-                    hud.resize(view_w * view_h);
+                for (size_t vy = 0; vy < view_h; ++vy) {
+                    for (size_t vx = 0; vx < view_w; ++vx) {
 
-                    voff_x = px - (view_w / 2) + voff_off_x;
-                    voff_y = py - (view_h / 2) + voff_off_y;
+                        pt xy;
+                        bool is_ok = _translate_v2g(voff_x, voff_y, pt(vx, vy), xy);
 
-                    //
-
-                    for (size_t vy = 0; vy < view_h; ++vy) {
-                        for (size_t vx = 0; vx < view_w; ++vx) {
-
-                            pt xy;
-                            bool is_ok = _translate_v2g(voff_x, voff_y, pt(vx, vy), xy);
-
-                            if (!is_ok) {
-                                continue;
-                            }
-
-                            gridpoint& gp = _get(xy);
-
-                            if (gp.valid) {
-                                continue;
-                            }
-
-                            make_valid(xy.first, xy.second);
+                        if (!is_ok) {
+                            continue;
                         }
+
+                        gridpoint& gp = _get(xy);
+
+                        if (gp.valid) {
+                            continue;
+                        }
+
+                        make_valid(xy.first, xy.second);
                     }
+                }
                    
-                    TCOD_map_compute_fov(tcodmap, px, py, lightradius, true, FOV_SHADOW);
+                TCOD_map_compute_fov(tcodmap, px, py, lightradius, true, FOV_SHADOW);
 
 
-                    if (do_hud) {
-                        unsigned int hl = 0;
-                        unsigned int hpx = (px > view_w / 2 ? 0 : view_w - 14);
+                if (do_hud) {
+                    unsigned int hl = 0;
+                    unsigned int hpx = (px > view_w / 2 ? 0 : view_w - 14);
 
-                        for (const auto& hudline : hud_pips) {
-                            _draw_pipline(hud, hpx, hl, view_w, hudline);
-                            ++hl;
+                    for (const auto& hudline : hud_pips) {
+                        _draw_pipline(ret_glyphs, hpx, hl, view_w, hudline);
+                        ++hl;
+                    }
+
+                    if (py > h / 2) {
+                        _draw_messages(ret_glyphs, 15, 0, 
+                                       view_w, view_w - 30, 
+                                       t);
+                    } else {
+                        _draw_messages(ret_glyphs, 15, view_h - 3, 
+                                       view_w, view_w - 30,
+                                       t);
+                    }
+                }
+            
+
+                for (size_t _vy = 0; _vy < view_h; ++_vy) {
+                    for (size_t _vx = 0; _vx < view_w; ++_vx) {
+
+                        maudit::glyph& ret = ret_glyphs[_vy*view_w+_vx];
+
+                        if (ret.fore != no_color)
+                            continue;
+
+                        // OVERLAY
+
+                        pt xy;
+                        bool is_ok = _translate_v2g(voff_x, voff_y, pt(_vx, _vy), xy);
+
+                        if (!is_ok) {
+                            ret = skin(" ", black_color, black_color);
+                            continue;
                         }
 
-                        if (py > h / 2) {
-                            _draw_messages(hud, 15, 0, 
-                                           view_w, view_w - 30, 
-                                           t);
-                        } else {
-                            _draw_messages(hud, 15, view_h - 3, 
-                                           view_w, view_w - 30,
-                                           t);
+                        const auto& overlay_char = _overlay_get(xy);
+
+                        if (overlay_char.first == current_draw_n &&
+                            overlay_char.second.fore != no_color) {
+
+                            ret = overlay_char.second;
+                            continue;
                         }
+
+                        // GRID POINT
+
+                        gridpoint& gp = _get(xy);
+
+                        unsigned int x = xy.first;
+                        unsigned int y = xy.second;
+
+                        bool in_fov = TCOD_map_is_in_fov(tcodmap, x, y);
+
+                        double d = _dist(xy, pt(px, py));
+
+                        const std::vector<skin>& skins = gp.skins;
+
+                        gp.in_fov = in_fov;
+
+                        color_t back = black_color;
+                        
+                        auto skin_i = skins.rbegin();
+                        auto skin_c = skin_i;
+                        bool found_s = false;
+                        bool found_b = false;
+
+                        while (skin_c != skins.rend()) {
+
+                            if (!found_s && skin_c->fore != no_color) {
+                                found_s = true;
+                                skin_i = skin_c;
+                            }
+
+                            if (!found_b && skin_c->back != black_color) {
+                                found_b = true;
+                                back = skin_c->back;
+                            }
+
+                            if (found_s && found_b) break;
+
+                            ++skin_c;
+                        }
+
+
+                        if (!found_s) {
+                            ret = skin(" ", black_color, black_color);
+                            continue;
+                        }
+
+                        const skin& sk = *skin_i;
+
+                        color_t fore = sk.fore;
+                        std::string text = sk.text;
+
+                        size_t caid;
+                        unsigned int caage;
+                        celauto::get().get_state(xy, caid, caage);
+
+                        if (caid) {
+                            unsigned int maxage = celauto::get().rules[caid]->age;
+                            double intrp = (double)caage / (maxage*2.0);
+                            back = color_fade(back, intrp);
+                        }
+
+                        if (gp.is_lit == 0) {
+
+                            if (!in_fov) {
+                                back = black_color;
+                                fore = black_color;
+                                text = " ";
+                                
+                            } else {
+
+                                double d1 = d/lightradius;
+
+                                if (d < rangemin || d > rangemax) {
+                                    fore = gray_color;
+                                    back = black_color;
+
+                                } else {
+
+                                    fore = color_fade(fore, std::min(d1, 1.0));
+                                }
+                            }
+                        }
+
+                        if (x == hlx && y == hly) {
+                            back = white_color;
+                        }
+
+                        ret = skin(text, fore, back);
                     }
                 }
-
-                // HUD
-
-                skin& hud_char = hud[_vy*view_w+_vx];
-
-                if (hud_char.fore != no_color) {
-                    return hud_char;
-                }
-
-                // OVERLAY
-
-                pt xy;
-                bool is_ok = _translate_v2g(voff_x, voff_y, pt(_vx, _vy), xy);
-
-                if (!is_ok) {
-                    return skin(" ", black_color, black_color);
-                }
-
-                skin& overlay_char = _overlay(xy);
-
-                if (overlay_char.fore != no_color) {
-                    return overlay_char;
-                }
-
-                // GRID POINT
-
-		gridpoint& gp = _get(xy);
-
-                unsigned int x = xy.first;
-                unsigned int y = xy.second;
-
-		bool in_fov = TCOD_map_is_in_fov(tcodmap, x, y);
-
-                double d = _dist(xy, pt(px, py));
-
-		const std::vector<skin>& skins = gp.skins;
-
-		gp.in_fov = in_fov;
-
-		color_t back = black_color;
-
-                auto skin_i = skins.rbegin();
-                auto skin_c = skin_i;
-                bool found_s = false;
-                bool found_b = false;
-
-                while (skin_c != skins.rend()) {
-
-                    if (!found_s && skin_c->fore != no_color) {
-                        found_s = true;
-                        skin_i = skin_c;
-                    }
-
-                    if (!found_b && skin_c->back != black_color) {
-                        found_b = true;
-                        back = skin_c->back;
-                    }
-
-                    if (found_s && found_b) break;
-
-                    ++skin_c;
-                }
-
-
-                if (!found_s) {
-		    return skin(" ", black_color, black_color);
-		}
-
-		const skin& sk = *skin_i;
-
-		color_t fore = sk.fore;
-                std::string text = sk.text;
-
-		size_t caid;
-		unsigned int caage;
-		celauto::get().get_state(xy, caid, caage);
-
-		if (caid) {
-		    unsigned int maxage = celauto::get().rules[caid]->age;
-		    double intrp = (double)caage / (maxage*2.0);
-		    back = color_fade(back, intrp);
-		}
-
-		if (gp.is_lit == 0) {
-
-		    if (!in_fov) {
-			back = black_color;
-			fore = black_color;
-			text = " ";
-
-		    } else {
-
-			double d1 = d/lightradius;
-
-			if (d < rangemin || d > rangemax) {
-			    fore = gray_color;
-			    back = black_color;
-
-			} else {
-
-			    fore = color_fade(fore, std::min(d1, 1.0));
-			}
-		    }
-		}
-
-		if (x == hlx && y == hly) {
-		    back = white_color;
-		}
-
-                return skin(text, fore, back);
 	    });
+
+        bm __2("::: random crap");
 
         if (!ok)
             throw std::runtime_error("broken pipe");
 
         hud_pips.clear();
-        overlay.clear();
-        overlay.resize(w*h);
+        current_draw_n++;
     }
 
 
@@ -892,7 +904,7 @@ public:
 
             for (const auto& xy : procd) {
 
-                _overlay(xy) = skin("*", fore, back);
+                _overlay_set(xy) = skin("*", fore, back);
             }
         }
     }
@@ -922,7 +934,7 @@ public:
         if (do_draw) {
             for (const auto& xy : pts) {
 
-                _overlay(xy) = skin("*", fore, back);
+                _overlay_set(xy) = skin("*", fore, back);
             }
         }
     }

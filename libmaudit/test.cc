@@ -106,8 +106,11 @@ int main(int argc, char** argv) {
 
         int client = server.accept();
 
+        std::cout << "Starting thread..." << std::endl;
         std::thread thr(client_mainloop, client);
+        std::cout << "Detaching thread..." << std::endl;
         thr.detach();
+        std::cout << "OK thread..." << std::endl;
     }
 
     return 0;

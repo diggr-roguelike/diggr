@@ -91,36 +91,13 @@ struct screen {
 
         _w = w;
         _h = h;
-
-        return;
-
-        /*
-        char* tmp = ::getenv("LINES");
-        //std::cout << "{{" << tmp << std::endl;
-        if (tmp != NULL) {
-            int t = ::atoi(tmp);
-            if (t > 0) 
-                h = t;
-        }
-
-        tmp = ::getenv("COLUMNS");
-        if (tmp != NULL) {
-            int t = ::atoi(tmp);
-            if (t > 0)
-                w = t;
-        }
-        */
     }
 
     template <typename FUNC>
-    bool refresh(FUNC f) {
+    bool refresh(const FUNC& f) {
 
         size_t w;
         size_t h;
-
-        //FILE* ff = fopen("/home/itkachev/diggr-roguelike-test/libmaudit/qqpp", "a");
-        //fprintf(ff, "---------------------------\n");
-        //fclose(ff);
         
         get_size(w, h);
 
@@ -132,10 +109,15 @@ struct screen {
         color fore_prev = color::none;
         color back_prev = color::none;
 
+        std::vector<glyph> tmp;
+        tmp.resize(w*h);
+
+        f(tmp, w, h);
+
         for (size_t y = 0; y < h; ++y) {
             for (size_t x = 0; x < w; ++x) {
 
-                glyph g = f(x, y, w, h);
+                const glyph& g = tmp[y*w+x];
 
                 bool do_fore = false;
                 bool do_back = false;
