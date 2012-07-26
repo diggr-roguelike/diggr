@@ -51,8 +51,8 @@ struct Game {
 
     void make_screen(mainloop::screen_params_t& sp) {
 
-        sp.w = 1024;
-        sp.h = 1024;
+        sp.w = 256;
+        sp.h = 256;
         sp.w2 = sp.w;
         sp.h2 = sp.h;
     }
@@ -61,7 +61,7 @@ struct Game {
 
     void generate() {
         std::cout << "Generating..." << std::endl;
-        grid::get().generate(0);
+        grid::get().generate(1);
         std::cout << "Generating OK" << std::endl;
 
         grid::pt xy;
@@ -70,7 +70,20 @@ struct Game {
 
         px = xy.first;
         py = xy.second;
+
+
+        for (unsigned int y = 0; y < 256; ++y) {
+            for (unsigned int x = 0; x < 256; ++x) {
+                bool walk = grid::get().is_walk(x, y);
+                bool water = grid::get().is_water(x, y);
+                std::cout << (walk ? (water ? '-' : ' ') : '#');
+            }
+            std::cout << std::endl;
+        }
+
+        std::cout << std::endl << std::endl;
     }
+
 
     void set_skin(unsigned int x, unsigned int y) {
 
@@ -166,7 +179,6 @@ struct Game {
         bool regen = false;
         bool redraw = false;
 
-
         switch (k.letter) {
         case 'Q':
             done = true;
@@ -184,7 +196,36 @@ struct Game {
         case 'l':
             move(1, 0);
             break;
+        case 'y':
+            move(-1, -1);
+            break;
+        case 'u':
+            move(1, -1);
+            break;
+        case 'b':
+            move(-1, 1);
+            break;
+        case 'n':
+            move(1, 1);
+            break;
         }
+
+        switch (k.key) {
+        case maudit::keycode::up:
+            move(0, -1);
+            break;
+        case maudit::keycode::left:
+            move(-1, 0);
+            break;
+        case maudit::keycode::right:
+            move(1, 0);
+            break;
+        case maudit::keycode::down:
+            move(0, 1);
+            break;
+        default:
+            break;
+        }            
 
         if (regen) {
             generate();

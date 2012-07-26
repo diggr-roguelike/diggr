@@ -244,8 +244,11 @@ struct Map {
         std::unordered_set<pt> gout;
         std::unordered_map<pt, int> watr;
 
-        for (int i = 0; i < 100; i++) {
-            makeflow(gout, watr, 50.0, 1);
+        unsigned int N1 = grid.size() / 20; //100;
+        double N2 = 50.0;
+
+        for (unsigned int i = 0; i < N1; i++) {
+            makeflow(gout, watr, N2, 1);
         }
 
         for (const pt& xy : gout) {
@@ -340,24 +343,33 @@ struct Map {
         }
     }
 
-    void flatten(int type) {
-        if (type == 1) {
-            for (int i = 0; i < 5; ++i) {
-                flatten_pass();
-            }
+    void flatten(unsigned int nflatten, unsigned int nunflow) {
 
-        } else if (type == -1) {
+        for (unsigned int i = 0; i < nflatten; ++i) {
             flatten_pass();
-            for (int i = 0; i < 6; ++i) {
-                unflow();
-            }
+        }
+
+        for (unsigned int i = 0; i < nunflow; ++i) {
+            unflow();
         }
     }
 
-    void generate(int type) {
+    void generate(int type, unsigned int npass = 5) {
         makegrid();
         makerivers();
-        flatten(type);
+
+        unsigned int nflatten = 0;
+        unsigned int nunflow = 0;
+
+        if (type == 1) {
+            nflatten = npass;
+
+        } else if (type == -1) {
+            nflatten = 1;
+            nunflow = 6;
+        }
+
+        flatten(nflatten, nunflow);
     }
 
 
