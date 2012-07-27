@@ -182,9 +182,10 @@ private:
     color_t color_fade(color_t c, double v) {
 
         if (v <= 0.3) {
-            return c;
+            return color_t::dim_yellow; //c;
 
-        } else if (v <= 0.6) {
+        } else if (v <= 0.7) {
+            return color_t::dim_blue; 
 
             switch (c) {
             case color_t::bright_black:   return color_t::dim_black;
@@ -198,11 +199,11 @@ private:
             default: return c;
             }
 
-        } else if (v <= 0.85) {
+        } else if (v <= 0.90) {
             return color_t::bright_black;
 
         } else {
-            return color_t::dim_black;
+            return color_t::dim_cyan; //color_t::dim_black;
         }
     }
 

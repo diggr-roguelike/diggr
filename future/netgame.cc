@@ -97,14 +97,14 @@ struct Game {
 
         if (walkable) {
             if (water) {
-                s = grender::Grid::skin("-", maudit::color::dim_blue, maudit::color::bright_black);
+                s = grender::Grid::skin("-", maudit::color::bright_blue, maudit::color::bright_black);
             } else {
                 s = grender::Grid::skin(".", maudit::color::dim_white, maudit::color::bright_black);
             }
 
         } else {
             if (water) {
-                s = grender::Grid::skin("#", maudit::color::dim_blue, maudit::color::bright_black);
+                s = grender::Grid::skin("#", maudit::color::bright_blue, maudit::color::bright_black);
             } else {
                 s = grender::Grid::skin("#", maudit::color::bright_white, maudit::color::bright_black);
             }

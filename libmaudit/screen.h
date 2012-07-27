@@ -126,11 +126,28 @@ struct screen {
                     do_fore = true;
                     do_back = true;
 
-                } else if (fore_prev != g.fore) {
-                    do_fore = true;
+                } else {
 
-                }  else if (back_prev != g.back) {
-                    do_back = true;
+                    if (fore_prev != g.fore) {
+                        do_fore = true;
+
+                            data += CSI;
+                            data += "0m";
+                            do_fore = true;
+                            do_back = true;
+
+                    } else {
+                        if (g.fore >= color::bright_black && fore_prev < color::bright_black) {
+                            data += CSI;
+                            data += "0m";
+                            do_fore = true;
+                            do_back = true;
+                        }
+                    }
+                
+                    if (back_prev != g.back) {
+                        do_back = true;
+                    }
                 }
                 
                 if (do_fore || do_back) {
