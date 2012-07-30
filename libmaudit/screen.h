@@ -131,13 +131,7 @@ struct screen {
                     if (fore_prev != g.fore) {
                         do_fore = true;
 
-                            data += CSI;
-                            data += "0m";
-                            do_fore = true;
-                            do_back = true;
-
-                    } else {
-                        if (g.fore >= color::bright_black && fore_prev < color::bright_black) {
+                        if (fore_prev >= color::bright_black && g.fore < color::bright_black) {
                             data += CSI;
                             data += "0m";
                             do_fore = true;

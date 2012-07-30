@@ -182,11 +182,9 @@ private:
     color_t color_fade(color_t c, double v) {
 
         if (v <= 0.3) {
-            return color_t::dim_yellow; //c;
+            return c;
 
         } else if (v <= 0.7) {
-            return color_t::dim_blue; 
-
             switch (c) {
             case color_t::bright_black:   return color_t::dim_black;
             case color_t::bright_red:     return color_t::dim_red;
@@ -203,7 +201,7 @@ private:
             return color_t::bright_black;
 
         } else {
-            return color_t::dim_cyan; //color_t::dim_black;
+            return color_t::dim_black;
         }
     }
 
@@ -538,8 +536,6 @@ public:
 	      unsigned int lightradius, bool do_hud,
               FUNC make_valid) {
 
-        bm __1("::: redraw-refresh");
-
         int voff_x;
         int voff_y;
 
@@ -715,8 +711,6 @@ public:
                 }
 	    });
 
-        bm __2("::: random crap");
-
         if (!ok)
             throw std::runtime_error("broken pipe");
 
@@ -818,25 +812,35 @@ public:
         }
 
         bool ok = screen.refresh(
-            [&](size_t x, size_t y, size_t view_w, size_t view_h) {
+            [&](std::vector<maudit::glyph>& ret_glyphs, size_t view_w, size_t view_h) {
 
-                if (y <= 1 || y >= view_h-2 ||
-                    x <= 1 || x >= view_w-2) {
+                for (unsigned int y = 0; y < view_h; ++y) {
+                    for (unsigned int x = 0; x < view_w; ++x) {
 
-                    return skin();
+                        skin& ret = ret_glyphs[y*view_w+x];
+
+                        if (y <= 1 || y >= view_h-2 ||
+                            x <= 1 || x >= view_w-2) {
+
+                            ret = skin();
+                            continue;
+                        }
+
+                        if (y-2 >= glyphs.size()) {
+                            ret = skin(" ", black_color, black_color);
+                            continue;
+                        }
+
+                        const auto& line = glyphs[y-2];
+
+                        if (x-2 >= line.size()) {
+                            ret = skin(" ", black_color, black_color);
+                            continue;
+                        }
+
+                        ret = line[x-2];
+                    }
                 }
-
-                if (y-2 >= glyphs.size()) {
-                    return skin(" ", black_color, black_color);
-                }
-
-                const auto& line = glyphs[y-2];
-
-                if (x-2 >= line.size()) {
-                    return skin(" ", black_color, black_color);
-                }
-
-                return line[x-2];
             });
 
         if (!ok)

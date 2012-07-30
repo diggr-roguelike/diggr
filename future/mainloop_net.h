@@ -133,20 +133,13 @@ struct Main {
 
     void draw() {
 
-        bm __1("::: draw()");
-
         drawing_context_t ctx;
         game.drawing_context(ctx);
 
         if (ctx.do_hud) {
-            bm __1("::: draw_hud()");
             game.draw_hud();
         }
         
-        std::cout << "DRAW!" << std::endl;
-
-        bm __2("::: draw_2()");
-
         grender::get().draw(screen, 
                             ticks, ctx.voff_x, ctx.voff_y,
                             ctx.px, ctx.py, ctx.hlx, ctx.hly,
