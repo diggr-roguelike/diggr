@@ -4,7 +4,7 @@ project (diggr)
 
 SET(CMAKE_BUILD_TYPE "Release")
 
-SET(CMAKE_CXX_FLAGS "-Wall -std=c++0x -O3 -g")
+SET(CMAKE_CXX_FLAGS "-Wall -std=c++0x -O3 -g -pthread")
 
 #include_directories(include)
 
@@ -14,6 +14,7 @@ SET(INSTALL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/dist)
 add_subdirectory(libtcod)
 add_subdirectory(liblo)
 add_subdirectory(future)
+add_subdirectory(netgame)
 
 ### ### ###
 

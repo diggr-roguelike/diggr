@@ -1,24 +1,10 @@
 
-###
-
-#add_executable(script_test script_test.cc)
-#target_link_libraries(script_test tcod_static png15_static SDL m X11)
-
-#add_executable(minigame minigame.cc)
-#target_link_libraries(minigame tcod_static png15_static SDL m X11)
-
-add_executable(netgame netgame.cc)
-target_link_libraries(netgame tcod_static png15_static SDL m X11)
-
-##
-
 
 SET(LIBSOUND_C_SRC libsound.cc)
 
 include_directories(../liblo)
 include_directories(../liblo/lo)
 include_directories(../libtcod/include)
-include_directories(../libmaudit)
 
 SET(LIBLO_NAME lo_static)
 SET(LIBSOUND_NAME sound)

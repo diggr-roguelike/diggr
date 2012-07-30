@@ -10,7 +10,10 @@
 #include "celauto.h"
 
 #include "maudit.h"
-#include "libtcod.h"
+
+extern "C" {
+#include "talgo.h"
+}
 
 #include <iostream>
 #include <sys/time.h>
