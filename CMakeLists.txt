@@ -14,7 +14,6 @@ SET(INSTALL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/dist)
 add_subdirectory(libtcod)
 add_subdirectory(liblo)
 add_subdirectory(future)
-add_subdirectory(netgame)
 
 ### ### ###
 
