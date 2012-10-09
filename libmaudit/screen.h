@@ -96,6 +96,18 @@ struct screen {
         //io.write(CSI "18t");
         io.write("\xFF\xFD\x1F");
 
+        if (w == 0 || h == 0) {
+            keypress tmp;
+
+            if (!wait_key(tmp, true)) {
+                throw std::runtime_error("Could not detect terminal size.");
+            }
+
+            w = tmp.w;
+            h = tmp.h;
+        }
+                
+
         std::cout << "   === get_size ok ===" << std::endl;
 
         std::string data;
@@ -207,7 +219,7 @@ struct screen {
     }
 
 
-    bool wait_key(keypress& out) {
+    bool wait_key(keypress& out, bool system_event = false) {
 
         out.w = w;
         out.h = h;
@@ -270,6 +282,10 @@ struct screen {
                 if (!ok) return false;
 
                 out.h |= (size_t)c;
+
+                if (system_event) {
+                    return true;
+                }
                 
                 goto again;
 
