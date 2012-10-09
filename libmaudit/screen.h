@@ -56,7 +56,10 @@ struct keypress {
     unsigned char letter;
     keycode key;
 
-    keypress() : letter(0), key(keycode::none) {}
+    unsigned int w;
+    unsigned int h;
+
+    keypress() : letter(0), key(keycode::none), w(0), h(0) {}
 };
 
 
@@ -67,8 +70,8 @@ struct screen {
     
     IO& io;
 
-    size_t w;
-    size_t h;
+    unsigned int w;
+    unsigned int h;
 
     screen(IO& _io) : io(_io), w(80), h(25) {
 
@@ -79,32 +82,26 @@ struct screen {
         io.write("\xFF\xFB\x03");
     }
 
-    void get_size(size_t& _w, size_t& _h) {
-        
-        //io.write(CSI "18t");
-
-        // Request terminal size.
-        io.write("\xFF\xFD\x1F");
-
-        keypress nothing;
-        wait_key(nothing, true);
-
-        _w = w;
-        _h = h;
-    }
 
     template <typename FUNC>
-    bool refresh(const FUNC& f) {
+    bool refresh(unsigned int _w, unsigned int _h, const FUNC& f) {
 
-        size_t w;
-        size_t h;
-        
-        get_size(w, h);
+        w = _w;
+        h = _h;
+
+        std::cout << "----------------- refresh ---" << std::endl;
+
+        // Request terminal size.
+
+        //io.write(CSI "18t");
+        io.write("\xFF\xFD\x1F");
+
+        std::cout << "   === get_size ok ===" << std::endl;
 
         std::string data;
 
-        data += CSI "2J";      // Erase screen.
-        data += CSI "1;1H";    // Move cursor to home position.
+        data += CSI "H";       // Move cursor to home position.
+        //data += CSI "2J";      // Erase screen.
 
         color fore_prev = color::none;
         color back_prev = color::none;
@@ -210,7 +207,10 @@ struct screen {
     }
 
 
-    bool wait_key(keypress& out, bool system_event=false) {
+    bool wait_key(keypress& out) {
+
+        out.w = w;
+        out.h = h;
 
       again:
 
@@ -254,24 +254,23 @@ struct screen {
                 ok = io.read(c);
                 if (!ok) return false;
 
-                w = ((size_t)c << 8);
+                out.w = ((size_t)c << 8);
 
                 ok = io.read(c);
                 if (!ok) return false;
 
-                w |= (size_t)c;
+                out.w |= (size_t)c;
     
                 ok = io.read(c);
                 if (!ok) return false;
 
-                h = ((size_t)c << 8);
+                out.h = ((size_t)c << 8);
 
                 ok = io.read(c);
                 if (!ok) return false;
 
-                h |= (size_t)c;
+                out.h |= (size_t)c;
                 
-                if (system_event) return true;
                 goto again;
 
             default:
@@ -302,6 +301,8 @@ struct screen {
             } else {
                 out.key = keycode::esc;
             }
+
+            std::cout << "SPECIAL KEY: " << (int)out.key << std::endl;
 
             return true;
         }
