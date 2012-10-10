@@ -48,7 +48,8 @@ enum class keycode : uint32_t {
         right,
         up,
         down,
-        esc
+        esc,
+        resize
 };
 
 
@@ -89,26 +90,22 @@ struct screen {
         w = _w;
         h = _h;
 
-        std::cout << "----------------- refresh ---" << std::endl;
-
-        // Request terminal size.
-
-        //io.write(CSI "18t");
-        io.write("\xFF\xFD\x1F");
-
         if (w == 0 || h == 0) {
             keypress tmp;
 
-            if (!wait_key(tmp, true)) {
+            // Request terminal size.
+
+            //io.write(CSI "18t");
+            io.write("\xFF\xFD\x1F");
+
+            if (!wait_key(tmp)) {
                 throw std::runtime_error("Could not detect terminal size.");
             }
 
             w = tmp.w;
             h = tmp.h;
         }
-                
 
-        std::cout << "   === get_size ok ===" << std::endl;
 
         std::string data;
 
@@ -219,7 +216,7 @@ struct screen {
     }
 
 
-    bool wait_key(keypress& out, bool system_event = false) {
+    bool wait_key(keypress& out) {
 
         out.w = w;
         out.h = h;
@@ -282,11 +279,10 @@ struct screen {
                 if (!ok) return false;
 
                 out.h |= (size_t)c;
-
-                if (system_event) {
-                    return true;
-                }
                 
+                out.key = keycode::resize;
+                return true;
+
                 goto again;
 
             default:
@@ -317,8 +313,6 @@ struct screen {
             } else {
                 out.key = keycode::esc;
             }
-
-            std::cout << "SPECIAL KEY: " << (int)out.key << std::endl;
 
             return true;
         }

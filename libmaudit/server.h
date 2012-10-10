@@ -67,12 +67,10 @@ public:
             tmp = ::recv(fd, &(buff[0]), buffsize, 0);
 
             if (tmp < 0) {
-                std::cout << "OOPS." << std::endl;
                 return false;
             }
 
             if (tmp == 0) {
-                std::cout << "OOPS2." << std::endl;
                 return false;
             }
 
@@ -82,8 +80,6 @@ public:
 
         c = *buffi;
         ++buffi;
-
-        std::cout << "-> [" << (int)c << " " << c << "]" << std::endl;
 
         return true;
     }
