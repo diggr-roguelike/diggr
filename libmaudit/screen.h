@@ -129,6 +129,9 @@ struct screen {
                 bool do_back = false;
 
                 if (x == 0 && y == 0) {
+
+                    data += CSI;
+                    data += "0m";
                     do_fore = true;
                     do_back = true;
 
