@@ -528,6 +528,8 @@ public:
 
 
     bool is_in_fov(unsigned int x, unsigned int y) {
+        if (x >= w || y >= h)
+            return false;
         const gridpoint& gp = _get(x,y);
         return (gp.in_fov || gp.is_lit != 0);
     }
