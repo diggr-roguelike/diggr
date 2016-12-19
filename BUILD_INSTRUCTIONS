@@ -15,11 +15,10 @@ BUILDING FROM SOURCE:
 
 3. Build and install:
 
-  mkdir build
-  cd build
-  cmake ..
-  make
-  make install/strip
+  sh build.sh
+
+NOTE: A saner build process is impossible due to the authors of CMake being braindead.
+Please don't use or support CMake if you can.
 
 4. A working installation of the game will be in ../dist
 

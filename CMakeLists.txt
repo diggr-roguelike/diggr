@@ -69,12 +69,18 @@ option(SC_EL "" OFF)
 option(SC_ED "" OFF)
 option(SC_VIM "" OFF)
 option(SC_PSYCOLLIDER "" OFF)
+option(NOVA_SIMD "" OFF)
+option(SSE "" OFF)
+option(SSE2 "" OFF)
 
 # CMake suxx. Why is that in the year 2012 we are still forced to
 # put up with this idiocy?
 
+# CMake really is the worst build tool known to man.
+# Note to whoever wrote CMake: I hope you catch hemorroids and diarrhea at the same time.
+
 get_filename_component(CWD "${CMAKE_SOURCE_DIR}" ABSOLUTE)
-set(CMAKE_SOURCE_DIR "${CWD}/supercollider")
+set(CMAKE_PROJECT_DIR "${CWD}/supercollider")
 
 if(MINGW)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -U__STRICT_ANSI__")
@@ -105,7 +111,7 @@ set(plugins_list
         UnaryOpUGens
         UnpackFFTUGens
 
-        MouseUGens KeyboardUGens FFT_UGens PV_ThirdParty ML_UGens
+        FFT_UGens PV_ThirdParty ML_UGens
 )
 
 # I have to set this propery again, due to CMake being braindead about recursion. 
